@@ -1,0 +1,85 @@
+
+/*
+	Таблица констант.
+*/
+
+/*****************************************************************************/
+
+word    _nChar;
+char    Char[_nCHAR];
+
+/*****************************************************************************/
+
+/* Сохраняет последовательность байт в массиве Char и возвращает индекс начала. */
+word SaveString(char @Str; word Size)
+
+	word i = 0;
+	word j = 0;
+
+	if chardata_merge_len < _nChar then
+		i = _nChar - chardata_merge_len;
+	end:if
+
+	word offset = i;
+
+	while j < Size do
+
+		if i >= _nChar then
+			exit;
+		end
+
+		if Str[j] != Char[i] then
+			inc i;
+			offset = i;
+			j = 0;
+		else
+			inc i;
+			inc j;
+		end:if
+
+	end:while
+
+	if j = Size then
+		return offset;
+	end
+
+	word R = _nChar;
+
+	word Tail = Size - j;
+	_nChar = _nChar + Tail;
+
+	if _nChar >= _nCHAR then
+		Stop(@eNOMEMORY);
+	end
+
+	memcpy(@Char[R], @Str[j], Tail);
+
+	return R;
+
+end
+
+/*****************************************************************************/
+
+/* Сохраняет #0-строку, включая завершающий 0. */
+word SaveString0(char @Str)
+	return SaveString(@Str, strlen(@Str) + 1);
+end
+
+
+/*****************************************************************************/
+
+void InitCharData()
+	_nChar = 0;
+end
+
+/*****************************************************************************/
+
+word CharDataUsed()
+	return _nChar;
+end
+
+word CharDataTotal()
+	return _nCHAR;
+end
+
+/*****************************************************************************/

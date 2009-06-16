@@ -1,0 +1,119 @@
+
+/*
+	Базовые функции для генерирования выходного файла.
+
+*/
+
+/*****************************************************************************/
+
+void FlushOutput()
+	if write(hText, @Text, nText) != nText then
+		Stop(@eWRITEERR);
+	end:if
+
+	nText=0;
+end
+
+/*****************************************************************************/
+
+void OpenOutput(char@ FileName)
+	hText = create(@FileName);
+	nText = 0;
+end
+
+/*****************************************************************************/
+
+void CloseOutput()
+	if nText > 0 then
+		FlushOutput();
+	end:if
+
+	close(hText);
+end
+
+/*****************************************************************************/
+
+/* Вывести в листинг символ. */
+void EmitChar(char C)
+
+	if nText > nTEXT then
+		StopInternal();
+	end
+
+	if nText = nTEXT then
+		FlushOutput();
+	end
+
+	Text[nText] = C;
+	inc  nText;
+end
+
+/*****************************************************************************/
+
+/* Вывести в листинг строку. */
+void EmitString(char @S)
+	word I = 0;
+	while S[I] != #0 do
+		EmitChar(S[I]);
+		inc I;
+	end
+end
+
+/*****************************************************************************/
+
+/* Вывести в листинг переход на новую линию. */
+void EmitNL()
+	EmitString("~r~n");
+end
+
+/*****************************************************************************/
+
+/* Вывести в листинг строку и следом переход на новую линию. */
+void EmitStringNL(char @Inst)
+	EmitString(@Inst);
+	EmitNL();
+end
+
+/*****************************************************************************/
+
+//word eax_is_zero = 0;
+
+/*****************************************************************************/
+
+/* Если L не равно 0, выводит метку L. Следом выводит строку Inst. */
+void Emit(word L; char @Inst)
+
+	if L != 0 then
+		PHO_InvalidateRegs();
+	else
+		@Inst = @PHO_Optimize(@Inst);
+		if Inst[0] = #0 then
+			return;
+		end:if
+	end:if
+
+
+	if L != 0 then
+		EmitChar('@');
+
+		char @P = @str(L);
+		word I = 0;
+		while P[I] != #0 do
+			EmitChar(P[I]);
+			inc I;
+		end:while
+
+		EmitChar(':');
+		EmitChar(' ');
+	else
+		word I = 0;
+		while I < 8 do
+			EmitChar(' ');
+			inc I;
+		end:while
+	end:if
+
+	EmitStringNL(@Inst);
+end
+
+/*****************************************************************************/

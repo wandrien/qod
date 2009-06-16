@@ -1,0 +1,395 @@
+
+include "version.ctxi"
+
+include "strings.ctxi"
+include "sys.ctxi"
+include "ctxmsg.ctxi"
+
+include "frontend_config.ctxi"
+include "frontend_htl.ctxi"
+include "backend_config.ctxi"
+
+/*****************************************************************************/
+
+define  tPE          1 // PE  (Windows95/NT)
+define  tELF         2 // ELF (Linux)
+
+define  mNONE        0
+define  mCON         1
+define  mGUI         2
+
+/*****************************************************************************/
+
+struct NODE                // Узел синтаксического деpева
+	word   ID;           // Тип узла
+	word   Value;        // Значение
+	word  pLeft;         // Ссылка на левое  поддеpево
+	word  pRight;        // Ссылка на пpавое поддеpево
+	word  pType;         // Тип данных
+end
+
+struct   DICT          // Элемент таблицы глобальных имен
+	word   Name2;        // Имя
+	word   NameHash;     // Хэш имени
+	word   Class;        // Слово, константа, тип, пеpеменная, функция
+	word   Sub;          // Подкласс
+	word  pType;         // Ссылка на тип
+	word  nPtr;          // Поpядок пеpеменной
+	word  pIndx;         // Ссылка на начало массива индексов/паpаметpов
+	word  nIndx;         // Ссылка на конец  массива индексов/паpаметpов
+	word  pNode;         // Ссылка на синтаксическое деpево
+	word   Value;        // Значение
+	word   Stack;        // Pазмеp стека
+	word   Used;         // Пpизнак использования
+end
+
+struct   PARM          // Элемент таблицы паpаметpов и полей
+  char   Name [nNAME]; // Имя
+  word  pType;         // Ссылка на тип
+  word  nPtr;          // Поpядок пеpеменной
+  word  pIndx;         // Ссылка на начало массива индексов
+  word  nIndx;         // Ссылка на конец  массива индексов
+  word   Value;        // Смещение
+end
+
+/*****************************************************************************/
+
+PARM     Parm [nPARM]; // Таблица паpаметpов и полей
+word    nParm;
+
+word     Indx [nINDX]; // Таблица индексов
+word    nIndx;
+
+/*****************************************************************************/
+
+/* Вывод отладочных сообщений и сообщений об ошибках. */
+
+void Dbg (char @Msg)
+	puts("~r~n");
+	puts(@Msg);
+	puts("~r~n");
+end
+
+/*****************************************************************************/
+
+void PrintVersionAndCopyright()
+	puts(@msgPRODUCT);
+	puts(" Version ");
+	puts(@msgVERSION);
+	puts("~r~n");
+	puts(@msgCOPYRIGHT);
+end
+
+/*****************************************************************************/
+
+void PrintUsage()
+	PrintVersionAndCopyright();
+	puts(@msgUSAGE);
+end
+
+/*****************************************************************************/
+
+include "frontend.ctxi"
+
+/*****************************************************************************/
+
+include "backend.ctxi"
+
+/*****************************************************************************/
+
+void InitFrontEnd()
+
+	init_charid();
+	InitLex();
+	InitCharData();
+	InitOperator();
+
+	nDict = 0;
+	nParm = 0;
+	nIndx = 0;
+	nNode = 0;
+
+	nFile = 0;
+	pFile = 0;
+
+	@_Statements = @Statements;
+	@_Expr       = @Expr;
+
+	strcpy(@Text,"");
+
+	strcat(@Text,"define __CONTEXT2_VERSION_MAJOR__ 0~r~n");
+	strcat(@Text,"define __CONTEXT2_VERSION_MINOR__ 1~r~n");
+	strcat(@Text,"define @__CONTEXT2_VERSION_STR__  ~"0.1~"~r~n");
+
+
+	strcat(@Text,"define @__TRANSLATOR__ ~"");
+	strcat(@Text,@msgPRODUCT);
+	strcat(@Text,"~"~r~n");
+
+	strcat(@Text,"define @__TRANSLATOR_VERSION__ ~"");
+	strcat(@Text,@msgVERSION);
+	strcat(@Text,"~"~r~n");
+
+	strcat(@Text,"define @__TRANSLATOR_HOST__ ~"");
+	strcat(@Text,@__TRANSLATOR_TARGET__);
+	strcat(@Text,"~"~r~n");
+
+
+	select
+	case TargetFileFormat = tPE:
+		strcat(@Text,"define @__TRANSLATOR_TARGET__ ~"i386-win32-pe~"~r~n");
+		strcat(@Text,"void ExitProcess(word uExitCode) external KERNEL32;");
+	case TargetFileFormat = tELF:
+		strcat(@Text,"define @__TRANSLATOR_TARGET__ ~"i386-linux-elf~"~r~n");
+	default:
+		StopInternal();
+	end:select
+
+	strcat(@Text,"  ");
+
+
+	nText = strlen(@Text);
+	pText = 0;
+	CurrentFileInfo.Line = 1;
+	CurrentFileInfo.Col  = 1;
+	@CurrentFileInfo.Name = NULL;
+	BeforeFirstFile = 0;
+
+	pLoop = nNODE;
+
+	RegisterDigraph("!=");
+	RegisterDigraph("<=");
+	RegisterDigraph(">=");
+	RegisterDigraph(":=");
+
+	RegisterDigraph("/*");
+	RegisterDigraph("//");
+	RegisterComment("/*", "*/");
+	RegisterComment("//", "~n");
+	RegisterHereCommentPrefix("$comment");
+
+	Word("include");
+	Word("define");
+	Word("struct");
+	Word("synonym");
+	Word("function");
+	Word("external");
+	Word("begin");
+	Word("select");
+	Word("case");
+	Word("default");
+	Word("if");
+	Word("then");
+	Word("else");
+	Word("while");
+	Word("do");
+	Word("repeat");
+	Word("until");
+	Word("loop");
+	Word("exit");
+	Word("inc");
+	Word("dec");
+	Word("inline");
+	Word("return");
+	Word("null");
+	Word("NULL");
+	Word("end");
+	Word("switch");
+	Word("of");
+
+	st_void = Base("void", 0);
+	st_char = Base("char", 1);
+	st_byte = Base("byte", 1);
+	st_word = Base("word", 4);
+	st_int  = Base("int" , 4);
+
+	RegisterOperators();
+end
+
+/*****************************************************************************/
+
+char@ InputFile;
+char@ OutputFile;
+char@ OutputTreeFile;
+
+char@ DefaultTarget;
+
+/*****************************************************************************/
+
+void Translate()
+
+	@_Code = @Code;
+
+	/* Синтаксический анализ **********************/
+
+	InitFrontEnd();
+
+	OpenInputFile(@InputFile);
+
+	char Buff[nBUFF];
+	Parse(@Buff);
+
+	CloseAllFiles();
+
+	/* Промежуточные операции *********************/
+
+	/* Отметка используемых объектов. */
+	Mark(Dict[pFunc].pNode);
+	select
+		case TargetFileFormat = tPE:
+			Dict[Find("ExitProcess")].Used = 1;
+	end
+
+	/* Назначаем метки и смещения. */
+
+	word L=10000;
+
+	AssignLabels_Struct();
+	word D = AssignLabels_Data();
+
+	AssignLabels_Func(@L);
+	AssignLabels_FuncExternal(@L);
+
+	AssignStringOffsets();
+
+	/* Генерация кода *****************************/
+
+	OpenOutput(@OutputFile);
+
+	/* Заголовок. */
+
+	select
+	case TargetFileFormat = tPE & TargetMode = mCON:
+		EmitStringNL("format  PE  CONSOLE");
+	case TargetFileFormat = tPE & TargetMode = mGUI:
+		EmitStringNL("format  PE  GUI");
+	case TargetFileFormat = tELF:
+		EmitStringNL("format  ELF executable");
+	default:
+		StopInternal();
+	end:select
+
+	word T=0;
+	word I=0;
+
+	word S = EmitSection_Code(@Buff);
+
+	EmitSection_Data(@Buff, D);
+
+	select
+	case TargetFileFormat = tPE:
+		EmitPEImport(@Buff, L);
+	end:select
+
+	EmitNL();
+	Emit(0,@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
+
+	word OutputTreeFile_Done = 0;
+	if @OutputTreeFile != NULL & strcmp(@OutputFile, @OutputTreeFile) = 0 then
+		OutputTreeFile_Done = 1;
+		OutputFunctionTrees();
+		EmitInternalsInfo();
+	end:if
+
+	CloseOutput();
+
+	if OutputTreeFile_Done = 0 & @OutputTreeFile != NULL & strlen(@OutputTreeFile) != 0 then
+		OpenOutput(@OutputTreeFile);
+		OutputFunctionTrees();
+		EmitInternalsInfo();
+		CloseOutput();
+	end:if
+
+	ShowParseProgress(1);
+
+end
+
+/*****************************************************************************/
+
+char@ GetArg(word I; char@ ErrMsg)
+
+	if I >= Argc then
+		if @ErrMsg = NULL then
+			StopInternal();
+		else
+			Stop(@ErrMsg);
+		end
+	end:if
+
+	return @Argv[I].Arg;
+end
+
+/*****************************************************************************/
+
+void SetupTarget(char@ Target)
+	select
+	case strcmp(@Target, "--linux"  ) = 0:
+		TargetFileFormat = tELF;
+		TargetMode = mNONE;
+	case strcmp(@Target, "--win32-c") = 0:
+		TargetFileFormat = tPE;
+		TargetMode = mCON;
+	case strcmp(@Target, "--win32-w") = 0:
+		TargetFileFormat = tPE;
+		TargetMode = mGUI;
+	default:
+		StopInternal();
+	end:select
+end
+
+/*****************************************************************************/
+
+void __main()
+
+	SetupTarget(@DefaultTarget);
+
+	word i = 1;
+	while i < Argc do
+		char@ arg = @GetArg(i, NULL);
+		select
+		case strcmp(@arg, "--help"   ) = 0:
+			PrintUsage();
+			return;
+		case strcmp(@arg, "--version") = 0:
+			PrintVersionAndCopyright();
+			return;
+		case strcmp(@arg, "--linux"  ) = 0
+		   | strcmp(@arg, "--win32-c") = 0
+		   | strcmp(@arg, "--win32-w") = 0:
+			SetupTarget(@arg);
+		case strcmp(@arg, "--output" ) = 0:
+			inc i;
+			@OutputFile = @GetArg(i, @eFNAMEEXP);
+		case strcmp(@arg, "--output-tree" ) = 0:
+			inc i;
+			@OutputTreeFile = @GetArg(i, @eFNAMEEXP);
+		case strcmp(@arg, "--file" ) = 0:
+			inc i;
+			@InputFile = @GetArg(i, @eFNAMEEXP);
+		default:
+			@InputFile = @GetArg(i, @eFNAMEEXP);
+		end:select
+		inc i;
+	end:while
+
+	if @InputFile = NULL then
+		PrintUsage();
+		return;
+	end
+
+	char Name[nBUFF];
+
+	if @OutputFile = NULL then
+		word l = strlen(@InputFile);
+		if l + 4 >= nBUFF then
+			Stop(@eLONGFILENAME);
+		end:if
+		strcat(@strcpy(@Name, @InputFile), ".asm");
+		@OutputFile = @Name;
+	end:if
+
+	Translate();
+end
+
+/*****************************************************************************/
+

@@ -1,0 +1,337 @@
+
+
+/*****************************************************************************/
+
+define PHO_REG_INVALID 4
+define PHO_REGS 4
+word PHO_ValidRegConst[PHO_REGS];
+word PHO_RegConst[PHO_REGS];
+
+/*****************************************************************************/
+
+void PHO_InvalidateReg(word R)
+	if R >= PHO_REGS then
+		StopInternal();
+	end:if
+	PHO_ValidRegConst[R] = 0;
+end
+
+/*****************************************************************************/
+
+void PHO_InvalidateRegs()
+	word i = 0;
+	while i < PHO_REGS do
+		PHO_InvalidateReg(i);
+		inc i;
+	end:while
+end
+
+/*****************************************************************************/
+
+word PHO_RegContainsAConst(word R)
+	if R >= PHO_REGS then
+		StopInternal();
+	end:if
+	if PHO_ValidRegConst[R] != 0 then
+		return 1;
+	end:if
+	return 0;
+end
+
+/*****************************************************************************/
+
+word PHO_RegContainsConst(word R; word Data)
+	if R >= PHO_REGS then
+		StopInternal();
+	end:if
+	if PHO_ValidRegConst[R] != 0 & PHO_RegConst[R] = Data then
+		return 1;
+	end:if
+	return 0;
+end
+
+/*****************************************************************************/
+
+word PHO_FindRegWithConst(word Data)
+	word i = 0;
+	while i < PHO_REGS do
+		if PHO_RegContainsConst(i, Data) != 0 then
+			return i;
+		end:if
+		inc i;
+	end:while
+	return PHO_REG_INVALID;
+end
+
+/*****************************************************************************/
+
+void PHO_RegLoadConst(word R; word Data)
+	if R >= PHO_REGS then
+		StopInternal();
+	end:if
+	PHO_ValidRegConst[R] = 1;
+	PHO_RegConst[R] = Data;
+end
+
+/*****************************************************************************/
+
+char@ PHO_EncodeReg(word Reg; word Mask)
+	word r = Reg, m = Mask;
+
+	char @S;
+
+	select
+	case r = 0 & m = 0xFFFF_FFFF: @S = "EAX";
+	case r = 1 & m = 0xFFFF_FFFF: @S = "EBX";
+	case r = 2 & m = 0xFFFF_FFFF: @S = "ECX";
+	case r = 3 & m = 0xFFFF_FFFF: @S = "EDX";
+	case r = 0 & m = 0x0000_FFFF: @S = "AX" ;
+	case r = 1 & m = 0x0000_FFFF: @S = "BX" ;
+	case r = 2 & m = 0x0000_FFFF: @S = "CX" ;
+	case r = 3 & m = 0x0000_FFFF: @S = "DX" ;
+	case r = 0 & m = 0x0000_00FF: @S = "AL" ;
+	case r = 1 & m = 0x0000_00FF: @S = "BL" ;
+	case r = 2 & m = 0x0000_00FF: @S = "CL" ;
+	case r = 3 & m = 0x0000_00FF: @S = "DL" ;
+/*
+	case str_has_prefix(@S, "AH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "BH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "CH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "DH" ) != 0: StopInternal();
+*/
+	default:
+		StopInternal();
+	end:select
+
+	return @S;
+end
+
+/*****************************************************************************/
+
+/*
+	Декодирует обозначание регистра в начале строки @S.
+	Распознаются регистры A, B, C и D в режимах E*X, *X и *L.
+	Если регистр успешно декодирован, в @Reg пишет номер регистра, в @Mask - маску значащих бит
+	и возвращает ненулевое значение.
+	Если регистр распознать не удалось, возвращает 0.
+	Для регистров в режиме *H выдаёт сообщение о внутренней ошибке и завершает работу программы,
+	поскольку с таким режимом работать мы (пока) не умеем.
+*/
+word PHO_DecodeReg(char @S; word @Reg; word @Mask)
+
+	word r, m;
+
+	select
+	case str_has_prefix(@S, "EAX") != 0: r = 0; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "EBX") != 0: r = 1; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "ECX") != 0: r = 2; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "EDX") != 0: r = 3; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "AX" ) != 0: r = 0; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "BX" ) != 0: r = 1; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "CX" ) != 0: r = 2; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "DX" ) != 0: r = 3; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "AL" ) != 0: r = 0; m = 0x0000_00FF;
+	case str_has_prefix(@S, "BL" ) != 0: r = 1; m = 0x0000_00FF;
+	case str_has_prefix(@S, "CL" ) != 0: r = 2; m = 0x0000_00FF;
+	case str_has_prefix(@S, "DL" ) != 0: r = 3; m = 0x0000_00FF;
+	case str_has_prefix(@S, "AH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "BH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "CH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "DH" ) != 0: StopInternal();
+	default:
+		return 0;
+	end:select
+
+	Reg  = r;
+	Mask = m;
+
+	return 1;
+
+end
+
+/*****************************************************************************/
+
+char PHO_Buff[256];
+
+char@ PHO_Optimize(char @Inst)
+
+	if PHOptimization = 0 then
+		return @Inst;
+	end:if
+
+	/* Для пустой строки ничего не делаем. */
+	if strlen(@Inst[str_skip_chars(@Inst, " ~t")]) = 0 then
+		return @Inst;
+	end:if
+
+	/* Для инструкции push ничего не делаем. */
+	if str_has_prefix(@Inst, "push") != 0 then
+		return @Inst;
+	end:if
+
+	/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
+	if str_has_prefix(@Inst, "mov") = 0
+	 & str_has_prefix(@Inst, "add") = 0
+	 & str_has_prefix(@Inst, "sub") = 0
+	 & str_has_prefix(@Inst, "and") = 0
+	 & str_has_prefix(@Inst, "or ") = 0
+	 & str_has_prefix(@Inst, "xor") = 0 then
+		PHO_InvalidateRegs();
+		return @Inst;
+	end:if
+//Dbg(@Inst);
+	char@ s = @Inst[3];                  /* Пропуск инструкции. */
+	@s = @s[str_skip_chars(@s, " ~t")];  /* Пропуск пробелов. */
+
+	/* Если регистр не распознан, ничего не делаем, т.к. значение регистров отслеживаемых не меняется. */
+	word Reg1;
+	word Mask1;
+	if PHO_DecodeReg(@s, @Reg1, @Mask1) = 0 then
+		return @Inst;
+	end:if
+
+	@s = @s[str_find_chars(@s, " ~t,")]; /* Пропуск регистра. */
+	@s = @s[str_skip_chars(@s, " ~t" )]; /* Пропуск пробелов. */
+
+	/* Если нет запятой, неизвестная или неверно сформированная команда. */
+	if s[0] != ',' then
+//Dbg(@s);
+		StopInternal();
+	end:if
+
+	@s = @s[1];                          /* Пропуск запятой. */
+	@s = @s[str_skip_chars(@s, " ~t")];  /* Пропуск пробелов. */
+
+
+	word Const2; /* Второй операнд. */
+
+	/* Декодируем второй регистр... */
+	word Reg2;
+	word Mask2;
+	if PHO_DecodeReg(@s, @Reg2, @Mask2) != 0 then
+
+		/* Обработка случая обнуления через XOR. */
+		if Reg1 = Reg2 & Mask1 = Mask2 & Mask1 = 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") != 0 then
+			if PHO_RegContainsConst(Reg1, 0) != 0 then
+				return "";
+			else
+				PHO_RegLoadConst(Reg1, 0);
+				return @Inst;
+			end:if
+		end:if
+
+		/* Если значение второго регистра нам неизвестно, инвалидируем значение для первого. */
+		if PHO_RegContainsAConst(Reg2) = 0 then
+			PHO_InvalidateReg(Reg1);
+			return @Inst;
+		end:if
+
+		Const2 = PHO_RegConst[Reg2];
+	else
+		/* Если второй операнд не регистр, пробуем его распознать как число. */
+
+		/* FIXME: не использовать здесь is_digit и val, поскольку они предназначены для распознавания символов и чисел входного языка транслятора, а не языка ассемблера. */
+
+		/* Если не число, инвалидируем значение изменямого регистра. */
+		if isdigit(s[0]) = 0 then
+			PHO_InvalidateReg(Reg1);
+			return @Inst;
+		end:if
+
+		Const2 = val(@s);
+	end:if
+
+
+	/* Вариант - загрузка полного значения регистра. */
+	if Mask1 = 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") != 0 then
+
+		word RegC = PHO_FindRegWithConst(Const2);
+
+		select
+		case PHO_RegContainsConst(Reg1, Const2) != 0:
+			return "";
+
+		case PHO_RegContainsConst(Reg1, Const2 + 1) != 0:
+			strcpy(@PHO_Buff, "dec     ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			//strcat(@PHO_Buff, ";-;-;");
+
+		case PHO_RegContainsConst(Reg1, Const2 - 1) != 0:
+			strcpy(@PHO_Buff, "inc     ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			//strcat(@PHO_Buff, ";-;-;");
+
+		case PHO_RegContainsConst(Reg1, -Const2) != 0:
+			strcpy(@PHO_Buff, "neg     ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			//strcat(@PHO_Buff, ";-;-;");
+
+		case (Const2 & 1) = 0 & PHO_RegContainsConst(Reg1, Const2 / 2) != 0:
+			strcpy(@PHO_Buff, "add     ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			strcat(@PHO_Buff, ", ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			//strcat(@PHO_Buff, ";-;-;");
+
+		case Const2 = 0:
+			strcpy(@PHO_Buff, "xor     ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			strcat(@PHO_Buff, ", ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+
+		case RegC != PHO_REG_INVALID:
+			strcpy(@PHO_Buff, "mov     ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
+			strcat(@PHO_Buff, ", ");
+			strcat(@PHO_Buff, @PHO_EncodeReg(RegC, Mask1));
+		default:
+			PHO_RegLoadConst(Reg1, Const2);
+			return @Inst;
+		end:select
+
+		PHO_RegLoadConst(Reg1, Const2);
+		return @PHO_Buff;
+	end:if
+
+	/* Для всех прочих вариантов необходимо знать значение в Reg1. */
+	if PHO_RegContainsAConst(Reg1) = 0 then
+		PHO_InvalidateReg(Reg1);
+		return @Inst;
+	end:if
+
+	/* Вычисляем новое значение в регистре. */
+
+	word Const1 = PHO_RegConst[Reg1];
+	Const2 = Const2 & Mask1;
+	word Result;
+
+	select
+	case str_has_prefix(@Inst, "mov") != 0:
+		Result = Const2;
+	case str_has_prefix(@Inst, "add") != 0:
+		Result = Const1 + Const2;
+	case str_has_prefix(@Inst, "sub") != 0:
+		Result = Const1 - Const2;
+	case str_has_prefix(@Inst, "and") != 0:
+		Result = Const1 & Const2;
+	case str_has_prefix(@Inst, "or ") != 0:
+		Result = Const1 | Const2;
+	case str_has_prefix(@Inst, "xor") != 0:
+		Result = Const1 ^ Const2;
+	default:
+		StopInternal();
+	end:select
+
+	Result = (Result & Mask1) | (Const1 & (Mask1 ^ 0xFFFF_FFFF));
+
+	if Result = Const1 then
+		return "";
+	end:if
+
+	PHO_RegLoadConst(Reg1, Result);
+
+	return @Inst;
+
+end
+
+/*****************************************************************************/

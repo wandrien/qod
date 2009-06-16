@@ -1,0 +1,67 @@
+
+/*****************************************************************************/
+
+struct FILEINFO
+	char@ Name;
+	word  Line;
+	word  Col;
+end
+/*****************************************************************************/
+
+/* Информация о текущем файле. */
+
+FILEINFO CurrentFileInfo;
+
+/*****************************************************************************/
+
+void StopAt(char @Msg; char @FileName; word L; word C)
+
+	puts("~r");
+	if @FileName != NULL then
+		puts(@FileName);
+		puts("(");
+		puts(@str(L));
+		puts(",");
+		puts(@str(C));
+		puts("): ");
+	end:if
+	puts(@Msg);
+	puts("~r~n");
+
+	halt(1);
+end
+
+void Stop(char @Msg)
+	StopAt(
+		@Msg,
+		@CurrentFileInfo.Name,
+		CurrentFileInfo.Line,
+		CurrentFileInfo.Col
+	);
+end
+
+void StopInternal()
+	Stop(@eINTERNAL);
+end
+
+void ShowParseProgress(word nl)
+
+	if show_parse_progress = 0 then
+		return;
+	end:if
+
+	if @CurrentFileInfo.Name = NULL then
+		return;
+	end:if
+
+	char @NL = "";
+	if nl != 0 then
+		@NL = "~r~n";
+	end
+	char Buff[nBUFF];
+	puts(@strcat(@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,
+		"~r"), @CurrentFileInfo.Name), "("), @str(CurrentFileInfo.Line)), ")"), @NL)
+	);
+end
+
+/*****************************************************************************/

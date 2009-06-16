@@ -1,0 +1,63 @@
+$comment DOCUMENTATION ********************************************************
+
+word strlen(char @St);
+Возвращает длину строки, не включая 0-символ.
+
+word strcmp(char @S1, @S2);
+Возвращает 0 если строки равны и не 0 в противном случае.
+
+char @strcpy(char @Dst, @Src);
+Копирует строку @Src в @Dst. Возвращает значение @Dst.
+
+char @strcat(char @Dst, @Src);
+Производит конкатенацию строк @Dst и @Src и помещает результат в @Dst.
+
+***************************************************************** DOCUMENTATION
+
+word strlen(char @St)
+	word i = 0;
+	while St[i] != #0 do
+		inc i;
+	end
+
+	return i;
+end
+
+/*****************************************************************************/
+
+word strcmp(char @S1, @S2)
+
+	word i = 0;
+	while S1[i] = S2[i] do
+		if S1[i] = #0 then
+			return 0;
+		end
+
+		inc i;
+	end
+
+	return 1;
+end
+
+/*****************************************************************************/
+
+char @strcpy(char @Dst, @Src)
+	word i = 0;
+	while Src[i] != #0 do
+		Dst[i] = Src[i];
+		inc i;
+	end
+	Dst[i] = #0;
+
+	return @Dst;
+end
+
+/*****************************************************************************/
+
+char @strcat(char @Dst, @Src)
+	strcpy(@Dst[strlen(@Dst)],@Src);
+	return @Dst;
+end
+
+/*****************************************************************************/
+

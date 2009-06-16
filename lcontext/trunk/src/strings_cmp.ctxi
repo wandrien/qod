@@ -1,0 +1,40 @@
+
+
+/*****************************************************************************/
+
+word str_eq(char @S1; char @S2)
+	return !strcmp(@S1, @S2);
+end
+
+/*****************************************************************************/
+
+word str_ne(char @S1; char @S2)
+	return strcmp(@S1, @S2);
+end
+
+/*****************************************************************************/
+
+word str_has_prefix(char @S; char @Prefix)
+	word i = 0;
+	while Prefix[i] != #0 do
+		if S[i] != Prefix[i] then
+			return 0;
+		end:if
+		inc i;
+	end:while
+	return 1;
+end
+
+/*****************************************************************************/
+
+word str_has_suffix(char @S; char @Suffix)
+	word l1 = strlen(@S);
+	word l2 = strlen(@Suffix);
+	if l1 < l2 then
+		return 0;
+	end
+	return str_eq(@S[l1 - l2], @Suffix);
+end
+
+/*****************************************************************************/
+

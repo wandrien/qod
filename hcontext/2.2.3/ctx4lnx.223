@@ -1,0 +1,58 @@
+include "msg4lnx.223"
+include "sys4lnx.216"
+include "ctx4all.223"
+
+
+begin
+  word   nArg;
+
+  inline $8B, $45, $04;                     // mov     EAX,  [EBP+ 4]
+  inline $89, $45, $FC;                     // mov    [nArg], EAX
+
+  char   @Parm="";
+  if     nArg>=2 then
+    inline $8B, $45, $0C;                   // mov     EAX,  [EBP+12]
+    inline $89, $45, $F8;                   // mov    [Parm], EAX
+  end
+
+  char   @Dest="";
+  if     nArg>=3 then
+    inline $8B, $45, $10;                   // mov     EAX,  [EBP+16]
+    inline $89, $45, $F4;                   // mov    [Dest], EAX
+  end
+
+  char  Name [nBUFF];
+
+  word  K=0;
+  while Parm[K]!=#0 do
+    Name[K]=Parm[K];
+    inc  K;
+
+    if   K>=nBUFF then
+    //puts("▒╚╗Х╙╝╛ ╓╚╗╜╜╝╔ ╗╛О Д═╘╚═~n");
+      puts(@eLONGFILENAME);
+      puts("~r~n");
+      return
+    end
+  end
+
+  Name[K]=#0;
+
+  if K=0 then
+    puts("Транслятор языка Context. Версия 2.2~r~n");
+    puts("(C) Хохлов А.В.  г.Москва  1995-2009~r~n");
+  //puts("Использование: context <файл> [/c|w]~r~n");
+    puts("Использование:   context <src> [tgt]~r~n");
+    puts("Формат  (tgt):  /c  - Win32 console~r~n");
+    puts("                /w  - Win32 gui~r~n");
+    puts("                /l  - Linux~r~n");
+    puts("                /b  - binary~r~n");
+
+    return
+  end
+
+  Target=tELF;
+  Mode  =mNONE;
+
+  Main  (@Name, @Dest);
+end

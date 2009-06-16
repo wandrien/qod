@@ -1,0 +1,60 @@
+
+/*****************************************************************************/
+
+include "frontend_msg.ctxi"
+include "frontend_charid.ctxi"
+include "frontend_chardata.ctxi"
+include "frontend_dict.ctxi"
+include "frontend_node.ctxi"
+include "frontend_input.ctxi"
+include "frontend_lex.ctxi"
+
+/*****************************************************************************/
+
+/*
+	Данная функция копирует строку,
+	проверяя при этом, что строка является корректным идентификатором:
+	не совпадает с ключевым словом и начинается с буквы.
+
+	Если _P = 0, сканирование на совпадение с ключевым словом производится.
+	Если _P = nDict, сканирование не производится.
+	Других осмысленных значений у этого параметра нет.
+*/
+void Copy(char @Dest, @Name; word _P)
+
+	word P = 0;
+
+	while P < pKeyWords & Dict[P].Class = cWORD do
+		if strcmp(@GetDictName(P), @Name) = 0 then
+			Stop(@eEXPECTED);
+		end
+
+		inc P;
+	end
+
+	if isalpha(Name) = 0 then
+		Stop(@eEXPECTED);
+	end
+
+	strcpy(@Dest, @Name);
+end
+
+/*****************************************************************************/
+
+void function __Statements(word @P; char @Buff; char @End1; char @End2; char @End3)
+__Statements @_Statements;
+
+/*****************************************************************************/
+
+word function __Expr(word Prty; word @pType, @nPtr; char @Buff)
+__Expr @_Expr;
+
+/*****************************************************************************/
+
+include "frontend_syn_operators.ctxi"
+include "frontend_syn_expr.ctxi"
+include "frontend_syn_statements.ctxi"
+include "frontend_syn_up.ctxi"
+
+/*****************************************************************************/
+

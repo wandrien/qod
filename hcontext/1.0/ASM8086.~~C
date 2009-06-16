@@ -1,0 +1,1509 @@
+define @emERROR      "Ошибка"
+define @emNOMEMORY   "Недостаточно памяти"
+define @emNUMBER     "Тpебуется цифpа"
+define @emLONG       "Константа слишком велика"
+define @emSIZE       "Слишком длинный идентификатоp"
+define @emDOUBLE     "Повтоp имени"
+define @emCOMMA      "Пpопущена запятая"
+define @emCOLON      "Пpопущено двоеточие"
+define @emSEGMENT    "Не указан сегментный pегистp"
+define @emBRACKET    "Пpопущена скобка"
+define @emINDEX      "Не указан индексный pегистp"
+define @emUNDEFINED  "Метка не опpеделена: "
+
+define  bfSIZE     2048
+define  ltSIZE     2560
+define  jtSIZE     2560
+define  ctSIZE     1024
+define  mtSIZE      128
+define  idSIZE        7
+
+define  cmBYTE        0
+define  cmMOVE        1
+define  cmMOVS        2
+define  cmLOAD        3
+define  cmPUSH        4
+define  cmINCR        5
+define  cmMULT        6
+define  cmJUMP        7
+define  cmCOND        8
+define  cmRETN        9
+define  cmSIGN       10
+define  cmINTR       11
+define  cmSHFT       12
+define  cmLD87       13
+define  cmOP87       14
+define  cmCHAR       15
+define  cmWORD       16
+define  cmNULL       17
+
+define  opVAL         0
+define  opREG         1
+define  opSEG         2
+define  opMEM         3
+
+define  EOF         #26
+
+struct OpInfo
+  word ID;     // byte
+  word Reg;    // byte
+  word Ptr;    // byte
+  word Ofs;
+end
+
+struct TMemo
+  char @Name;
+  word  ID;    // byte
+  word  Code1; // byte
+  word  Code2; // byte
+end
+
+struct TLabel
+  char Name [idSIZE];
+  word IP;
+end
+
+struct TJump
+  char Name [idSIZE];
+  char Near;   // byte
+  word IP;
+end
+
+struct TConst
+  char Name [idSIZE];
+  word Ofs;
+  word IP;
+end
+
+TLabel LTabl [ltSIZE];
+word   nLabel;
+
+TJump  JTabl [jtSIZE];
+word   nJump;
+
+TConst CTabl [ctSIZE];
+word   nConst;
+
+TMemo  MTabl [mtSIZE];
+word   nMemo;
+
+char   Buff  [bfSIZE];
+word   pChar;
+word   nChar;
+
+word   Ready;
+word   Line;
+
+byte   Temp  [bfSIZE];
+word   pTemp;
+
+word   IP;
+
+char   Name  [13];
+word   F1;
+word   F2;
+
+word CharToByte(char Ch)
+  void  @P=@Ch;
+  word  @W=@P;
+  return W&255;
+end
+
+void @Ptr(word Seg, Ofs)
+  void   @P1=@Ofs;
+  void  @@P2=@P1;
+  return @P2;
+end
+
+word isalpha(char Ch)
+  if 'a'<=Ch & Ch<='z' then
+    return 0;
+  end
+
+  if 'A'<=Ch & Ch<='Z' then
+    return 0;
+  end
+
+  if Ch='@' then
+    return 0;
+  end
+
+  if Ch='_' then
+    return 0;
+  end
+
+  return   1;
+end
+
+word isdigit(char Ch)
+  if '0'<=Ch & Ch<='9' then
+    return 0;
+  end
+
+  return   1;
+end
+
+word strlen(char @Buff)
+  word P=0;
+  while Buff[P]!=#0 do
+    inc P;
+  end
+  return P;
+end
+
+word strcmp(char @St1, @St2)
+  word P=0;
+  while TRUE do
+    if St1[P]!=St2[P] then
+      return 1;
+    end
+    if St1[P]=#0 then
+      return 0;
+    end
+    inc P;
+  end
+end
+
+char @strcpy(char @Dst, @Src)
+  word P=0;
+  while Src[P]!=#0 do
+    Dst[P]=Src[P];
+    inc P;
+  end
+  Dst[P]=#0;
+  return @Dst;
+end
+
+char @strcat(char @Dst, @Src)
+  word P=strlen(@Dst);
+  word Q=0;
+  while Src[Q]!=#0 do
+    Dst[P]=Src[Q];
+    inc P;
+    inc Q;
+  end
+  Dst[P]=#0;
+  return @Dst;
+end
+
+word GetPSP()
+  asm mov     AH,62H
+  asm int     21H
+  asm mov     AX,BX
+end
+
+word create(char @Name)
+  asm push    DS
+  asm mov     AH,3CH
+  asm mov     CX,00H
+  asm mov     DX,SS:[BP+6]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+4]
+  asm int     21H
+  asm pop     DS
+end
+
+word open(char @Name)
+  asm push    DS
+  asm mov     AH,3DH
+  asm mov     AL,00H
+  asm mov     DX,SS:[BP+6]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+4]
+  asm int     21H
+  asm db      73H, 03H
+  asm mov     AX,0FFFFH
+  asm pop     DS
+end
+
+word read(word F; void @Buff; word N)
+  asm push    DS
+  asm mov     AH,3FH
+  asm mov     BX,SS:[BP+10]
+  asm mov     CX,SS:[BP+4]
+  asm mov     DX,SS:[BP+8]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+6]
+  asm int     21H
+  asm pop     DS
+end
+
+word write(word F; void @Buff; word N)
+  asm push    DS
+  asm mov     AH,40H
+  asm mov     BX,SS:[BP+10]
+  asm mov     CX,SS:[BP+4]
+  asm mov     DX,SS:[BP+8]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+6]
+  asm int     21H
+  asm pop     DS
+end
+
+word seek(word F; word P)
+  asm push    DS
+  asm mov     AX,4200H
+  asm mov     BX,SS:[BP+6]
+  asm mov     CX,0
+  asm mov     DX,SS:[BP+4]
+  asm int     21H
+  asm pop     DS
+end
+
+void close(word F)
+  asm mov     AH,3EH
+  asm mov     BX,SS:[BP+4]
+  asm int     21H
+end
+
+void putc(char Ch)
+  asm mov     AH,2
+  asm mov     DL,SS:[BP+4]
+  asm int     21H
+end
+
+void puts(char @St)
+  word P=0;
+  while St[P]!=#0 do
+    putc(St[P]);
+    inc P;
+  end
+end
+
+void outs(char @St)
+  puts(@St);
+  putc(#13);
+  putc(#10);
+end
+
+void Push(char @name; word id; word code1, code2) // byte id; byte code1, code2
+ @MTabl[nMemo].Name =@name;
+  MTabl[nMemo].ID   = id;
+  MTabl[nMemo].Code1= code1;
+  MTabl[nMemo].Code2= code2;
+  inc   nMemo;
+end
+
+void Info()
+  char Buff[256];
+  word P=0;
+  while Name[P]!=#0 do
+    Buff[P]=Name[P];
+    inc  P;
+  end
+
+  Buff[P]='(';
+  inc  P;
+
+  char @D =  "0123456789";
+  char  Temp [8];
+  word  N=Line;
+  word  K=0;
+
+  while K=0 | N>0 do
+    Temp[K]=D[N%10];
+    inc  K;
+
+    N=N/10;
+  end
+
+  while K>0 do
+    dec  K;
+    Buff[P]=Temp[K];
+    inc  P;
+  end
+
+  Buff[P]=')';
+  inc  P;
+
+  Buff[P]=#0;
+
+  putc(#13);
+  puts(@Buff);
+end
+
+void Stop(char @EM)
+  Info ();
+
+  if strlen(@EM)>0 then
+    puts(": ");
+    puts(@EM);
+  end
+
+  close(F2);
+  close(F1);
+
+  asm mov     AX,4C00H
+  asm int     21H
+end
+
+word Val(char @Buff)
+  char @D = "0123456789ABCDEF";
+  word  L;
+  word  H;
+  word  E;
+  word  P;
+
+  E=10;
+  P= 0;
+  while Buff[P]!=#0 do
+    if E!=10 then
+      Stop(@emNUMBER);
+    end
+    if Buff[P]='H' then
+      E=16;
+    end
+    inc P;
+  end
+
+  L=0;
+  H=0;
+
+  P=0;
+  while Buff[P]!=#0 & Buff[P]!='H' do
+    word  S=0;
+    while D[S]!=#0 & D[S]!=Buff[P] do
+      inc S;
+    end
+
+    if S>=E then
+      Stop(@emNUMBER);
+    end
+
+    L=E*L+S;
+    S=L/256;
+    L=L%256;
+    H=E*H+S;
+
+    if H>255 then
+      Stop(@emLONG);
+    end
+
+    inc P;
+  end
+
+  return 256*H+L;
+end
+
+void Code(byte C)
+  if pTemp>=bfSIZE then
+    write(F2,@Temp,bfSIZE);
+    pTemp=0;
+  end
+
+  Temp[pTemp]=C;
+  inc  pTemp;
+
+  inc  IP;
+end
+
+char Read()
+  if pChar>=nChar then
+    nChar=read(F1,@Buff,bfSIZE);
+    if nChar<1 then
+      return EOF;
+    end
+    pChar=0;
+  end
+  return Buff[pChar];
+end
+
+void Next()
+  inc pChar;
+end
+
+void Keep()
+  Ready=1;
+end
+
+char @Scan(char @Buff)
+  if Ready!=0 then
+    Ready=0;
+    return @Buff;
+  end
+
+  while Read()=#09 | Read()=#13 | Read()=#32 do
+    Next();
+  end
+
+  if Read()=';' then
+    while Read()!=#10 & Read()!=EOF do
+      Next();
+    end
+  end
+
+  if Read()=EOF then
+    Buff[0]=#0;
+    return  @Buff;
+  end
+
+  if Read()=#10 then
+    inc Line;
+    if  Line%100=0 then
+      Info();
+    end
+
+    Next();
+    Buff[0]=';';
+    Buff[1]=#0;
+
+    return  @Buff;
+  end
+
+  word P=0;
+  while isalpha(Read())=0 | isdigit(Read())=0 do
+    Buff[P]=Read();
+    inc  P;
+    if   P>=idSIZE then
+      Stop(@emSIZE);
+    end
+
+    Next();
+  end
+
+  if P>0 then
+    Buff[P]=#0;
+    return  @Buff;
+  end
+
+  Buff[0]=Read(); Next();
+  Buff[1]=#0;
+
+  return  @Buff;
+end
+
+word FindLabel(char @Name)
+  word L=0;
+  word R=nLabel;
+  while L<R do
+    word S=(L+R)/2;
+    word P=0;
+    while TRUE do
+      char C=LTabl[S].Name[P];
+      char D=Name [P];
+
+      if C<D then
+        L=S+1;
+        exit
+      end
+
+      if C>D then
+        R=S;
+        exit
+      end
+
+      if C=#0 then
+        return S;
+      end
+
+      inc P;
+    end
+  end
+
+  return nLabel;
+end
+
+void Data(char @Buff; OpInfo @Op)
+  Op.ID =opREG;
+  Op.Ptr=0;
+  Op.Ofs=0;
+  Scan(@Buff);
+  select
+    case strcmp(@Buff,"AL")=0:
+      Op.Reg=0;
+    case strcmp(@Buff,"CL")=0:
+      Op.Reg=1;
+    case strcmp(@Buff,"DL")=0:
+      Op.Reg=2;
+    case strcmp(@Buff,"BL")=0:
+      Op.Reg=3;
+    case strcmp(@Buff,"AH")=0:
+      Op.Reg=4;
+    case strcmp(@Buff,"CH")=0:
+      Op.Reg=5;
+    case strcmp(@Buff,"DH")=0:
+      Op.Reg=6;
+    case strcmp(@Buff,"BH")=0:
+      Op.Reg=7;
+    case strcmp(@Buff,"AX")=0:
+      Op.Reg=0;
+      Op.Ptr=1;
+    case strcmp(@Buff,"CX")=0:
+      Op.Reg=1;
+      Op.Ptr=1;
+    case strcmp(@Buff,"DX")=0:
+      Op.Reg=2;
+      Op.Ptr=1;
+    case strcmp(@Buff,"BX")=0:
+      Op.Reg=3;
+      Op.Ptr=1;
+    case strcmp(@Buff,"SP")=0:
+      Op.Reg=4;
+      Op.Ptr=1;
+    case strcmp(@Buff,"BP")=0:
+      Op.Reg=5;
+      Op.Ptr=1;
+    case strcmp(@Buff,"SI")=0:
+      Op.Reg=6;
+      Op.Ptr=1;
+    case strcmp(@Buff,"DI")=0:
+      Op.Reg=7;
+      Op.Ptr=1;
+    case strcmp(@Buff,"ES")=0:
+      Op.ID =opSEG;
+      Op.Reg=0;
+    case strcmp(@Buff,"CS")=0:
+      Op.ID =opSEG;
+      Op.Reg=1;
+    case strcmp(@Buff,"SS")=0:
+      Op.ID =opSEG;
+      Op.Reg=2;
+    case strcmp(@Buff,"DS")=0:
+      Op.ID =opSEG;
+      Op.Reg=3;
+    case strcmp(@Buff,"offset")=0:
+      if nConst>=ctSIZE then
+        Stop(@emNOMEMORY);
+      end
+
+      CTabl[nConst].IP =IP+1; strcpy(@CTabl[nConst].Name,@Scan(@Buff));
+
+      word N=256;
+      if strcmp(@Scan(@Buff),"+")=0 then
+        N=N+Val(@Scan(@Buff));
+      else
+        Keep();
+      end
+
+      CTabl[nConst].Ofs=N;
+      inc   nConst;
+
+      Op.ID=opVAL;
+      return
+
+    default:
+      Op.ID =opVAL;
+      Op.Ofs=Val(@Buff);
+      return
+  end
+
+  if strcmp(@Scan(@Buff),":")!=0 then
+    Keep();
+    return
+  end
+
+  if strcmp(@Scan(@Buff),"[")!=0 then
+    Stop(@emBRACKET);
+  end
+
+  if Op.ID!=opSEG then
+    Stop(@emSEGMENT);
+  end
+
+  Op.ID=opMEM;
+
+  Scan(@Buff);
+  select
+    case strcmp(@Buff,"SI")=0:
+      Op.Ptr=4;
+    case strcmp(@Buff,"DI")=0:
+      Op.Ptr=5;
+    case strcmp(@Buff,"BP")=0:
+      Op.Ptr=6;
+    case strcmp(@Buff,"BX")=0:
+      Op.Ptr=7;
+    default:
+      Op.Ptr=8;
+      Op.Ofs=Val(@Buff);
+      if strcmp(@Scan(@Buff),"]")!=0 then
+        Stop(@emBRACKET);
+      end
+      return
+  end
+
+  if strcmp(@Scan(@Buff),"]")=0 then
+    if strcmp(@Scan(@Buff),"[")!=0 then
+      Keep();
+      return
+    end
+
+    Scan(@Buff);
+
+    select
+      case strcmp(@Buff,"SI")=0:
+        select
+          case Op.Ptr=6:
+            Op.Ptr=2;
+          case Op.Ptr=7:
+            Op.Ptr=0;
+          default:
+            Stop(@emINDEX);
+        end
+      case strcmp(@Buff,"DI")=0:
+        select
+          case Op.Ptr=6:
+            Op.Ptr=3;
+          case Op.Ptr=7:
+            Op.Ptr=1;
+          default:
+            Stop(@emINDEX);
+        end
+      default:
+        Stop(@emINDEX);
+    end
+
+    Scan(@Buff);
+  end
+
+  select
+    case strcmp(@Buff,"+")=0:
+      Op.Ofs=Val(@Scan(@Buff));
+      Scan(@Buff);
+    case strcmp(@Buff,"-")=0:
+      Op.Ofs=($FFFF-Val(@Scan(@Buff)))+1;
+      Scan(@Buff);
+  end
+
+  if strcmp(@Buff,"]")!=0 then
+    Stop(@emBRACKET);
+  end
+end
+
+begin
+  word @Size=@Ptr(GetPSP(),128); // byte
+  char @Parm=@Ptr(GetPSP(),129);
+  char  Buff [256];
+  word  Flag;                    // byte
+  word  I,K;
+  word  N,P;
+
+  I=0;
+  while I<Size%256 & Parm[I] =' ' do
+    inc I;
+  end
+
+  K=0;
+  while I<Size%256 & Parm[I]!=' ' do
+    Buff[K]=Parm[I];
+    inc  K;
+    inc  I;
+  end
+  Buff[K]=#00;
+
+  if K=0 then
+    outs("Ассемблеp для 8086/8088.  Веpсия 1.1");
+    outs("(C) Хохлов А.В.  г. Москва 1997-2002");
+    outs("Использование:  asm8086  <имя файла>");
+    return
+  end
+
+  Flag=0;
+  P   =0;
+  while Buff[P]!=#0 do
+    if Buff[P]='.' then
+      Flag=1;
+    end
+    if Buff[P]=#92 then
+      Flag=0;
+    end
+    inc P;
+  end
+
+  if Flag=0 then
+    strcat(@Buff,".ASM");
+  end
+
+  N=0;
+  P=0;
+  while Buff[P]!=#0 do
+    if Buff[P]=#92 then
+      N=P+1;
+    end
+    inc P;
+  end
+
+  strcpy(@Name,@Buff[N]);
+
+  F1=open(@Buff);
+  if F1=$FFFF then
+    puts(@Name);
+    puts("(0): Невозможно откpыть файл");
+    return
+  end
+
+  N=0;
+  P=0;
+  while Buff[P]!=#0 do
+    if Buff[P]='.' then
+      N=P;
+    end
+    inc P;
+  end
+
+  strcpy(@Buff[N],".COM");
+
+  F2=create(@Buff);
+
+  Line  =1;
+
+  nChar =0;
+  pChar =0;
+  pTemp =0;
+
+  Ready =0;
+
+  nLabel=0;
+  nJump =0;
+  nConst=0;
+  nMemo =0;
+
+  IP    =0;
+
+  Push("mov",   cmMOVE,$88,$C6);
+  Push("add",   cmMOVE,$00,$80);
+  Push("adc",   cmMOVE,$10,$80);
+  Push("sub",   cmMOVE,$28,$80);
+  Push("sbb",   cmMOVE,$18,$80);
+  Push("cmp",   cmMOVE,$38,$80);
+  Push("or",    cmMOVE,$08,$80);
+  Push("and",   cmMOVE,$20,$80);
+  Push("xor",   cmMOVE,$30,$80);
+  Push("rep",   cmMOVS,$F3,$00);
+  Push("repe",  cmMOVS,$F3,$00);
+  Push("repne", cmMOVS,$F2,$00);
+  Push("lds",   cmLOAD,$C5,$00);
+  Push("les",   cmLOAD,$C4,$00);
+  Push("push",  cmPUSH,$50,$06);
+  Push("pop",   cmPUSH,$58,$07);
+  Push("inc",   cmINCR,$40,$00);
+  Push("dec",   cmINCR,$48,$08);
+  Push("mul",   cmMULT,$F6,$E0);
+  Push("div",   cmMULT,$F6,$F0);
+  Push("imul",  cmMULT,$F6,$E8);
+  Push("idiv",  cmMULT,$F6,$F8);
+  Push("not",   cmSIGN,$F6,$D0);
+  Push("neg",   cmSIGN,$F6,$D8);
+  Push("shl",   cmSHFT,$00,$E0);
+  Push("shr",   cmSHFT,$00,$E8);
+  Push("jmp",   cmJUMP,$E9,$00);
+  Push("call",  cmJUMP,$E8,$00);
+  Push("jo",    cmCOND,$70,$00);
+  Push("jno",   cmCOND,$71,$00);
+  Push("jb",    cmCOND,$72,$00);
+  Push("jae",   cmCOND,$73,$00);
+  Push("jz",    cmCOND,$74,$00);
+  Push("je",    cmCOND,$74,$00);
+  Push("jnz",   cmCOND,$75,$00);
+  Push("jne",   cmCOND,$75,$00);
+  Push("jbe",   cmCOND,$76,$00);
+  Push("ja",    cmCOND,$77,$00);
+  Push("js",    cmCOND,$78,$00);
+  Push("jns",   cmCOND,$79,$00);
+  Push("jp",    cmCOND,$7A,$00);
+  Push("jnp",   cmCOND,$7B,$00);
+  Push("jl",    cmCOND,$7C,$00);
+  Push("jnl",   cmCOND,$7D,$00);
+  Push("jge",   cmCOND,$7D,$00);
+  Push("jng",   cmCOND,$7E,$00);
+  Push("jle",   cmCOND,$7E,$00);
+  Push("jg",    cmCOND,$7F,$00);
+  Push("retn",  cmRETN,$00,$00);
+  Push("int",   cmINTR,$00,$00);
+  Push("iret",  cmBYTE,$CF,$00);
+  Push("cbw",   cmBYTE,$98,$00);
+  Push("cwd",   cmBYTE,$99,$00);
+  Push("cli",   cmBYTE,$FA,$00);
+  Push("sti",   cmBYTE,$FB,$00);
+  Push("cld",   cmBYTE,$FC,$00);
+  Push("std",   cmBYTE,$FD,$00);
+  Push("lahf",  cmBYTE,$9F,$00);
+  Push("sahf",  cmBYTE,$9E,$00);
+  Push("fld",   cmLD87,$D9,$00);
+  Push("fild",  cmLD87,$DB,$00);
+  Push("fstp",  cmLD87,$D9,$18);
+  Push("fistp", cmLD87,$DB,$18);
+  Push("fstsw", cmLD87,$DD,$38);
+  Push("finit", cmOP87,$DB,$E3);
+  Push("fldz",  cmOP87,$D9,$EE);
+  Push("faddp", cmOP87,$DE,$C1);
+  Push("fsubp", cmOP87,$DE,$E9);
+  Push("fmulp", cmOP87,$DE,$C9);
+  Push("fdivp", cmOP87,$DE,$F9);
+  Push("fsubrp",cmOP87,$DE,$E1);
+  Push("fdivrp",cmOP87,$DE,$F1);
+  Push("fcompp",cmOP87,$DE,$D9);
+  Push("fwait", cmBYTE,$9B,$00);
+  Push("db",    cmCHAR,$00,$00);
+  Push("dw",    cmWORD,$00,$00);
+  Push("nop",   cmNULL,$90,$00);
+
+  while Scan(@Buff)!=#0 do // Scan(@Buff)[0]!=#0
+    if strcmp(@Buff,";")=0 then
+      loop
+    end
+
+    I=0;
+    while TRUE do
+      if I>=nMemo then
+        word L=0;
+        word R=nLabel;
+        while L<R do
+          word S=(L+R)/2;
+          P=0;
+          while TRUE do
+            char C=LTabl[S].Name[P];
+            char D=Buff [P];
+
+            if C<D then
+              L=S+1;
+              exit
+            end
+
+            if C>D then
+              R=S;
+              exit
+            end
+
+            if C=#0 then
+              Stop(@emDOUBLE);
+            end
+
+            inc P;
+          end
+        end
+
+        if nLabel>=ltSIZE then
+          Stop(@emNOMEMORY);
+        end
+
+        P=nLabel;
+        while L<P do
+          LTabl[P].IP=LTabl[P-1].IP; strcpy(@LTabl[P].Name,@LTabl[P-1].Name);
+          dec   P;
+        end
+
+        LTabl[P].IP=IP; strcpy(@LTabl[P].Name,@Buff);
+        inc   nLabel;
+
+        Scan(@Buff);
+        if strcmp(@Buff,"db")=0 then
+          Keep();
+          exit
+        end
+
+        if strcmp(@Buff,"dw")=0 then
+          Keep();
+          exit
+        end
+
+        if strcmp(@Buff,":")=0 then
+          exit
+        end
+
+        Stop(@emCOLON);
+      end
+
+      if strcmp(@Buff,@MTabl[I].Name)=0 then
+        word ID=MTabl[I].ID; // byte
+        select
+          case ID=cmBYTE:
+            Code(MTabl[I].Code1);
+
+          case ID=cmMOVE:
+            OpInfo Op1,Op2;
+
+            Data(@Buff,@Op1);
+
+            if strcmp(@Scan(@Buff),",")!=0 then
+              Stop(@emCOMMA);
+            end
+
+            Data(@Buff,@Op2);
+
+            select
+              case Op1.ID=opVAL:
+                Stop(@emERROR);
+
+              case Op2.ID=opVAL:
+                if Op1.ID!=opREG then
+                  Stop(@emERROR);
+                end
+
+                if Op1.ID=opREG & strcmp(@MTabl[I].Name,"mov")=0 then
+                  word C=$B0; // byte
+
+                  if Op1.Ptr=1 then
+                    C=C|$08;
+                  end
+
+                  Code(C|Op1.Reg);
+                else
+                  word C=MTabl[I].Code2; // byte
+
+                  if Op1.Ptr=1 then
+                    C=C|$01;
+                  end
+
+                  Code(C);
+                  Code($C0|MTabl[I].Code1|Op1.Reg);
+                end
+
+                Code(Op2.Ofs%256);
+                if Op1.Ptr!=0 then
+                  Code(Op2.Ofs/256);
+                else
+                  if Op2.Ofs>255 then
+                    Stop(@emLONG);
+                  end
+                end
+
+              case Op1.ID=opSEG:
+                if strcmp(@MTabl[I].Name,"mov")!=0 then
+                  Stop(@emERROR);
+                end
+
+                select
+                  case Op2.ID=opREG:
+                    if Op2.Ptr!=1 then
+                      Stop(@emERROR);
+                    end
+
+                    Code($8E);
+                    Code($C0|8*Op1.Reg|Op2.Reg);
+
+                  default:
+                    Stop(@emERROR);
+                end
+
+              case Op2.ID=opSEG:
+                if strcmp(@MTabl[I].Name,"mov")!=0 then
+                  Stop(@emERROR);
+                end
+
+                if Op1.Ptr!=1 then
+                  Stop(@emERROR);
+                end
+
+                Code($8C);
+                Code($C0|8*Op2.Reg|Op1.Reg);
+
+              default:
+                word    C= MTabl[I].Code1; // byte
+                OpInfo @R=@Op2;
+                OpInfo @M=@Op1;
+
+                if Op1.ID=opREG then
+                  C=C|$02;
+                 @R=@Op1;
+                 @M=@Op2;
+                end
+
+                if R.Ptr=1 then
+                  C=C|$01;
+                end
+
+                if R.ID!=opREG then
+                  Stop(@emERROR);
+                end
+
+                select
+                  case M.ID=opREG:
+                    if Op1.Ptr!=Op2.Ptr then
+                      Stop(@emERROR);
+                    end
+
+                    Code(C);
+                    Code($C0|8*R.Reg|M.Reg);
+
+                  case M.ID=opMEM:
+                    select
+                      case M.Ptr=$02 | M.Ptr=$03 | M.Ptr=$06:
+                        if M.Reg!=$02 then
+                          Code($26|8*M.Reg);
+                        end
+                      default:
+                        if M.Reg!=$03 then
+                          Code($26|8*M.Reg);
+                        end
+                    end
+
+                    Code(C);
+
+                    if M.Ofs>0 then
+                      if M.Ptr=8 then
+                        Code(8*R.Reg|$06);
+                      else
+                        Code($80|8*R.Reg|M.Ptr);
+                      end
+                      Code(M.Ofs%256);
+                      Code(M.Ofs/256);
+                    else
+                      select
+                        case M.Ptr=6:
+                          Stop(@emERROR);
+
+                        case M.Ptr=8:
+                          Code(8*R.Reg|$06);
+                          Code($00);
+                          Code($00);
+
+                        default:
+                          Code(8*R.Reg|M.Ptr);
+                      end
+                    end
+
+                  default:
+                    Stop(@emERROR);
+                end
+            end
+
+          case ID=cmMOVS:
+            Scan(@Buff);
+            Code(MTabl[I].Code1);
+            select
+              case strcmp(@Buff,"movsb")=0:
+                Code($A4);
+
+              case strcmp(@Buff,"movsw")=0:
+                Code($A5);
+
+              case strcmp(@Buff,"cmpsb")=0:
+                Code($A6);
+
+              case strcmp(@Buff,"cmpsw")=0:
+                Code($A7);
+
+              case strcmp(@Buff,"scasb")=0:
+                Code($AE);
+
+              case strcmp(@Buff,"scasw")=0:
+                Code($AF);
+
+              default:
+                Stop(@emERROR);
+            end
+
+          case ID=cmLOAD:
+            OpInfo Op1,Op2;
+
+            Data(@Buff,@Op1);
+
+            if strcmp(@Scan(@Buff),",")!=0 then
+              Stop(@emCOMMA);
+            end
+
+            if Op1.Ptr!=1 then
+              Stop(@emERROR);
+            end
+
+            Data(@Buff,@Op2);
+
+            if Op2.ID!=opMEM then
+              Stop(@emERROR);
+            end
+
+            select
+              case Op2.Ptr=$02 | Op2.Ptr=$03 | Op2.Ptr=$06:
+                if Op2.Reg!=$02 then
+                  Code($26|8*Op2.Reg);
+                end
+              default:
+                if Op2.Reg!=$03 then
+                  Code($26|8*Op2.Reg);
+                end
+            end
+
+            Code(MTabl[I].Code1);
+            if Op2.Ptr=8 then
+              Code(8*Op1.Reg|6);
+            else
+              Code($80|8*Op1.Reg|Op2.Ptr);
+            end
+            Code(Op2.Ofs%256);
+            Code(Op2.Ofs/256);
+
+          case ID=cmPUSH:
+            OpInfo Op;
+
+            Data(@Buff,@Op);
+
+            select
+              case Op.ID=opREG:
+                if Op.Ptr=0 then
+                  Stop(@emERROR);
+                end
+                Code(MTabl[I].Code1|Op.Reg);
+              case Op.ID=opSEG:
+                Code(MTabl[I].Code2|8*Op.Reg);
+              default:
+                Stop(@emERROR);
+            end
+
+          case ID=cmINCR:
+            Scan(@Buff);
+
+            word W;
+            select
+              case strcmp(@Buff,"byte")=0:
+                W=0;
+              case strcmp(@Buff,"word")=0:
+                W=1;
+              default:
+                W=2;
+                Keep();
+            end
+
+            if W<2 then
+              if strcmp(@Scan(@Buff),"ptr")!=0 then
+                Stop(@emERROR);
+              end
+            end
+
+            OpInfo Op;
+
+            Data(@Buff,@Op);
+
+            if W<2 then
+              if Op.ID!=opMEM then
+                Stop(@emERROR);
+              end
+
+              select
+                case Op.Ptr=$02 | Op.Ptr=$03 | Op.Ptr=$06:
+                  if Op.Reg!=$02 then
+                    Code($26|8*Op.Reg);
+                  end
+                default:
+                  if Op.Reg!=$03 then
+                    Code($26|8*Op.Reg);
+                  end
+              end
+
+              Code($FE|W);
+              if Op.Ptr!=8 then
+                if Op.Ofs>0 then
+                  Code($80|MTabl[I].Code2|Op.Ptr);
+                  Code(Op.Ofs%256);
+                  Code(Op.Ofs/256);
+                else
+                  Code(MTabl[I].Code2|Op.Ptr);
+                end
+              else
+                Code(MTabl[I].Code2|$06);
+                Code(Op.Ofs%256);
+                Code(Op.Ofs/256);
+              end
+            else
+              if Op.ID!=opREG then
+                Stop(@emERROR);
+              end
+
+              if Op.Ptr=0 then
+                Code($FE);
+                Code($C0|MTabl[I].Code2|Op.Reg);
+              else
+                Code(MTabl[I].Code1|Op.Reg);
+              end
+            end
+
+          case ID=cmMULT:
+            OpInfo Op;
+
+            Data(@Buff,@Op);
+
+            if Op.ID!=opREG then
+              Stop(@emERROR);
+            end
+
+            Code(MTabl[I].Code1|Op.Ptr);
+            Code(MTabl[I].Code2|Op.Reg);
+
+          case ID=cmSIGN:
+            OpInfo Op;
+
+            Data(@Buff,@Op);
+
+            if Op.ID!=opREG then
+              Stop(@emERROR);
+            end
+
+            Code(MTabl[I].Code1|Op.Ptr);
+            Code(MTabl[I].Code2|Op.Reg);
+
+          case ID=cmSHFT:
+            OpInfo Op1,Op2;
+
+            Data(@Buff,@Op1);
+
+            if strcmp(@Scan(@Buff),",")!=0 then
+              Stop(@emCOMMA);
+            end
+
+            if Op1.ID!=opREG then
+              Stop(@emERROR);
+            end
+
+            Data(@Buff,@Op2);
+
+            if Op2.ID!=opVAL | Op2.Ofs!=1 then
+              Stop(@emERROR);
+            end
+
+            Code($D0|Op1.Ptr);
+            Code(MTabl[I].Code2|Op1.Reg);
+
+          case ID=cmJUMP:
+            word D;
+
+            P=FindLabel(@Scan(@Buff));
+            D=0;
+            if P<nLabel then
+              D=LTabl[P].IP-(IP+3);
+            else
+              if nJump>=jtSIZE then
+                Stop(@emNOMEMORY);
+              end
+
+              JTabl[nJump].IP  = IP+1; strcpy(@JTabl[nJump].Name,@Buff);
+              JTabl[nJump].Near='N'; // 1
+              inc   nJump;
+            end
+
+            Code(MTabl[I].Code1);
+            Code(D%256);
+            Code(D/256);
+
+          case ID=cmCOND:
+            if nJump>=jtSIZE then
+              Stop(@emNOMEMORY);
+            end
+
+            JTabl[nJump].IP  = IP+1; strcpy(@JTabl[nJump].Name,@Scan(@Buff));
+            JTabl[nJump].Near='S'; // 0
+            inc   nJump;
+
+            Code(MTabl[I].Code1);
+            Code($00);
+
+          case ID=cmINTR:
+            Code($CD);
+            Code(Val(@Scan(@Buff)));
+
+          case ID=cmRETN:
+            if strcmp(@Scan(@Buff),";")!=0 then
+              N=Val(@Buff);
+              Code($C2);
+              Code(N%256);
+              Code(N/256);
+            else
+              Code($C3);
+              Keep();
+            end
+
+          case ID=cmLD87:
+            Scan(@Buff);
+
+            word W=0;
+            select
+              case strcmp(@Buff,"word")=0:
+                W=1;
+              case strcmp(@Buff,"dword")=0:
+                W=2;
+              case strcmp(@Buff,"qword")=0:
+                W=3;
+            end
+
+            if W=0 then
+              select
+                case strcmp(@MTabl[I].Name,"fild") =0:
+                  W=1;
+                case strcmp(@MTabl[I].Name,"fistp")=0:
+                  W=1;
+                case strcmp(@MTabl[I].Name,"fld")  =0:
+                  W=3;
+                case strcmp(@MTabl[I].Name,"fstp") =0:
+                  W=3;
+                case strcmp(@MTabl[I].Name,"fstsw")=0:
+                  W=2;
+              end
+
+              Keep();
+            else
+              select
+                case strcmp(@MTabl[I].Name,"fstsw")=0:
+                  Stop(@emERROR);
+              end
+
+              if strcmp(@Scan(@Buff),"ptr")!=0 then
+                Stop(@emERROR);
+              end
+            end
+
+            if W<2 then
+              select
+                case strcmp(@MTabl[I].Name,"fld")  =0:
+                  Stop(@emERROR);
+                case strcmp(@MTabl[I].Name,"fstp") =0:
+                  Stop(@emERROR);
+              end
+            end
+
+            OpInfo Op2;
+
+            Data(@Buff,@Op2);
+
+            if Op2.ID!=opMEM then
+              Stop(@emERROR);
+            end
+
+            Code($9B);
+
+            select
+              case Op2.Ptr=$02 | Op2.Ptr=$03 | Op2.Ptr=$06:
+                if Op2.Reg!=$02 then
+                  Code($26|8*Op2.Reg);
+                end
+              default:
+                if Op2.Reg!=$03 then
+                  Code($26|8*Op2.Reg);
+                end
+            end
+
+            if W=1 | W=3 then
+              Code(MTabl[I].Code1|$04);
+            else
+              Code(MTabl[I].Code1);
+            end
+
+            select
+              case W=3 & strcmp(@MTabl[I].Name,"fild") =0:
+                W=$28;
+              case W=3 & strcmp(@MTabl[I].Name,"fistp")=0:
+                W=$20;
+              default:
+                W=$00;
+            end
+
+            if Op2.Ptr=8 then
+              Code(MTabl[I].Code2|6|W);
+            else
+              Code($80|MTabl[I].Code2|Op2.Ptr|W);
+            end
+            Code(Op2.Ofs%256);
+            Code(Op2.Ofs/256);
+
+          case ID=cmOP87:
+            Code($9B);
+            Code(MTabl[I].Code1);
+            Code(MTabl[I].Code2);
+
+          case ID=cmCHAR:
+            while TRUE do
+              Scan(@Buff);
+              select
+                case Buff[0]='"' & Buff[1]=#0:
+                  while Read()!='"' do
+                    Code(CharToByte(Read()));
+                    Next();
+                  end
+                  Next();
+                default:
+                  Code(Val(@Buff));
+              end
+
+              if strcmp(@Scan(@Buff),";")=0 then
+                exit
+              end
+
+              if strcmp(@Buff,",")!=0 then
+                Stop(@emCOMMA);
+              end
+            end
+
+            Keep();
+
+          case ID=cmWORD:
+            Scan(@Buff);
+            if '0'<=Buff[0] & Buff[0]<='9' then
+              while TRUE do
+                word W=Val(@Buff);
+                Code(W%256);
+                Code(W/256);
+
+                if strcmp(@Scan(@Buff),",")!=0 then
+                  exit
+                end
+
+                Scan(@Buff);
+              end
+
+              Keep();
+            else
+              word L=FindLabel(@Buff);
+              if L>=nLabel then
+                char Temp [128];
+                Stop(@strcat(@strcpy(@Temp,@emUNDEFINED),@Buff));
+              end
+
+              Code((LTabl[L].IP+256)%256);
+              Code((LTabl[L].IP+256)/256);
+            end
+
+          case ID=cmNULL:
+          //Code(MTabl[I].Code1);
+
+          default:
+            Stop(@emERROR);
+        end
+
+        if strcmp(@Scan(@Buff),";")!=0 then
+          Stop(@emERROR);
+        end
+
+        exit
+      end
+
+      inc I;
+    end
+  end
+
+  if pTemp>0 then
+    write(F2,@Temp,pTemp);
+  end
+
+  K=0;
+  while K<nConst do
+    P=FindLabel(@CTabl[K].Name);
+    if P>=nLabel then
+      Stop(@strcat(@strcpy(@Buff,@emUNDEFINED),@JTabl[K].Name));
+    end
+
+    word D=LTabl[P].IP+CTabl[K].Ofs;
+
+    seek (F2,CTabl[K].IP);
+    write(F2,@D,2);
+
+    inc K;
+  end
+
+  K=0;
+  while K<nJump do
+    P=FindLabel(@JTabl[K].Name);
+    if P>=nLabel then
+      Stop(@strcat(@strcpy(@Buff,@emUNDEFINED),@JTabl[K].Name));
+    end
+
+    seek(F2,JTabl[K].IP);
+    if JTabl[K].Near='N' then // 1
+      word  D=LTabl[P].IP-(JTabl[K].IP+2);
+      write(F2,@D,2);
+    else
+      word  D=LTabl[P].IP-(JTabl[K].IP+1);
+      write(F2,@D,1);
+    end
+
+    inc K;
+  end
+
+  Stop("");
+end

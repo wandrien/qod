@@ -1,0 +1,421 @@
+
+/*****************************************************************************/
+
+word EmitByteState;
+word EmitByteBytesInLine;
+
+/*****************************************************************************/
+
+void EmitByteReset()
+	EmitByteBytesInLine = 0;
+
+	select
+		case EmitByteState = 1:
+			EmitNL();
+		case EmitByteState = 2:
+			EmitChar('"');
+			EmitNL();
+	end
+
+	EmitByteState = 0;
+end
+
+/*****************************************************************************/
+
+void EmitByte(char c)
+
+	char C[2];
+	C[0] = c;
+	C[1] = #0;
+
+	word NewState;
+
+	char Buff[30];
+	Buff[0] = #0;
+
+	if c < ' ' | c = '"' then
+		NewState = 1;
+	else
+		NewState = 2;
+	end
+
+	select
+		case EmitByteState = 0:
+			select
+				case NewState = 1:
+					strcat(@Buff, "db ");
+					strcat(@Buff, @str(word(c)));
+				case NewState = 2:
+					strcat(@Buff, "db ~"");
+					strcat(@Buff, @C);
+				default:
+					StopInternal();
+			end
+		case EmitByteState = 1:
+			select
+				case NewState = 1:
+					strcat(@Buff, ", ");
+					strcat(@Buff, @str(word(c)));
+				case NewState = 2:
+					strcat(@Buff, ", ~"");
+					strcat(@Buff, @C);
+				default:
+					StopInternal();
+			end
+		case EmitByteState = 2:
+			select
+				case NewState = 1:
+					strcat(@Buff, "~", ");
+					strcat(@Buff, @str(word(c)));
+				case NewState = 2:
+					strcat(@Buff, @C);
+				default:
+					StopInternal();
+			end
+		default:
+			StopInternal();
+	end
+
+	EmitByteState = NewState;
+
+	word I=0;
+	while Buff[I]!=#0 do
+		EmitChar(Buff[I]);
+		inc  I;
+	end	
+
+
+	inc EmitByteBytesInLine;
+	select
+	case EmitByteBytesInLine > 60:
+		EmitByteReset();
+	case EmitByteBytesInLine > 40 & c = '~n':
+		EmitByteReset();
+	end
+
+end
+
+
+/*****************************************************************************/
+
+
+define RODATA_NR 30000;
+char rodata[RODATA_NR];
+word rodata_size;
+word rodata_nr;
+
+word EmitRODataFragment(word FirstChar; word Len)
+
+	word offset = 0;
+
+	word i = 0;
+	word j = 0;
+
+
+	while j < Len do
+
+		if i >= rodata_size | i >= rodata_nr then
+			exit;
+		end
+
+		if Char[FirstChar + j] != rodata[i] then
+			inc i;
+			offset = i;
+			j = 0;
+		else
+			inc i;
+			inc j;
+		end
+
+	end
+
+	if j = Len then
+		return offset;
+	end
+
+	if rodata_size >= rodata_nr then
+		offset = rodata_size;
+		rodata_size = rodata_size + Len;
+		j = 0;
+		while j < Len do
+			EmitByte(Char[FirstChar + j]);
+			inc j;
+		end
+		return offset;
+	end
+
+	while j < Len do
+		char c = Char[FirstChar + j];
+		if rodata_size < rodata_nr then
+			rodata[rodata_size] = c;
+		end
+		inc rodata_size;
+		EmitByte(c);
+		inc j;
+	end
+
+	return offset;
+
+end
+
+
+/*****************************************************************************/
+
+/*
+	Выводит секцию неизменяемых данных и назначает смещения строкам для случая, когда строки распологаются в этой секции.
+*/
+void EmitROData()
+
+	if ROStrings = 0 then
+		return;
+	end
+
+	int curr_len = -1;
+	int next_len = -1;
+	word I;
+
+	if RODataMergeMode = 0 then
+		rodata_nr = 0;
+	else
+		rodata_nr = RODATA_NR;
+	end
+
+
+	if RODataMergeMode = 2 then
+		I = 0;
+		while I < nDict do
+			if Dict[I].Class = cCONST & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+				word len = Dict[I].nIndx - Dict[I].pIndx;
+				if next_len < len then
+					next_len = len;
+				end
+			end
+			inc I;
+		end
+	end
+
+	rodata_size = 0;
+
+
+	Emit(0, "~r~n@@TEXT:");
+	EmitByteReset();
+
+	repeat
+		curr_len = next_len;
+		next_len = -1;
+		I = 0;
+		while I < nDict do
+			if Dict[I].Class = cCONST & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+				word len = Dict[I].nIndx - Dict[I].pIndx;
+				if len = curr_len | curr_len = -1 then
+					EmitByteReset();
+					Dict[I].Value = EmitRODataFragment(Dict[I].pIndx, len);
+				end
+				if next_len < len & len < curr_len then
+					next_len = len;
+				end
+			end
+			inc I;
+		end
+	until next_len < 0;
+
+	EmitByteReset();
+end
+
+/*****************************************************************************/
+
+/*
+	Назначает смещения символьным строкам для случая, когда строки расположены в секции изменяемых данных.
+*/
+void AssignStringOffsets()
+
+	if ROStrings != 0 then
+		return;
+	end
+
+	word data_len = 0;
+	word I = 0;
+	while I < nDict do
+		if Dict[I].Class = cCONST & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+			word pIndx = Dict[I].pIndx;
+			word nIndx = Dict[I].nIndx;
+			word len = nIndx - pIndx;
+			Dict[I].Value = data_len;
+			data_len = data_len + len;
+		end:if
+		inc I;
+	end:while
+end
+
+/*****************************************************************************/
+
+/*
+	Выводит в листинг символьные строки для случая, когда строки размещаются в секции изменяемых данных.
+	Смещения строк должны быть заполнены заранее.
+*/
+void EmitSection_Data_Strings(char @Buff)
+	if ROStrings != 0 then
+		return;
+	end
+
+	EmitStringNL("");
+
+	Emit(0, "~r~n@@TEXT:");
+
+	word data_len = 0;
+	word I = 0;
+	while I < nDict do
+		if Dict[I].Class = cCONST & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+			word pIndx = Dict[I].pIndx;
+			word nIndx = Dict[I].nIndx;
+			word len = nIndx - pIndx;
+			if Dict[I].Value != data_len then
+				StopInternal();
+			end:if
+			data_len = data_len + len;
+			EmitByteReset();
+			while pIndx < nIndx do
+				EmitByte(Char[pIndx]);
+				inc pIndx;
+			end:while
+		end:if
+		inc I;
+	end:while
+
+	EmitByteReset();
+end
+
+/*****************************************************************************/
+
+/* Формирует листинг секции данных. */
+void EmitSection_Data(char @Buff; word D)
+
+	if D = 0 then
+		return;
+	end
+
+	EmitStringNL("");
+
+	select
+		case TargetFileFormat = tPE:
+			EmitStringNL("section ~".data~" data readable writeable");
+
+		case TargetFileFormat = tELF:
+			EmitStringNL("section readable writeable");
+
+		default:
+			StopInternal();
+	end
+
+
+	EmitSection_Data_Strings(@Buff);
+
+	EmitStringNL("");
+	EmitStringNL(@strcat(@strcpy(@Buff,"@@DATA  rb      "),@str(D)));
+
+end
+
+/*****************************************************************************/
+
+void EmitPEImport(char @Buff; word L)
+
+	EmitNL();
+	EmitStringNL("section ~".idata~" import data readable writeable");
+	EmitNL();
+
+	word L1 = L;
+
+
+	/* Таблица экспортируемых библиотек. */
+
+	word I  = 0;
+	while I<nDict do
+		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+
+			strcpy(@Buff, "dd      0, 0, 0, RVA @");
+			strcat(@Buff, @str(L1));
+			strcat(@Buff, ", RVA @");
+			strcat(@Buff, @str(Dict[I].Value));
+			Emit(0, @Buff);
+
+			inc  L1;
+		end:if
+
+		inc I;
+	end:while
+
+	Emit(0,"dd      0, 0, 0, 0, 0");
+
+
+
+	/* Таблицы точек импорта. */
+
+	I =0;
+	while I<nDict do
+		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+			EmitNL();
+
+			word  J=0;
+			while J<nDict do
+				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+					strcpy(@Buff, "@");
+					strcat(@Buff, @str(Dict[J].Value));
+					strcat(@Buff, "  dd      RVA @");
+					strcat(@Buff, @str(L1));
+					EmitStringNL(@Buff);
+					inc  L1;
+				end:if
+
+				inc J;
+			end:while
+
+			Emit(0,"dd      0");
+		end:if
+
+		inc I;
+	end:while
+
+
+	/* Имена библиотек. */
+
+	EmitNL();
+
+	L1=L;
+	I =0;
+	while I<nDict do
+		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+			Emit(L1,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(I)),".DLL~", 0"));
+			inc  L1;
+		end:if
+
+		inc I;
+	end:while
+
+
+	/* Имена функций. */
+
+	I =0;
+	while I<nDict do
+		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+			EmitNL();
+
+			word  J=0;
+			while J<nDict do
+				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+					Emit(L1,"dw      0");
+					Emit(0,  @strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(J)),"~", 0"));
+					inc  L1;
+				end:if
+
+				inc J;
+			end:while
+		end:if
+
+		inc I;
+	end:while
+
+	EmitNL();
+	EmitStringNL("section ~".reloc~" fixups data readable discardable");
+end
+
+/*****************************************************************************/

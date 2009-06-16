@@ -1,0 +1,188 @@
+
+/*****************************************************************************/
+
+define  nFILE        8 // Глубина стека включаемых файлов
+define  nTEXT     4096 // Длина текстового буфеpа под один файл.
+
+/*****************************************************************************/
+
+/* Элемент стека включаемых файлов. */
+struct FILE          
+	word     hText;     // Описатель файла
+	word     nText;     // Длина блока
+	word     pText;     // Текущая позиция
+	FILEINFO Info;
+end
+
+/*****************************************************************************/
+
+FILE     File[nFILE]; /* Стек включаемых файлов. */
+word    nFile;        /* Количество объектов в стеке. */
+
+/*****************************************************************************/
+
+char     Text[nFILE * nTEXT]; // Буфер для операций read/write.
+word    pFile;         // Индекс начала области буфеpа, выделенной для текущего файла.
+word    nText;         // Индекс конца блока с данными. (равен pFile + размер актуальных данных в буфере. размер не может быть больше nTEXT)
+word    pText;         // Текущая позиция a буфере.
+
+word    hText;         // Дескриптор открытого файла.
+
+/*****************************************************************************/
+
+word AlreadyOnNext = 0;
+word BeforeFirstFile;
+word EOFMode = 0;
+
+/*****************************************************************************/
+
+/* Закрывает все открытые файлы. */
+void CloseAllFiles()
+	close(hText);
+	while nFile > 0 do
+		dec nFile;
+		close(File[nFile].hText);
+	end
+end
+
+/*****************************************************************************/
+
+void PopCurrentFile()
+
+	ShowParseProgress(1);
+
+	close(hText);
+
+	if nFile < 1 then
+		StopInternal();
+	end
+
+	ShowParseProgress(1);
+	close(hText);
+
+	dec        nFile;
+	hText = File[nFile].hText;
+	nText = File[nFile].nText;
+	pText = File[nFile].pText;
+	CurrentFileInfo = File[nFile].Info;
+	pFile = pFile - nTEXT;
+end
+
+/*****************************************************************************/
+
+char Read()
+
+	word a = AlreadyOnNext;
+
+	AlreadyOnNext = 0;
+
+	/*
+		Ухх, какой нетривиальный код...
+		Тут про исходит следующее:
+		Пока у нас нечего читать, мы по очереди пробуем:
+			1) прочитать из текущего файла,
+			2) достать из стека предыдущий файл.
+		И так пока не найдём какие-нибудь данные, либо пока не выкинем из стека все файлы.
+	*/
+	word Flag = 0;
+
+	while pText >= nText do
+
+		if pText > nText then
+			StopInternal();
+		end:if
+
+		if Flag = 0 then
+			nText = pFile + read(hText, @Text[pFile], nTEXT);
+			pText = pFile;
+			BeforeFirstFile = 0;
+			Flag  = 1;
+		else
+			if nFile < 1 then
+				//Stop(@eEOF);
+				return #0;
+			end
+			PopCurrentFile();
+			Flag = 0;
+		end:if
+	end:while
+
+	char r = Text[pText];
+	if BeforeFirstFile = 0 & a != 0 & r = '~n' then
+		if  CurrentFileInfo.Line % 50 = 0 then
+			ShowParseProgress(0);
+		end
+
+		CurrentFileInfo.Col = 1;
+		inc CurrentFileInfo.Line;
+	end
+
+	return r;
+end
+
+/*****************************************************************************/
+
+/*
+	Переход к следующему символу во входном файле.
+	Перейдя к символу, вы обязаны его прочитать с помощью Read().
+	Если Next() будет вызвана снова без промежуточного Read(),
+	это свидетельствует об ошибке в парсере, и программа завершится с eINTERNAL.
+*/
+void Next()
+	if AlreadyOnNext != 0 then
+		StopInternal();
+	end
+
+	AlreadyOnNext = 1;
+
+	if BeforeFirstFile = 0 then
+		inc CurrentFileInfo.Col;
+	end:if
+
+	inc pText;
+
+end
+
+/*****************************************************************************/
+
+void OpenInputFile(char @FileName)
+
+	word hFile=open(@FileName);
+	if is_handle_valid(hFile) = 0 then
+		Stop(@eNOFILE);
+	end
+
+	hText = hFile;
+
+	@CurrentFileInfo.Name = @Char[SaveString0(@FileName)];
+	CurrentFileInfo.Line = 1;
+	CurrentFileInfo.Col  = 1;
+end
+
+/*****************************************************************************/
+
+void IncludeFile(char @FileName)
+	ShowParseProgress(1);
+
+	if nFile >= nFILE then
+		Stop(@eNOMEMORY);
+	end
+
+	/* Сохраняем информацию о текущем файле. */
+	File[nFile].hText = hText;
+	File[nFile].nText = nText;
+	File[nFile].pText = pText;
+	File[nFile].Info = CurrentFileInfo;
+	inc  nFile;
+
+	/* Выделяем новый кусок под буфер для чтения данных из файла. */
+	pFile = pFile + nTEXT;
+	nText = pFile;
+	pText = pFile;
+
+	/* Открываем файл. */
+	OpenInputFile(@FileName);
+end
+
+/*****************************************************************************/
+

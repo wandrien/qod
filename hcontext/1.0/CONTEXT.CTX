@@ -1,0 +1,2999 @@
+define @emNOTAVAIL   "Не pеализовано"
+define @emINTERNAL   "Внутpенняя ошибка"
+define @emNOMEMORY   "Недостаточно памяти"
+define @emEOF        "Конец файла"
+define @emWRITEERR   "Ошибка записи"
+define @emTHENEXP    "Пpопущено then"
+define @emCASEEXP    "Пpопущено case"
+define @emDOEXPECTED "Пpопущено do"
+define @emLOOP       "loop/exit вне цикла"
+define @emVOID       "Тип void недопустим"
+define @emTYPE       "Несоответствие типов"
+define @emBOOLEAN    "Тpебуется логическое условие"
+define @emPOINTER    "Ссылка недопустима"
+define @emNOPTR      "Тpебуется ссылка"
+define @emLVALUE     "Пpисваивание недопустимо"
+define @emEXPECTED   "Пpопущен идентификатоp"
+define @emUNDEFINED  "Идентификатоp не опpеделен"
+define @emDOUBLE     "Повтоpное описание"
+define @emEMPTY      "Нет списка полей"
+define @emSIZE       "Слишком длинный идентификатоp"
+define @emASSIGN     "Пpопущено ="
+define @emSTRING     "Пpопущена двойная кавычка"
+define @emLONG       "Слишком длинная стpока"
+define @emCHAR       "Пpопущена кавычка"
+define @emNUMBER     "Ошибка в константе"
+define @emOVERFLOW   "Константа слишком велика"
+define @emARRAY      "Пустой массив"
+define @emSEGMENT    "Пеpеполнение сегмента"
+define @emSTRUCTURE  "Стpуктуpа слишком велика"
+define @emNOBRACKET  "Скобка недопустима"
+define @emSBRACKET   "Пpопущена скобка"
+define @emCBRACKET   "Пpопущена скобка"
+define @emOPERATOR   "Два опеpатоpа подpяд"
+define @emADDR       "Невозможно вычислить адpес"
+define @emUNDEFOPR   "Опеpация не опpеделена"
+define @emCOMMA      "Пpопущена запятая"
+define @emEQUAL      "Тpебуется одинаковый поpядок ссылок"
+define @emCOLON      "Пpопущено двоеточие"
+define @emSEMICOLON  "Пpопущена точка с запятой"
+define @emFIELD      "Пpопущено поле"
+define @emFUNCTION   "Описание функции недопустимо"
+define @emINIT       "Инициализация массива невозможна"
+
+define  Smax   65520
+
+define  idSIZE    16
+define  ttSIZE   128
+define  ftSIZE   512
+define  stSIZE   128
+define  ptSIZE   512
+define  dtSIZE   128
+define  vtSIZE   128
+define  ctSIZE   128
+define  cbSIZE  8192
+define  itSIZE   512
+define  jtSIZE    64
+define  ssSIZE   128
+
+define  srNO       0
+define  srAX       1
+define  srCS       2
+define  srDS       3
+define  srBP       4
+define  srBN       5
+define  srSP       6
+define  srES       7
+
+define  rgAX       0
+define  rgDX       1
+define  rgDI       2
+define  rgES       3
+
+struct long
+  word Low;
+  word High;
+end
+
+struct OpInfo
+  word pType;
+  word Seg;
+  word Ofs;
+  word High;
+  word nPtr;
+  word Index;
+  word Value;
+end
+
+struct TT
+  char Name [idSIZE];
+  word pField;
+  word nField;
+  word Size;
+end
+
+struct FT
+  char Name [idSIZE];
+  word pType;
+  word pIndex;
+  word nIndex;
+  word nPtr;
+  word Ofs;
+end
+
+struct ST
+  char Name [idSIZE];
+  word pType;
+  word pParm;
+  word nParm;
+  word nPtr;
+  word Ofs;
+end
+
+struct PT
+  char Name [idSIZE];
+  word pType;
+  word nPtr;
+  word Ofs;
+end
+
+struct VT
+  char Name [idSIZE];
+  word pType;
+  word pIndex;
+  word nIndex;
+  word nPtr;
+  word Ofs;
+end
+
+struct DT
+  char Name [idSIZE];
+  word pType;
+  word pIndex;
+  word nIndex;
+  word nPtr;
+  word Ofs;
+end
+
+struct CT
+  char Name [idSIZE];
+  word pType;
+  word nPtr;
+  word Low;
+end
+
+TT   TTabl [ttSIZE];
+word nType;
+
+FT   FTabl [ftSIZE];
+word nField;
+
+ST   STabl [stSIZE];
+word nSub;
+
+PT   PTabl [ptSIZE];
+word nParm;
+
+VT   VTabl [vtSIZE];
+word nVar;
+
+DT   DTabl [dtSIZE];
+word DSize;
+word nData;
+
+CT   CTabl [ctSIZE];
+word nConst;
+
+char CBuff [cbSIZE];
+word nByte;
+
+word ITabl [itSIZE];
+word nIndex;
+
+long JTabl [jtSIZE];
+word nJump;
+
+word Regs  [5];
+
+word Stack [ssSIZE];
+word SP;
+
+word RSize;
+word PSize;
+word VSize;
+word SSize;
+
+word pSub;
+
+word Loop;
+
+char Buff  [4096];
+word pChar;
+word nChar;
+
+word Label;
+word Line;
+
+char Name  [13];
+word F1;
+word F2;
+
+word CharToByte(char Ch)
+  void  @P=@Ch;
+  word  @W=@P;
+  return W&255;
+end
+
+void @Ptr(word Seg, Ofs)
+  void   @P1=@Ofs;
+  void  @@P2=@P1;
+  return @P2;
+end
+
+word isalpha(char Ch)
+  select
+    case 'a'<=Ch & Ch<='z':
+      return 0;
+
+    case 'A'<=Ch & Ch<='Z':
+      return 0;
+
+    case Ch='_':
+      return 0;
+  end
+
+  return 1;
+end
+
+word isdigit(char Ch)
+  select
+    case '0'<=Ch & Ch<='9':
+      return 0;
+
+    case Ch='$':
+      return 0;
+  end
+
+  return   1;
+end
+
+word strlen(char @Buff)
+  word P=0;
+  while Buff[P]!=#0 do
+    inc P;
+  end
+  return P;
+end
+
+word strcmp(char @St1, @St2)
+  word P=0;
+  while TRUE do
+    if St1[P]!=St2[P] then
+      return 1;
+    end
+    if St1[P]=#0 then
+      return 0;
+    end
+    inc P;
+  end
+end
+
+char @strcpy(char @Dst, @Src)
+  word P=0;
+  while Src[P]!=#0 do
+    Dst[P]=Src[P];
+    inc P;
+  end
+  Dst[P]=#0;
+  return @Dst;
+end
+
+char @strcat(char @Dst, @Src)
+  word P=strlen(@Dst);
+  word Q=0;
+  while Src[Q]!=#0 do
+    Dst[P]=Src[Q];
+    inc P;
+    inc Q;
+  end
+  Dst[P]=#0;
+  return @Dst;
+end
+
+word GetPSP()
+  asm mov     AH,62H
+  asm int     21H
+  asm mov     AX,BX
+end
+
+word create(char @Name)
+  asm push    DS
+  asm mov     AH,3CH
+  asm mov     CX,00H
+  asm mov     DX,SS:[BP+6]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+4]
+  asm int     21H
+  asm pop     DS
+end
+
+word open(char @Name)
+  asm push    DS
+  asm mov     AH,3DH
+  asm mov     AL,00H
+  asm mov     DX,SS:[BP+6]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+4]
+  asm int     21H
+  asm db      73H, 03H
+  asm mov     AX,0FFFFH
+  asm pop     DS
+end
+
+word read(word F; void @Buff; word N)
+  asm push    DS
+  asm mov     AH,3FH
+  asm mov     BX,SS:[BP+10]
+  asm mov     CX,SS:[BP+4]
+  asm mov     DX,SS:[BP+8]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+6]
+  asm int     21H
+  asm pop     DS
+end
+
+word write(word F; void @Buff; word N)
+  asm push    DS
+  asm mov     AH,40H
+  asm mov     BX,SS:[BP+10]
+  asm mov     CX,SS:[BP+4]
+  asm mov     DX,SS:[BP+8]
+  asm mov     DS,DX
+  asm mov     DX,SS:[BP+6]
+  asm int     21H
+  asm pop     DS
+end
+
+void close(word F)
+  asm mov     AH,3EH
+  asm mov     BX,SS:[BP+4]
+  asm int     21H
+end
+
+void putc(char Ch)
+  asm mov     AH,2
+  asm mov     DL,SS:[BP+4]
+  asm int     21H
+end
+
+void puts(char @St)
+  word P=0;
+  while St[P]!=#0 do
+    putc(St[P]);
+    inc P;
+  end
+end
+
+void outs(char @St)
+  puts(@St);
+  putc(#13);
+  putc(#10);
+end
+
+word str(word N; word S; char @Buff)
+  if S>0 then
+    dec S;
+  end
+
+  word P=0;
+  if N>=10 | S>0 then
+    P=str(N/10,S,@Buff);
+  end
+
+  char @D = "0123456789";
+  Buff [P]=D[N%10];
+
+  return P+1;
+end
+
+char @Str(word N; word S)
+  char   @P="00000";
+  P[str(N,S,@P)]=#0;
+  return @P;
+end
+
+void Stop(char @EM)
+  putc(#13);
+  puts(@Name);
+  puts("(");
+  puts(@Str(Line,0));
+  puts("): ");
+  puts(@EM);
+
+  close (F2);
+  close (F1);
+
+  asm mov     AX,4C00H
+  asm int     21H
+end
+
+word Add(word A, B)
+  word C1=A/256+B/256;
+  word C0=A%256+B%256;
+
+  C1=C1+C0/256;
+  C0=C0%256;
+
+  if C1>255 then
+    return 65535;
+  end
+
+  return 256*C1+C0;
+end
+
+word Mul(word A, B)
+  word A1=A/256;
+  word A0=A%256;
+  word B1=B/256;
+  word B0=B%256;
+
+  if A1*B1>0 | Add(A1*B0,A0*B1)>255 then
+    return 65535;
+  end
+
+  return Add(256*(A1*B0+A0*B1),A0*B0);
+end
+
+word Val(char @Buff)
+  char @D = "0123456789ABCDEF";
+  word  E = 10;
+  word  P =  0;
+  word  L =  0;
+  word  H =  0;
+
+  if Buff[0]='$' then
+    E=16;
+    P= 1;
+  end
+
+  while Buff[P]!=#0 do
+    word S=0;
+    while D[S]!=#0 do
+      if D[S]=Buff[P] then
+        exit
+      end
+
+      inc S;
+    end
+
+    if S>=E then
+      Stop(@emNUMBER);
+    end
+
+    S=E*L+S;
+    L=S%256;
+    S=E*H+S/256;
+    H=S%256;
+    S=S/256;
+
+    if S>0 then
+      Stop(@emOVERFLOW);
+    end
+
+    inc P;
+  end
+
+  return 256*H+L;
+end
+
+long Seek(long P)
+  word F=F2;
+
+  asm push    DS
+  asm mov     AX,4200H
+  asm mov     BX,SS:[BP-2]
+  asm mov     CX,SS:[BP+6]
+  asm mov     DX,SS:[BP+4]
+  asm int     21H
+  asm pop     DS
+end
+
+long Back()
+  word F=F2;
+
+  asm push    DS
+  asm mov     AX,4202H
+  asm mov     BX,SS:[BP-2]
+  asm mov     CX,0
+  asm mov     DX,0
+  asm int     21H
+  asm pop     DS
+end
+
+void Code(word L; char @S)
+  char Buff [128];
+  word N;
+
+  if L!=0 then
+    strcat(@strcat(@strcpy(@Buff,"@"),@Str(L,5)),": ");
+  else
+    strcpy(@Buff,"        ");
+  end
+
+  N=strlen(@strcat(@Buff,@S));
+
+  Buff[N]=#13;
+  inc  N;
+  Buff[N]=#10;
+  inc  N;
+
+  if write(F2,@Buff,N)!=N then
+    Stop(@emWRITEERR);
+  end
+end
+
+void Jump(word L)
+  char Buff [128];
+  strcpy(@Buff,"jmp     @");
+  if L!=0 then
+    strcat(@Buff,@Str(L,5));
+  else
+    strcat(@Buff,"00000");
+  end
+  Code(0,@Buff);
+  Back();
+end
+
+char Read()
+  if pChar>=nChar then
+    nChar=read(F1,@Buff,4096);
+    if nChar<1 then
+      Stop(@emEOF);
+    end
+    pChar=0;
+  end
+  return Buff[pChar];
+end
+
+void Next()
+  inc pChar;
+end
+
+char @Scan(char @Buff)
+  word  N=0;
+  while TRUE do
+    while Read()=#09 | Read()=#10 | Read()=#13 | Read()=#32 do
+      if Read()=#10 then
+        inc Line;
+        if  Line%100=0 then
+          putc(#13);
+          puts(@strcat(@strcat(@strcat(@strcpy(@Buff,@Name),"("),@Str(Line,0)),")"));
+        end
+      end
+      Next();
+    end
+
+    if Read()='/' then
+      Next();
+      if Read()='*' then
+        Next();
+        inc N;
+      end
+
+      if N>0 then
+        loop
+      end
+
+      if Read()='/' then
+        while Read()!=#10 do
+          Next();
+        end
+        loop
+      end
+
+      return @strcpy(@Buff,"/");
+    end
+
+    if N=0 then
+      exit
+    end
+
+    if Read()='*' then
+      Next();
+      if Read()='/' then
+        Next();
+        dec N;
+      end
+      loop
+    end
+
+    Next();
+  end
+
+  word P=0;
+  while isalpha(Read())=0 | isdigit(Read())=0 do
+    Buff[P]=Read();
+    inc  P;
+    if   P>=idSIZE then
+      Stop(@emSIZE);
+    end
+
+    Next();
+  end
+
+  if P=0 then
+    Buff[P]=Read();
+    inc  P;
+
+    Next();
+    select
+      case Buff[0]='!':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,"!=");
+        end
+
+      case Buff[0]='<':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,"<=");
+        end
+
+      case Buff[0]='>':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,">=");
+        end
+    end
+  end
+
+  Buff[P]=#0;
+  return  @Buff;
+end
+
+word FindType(char @Name)
+  word   P=0;
+  while  P<nType & strcmp(@TTabl[P].Name,@Name)!=0 do
+    inc  P;
+  end
+  return P;
+end
+
+word FindSub(char @Name)
+  word   P=0;
+  while  P<nSub & strcmp(@STabl[P].Name,@Name)!=0 do
+    inc  P;
+  end
+  return P;
+end
+
+word FindData(char @Name)
+  word   P=0;
+  while  P<nData & strcmp(@DTabl[P].Name,@Name)!=0 do
+    inc  P;
+  end
+  return P;
+end
+
+word FindVar(char @Name)
+  word   P=0;
+  while  P<nVar & strcmp(@VTabl[P].Name,@Name)!=0 do
+    inc  P;
+  end
+  return P;
+end
+
+word FindConst(char @Name)
+  word   P=0;
+  while  P<nConst & strcmp(@CTabl[P].Name,@Name)!=0 do
+    inc  P;
+  end
+  return P;
+end
+
+void Init()
+  word   K=0;
+  while  K<=rgES do
+    Regs[K]=0;
+    inc  K;
+  end
+  SP=0;
+end
+
+void Push(word R)
+  if Regs[R]!=0 then
+    select
+      case R=rgAX:
+        Code(0,"push    AX");
+      case R=rgDX:
+        Code(0,"push    DX");
+      case R=rgDI:
+        Code(0,"push    DI");
+      case R=rgES:
+        Code(0,"push    ES");
+      default:
+        Stop(@emINTERNAL);
+    end
+
+    if SP>=ssSIZE then
+      Stop(@emNOMEMORY);
+    end
+
+    Stack[SP]=R;
+    inc   SP;
+
+    Regs[R]=0;
+  end
+end
+
+void Pop (word R)
+  while Regs[R]=0 do
+    if SP<1 then
+      Stop(@emINTERNAL);
+    end
+
+    dec SP;
+
+    if Regs[Stack[SP]]!=0 then
+      Stop(@emINTERNAL);
+    end
+
+    select
+      case Stack[SP]=rgAX:
+        Code(0,"pop     AX");
+      case Stack[SP]=rgDX:
+        Code(0,"pop     DX");
+      case Stack[SP]=rgDI:
+        Code(0,"pop     DI");
+      case Stack[SP]=rgES:
+        Code(0,"pop     ES");
+      default:
+        Stop(@emINTERNAL);
+    end
+
+    Regs[Stack[SP]]=1;
+  end
+end
+
+void LDAX(OpInfo @Op1)
+  char Buff [128];
+  select
+    case Op1.Value=0:
+      select
+        case Op1.Seg=srNO:
+          Push(rgDX);
+          Push(rgAX);
+          Code(0,"xor     DX,DX");
+          Code(0,"xor     AX,AX");
+
+        case Op1.Seg=srAX:
+          Pop (rgDX);
+          Pop (rgAX);
+
+        case Op1.Seg=srCS:
+          Push(rgDX);
+          Push(rgAX);
+          Code(0,@strcat(@strcpy(@Buff,"mov     AX,offset @16384 + "),@Str(Op1.Ofs,0)));
+          Code(0,"mov     DX,CS");
+
+        case Op1.Seg=srDS:
+          if Op1.Index!=0 then
+            Pop (rgDI);
+            Push(rgDX);
+            Push(rgAX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(Op1.Ofs,0)));
+            Code(0,"add     AX,DI");
+            Code(0,"mov     DX,DS");
+            Regs[rgDI]=0;
+          else
+            Push(rgDX);
+            Push(rgAX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(Op1.Ofs,0)));
+            Code(0,"mov     DX,DS");
+          end
+
+        case Op1.Seg=srBP:
+          if Op1.Index!=0 then
+            Pop (rgDI);
+            Push(rgDX);
+            Push(rgAX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(Op1.Ofs,0)));
+            Code(0,"add     AX,BP");
+            Code(0,"add     AX,DI");
+            Code(0,"mov     DX,SS");
+            Regs[rgDI]=0;
+          else
+            Push(rgDX);
+            Push(rgAX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(Op1.Ofs,0)));
+            Code(0,"add     AX,BP");
+            Code(0,"mov     DX,SS");
+          end
+
+        case Op1.Seg=srBN:
+          if Op1.Index!=0 then
+            Pop (rgDI);
+            Push(rgDX);
+            Push(rgAX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     DX,"),@Str(Op1.Ofs,0)));
+            Code(0,"mov     AX,BP");
+            Code(0,"add     AX,DI");
+            Code(0,"sub     AX,DX");
+            Code(0,"mov     DX,SS");
+            Regs[rgDI]=0;
+          else
+            Push(rgDX);
+            Push(rgAX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     DX,"),@Str(Op1.Ofs,0)));
+            Code(0,"mov     AX,BP");
+            Code(0,"sub     AX,DX");
+            Code(0,"mov     DX,SS");
+          end
+
+        case Op1.Seg=srES:
+          if Op1.Index!=0 then
+            Pop (rgDI);
+            Pop (rgES);
+            Push(rgDX);
+            Push(rgAX);
+
+            if Op1.Ofs>0 then
+              Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(Op1.Ofs,0)));
+              Code(0,"add     AX,DI");
+            else
+              Code(0,"mov     AX,DI");
+            end
+
+            Regs[rgDI]=0;
+          else
+            Stop(@emINTERNAL);
+          end
+
+          Code(0,"mov     DX,ES");
+          Regs[rgES]=0;
+
+        default:
+          Stop(@emINTERNAL);
+      end
+
+      Regs[rgDX]=1;
+      Regs[rgAX]=1;
+
+    default:
+      word S=4;
+      if Op1.nPtr=0 then
+        if strcmp(@TTabl[Op1.pType].Name,"void")=0 then
+          Stop(@emVOID);
+        end
+
+        S=TTabl[Op1.pType].Size;
+      end
+
+      select
+        case Op1.Seg=srNO:
+          select
+            case S=1:
+              Push(rgAX);
+              Code(0,@strcat(@strcpy(@Buff,"mov     AL,"),@Str(Op1.Ofs&255,0)));
+
+            case S=2:
+              Push(rgAX);
+              Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(Op1.Ofs,0)));
+
+            default:
+              Stop(@emINTERNAL);
+          end
+
+          Regs[rgAX]=1;
+
+        case Op1.Seg=srAX:
+          select
+            case S=1:
+              select
+                case Op1.High=1:
+                  Pop (rgAX);
+                case Op1.High=2:
+                  Pop (rgAX);
+                case Op1.High=4:
+                  Pop (rgDX);
+                  Pop (rgAX);
+                  Regs[rgDX]=0;
+                default:
+                  Stop(@emINTERNAL);
+              end
+
+              select
+                case Op1.Ofs=0:
+                case Op1.Ofs=1:
+                  Code(0,"mov     AL,AH");
+                case Op1.Ofs=2:
+                  Code(0,"mov     AL,DL");
+                case Op1.Ofs=3:
+                  Code(0,"mov     AL,DH");
+                default:
+                  Stop(@emINTERNAL);
+              end
+
+            case S=2:
+              select
+                case Op1.High=2:
+                  Pop (rgAX);
+                case Op1.High=4:
+                  Pop (rgDX);
+                  Pop (rgAX);
+                  Regs[rgDX]=0;
+                default:
+                  Stop(@emINTERNAL);
+              end
+
+              select
+                case Op1.Ofs=0:
+                case Op1.Ofs=1:
+                  Code(0,"mov     AL,AH");
+                  Code(0,"mov     AH,DL");
+                case Op1.Ofs=2:
+                  Code(0,"mov     AX,DX");
+                default:
+                  Stop(@emINTERNAL);
+              end
+
+            case S=4:
+              if Op1.High!=4 then
+                Stop(@emINTERNAL);
+              end
+
+              if Op1.Ofs!=0 then
+                Stop(@emINTERNAL);
+              end
+
+              Pop (rgDX);
+              Pop (rgAX);
+
+              Regs[rgDX]=1;
+
+            default:
+              Stop(@emINTERNAL);
+          end
+
+          Regs[rgAX]=1;
+
+        default:
+          select
+            case S=1:
+              strcpy(@Buff,"mov     AL,");
+
+            case S=2:
+              strcpy(@Buff,"mov     AX,");
+
+            case S=4:
+              strcpy(@Buff,"mov     AX,");
+
+            default:
+              Stop(@emINTERNAL);
+          end
+
+          select
+            case Op1.Seg=srDS:
+              if Op1.Index!=0 then
+                Pop   (rgDI);
+                strcat(@Buff,"DS:[DI+");
+                Regs  [rgDI]=0;
+              else
+                strcat(@Buff,"DS:[");
+              end
+
+            case Op1.Seg=srBP:
+              if Op1.Index!=0 then
+                Pop   (rgDI);
+                strcat(@Buff,"SS:[BP][DI+");
+                Regs  [rgDI]=0;
+              else
+                strcat(@Buff,"SS:[BP+");
+              end
+
+            case Op1.Seg=srBN:
+              if Op1.Index!=0 then
+                Pop   (rgDI);
+                strcat(@Buff,"SS:[BP][DI-");
+                Regs  [rgDI]=0;
+              else
+                strcat(@Buff,"SS:[BP-");
+              end
+
+            case Op1.Seg=srES:
+              if Op1.Index!=0 then
+                Pop   (rgDI);
+                Pop   (rgES);
+                strcat(@Buff,"ES:[DI+");
+                Regs  [rgDI]=0;
+                Regs  [rgES]=0;
+              else
+                Stop(@emINTERNAL);
+              end
+          end
+
+          select
+            case S=1:
+              Push(rgAX);
+              Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"]"));
+              Regs[rgAX]=1;
+
+            case S=2:
+              Push(rgAX);
+              Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"]"));
+              Regs[rgAX]=1;
+
+            case S=4:
+              char     Temp [128];
+              strcpy (@Temp,@Buff);
+
+              Temp[8]='D'; // !!!
+
+              word     Ofs=Op1.Ofs;
+
+              Push(rgDX);
+              Push(rgAX);
+
+              Code(0,@strcat(@strcat(@Buff,@Str(Ofs,0)),"]"));
+
+              if Op1.Seg!=srBN then
+                Ofs=Ofs+2;
+              else
+                Ofs=Ofs-2;
+              end
+
+              Code(0,@strcat(@strcat(@Temp,@Str(Ofs,0)),"]"));
+
+              Regs[rgDX]=1;
+              Regs[rgAX]=1;
+
+            default:
+              Stop(@emINTERNAL);
+          end
+      end
+  end
+end
+
+void LDBX(OpInfo @Op1)
+  word S=4;
+  if Op1.nPtr=0 then
+    if strcmp(@TTabl[Op1.pType].Name,"void")=0 then
+      Stop(@emVOID);
+    end
+    S=TTabl[Op1.pType].Size;
+  end
+
+  char Buff [128];
+  select
+    case Op1.Seg=srNO:
+      select
+        case S=1:
+          Code(0,@strcat(@strcpy(@Buff,"mov     BL,"),@Str(Op1.Ofs&255,0)));
+
+        case S=2:
+          Code(0,@strcat(@strcpy(@Buff,"mov     BX,"),@Str(Op1.Ofs,0)));
+
+        default:
+          Stop(@emINTERNAL);
+      end
+
+    case Op1.Seg=srAX:
+      select
+        case S=1:
+          Pop (rgAX);
+          Code(0,"mov     BL,AL");
+          Regs[rgAX]=0;
+
+        case S=2:
+          Pop (rgAX);
+          Code(0,"mov     BX,AX");
+          Regs[rgAX]=0;
+
+        default:
+          Stop(@emINTERNAL);
+      end
+
+    default:
+      select
+        case S=1:
+          strcpy(@Buff,"mov     BL,");
+
+        case S=2:
+          strcpy(@Buff,"mov     BX,");
+
+        default:
+          Stop(@emINTERNAL);
+      end
+
+      select
+        case Op1.Seg=srDS:
+          if Op1.Index!=0 then
+            Pop   (rgDI);
+            strcat(@Buff,"DS:[DI+");
+            Regs  [rgDI]=0;
+          else
+            strcat(@Buff,"DS:[");
+          end
+
+        case Op1.Seg=srBP:
+          if Op1.Index!=0 then
+            Pop   (rgDI);
+            strcat(@Buff,"SS:[BP][DI+");
+            Regs  [rgDI]=0;
+          else
+            strcat(@Buff,"SS:[BP+");
+          end
+
+        case Op1.Seg=srBN:
+          if Op1.Index!=0 then
+            Pop   (rgDI);
+            strcat(@Buff,"SS:[BP][DI-");
+            Regs  [rgDI]=0;
+          else
+            strcat(@Buff,"SS:[BP-");
+          end
+
+        case Op1.Seg=srES:
+          if Op1.Index!=0 then
+            Pop   (rgDI);
+            Pop   (rgES);
+            strcat(@Buff,"ES:[DI+");
+            Regs  [rgDI]=0;
+            Regs  [rgES]=0;
+          else
+            Stop(@emINTERNAL);
+          end
+      end
+
+      select
+        case S=1:
+          Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"]"));
+
+        case S=2:
+          Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"]"));
+
+        default:
+          Stop(@emINTERNAL);
+      end
+  end
+end
+
+void LPTR(OpInfo @Op1)
+  char Buff [128];
+  select
+    case Op1.Seg=srAX:
+      Pop (rgAX);
+      Pop (rgDX);
+      Push(rgES);
+      Push(rgDI);
+
+      Code(0,"mov     ES,DX");
+      Code(0,"mov     DI,AX");
+
+      Regs[rgAX]=0;
+      Regs[rgDX]=0;
+
+    case Op1.Seg=srDS:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        Push  (rgES);
+        strcpy(@Buff,"les     DI,DS:[DI+");
+      else
+        Push  (rgES);
+        Push  (rgDI);
+        strcpy(@Buff,"les     DI,DS:[");
+      end
+
+    case Op1.Seg=srBP:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        Push  (rgES);
+        strcpy(@Buff,"les     DI,SS:[BP][DI+");
+      else
+        Push  (rgES);
+        Push  (rgDI);
+        strcpy(@Buff,"les     DI,SS:[BP+");
+      end
+
+    case Op1.Seg=srBN:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        Push  (rgES);
+        strcpy(@Buff,"les     DI,SS:[BP][DI-");
+      else
+        Push  (rgES);
+        Push  (rgDI);
+        strcpy(@Buff,"les     DI,SS:[BP-");
+      end
+
+    case Op1.Seg=srES:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        Pop   (rgES);
+        strcpy(@Buff,"les     DI,ES:[DI+");
+      else
+        Stop(@emINTERNAL);
+      end
+
+    default:
+      Stop(@emINTERNAL);
+  end
+
+  if Op1.Seg!=srAX then
+    Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"]"));
+  end
+
+  Regs[rgDI]=1;
+  Regs[rgES]=1;
+
+  Op1.Seg   =srES;
+  Op1.Index =1;
+  Op1.Ofs   =0;
+end
+
+void STAX(OpInfo @Op1)
+  if Op1.Value=0 | Op1.Seg=srNO then
+    Stop(@emLVALUE);
+  end
+
+  char Buff [128];
+  select
+    case Op1.Seg=srDS:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        strcpy(@Buff,"mov     DS:[DI+");
+      else
+        strcpy(@Buff,"mov     DS:[");
+      end
+
+    case Op1.Seg=srBP:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        strcpy(@Buff,"mov     SS:[BP][DI+");
+      else
+        strcpy(@Buff,"mov     SS:[BP+");
+      end
+
+    case Op1.Seg=srBN:
+      if Op1.Index!=0 then
+        Pop   (rgDI);
+        strcpy(@Buff,"mov     SS:[BP][DI-");
+      else
+        strcpy(@Buff,"mov     SS:[BP-");
+      end
+
+    case Op1.Seg=srES:
+      Pop   (rgDI);
+      Pop   (rgES);
+      strcpy(@Buff,"mov     ES:[DI+");
+
+    default:
+      Stop(@emINTERNAL);
+  end
+
+  word S=4;
+  if Op1.nPtr=0 then
+    S=TTabl[Op1.pType].Size;
+  end
+
+  select
+    case S=1:
+      Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"],AL"));
+
+    case S=2:
+      Code(0,@strcat(@strcat(@Buff,@Str(Op1.Ofs,0)),"],AX"));
+
+    case S=4:
+      char    Temp [128];
+      strcpy(@Temp,@Buff);
+
+      word    Ofs=Op1.Ofs;
+
+      Code(0,@strcat(@strcat(@Buff,@Str(Ofs,0)),"],AX"));
+
+      if Op1.Seg!=srBN then
+        Ofs=Ofs+2;
+      else
+        Ofs=Ofs-2;
+      end
+
+      Code(0,@strcat(@strcat(@Temp,@Str(Ofs,0)),"],DX"));
+
+    default:
+      Stop(@emINTERNAL);
+  end
+end
+
+word Comp(word Size; char @Jump)
+  Code(0,    "xor     CL,CL");
+
+  select
+    case Size=1:
+      Code(0,    "cmp     AL,BL");
+    case Size=2:
+      Code(0,    "cmp     AX,BX");
+    default:
+      Stop(@emINTERNAL);
+  end
+
+  char Buff [128];
+  Code(0,    @strcat(@strcat(@strcpy(@Buff,@Jump),"     @"),@Str(Label,5)));
+  Code(0,    "mov     CL,1");
+  Code(Label,"mov     AL,CL");
+  inc  Label;
+
+  return FindType("");
+end
+
+void Test(word pType1; word nPtr1; OpInfo @Op2)
+  if nPtr1=0 then
+    if Op2.nPtr!=0 then
+      Stop(@emPOINTER);
+    end
+
+    if pType1=FindType("byte") then
+      if Op2.pType=FindType("word") then
+        Op2.pType=pType1;
+      end
+    end
+
+    if pType1!=Op2.pType then
+      Stop(@emTYPE);
+    end
+  else
+    if Op2.nPtr=0 then
+      Stop(@emNOPTR);
+    end
+
+    if pType1=0 then
+      if nPtr1=1 | nPtr1=Op2.nPtr then
+        return
+      end
+    end
+
+    if Op2.pType=0 then
+      if Op2.nPtr=1 | Op2.nPtr=nPtr1 then
+        return
+      end
+    end
+
+    if pType1!=Op2.pType then
+      Stop(@emTYPE);
+    end
+
+    if nPtr1!=Op2.nPtr then
+      Stop(@emEQUAL);
+    end
+  end
+end
+
+void Expr(word P; char @Buff; OpInfo @Op1)
+  select
+    case strcmp(@Buff,"(")=0:
+      if P>4 then
+        Stop(@emNOBRACKET);
+      end
+      Expr(0,@Scan(@Buff),@Op1);
+      if strcmp(@Buff,")")!=0 then
+        Stop(@emCBRACKET);
+      end
+      Scan(@Buff);
+
+    case Buff[0]=#39 & Buff[1]=#0:
+      Op1.pType=FindType("char");
+      Op1.Seg  =srNO;
+      Op1.Ofs  =CharToByte(Read());
+      Op1.nPtr =0;
+      Op1.Index=0;
+      Op1.Value=1;
+
+      Next();
+      if Read()!=#39 then
+        Stop(@emCHAR);
+      end
+      Next();
+
+      Scan(@Buff);
+
+    case strcmp(@Buff,"#")=0:
+      word D=Val(@Scan(@Buff));
+      if D>255 then
+        Stop(@emOVERFLOW);
+      end
+      Op1.pType=FindType("char");
+      Op1.Seg  =srNO;
+      Op1.Ofs  =D;
+      Op1.nPtr =0;
+      Op1.Index=0;
+      Op1.Value=1;
+
+      Scan(@Buff);
+
+    case Buff[0]=#34 & Buff[1]=#0:
+      word  P=nByte;
+      while TRUE do
+        if  Read()=#13 then
+          Stop(@emSTRING);
+        end
+        if  Read()=#10 then
+          Stop(@emSTRING);
+        end
+        if  nByte>=cbSIZE then
+          Stop(@emNOMEMORY);
+        end
+        if  Read()=#34 then
+          Next();
+          exit
+        end
+        CBuff[nByte]=Read();
+        Next ();
+        inc nByte;
+      end
+
+      CBuff[nByte]=#0;
+      inc   nByte;
+
+      Op1.pType=FindType("char");
+      Op1.Seg  =srCS;
+      Op1.Ofs  =P;
+      Op1.nPtr =1;
+      Op1.Index=0;
+      Op1.Value=0;
+
+      Scan(@Buff);
+
+    case isdigit(Buff[0])=0:
+      word D=Val(@Buff);
+      Op1.pType=FindType("word");
+      Op1.Seg  =srNO;
+      Op1.Ofs  =D;
+      Op1.nPtr =0;
+      Op1.Index=0;
+      Op1.Value=1;
+
+      Scan(@Buff);
+
+    default:
+      word  Flag=0;
+      word  Call=0;
+      word  N   =0;
+      while strcmp(@Buff,"@")=0 do
+        Scan(@Buff);
+        inc N;
+      end
+
+      word pIndex;
+      word nIndex;
+      word nPtr;
+      if  Flag=0 then
+        word I=FindVar(@Buff);
+        if I<nVar then
+          Op1.pType=VTabl[I].pType;
+          Op1.Seg  =srBN;
+          Op1.Ofs  =VTabl[I].Ofs;
+          Op1.nPtr =N;
+          Op1.Index=0;
+          pIndex   =VTabl[I].pIndex;
+          nIndex   =VTabl[I].nIndex;
+          nPtr     =VTabl[I].nPtr;
+          Flag     =1;
+        end
+      end
+
+      if Flag=0 & pSub<nSub then
+        word  I=STabl[pSub].pParm;
+        while I<STabl[pSub].nParm do
+          if strcmp(@Buff,@PTabl[I].Name)=0 then
+            Op1.pType=PTabl[I].pType;
+            Op1.Seg  =srBP;
+            Op1.Ofs  =PTabl[I].Ofs;
+            Op1.nPtr =N;
+            Op1.Index=0;
+            pIndex   =0;
+            nIndex   =0;
+            nPtr     =PTabl[I].nPtr;
+            Flag     =1;
+            exit
+          end
+          inc I;
+        end
+      end
+
+      if Flag=0 then
+        word I=FindData(@Buff);
+        if I<nData then
+          Op1.pType=DTabl[I].pType;
+          Op1.Seg  =srDS;
+          Op1.Ofs  =DTabl[I].Ofs;
+          Op1.nPtr =N;
+          Op1.Index=0;
+          pIndex   =DTabl[I].pIndex;
+          nIndex   =DTabl[I].nIndex;
+          nPtr     =DTabl[I].nPtr;
+          Flag     =1;
+        end
+      end
+
+      if Flag=0 then
+        word I=FindConst(@Buff);
+        if I<nConst then
+          if CTabl[I].nPtr=0 then
+            Op1.pType=CTabl[I].pType;
+            Op1.Seg  =srNO;
+            Op1.Ofs  =CTabl[I].Low;
+            Op1.nPtr =N;
+            Op1.Index=0;
+            nPtr     =0;
+          else
+            Op1.pType=CTabl[I].pType;
+            Op1.Seg  =srCS;
+            Op1.Ofs  =CTabl[I].Low;
+            Op1.nPtr =N;
+            Op1.Index=0;
+            nPtr     =0;
+
+            if N=0 then
+              Op1.nPtr=0;
+              nPtr    =1;
+            end
+          end
+
+          pIndex=0;
+          nIndex=0;
+
+          Flag  =1;
+        end
+      end
+
+      if Flag=0 then
+        word I=FindSub(@Buff);
+        if I<nSub then
+          Push(rgES);
+          Push(rgDI);
+          Push(rgDX);
+          Push(rgAX);
+
+          word S=4;
+          if STabl[I].nPtr=0 then
+            S=TTabl[STabl[I].pType].Size;
+          end
+
+          if S%2>0 then
+            inc S;
+          end
+
+          if S!=0 & S!=2 & S!=4 then
+            Stop(@emNOTAVAIL);
+          end
+
+          if strcmp(@Scan(@Buff),"(")!=0 then
+            Stop(@emCBRACKET);
+          end
+
+          Scan(@Buff);
+
+          word  K=STabl[I].pParm;
+          while K<STabl[I].nParm do
+            if  K>STabl[I].pParm then
+              if strcmp(@Buff,",")!=0 then
+                Stop(@emCOMMA);
+              end
+              Scan(@Buff);
+            end
+
+            Expr(0,@Buff,@Op1);
+
+            Test(PTabl[K].pType,PTabl[K].nPtr,@Op1);
+
+            LDAX(@Op1);
+
+            word S1=4;
+            if PTabl[K].nPtr=0 then
+              S1=TTabl[PTabl[K].pType].Size;
+            end
+            if S1%2>0 then
+              inc S1;
+            end
+
+            select
+              case S1=1:
+                Code(0,"push    AX");
+                Regs[rgAX]=0;
+              case S1=2:
+                Code(0,"push    AX");
+                Regs[rgAX]=0;
+              case S1=4:
+                Code(0,"push    DX");
+                Code(0,"push    AX");
+                Regs[rgDX]=0;
+                Regs[rgAX]=0;
+              default:
+                Stop(@emNOTAVAIL);
+            end
+
+            inc K;
+          end
+
+          if strcmp(@Buff,")")!=0 then
+            Stop(@emCBRACKET);
+          end
+
+          Code(0,@strcat(@strcpy(@Buff,"call    @"),@Str(STabl[I].Ofs,5)));
+
+          select
+            case S=1:
+              Regs[rgAX]=1;
+            case S=2:
+              Regs[rgAX]=1;
+            case S=4:
+              Regs[rgAX]=1;
+              Regs[rgDX]=1;
+          end
+
+          Op1.pType=STabl[I].pType;
+          Op1.Seg  =srAX;
+          Op1.Ofs  =0;
+          Op1.High =S;
+          Op1.nPtr =N;
+          Op1.Index=0;
+          pIndex   =0;
+          nIndex   =0;
+          nPtr     =STabl[I].nPtr;
+
+          if N=0 then
+            Call   =1;
+          end
+
+          Flag     =1;
+        end
+      end
+
+      if Flag=0 then
+        Stop(@emEXPECTED);
+      end
+
+      while TRUE do
+        word  P=pIndex;
+        while pIndex<nIndex do
+          if strcmp(@Scan(@Buff),"[")!=0 then
+            if P<pIndex then
+              Stop(@emSBRACKET);
+            end
+            exit
+          end
+
+          if pIndex!=P then
+            Push(rgDX);
+            Code(0,@strcat(@strcpy(@Buff,"mov     DX,"),@Str(ITabl[pIndex],0)));
+            Code(0,"mul     DX");
+            Code(0,"mov     DX,AX");
+            Regs[rgDX]=1;
+            Regs[rgAX]=0;
+          end
+
+          OpInfo Op2;
+          Expr(0,@Scan(@Buff),@Op2);
+
+          if strcmp(@Buff,"]")!=0 then
+            Stop(@emSBRACKET);
+          end
+
+          LDAX(@Op2);
+
+          if strcmp(@TTabl[Op2.pType].Name,"word")!=0 then
+            Stop(@emTYPE);
+          end
+
+          if Op2.nPtr>0 then
+            Stop(@emPOINTER);
+          end
+
+          if pIndex!=P then
+            Pop (rgDX);
+            Code(0,"add     AX,DX");
+            Regs[rgDX]=0;
+          end
+
+          inc pIndex;
+        end
+
+        if P<nIndex then
+          if pIndex<nIndex then
+            if N<nPtr+1 then
+              Stop(@emADDR);
+            end
+            exit
+          end
+
+          word S=4;
+          if nPtr=0 then
+            S=TTabl[Op1.pType].Size;
+          end
+
+          select
+            case S=1:
+            case S=2:
+              Code(0,"shl     AX,1");
+            case S=4:
+              Code(0,"shl     AX,1");
+              Code(0,"shl     AX,1");
+            default:
+              Push(rgDX);
+              Code(0,@strcat(@strcpy(@Buff,"mov     DX,"),@Str(S,0)));
+              Code(0,"mul     DX");
+          end
+
+          if Op1.Index!=0 then
+            Pop (rgDI);
+            Code(0,"add     DI,AX");
+          else
+            Push(rgDI);
+            Code(0,"mov     DI,AX");
+            Op1.Index=1;
+          end
+
+          Regs[rgAX]=0;
+          Regs[rgDI]=1;
+        end
+
+        while strcmp(@Scan(@Buff),"[")=0 do
+          if nPtr<1 then
+            exit
+          end
+
+          OpInfo Op2;
+          Expr(0,@Scan(@Buff),@Op2);
+
+          if strcmp(@Buff,"]")!=0 then
+            Stop(@emSBRACKET);
+          end
+
+          word S=4;
+          if nPtr<=1 then
+            S=TTabl[Op1.pType].Size;
+          end
+
+          LDBX(@Op2);
+
+          if strcmp(@TTabl[Op2.pType].Name,"word")!=0 then
+            Stop(@emTYPE);
+          end
+
+          if Op2.nPtr>0 then
+            Stop(@emPOINTER);
+          end
+
+          select
+            case S=1:
+            case S=2:
+              Code(0,"shl     BX,1");
+            case S=4:
+              Code(0,"shl     BX,1");
+              Code(0,"shl     BX,1");
+            default:
+              Push(rgDX);
+              Push(rgAX);
+              Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(S,0)));
+              Code(0,"mul     BX");
+              Code(0,"mov     BX,AX");
+          end
+
+          LPTR(@Op1);
+
+          Code(0,"add     DI,BX");
+
+          Call=0;
+
+          dec nPtr;
+        end
+
+        if strcmp(@Buff,".")!=0 then
+          exit
+        end
+
+        while nPtr>0 do
+          LPTR(@Op1);
+          dec nPtr;
+        end
+
+        Scan(@Buff);
+
+        P=TTabl[Op1.pType].pField;
+        while TRUE do
+          if P>=TTabl[Op1.pType].nField then
+            Stop(@emFIELD);
+          end
+          if strcmp(@Buff,@FTabl[P].Name)=0 then
+            exit
+          end
+          inc P;
+        end
+
+        if Op1.Seg!=srBN then
+          Op1.Ofs=Op1.Ofs+FTabl[P].Ofs;
+        else
+          Op1.Ofs=Op1.Ofs-FTabl[P].Ofs;
+        end
+        Op1.pType=FTabl[P].pType;
+        pIndex   =FTabl[P].pIndex;
+        nIndex   =FTabl[P].nIndex;
+        nPtr     =FTabl[P].nPtr;
+
+        Call     =0;
+      end
+
+      if P>5 & strcmp(@Buff,";")=0 then
+        if Call=0 then
+          Stop(@emASSIGN);
+        end
+        return
+      end
+
+      if N>nPtr then
+        dec N;
+        if  N>nPtr then
+          Stop(@emADDR);
+        end
+        Op1.Value=0;
+      else
+        Op1.Value=1;
+      end
+
+      while nPtr>N do
+        LPTR(@Op1);
+        dec nPtr;
+      end
+  end
+
+  while TRUE do
+    word Sign=0;
+    word P2  =0;
+    select
+      case strcmp(@Buff,"|")=0:
+        Sign= 1;
+        P2  = 1;
+
+      case strcmp(@Buff,"^")=0:
+        Sign= 2;
+        P2  = 1;
+
+      case strcmp(@Buff,"&")=0:
+        Sign= 3;
+        P2  = 1;
+
+      case strcmp(@Buff,"<")=0:
+        Sign= 4;
+        P2  = 2;
+
+      case strcmp(@Buff,"<=")=0:
+        Sign= 5;
+        P2  = 2;
+
+      case strcmp(@Buff,"=")=0:
+        Sign= 6;
+        P2  = 2;
+
+      case strcmp(@Buff,"!=")=0:
+        Sign= 7;
+        P2  = 2;
+
+      case strcmp(@Buff,">=")=0:
+        Sign= 8;
+        P2  = 2;
+
+      case strcmp(@Buff,">")=0:
+        Sign= 9;
+        P2  = 2;
+
+      case strcmp(@Buff,"+")=0:
+        Sign=10;
+        P2  = 3;
+
+      case strcmp(@Buff,"-")=0:
+        Sign=11;
+        P2  = 3;
+
+      case strcmp(@Buff,"*")=0:
+        Sign=12;
+        P2  = 4;
+
+      case strcmp(@Buff,"/")=0:
+        Sign=13;
+        P2  = 4;
+
+      case strcmp(@Buff,"%")=0:
+        Sign=14;
+        P2  = 4;
+    end
+
+    if P>=P2 then
+      return
+    end
+
+    OpInfo Op2;
+
+    Expr(P2,@Scan(@Buff),@Op2);
+
+    if Op1.nPtr=0 & Op2.nPtr=0 then
+      if Op1.pType!=Op2.pType then
+        Stop(@emTYPE);
+      end
+
+      LDBX(@Op2);
+      LDAX(@Op1);
+
+      select
+        case strcmp(@TTabl[Op1.pType].Name,"")=0:
+          select
+            case Sign=1:
+              Code(0,    "or      AL,BL");
+
+            case Sign=2:
+              Code(0,    "xor     AL,BL");
+
+            case Sign=3:
+              Code(0,    "and     AL,BL");
+
+            default:
+              Stop(@emUNDEFOPR);
+          end
+
+        case strcmp(@TTabl[Op1.pType].Name,"char")=0:
+          select
+            case Sign=4:
+              Op1.pType=Comp(1,"jae");
+
+            case Sign=5:
+              Op1.pType=Comp(1,"ja ");
+
+            case Sign=6:
+              Op1.pType=Comp(1,"jne");
+
+            case Sign=7:
+              Op1.pType=Comp(1,"je ");
+
+            case Sign=8:
+              Op1.pType=Comp(1,"jb ");
+
+            case Sign=9:
+              Op1.pType=Comp(1,"jbe");
+
+            default:
+              Stop(@emUNDEFOPR);
+          end
+
+        case strcmp(@TTabl[Op1.pType].Name,"word")=0:
+          select
+            case Sign=1:
+              Code(0,    "or      AX,BX");
+
+            case Sign=2:
+              Code(0,    "xor     AX,BX");
+
+            case Sign=3:
+              Code(0,    "and     AX,BX");
+
+            case Sign=4:
+              Op1.pType=Comp(2,"jae");
+
+            case Sign=5:
+              Op1.pType=Comp(2,"ja ");
+
+            case Sign=6:
+              Op1.pType=Comp(2,"jne");
+
+            case Sign=7:
+              Op1.pType=Comp(2,"je ");
+
+            case Sign=8:
+              Op1.pType=Comp(2,"jb ");
+
+            case Sign=9:
+              Op1.pType=Comp(2,"jbe");
+
+            case Sign=10:
+              Code(0,    "add     AX,BX");
+
+            case Sign=11:
+              Code(0,    "sub     AX,BX");
+
+            case Sign=12:
+              Push(rgDX);
+              Code(0,    "mul     BX");
+
+            case Sign=13:
+              Push(rgDX);
+              Code(0,    "xor     DX,DX");
+              Code(0,    "div     BX");
+
+            case Sign=14:
+              Push(rgDX);
+              Code(0,    "xor     DX,DX");
+              Code(0,    "div     BX");
+              Code(0,    "mov     AX,DX");
+
+            default:
+              Stop(@emUNDEFOPR);
+          end
+
+        default:
+          Stop(@emUNDEFOPR);
+      end
+
+      Op1.Seg =srAX;
+      Op1.Ofs =0;
+      Op1.High=TTabl[Op1.pType].Size;
+    else
+      Stop(@emNOTAVAIL);
+    end
+  end
+end
+
+void Tabl(char @Buff; word @S)
+  while  strcmp(@Buff,"[")=0 do
+    word D;
+    word I=FindConst(@Scan(@Buff));
+    if   I<nConst then
+      if strcmp(@TTabl[CTabl[I].pType].Name,"word")!=0 then
+        Stop(@emTYPE);
+      end
+
+      D=CTabl[I].Low;
+    else
+      D=Val(@Buff);
+    end
+
+    if D<1 then
+      Stop(@emARRAY);
+    end
+
+    S=Mul(S,D);
+    if S>65520 then
+      Stop(@emSEGMENT);
+    end
+
+    if strcmp(@Scan(@Buff),"]")!=0 then
+      Stop(@emSBRACKET);
+    end
+
+    if nIndex>=itSIZE then
+      Stop(@emNOMEMORY);
+    end
+
+    ITabl[nIndex]=D;
+    inc   nIndex;
+
+    Scan (@Buff);
+  end
+end
+
+word Retn;
+
+void Ctrl(char @Buff)
+  select
+    case strcmp(@Buff,"if")=0 | strcmp(@Buff,"select")=0:
+      long JTabl [jtSIZE];
+      word nJump =0;
+
+      word VSize1 =VSize;
+      word nVar1  =nVar;
+      word nIndex1=nIndex;
+      word Flag   =0;
+      long P;
+
+      char @Case;
+      char @Then;
+      char @Else;
+
+      if strcmp(@Buff,"if")=0 then
+        @Case="";
+        @Then="then";
+        @Else="else";
+
+        strcpy(@Buff,@Case);
+      else
+        @Case="case";
+        @Then=":";
+        @Else="default";
+
+        Scan(@Buff);
+      end
+
+      while strcmp(@Buff,"end")!=0 do
+        if Flag!=0 then
+          if nJump>=jtSIZE then
+            Stop(@emNOMEMORY);
+          end
+
+          JTabl[nJump]=Back();
+          inc   nJump;
+
+          Jump(0);
+
+          Code(Label,"nop");
+          Seek(P);
+          Jump(Label);
+          inc  Label;
+
+          Back();
+        end
+
+        nIndex=nIndex1;
+        nVar  = nVar1;
+        VSize =VSize1;
+
+        select
+          case strcmp(@Buff,@Else)=0:
+            if strcmp(@Buff,"default")=0 then
+              if strcmp(@Scan(@Buff),":")!=0 then
+                Stop(@emCOLON);
+              end
+            end
+
+            while strcmp(@Scan(@Buff),"end")!=0 do
+              Ctrl(@Buff);
+            end
+
+            Flag=0;
+
+          case strcmp(@Buff,@Case)=0:
+            OpInfo Op1;
+
+            Init();
+            Expr(0,@Scan(@Buff),@Op1);
+
+            if strcmp(@Buff,@Then)!=0 then
+              if strcmp(@Then,":")!=0 then
+                Stop(@emTHENEXP);
+              else
+                Stop(@emCOLON);
+              end
+            end
+
+            if Op1.nPtr>0 then
+              Stop(@emPOINTER);
+            end
+
+            if Op1.pType!=FindType("") then
+              Stop(@emBOOLEAN);
+            end
+
+            LDAX(@Op1);
+
+            Code(0,"or      AL,AL");
+            Code(0,@strcat(@strcpy(@Buff,"jnz     @"),@Str(Label,5)));
+            P=Back();
+            Jump(0);
+            Code(Label,"nop");
+            inc  Label;
+
+            while TRUE do
+              Scan(@Buff);
+              select
+                case strcmp(@Buff,@Case)=0:
+                  exit
+                case strcmp(@Buff,@Else)=0:
+                  exit
+                case strcmp(@Buff,"end")=0:
+                  exit
+              end
+
+              Ctrl(@Buff);
+            end
+
+            Flag=1;
+
+          default:
+            Stop(@emUNDEFINED);
+        end
+      end
+
+      Code(Label,"nop");
+
+      while nJump>0 do
+        dec nJump;
+        Seek(JTabl[nJump]);
+        Jump(Label);
+      end
+
+      if Flag!=0 then
+        Seek(P);
+        Jump(Label);
+      end
+
+      inc Label;
+
+      Back();
+
+      nIndex=nIndex1;
+      nVar  =nVar1;
+      VSize =VSize1;
+      Retn  =0;
+
+    case strcmp(@Buff,"while")=0:
+      word VSize1 =VSize;
+      word nVar1  =nVar;
+      word nIndex1=nIndex;
+      word Loop1  =Loop;
+      word nJump1 =nJump;
+
+      Loop=Label;
+      Code(Label,"nop");
+      inc  Label;
+
+      if strcmp(@Scan(@Buff),"TRUE")!=0 then
+        OpInfo Op1;
+
+        Init();
+        Expr(0,@Buff,@Op1);
+
+        if strcmp(@Buff,"do")!=0 then
+          Stop(@emDOEXPECTED);
+        end
+
+        if Op1.nPtr>0 then
+          Stop(@emPOINTER);
+        end
+
+        if Op1.pType!=FindType("") then
+          Stop(@emBOOLEAN);
+        end
+
+        LDAX(@Op1);
+
+        Code(0,"or      AL,AL");
+        Code(0,@strcat(@strcpy(@Buff,"jnz     @"),@Str(Label,5)));
+
+        if nJump>=jtSIZE then
+          Stop(@emNOMEMORY);
+        end
+
+        JTabl[nJump]=Back();
+        inc   nJump;
+
+        Jump(0);
+
+        Code(Label,"nop");
+        inc  Label;
+      else
+        if strcmp(@Scan(@Buff),"do")!=0 then
+          Stop(@emDOEXPECTED);
+        end
+      end
+
+      while strcmp(@Scan(@Buff),"end")!=0 do
+        Ctrl(@Buff);
+      end
+
+      Jump(Loop);
+
+      Code(Label,"nop");
+
+      while nJump>nJump1 do
+        dec nJump;
+        Seek(JTabl[nJump]);
+        Jump(Label);
+      end
+      inc Label;
+
+      Back();
+
+      Loop  =Loop1;
+      nIndex=nIndex1;
+      nVar  =nVar1;
+      VSize =VSize1;
+      Retn  =0;
+
+    case strcmp(@Buff,"loop")=0:
+      if Loop=0 then
+        Stop(@emLOOP);
+      end
+
+      Jump(Loop);
+
+      Retn  =0;
+
+    case strcmp(@Buff,"exit")=0:
+      if Loop=0 then
+        Stop(@emLOOP);
+      end
+
+      if nJump>=jtSIZE then
+        Stop(@emNOMEMORY);
+      end
+
+      JTabl[nJump]=Back();
+      inc   nJump;
+
+      Jump(0);
+
+      Retn  =0;
+
+    case strcmp(@Buff,"inc")=0 | strcmp(@Buff,"dec")=0:
+      char   Temp[128];
+      OpInfo Op1;
+
+      Init();
+      Expr(5,@Scan(@Temp),@Op1);
+
+      if Op1.nPtr>0 then
+        Stop(@emPOINTER);
+      end
+
+      if strcmp(@Temp,";")!=0 then
+        Stop(@emSEMICOLON);
+      end
+
+      LDAX(@Op1);
+
+      if strcmp(@TTabl[Op1.pType].Name,"word")!=0 then
+        Stop(@emTYPE);
+      end
+
+      if strcmp(@Buff,"inc")=0 then
+        Code(0,"inc     AX");
+      else
+        Code(0,"dec     AX");
+      end
+
+      Regs[rgDI]=1;
+      Regs[rgES]=1;
+
+      STAX(@Op1);
+
+      Retn  =0;
+
+    case strcmp(@Buff,"return")=0:
+      if pSub<nSub then
+        word S=4;
+        if   STabl[pSub].nPtr=0 then
+          S=TTabl[STabl[pSub].pType].Size;
+        end
+
+        if S>0 then
+          OpInfo Op1;
+
+          Init();
+          Expr(0,@Scan(@Buff),@Op1);
+
+          if strcmp(@Buff,";")!=0 then
+            Stop(@emSEMICOLON);
+          end
+
+          Test(STabl[pSub].pType,STabl[pSub].nPtr,@Op1);
+
+          LDAX(@Op1);
+        end
+
+        Code(0,    "mov     SP,BP");
+        Code(0,    "pop     BP");
+        Code(0,    @strcat(@strcpy(@Buff,"retn    "),@Str(PSize,0)));
+      else
+        Code(0,    "mov     AX,4C00H");
+        Code(0,    "int     21H");
+      end
+
+      Retn=1;
+
+    case strcmp(@Buff,"asm")=0:
+      while Read()=#09 | Read()=#32 do
+        Next();
+      end
+
+      word P=0;
+      while Read()!=#13 & Read()!=#10 do
+        Buff[P]=Read();
+        inc  P;
+        Next();
+      end
+      Buff[P]=#0;
+
+      Code(0,@Buff);
+
+      Retn  =0;
+
+    default:
+      Retn  =0;
+
+      word P=FindType(@Buff);
+      if   P<nType then
+        while TRUE do
+          word  N=0;
+          while strcmp(@Scan(@Buff),"@")=0 do
+            inc N;
+          end
+
+          if isalpha(Buff[0])!=0 then
+            Stop(@emEXPECTED);
+          end
+
+          if FindVar(@Buff)<nVar then
+            Stop(@emDOUBLE);
+          end
+
+          if nVar>=vtSIZE then
+            Stop(@emNOMEMORY);
+          end
+
+          VTabl[nVar].pType =P;      strcpy(@VTabl[nVar].Name,@Buff);
+          VTabl[nVar].pIndex=nIndex;
+          VTabl[nVar].nIndex=0;
+          VTabl[nVar].nPtr  =N;
+
+          word S0=4;
+          if   N=0 then
+            S0=TTabl[P].Size;
+          end
+
+          Tabl(@Scan(@Buff),@S0);
+
+          if S0%2!=0 then
+            inc S0;
+          end
+
+          VSize=Add(VSize,S0);
+          if Add(VSize,Add(PSize,Add(RSize,4)))>Smax then
+            Stop(@emSEGMENT);
+          end
+
+          if SSize<VSize then
+            SSize=VSize;
+          end
+
+          VTabl[nVar].nIndex=nIndex;
+          VTabl[nVar].Ofs   =VSize;
+
+          if strcmp(@Buff,"=")=0 then
+            OpInfo Op1,Op2;
+
+            if nIndex>VTabl[nVar].pIndex then
+              Stop(@emINIT);
+            end
+
+            Op1.pType=VTabl[nVar].pType;
+            Op1.Seg  =srBN;
+            Op1.Ofs  =VTabl[nVar].Ofs;
+            Op1.nPtr =VTabl[nVar].nPtr;
+            Op1.Index=0;
+            Op1.Value=1;
+
+            Init();
+            Expr(0,@Scan(@Buff),@Op2);
+
+            Test(Op1.pType,Op1.nPtr,@Op2);
+
+            LDAX(@Op2);
+            STAX(@Op1);
+          end
+          inc nVar;
+
+          if strcmp(@Buff,";")=0 then
+            exit
+          end
+
+          if strcmp(@Buff,",")!=0 then
+            Stop(@emCOMMA);
+          end
+        end
+      else
+        OpInfo Op1,Op2;
+
+        Init();
+        Expr(6,@Buff,@Op1);
+
+        if strcmp(@Buff,";")=0 then
+          return
+        end
+
+        if strcmp(@Buff,"=")!=0 then
+          Stop(@emASSIGN);
+        end
+
+        Expr(0,@Scan(@Buff),@Op2);
+
+        if strcmp(@Buff,";")!=0 then
+          Stop(@emSEMICOLON);
+        end
+
+        Test(Op1.pType,Op1.nPtr,@Op2);
+
+        LDAX(@Op2);
+        STAX(@Op1);
+      end
+  end
+end
+
+void Type(char @Name; word Size)
+  TTabl[nType].pField=0; strcpy(@TTabl[nType].Name,@Name);
+  TTabl[nType].nField=0;
+  TTabl[nType].Size  =Size;
+  inc   nType;
+end
+
+void Func()
+  Code(0,    "");
+  Code(Label,"push    BP");
+  Code(0,    "mov     BP,SP");
+  inc  Label;
+
+  long S=Back();
+  Code(0,    "mov     AX,00000");
+  Code(0,    "sub     SP,AX");
+
+  char  Buff[256];
+  while strcmp(@Scan(@Buff),"end")!=0 do
+    Ctrl(@Buff);
+  end
+
+  Seek(S);
+  Code(0,@strcat(@strcpy(@Buff,"mov     AX,"),@Str(SSize,5)));
+  Back();
+
+  if Retn=0 then
+    Code(0,    "mov     SP,BP");
+    Code(0,    "pop     BP");
+    if pSub<nSub then
+      Code(0,    @strcat(@strcpy(@Buff,"retn    "),@Str(PSize,0)));
+    else
+      Code(0,    "mov     AX,4C00H");
+      Code(0,    "int     21H");
+    end
+  end
+end
+
+begin
+  word @Size=@Ptr(GetPSP(),128); // byte
+  char @Parm=@Ptr(GetPSP(),129);
+  char  Buff [256];
+
+  word  I=0;
+  while I<Size%256 & Parm[I] =' ' do
+    inc I;
+  end
+
+  word  P=0;
+  word  N=0;
+  word  K=0;
+  while I<Size%256 & Parm[I]!=' ' do
+    Buff[K]=Parm[I];
+    select
+      case Buff[K]='.':
+        P=K;
+
+      case Buff[K]='\':
+        N=K+1;
+        P=0;
+    end
+
+    inc  K;
+    inc  I;
+  end
+  Buff[K]=#0;
+
+  if K=0 then
+    outs("Тpанслятоp языка Context. Веpсия 1.0");
+    outs("(C) Хохлов А.В.  г. Москва 1995-2003");
+    outs("Использование:  context  <имя файла>");
+    return
+  end
+
+  if P=0 then
+    P=K;
+    strcpy(@Buff[P],".CTX");
+  end
+
+  if strlen(@Buff[N])>12 then
+    puts(@Buff[N]);
+    puts("(0): Слишком длинное имя файла");
+    return
+  end
+
+  strcpy(@Name,@Buff[N]);
+
+  F1=open(@Buff);
+  if F1=$FFFF then
+    puts(@Name);
+    puts("(0): Невозможно откpыть файл");
+    return
+  end
+
+  strcpy(@Buff[P],".ASM");
+
+  F2=create(@Buff);
+
+  nType =0;
+  nField=0;
+  nSub  =0;
+  nParm =0;
+  DSize =0;
+  nData =0;
+  nConst=0;
+  nByte =0;
+  nIndex=0;
+  nJump =0;
+
+  Loop  =0;
+  Retn  =0;
+
+  nChar =0;
+  pChar =0;
+  Line  =1;
+
+  Label =2;
+
+  Type("void",0);
+  Type("",    1);
+  Type("char",1);
+  Type("byte",1);
+  Type("word",2);
+
+  Code(0,"mov     AX,4096");
+  Code(0,"mov     DX,CS");
+  Code(0,"add     DX,AX");
+  Code(0,"mov     DS,DX");
+  Code(0,"add     DX,AX");
+  Code(0,"mov     SS,DX");
+
+  JTabl[nJump]=Back();
+  inc   nJump;
+
+  Jump(0);
+
+  while strcmp(@Scan(@Buff),"begin")!=0 do
+    select
+      case strcmp(@Buff,"define")=0:
+        Scan(@Buff);
+        word  Flag=0;
+        if strcmp(@Buff,"@")=0 then
+          Scan(@Buff);
+          Flag=1;
+        end
+
+        if isalpha(Buff[0])!=0 then
+          Stop(@emEXPECTED);
+        end
+
+        if FindConst(@Buff)<nConst then
+          Stop(@emDOUBLE);
+        end
+
+        if nConst>=ctSIZE then
+          Stop(@emNOMEMORY);
+        end
+
+        strcpy(@CTabl[nConst].Name,@Buff);
+
+        Scan(@Buff);
+        if Flag!=0 then
+          if Buff[0]!=#34 then
+            Stop(@emSTRING);
+          end
+          CTabl[nConst].pType=FindType("char");
+          CTabl[nConst].nPtr =1;
+          CTabl[nConst].Low  =nByte;
+
+          while TRUE do
+            if Read()=#13 then
+              Stop(@emSTRING);
+            end
+            if Read()=#10 then
+              Stop(@emSTRING);
+            end
+            if nByte>=cbSIZE then
+              Stop(@emLONG);
+            end
+            if Read()=#34 then
+              Next();
+              exit
+            end
+            CBuff[nByte]=Read();
+            Next ();
+            inc nByte;
+          end
+          CBuff[nByte]=#0;
+          inc   nByte;
+        else
+          if strcmp(@Buff,"'")=0 then
+            CTabl[nConst].pType=FindType("char");
+            CTabl[nConst].nPtr =0;
+            CTabl[nConst].Low  =CharToByte(Read());
+            Next();
+            if Read()!=#39 then
+              Stop(@emCHAR);
+            end
+            Next();
+          else
+            if strcmp(@Buff,"#")=0 then
+              word D=Val(@Scan(@Buff));
+              if   D>255 then
+                Stop(@emOVERFLOW);
+              end
+              CTabl[nConst].pType=FindType("char");
+              CTabl[nConst].nPtr =0;
+              CTabl[nConst].Low  =D;
+            else
+              word D=Val(@Buff);
+              CTabl[nConst].pType=FindType("word");
+              CTabl[nConst].nPtr =0;
+              CTabl[nConst].Low  =D;
+            end
+          end
+        end
+
+        inc nConst;
+
+      case strcmp(@Buff,"struct")=0:
+        Scan(@Buff);
+        if isalpha(Buff[0])!=0 then
+          Stop(@emEXPECTED);
+        end
+
+        if FindType(@Buff)<nType then
+          Stop(@emDOUBLE);
+        end
+
+        if nType>=ttSIZE then
+          Stop(@emNOMEMORY);
+        end
+
+        strcpy(@TTabl[nType].Name,@Buff);
+        P = nType;
+        inc nType;
+
+        word N1=nField;
+        word S1=0;
+        while strcmp(@Scan(@Buff),"end")!=0 do
+          K=FindType(@Buff);
+          if K>=nType then
+            Stop(@emUNDEFINED);
+          end
+
+          while TRUE do
+            N=0;
+            while strcmp(@Scan(@Buff),"@")=0 do
+              inc N;
+            end
+
+            if isalpha(Buff[0])!=0 then
+              Stop(@emEXPECTED);
+            end
+
+            I=N1;
+            while I<nField do
+              if strcmp(@Buff,@FTabl[I].Name)=0 then
+                Stop(@emDOUBLE);
+              end
+              inc I;
+            end
+
+            if nField>=ftSIZE then
+              Stop(@emNOMEMORY);
+            end
+
+            FTabl[nField].pType =K;      strcpy(@FTabl[nField].Name,@Buff);
+            FTabl[nField].pIndex=nIndex;
+            FTabl[nField].nIndex=0;
+            FTabl[nField].nPtr  =N;
+            FTabl[nField].Ofs   =S1;
+
+            word S0=4;
+            if   N=0 then
+              S0=TTabl[K].Size;
+            end
+
+            Tabl(@Scan(@Buff),@S0);
+
+            S1=Add(S1,S0);
+            if S1>65520 then
+              Stop(@emSTRUCTURE);
+            end
+
+            FTabl[nField].nIndex=nIndex;
+            inc   nField;
+
+            if strcmp(@Buff,";")=0 then
+              exit
+            end
+
+            if strcmp(@Buff,",")!=0 then
+              Stop(@emCOMMA);
+            end
+          end
+        end
+
+        if S1=0 then
+          Stop(@emEMPTY);
+        end
+
+        TTabl[P].pField=N1;
+        TTabl[P].nField=nField;
+        TTabl[P].Size  =S1;
+
+      default:
+        P=FindType(@Buff);
+        if P>=nType then
+          Stop(@emUNDEFINED);
+        end
+
+        word  Flag=1;
+        while TRUE do
+          N=0;
+          while strcmp(@Scan(@Buff),"@")=0 do
+            inc N;
+          end
+
+          if isalpha(Buff[0])!=0 then
+            Stop(@emEXPECTED);
+          end
+
+          if FindData(@Buff)<nData then
+            Stop(@emDOUBLE);
+          end
+
+          if nData>=dtSIZE then
+            Stop(@emNOMEMORY);
+          end
+
+          DTabl[nData].pType =P;      strcpy(@DTabl[nData].Name,@Buff);
+          DTabl[nData].pIndex=nIndex;
+          DTabl[nData].nIndex=0;
+          DTabl[nData].nPtr  =N;
+          DTabl[nData].Ofs   =DSize;
+
+          if strcmp(@Scan(@Buff),"(")=0 then //strcmp(@Buff,"(")=0
+            if Flag=0 then
+              Stop(@emFUNCTION);
+            end
+
+            if FindSub(@DTabl[nData].Name)<nSub then
+              Stop(@emDOUBLE);
+            end
+
+            if nSub>=stSIZE then
+              Stop(@emNOMEMORY);
+            end
+
+            STabl[nSub].pType=DTabl[nData].pType; strcpy(@STabl[nSub].Name,@DTabl[nData].Name);
+            STabl[nSub].nPtr =DTabl[nData].nPtr;
+            STabl[nSub].pParm=nParm;
+
+            Scan(@Buff);
+            while strcmp(@Buff,")")!=0 do
+              K=FindType(@Buff);
+              if K>=nType then
+                Stop(@emUNDEFINED);
+              end
+
+              while TRUE do
+                N=0;
+                while strcmp(@Scan(@Buff),"@")=0 do
+                  inc N;
+                end
+
+                if isalpha(Buff[0])!=0 then
+                  Stop(@emEXPECTED);
+                end
+
+                I=STabl[nSub].pParm;
+                while I<nParm do
+                  if strcmp(@PTabl[I].Name,@Buff)=0 then
+                    Stop(@emDOUBLE);
+                  end
+                  inc I;
+                end
+
+                if nParm>=ptSIZE then
+                  Stop(@emNOMEMORY);
+                end
+
+                PTabl[nParm].pType=K; strcpy(@PTabl[nParm].Name,@Buff);
+                PTabl[nParm].nPtr =N;
+                inc   nParm;
+
+                if strcmp(@Scan(@Buff),",")!=0 then
+                  exit
+                end
+              end
+
+              if strcmp(@Buff,";")=0 then
+                if strcmp(@Scan(@Buff),")")=0 then
+                  Stop(@emUNDEFINED);
+                end
+              end
+            end
+
+            STabl[nSub].nParm=nParm;
+
+            pSub =nSub;
+            inc   nSub;
+
+            RSize=4;
+            if STabl[pSub].nPtr=0 then
+              RSize=TTabl[STabl[pSub].pType].Size;
+            end
+
+            SSize=0;
+            VSize=0;
+            PSize=0;
+            nVar =0;
+
+            K=STabl[pSub].pParm;
+            while K<STabl[pSub].nParm do
+              word S=4;
+              if PTabl[K].nPtr=0 then
+                S=TTabl[PTabl[K].pType].Size;
+              end
+              if S%2>0 then
+                inc S;
+              end
+              PSize=Add(PSize,S);
+              if Add(PSize,Add(RSize,4))>Smax then
+                Stop(@emSEGMENT);
+              end
+              PTabl[K].Ofs=PSize;
+              inc   K;
+            end
+
+            K=STabl[pSub].pParm;
+            while K<STabl[pSub].nParm do
+              PTabl[K].Ofs=(PSize-PTabl[K].Ofs)+4;
+              inc   K;
+            end
+
+            STabl[pSub].Ofs=Label;
+
+            Func();
+
+            exit
+          end
+
+          word S0=4;
+          if N=0 then
+            S0=TTabl[P].Size;
+          end
+
+          Tabl(@Buff,@S0);
+
+          if S0%2!=0 then
+            inc S0;
+          end
+
+          DSize=Add(DSize,S0);
+          if DSize>65520 then
+            Stop(@emSTRUCTURE);
+          end
+
+          DTabl[nData].nIndex=nIndex;
+          inc   nData;
+
+          select
+            case strcmp(@Buff,";") =0:
+              exit
+            case strcmp(@Buff,",")!=0:
+              Stop(@emCOMMA);
+          end
+          Flag=0;
+        end
+    end
+  end
+
+  dec nJump;
+  Seek(JTabl[nJump]);
+  Jump(Label);
+
+  pSub =nSub;
+  RSize=0;
+  PSize=0;
+  SSize=0;
+  VSize=0;
+  nVar =0;
+
+  Func();
+
+  P=16384;
+  I=0;
+  while I<nByte do
+    K=strlen(@strcpy(@Buff,"db      "));
+    Buff[K]=#34;
+    inc  K;
+    while  I<nByte & CBuff[I]!=#0 do
+      Buff[K]=CBuff[I];
+      inc  K;
+      inc  I;
+    end
+    Buff[K]=#34;
+    strcpy(@Buff[K+1],",0");
+    if P!=0 then
+      Code(0,"");
+    end
+    Code  (P,@Buff);
+    P=0;
+    inc I;
+  end
+
+  putc  (#13);
+  puts  (@strcat(@strcat(@strcat(@strcpy(@Buff,@Name),"("),@Str(Line,0)),")"));
+
+  close (F2);
+  close (F1);
+end

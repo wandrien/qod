@@ -1,0 +1,34 @@
+@echo off
+
+
+call :mk ..\bin\context.exe    ctx4win --win32-c out\ context_a.exe
+
+call :mk out\context_a.exe ctx4win       --win32-c out\ context_b.exe
+call :mk out\context_b.exe ctx4win       --win32-c out\ context_c.exe
+call :mk out\context_c.exe ctx4lnx       --linux   out\ context_c
+
+call :mk out\context_c.exe samples\z_t1  --win32-c out\ z_t1.exe
+call :mk out\context_c.exe samples\z_t2  --win32-w out\ z_t2.exe
+call :mk out\context_c.exe samples\z_t3  --win32-c out\ z_t3.exe
+call :mk out\context_c.exe samples\z_t4  --win32-c out\ z_t4.exe
+out\z_t4.exe > out\z_t4_1.ctx
+call :mk out\context_c.exe out\z_t4_1  --win32-c out\ z_t4_1.exe
+
+goto :end
+
+
+:mk
+rem echo.
+echo %2 ==^> %4%5
+%1    %2.ctx %3 --output %4.%5.asm --output-tree %4.%5.tree
+if not %ERRORLEVEL%==0 goto err
+fasm  %4.%5.asm %4%5 > nul
+if not %ERRORLEVEL%==0 goto err
+exit /b
+
+
+:err
+echo.
+echo Error code %ERRORLEVEL%
+:end
+rem exit

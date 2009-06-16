@@ -1,0 +1,212 @@
+
+/*
+	¬спомогательные функции дл€ генерировани€ в листинг названий регистров, меток и т.п.
+*/
+
+/*****************************************************************************/
+
+/*
+	ѕомещает в Buff обозначение регистра Reg в режиме RegMode
+	Reg:
+		0 - A
+		1 - B
+	RegMode:
+		1 - 8 бит
+		2 - 16 бит
+		4 - 32 бита
+*/
+char @CodeReg(char @Buff; word Reg; word RegMode)
+
+	char R[4];
+
+	select
+		case RegMode = 1:
+			strcpy(@R, " AL");
+		case RegMode = 2:
+			strcpy(@R, " AX");
+		case RegMode = 4:
+			strcpy(@R, "EAX");
+		default:
+			StopInternal();
+	end
+
+	if Reg < 0 | Reg > 3 then
+		StopInternal();
+	end
+
+	R[1] = char(word(R[1]) + Reg);
+
+	strcat(@Buff, @R);
+
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff обозначение указанной метки. */
+char @CodeLabel(char @Buff; word Label)
+
+	strcat(@Buff, " @");
+	strcat(@Buff, @str(Dict[Label].Value));
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff обозначени€ 2-х регистров. */
+char @CodeRegReg(char @Buff; word Reg1; word RegMode1; word Reg2; word RegMode2)
+
+	CodeReg(@Buff, Reg1, RegMode1);
+	strcat(@Buff, ",  ");
+	CodeReg(@Buff, Reg2, RegMode2);
+	return @Buff;
+
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff обозначени€ регистра и константного значени€. */
+char @CodeRegConst(char @Buff; word Reg1; word RegMode1; word Value)
+
+	CodeReg(@Buff, Reg1, RegMode1);
+	strcat(@Buff, ",  ");
+	strcat(@Buff, @str(Value));
+	return @Buff;
+
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff код дл€ операции регистра и и регистра. */
+char @CodeCmdRegReg(char @Buff; char @Cmd; word Reg1; word RegMode1; word Reg2; word RegMode2)
+
+	strcat(@Buff, @Cmd);
+	word cmd_len = strlen(@Cmd);
+	while cmd_len < 8 do
+		strcat(@Buff, " ");
+		inc cmd_len;
+	end
+
+	CodeRegReg(@Buff, Reg1, RegMode1, Reg2, RegMode2);
+
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff код дл€ операции регистра и константы. */
+char @CodeCmdRegConst(char @Buff; char @Cmd; word Reg; word RegMode; word Value)
+
+	strcat(@Buff, @Cmd);
+	word cmd_len = strlen(@Cmd);
+	while cmd_len < 8 do
+		strcat(@Buff, " ");
+		inc cmd_len;
+	end
+
+	CodeRegConst(@Buff, Reg, RegMode, Value);
+
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff код дл€ операции с регистром. */
+char @CodeCmdReg(char @Buff; char @Cmd; word Reg; word RegMode)
+
+	strcat(@Buff, @Cmd);
+	word cmd_len = strlen(@Cmd);
+	while cmd_len < 8 do
+		strcat(@Buff, " ");
+		inc cmd_len;
+	end
+
+	CodeReg(@Buff, Reg, RegMode);
+
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff код загрузки константы в регистр. */
+char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value)
+	select
+	case Value = 0:
+		CodeCmdRegReg(@Buff, "xor", Reg, RegMode, Reg, RegMode);
+	default:
+		CodeCmdRegConst(@Buff, "mov", Reg, RegMode, Value);
+	end
+end
+
+/*****************************************************************************/
+
+/* ѕомещает в Buff код загрузки метки в регистр. */
+char @CodeLoadLabel(char @Buff; word Reg; word Label)
+
+	strcat(@Buff, "mov     ");
+	CodeReg(@Buff, Reg, 4);
+	strcat(@Buff, ",");
+	CodeLabel(@Buff, Label);
+
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+void CodeData_FIELD(word @P1, @pType, @nPtr, @ID, @Ofs)
+
+	word p = Node[P1].Value;
+
+	pType = Parm[p].pType;
+	nPtr  = Parm[p].nPtr;
+	if ID != iLOCAL then
+		Ofs = Ofs + Parm[p].Value;
+	else
+		Ofs = Ofs - Parm[p].Value;
+	end
+end
+
+/*****************************************************************************/
+
+char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
+
+	if IX!=0 then
+		char RX[4];
+		if IX=1 then
+			strcpy(@RX,"EAX");
+		else
+			strcpy(@RX,"EBX");
+		end
+
+		select
+		case ID=iDATA:
+			strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+");
+		case ID=iPARM:
+			strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+");
+		case ID=iLOCAL:
+			strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-");
+		case ID=iREF:
+			strcat(@strcat(@strcat(@Buff,"["),@RX),"+");
+		default:
+			StopInternal();
+		end:select
+	else
+		select
+		case ID=iDATA:
+			strcat(@Buff,"[@@DATA+");
+		case ID=iPARM:
+			strcat(@Buff,"[EBP+");
+		case ID=iLOCAL:
+			strcat(@Buff,"[EBP-");
+		default:
+			StopInternal();
+		end:select
+	end:if
+
+	strcat(@strcat(@Buff,@str(offset)),"]");
+
+	return @Buff;
+end
+
+
+/*****************************************************************************/

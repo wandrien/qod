@@ -1,0 +1,43 @@
+
+
+/*****************************************************************************/
+
+NODE     Node [nNODE]; // Массив узлов синтаксического деpева
+word    nNode;
+
+/*****************************************************************************/
+
+/* Выделить узел и вернуть его индекс. */
+word Peek()
+	word N  = nNode;
+	if   N >= nNODE then
+		Stop(@eNOMEMORY);
+	end
+
+	Node[nNode].pLeft  = nNODE;
+	Node[nNode].pRight = nNODE;
+	Node[nNode].pType  = nDICT;
+	inc  nNode;
+
+	return N;
+end
+
+/*****************************************************************************/
+
+/* Клониpование поддеpева. */
+word Dup(word P)
+	if P >= nNODE then
+		return P;
+	end
+
+	word P1=Peek();
+	Node[P1].ID     = Node[P].ID;
+	Node[P1].Value  = Node[P].Value;
+	Node[P1].pLeft  = Dup(Node[P].pLeft);
+	Node[P1].pRight = Dup(Node[P].pRight);
+
+	return P1;
+end
+
+/*****************************************************************************/
+

@@ -1,0 +1,111 @@
+
+/*
+	Вспомогательные и интерфейсные функции, не подходящие в другие файлы.
+*/
+
+/*****************************************************************************/
+
+word AlignTo(word v; word align)
+	while v % align !=0 do
+		inc v;
+	end
+	return v;
+end
+
+/*****************************************************************************/
+
+word DefaultStaticAlign(word v)
+	return AlignTo(v, DefaultStaticAlignment);
+end
+
+/*****************************************************************************/
+
+word DefaultInStackAlign(word v)
+	return AlignTo(v, DefaultInStackAlignment);
+end
+
+/*****************************************************************************/
+
+word SizeOfType(word pType; word nPtr)
+
+	if nPtr = 0 then
+		if Dict[pType].Class != cTYPE then
+			StopInternal();
+		end
+		return Dict[pType].Value;
+	end
+
+	return PointerSize;
+end
+
+/*****************************************************************************/
+
+word GetVarSize(word pType; word nPtr; word pIndx; word nIndx)
+	word Size = SizeOfType(pType, nPtr);
+
+	while  pIndx < nIndx do
+		Size = Indx[pIndx] * Size;
+		inc pIndx;
+	end
+
+	return Size;
+end
+
+/*****************************************************************************/
+
+/*
+	Распаковывает из узлов iDATA, iPARM, iLOCAL и iSTRING информацию об объекте.
+	(Ofs - смещение относительно специфичного источника (напр., для iDATA - смещение от начала секции данных и т.п.))
+*/
+word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs)
+
+	word ID = Node[P].ID;
+
+	select
+		case ID = iDATA:
+			pType = Dict[Node[P].Value].pType;
+			nPtr  = Dict[Node[P].Value].nPtr;
+			pIndx = Dict[Node[P].Value].pIndx;
+			nIndx = Dict[Node[P].Value].nIndx;
+			Ofs   = Dict[Node[P].Value].Value;
+
+		case ID = iPARM:
+			pType = Parm[Node[P].Value].pType;
+			nPtr  = Parm[Node[P].Value].nPtr;
+			pIndx = Parm[Node[P].Value].pIndx;
+			nIndx = Parm[Node[P].Value].nIndx;
+			Ofs   = Parm[Node[P].Value].Value;
+
+		case ID = iLOCAL:
+			pType = Parm[Node[P].Value+pParm].pType;
+			nPtr  = Parm[Node[P].Value+pParm].nPtr;
+			pIndx = Parm[Node[P].Value+pParm].pIndx;
+			nIndx = Parm[Node[P].Value+pParm].nIndx;
+			Ofs   = Parm[Node[P].Value+pParm].Value;
+
+		case ID = iSTRING:
+			pIndx = 0;
+			nIndx = 0;
+			pType = Dict[Node[P].Value].pType;
+			nPtr  = 1;
+			Ofs   = Dict[Node[P].Value].Value;
+
+		default:
+			StopInternal();
+      end
+
+	return ID;
+end
+
+/*****************************************************************************/
+
+word NodeHasConst(word P; word Data)
+	if (Node[P].ID = iNULL & Data = 0)
+	 | ( (Node[P].ID = iWORD | Node[P].ID = iINT) & Node[P].Value = 0) then
+		return 1;
+	end:if
+	return 0;
+end
+
+/*****************************************************************************/
+

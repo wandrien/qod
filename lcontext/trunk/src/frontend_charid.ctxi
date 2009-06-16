@@ -1,0 +1,55 @@
+
+define CHARID_UNKNOWN 0
+define CHARID_ALPHA   1
+define CHARID_DIGIT   2
+define CHARID_WSPACE  3
+
+word charid_table[256];
+
+word is_charid(char c; word id)
+	if charid_table[word(c)] = id then
+		return 1;
+	end:if
+	return 0;
+end
+
+word isalpha(char c)
+	return is_charid(c, CHARID_ALPHA);
+end
+
+
+word  isdigit(char c)
+	return is_charid(c, CHARID_DIGIT);
+end
+
+word  iswhitespace(char c)
+	return is_charid(c, CHARID_WSPACE);
+end
+
+
+void init_charid_interval(word id; char from; char to)
+	word i = word(from);
+	while i <= word(to) do
+		charid_table[i] = id;
+		inc i;
+	end:while
+end
+
+void init_charid_with_string(word id; char@ chars)
+	word i = 0;
+	while chars[i] != #0 do
+		charid_table[word(chars[i])] = id;
+		inc i;
+	end:while
+end
+
+void init_charid()
+	init_charid_interval(CHARID_UNKNOWN, #0 , #255);
+	init_charid_interval(CHARID_ALPHA  , 'A', 'Z' );
+	init_charid_interval(CHARID_ALPHA  , 'a', 'z' );
+	init_charid_interval(CHARID_ALPHA  , '_', '_' );
+	init_charid_interval(CHARID_DIGIT  , '0', '9' );
+	init_charid_interval(CHARID_DIGIT  , '$', '$' );
+	init_charid_with_string(CHARID_WSPACE, "~n~r~t ");
+	return;
+end

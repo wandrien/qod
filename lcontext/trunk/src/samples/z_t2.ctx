@@ -1,0 +1,148 @@
+$context2
+
+include "windows.ctxi"
+include "strings.ctxi"
+
+
+define  @Class "Hello"
+define  @Hello "Hello, World!"
+
+
+int      Width;
+int      Height;
+
+HGDIOBJ hFont;
+
+
+void    CreateFont()
+  LOGFONT LogFont;
+
+  LogFont.lfHeight         =  2*Height/3;
+  LogFont.lfWidth          =  Width/15;
+  LogFont.lfEscapement     =  0;
+  LogFont.lfOrientation    =  0;
+  LogFont.lfWeight         =  FW_BOLD;
+  LogFont.lfItalic         =  FALSE;
+  LogFont.lfUnderline      =  FALSE;
+  LogFont.lfStrikeOut      =  FALSE;
+  LogFont.lfCharSet        =  DEFAULT_CHARSET;
+  LogFont.lfOutPrecision   =  OUT_DEFAULT_PRECIS;
+  LogFont.lfClipPrecision  =  CLIP_DEFAULT_PRECIS;
+  LogFont.lfQuality        =  PROOF_QUALITY;
+  LogFont.lfPitchAndFamily =  DEFAULT_PITCH;
+
+  strcpy(@LogFont.lfFaceName,"Tahoma");
+
+  hFont=CreateFontIndirect(@LogFont);
+
+end
+
+
+LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
+  select
+    case Message=WM_SIZE:
+      if wParam!=SIZE_MINIMIZED then
+        Width =lParam % $10000;
+        Height=lParam / $10000;
+
+        DeleteObject(hFont);
+        CreateFont  ();
+      end
+
+    case Message=WM_PAINT:
+      PAINTSTRUCT PS;
+
+      HDC     hDC    =BeginPaint(hWnd,@PS);
+      HGDIOBJ hFont0 =SelectObject(hDC,hFont);
+      int     BkMode0=SetBkMode(hDC,TRANSPARENT);
+
+      SIZE    s;
+
+      GetTextExtentPoint(hDC,@Hello,strlen(@Hello),@s);
+      TextOut(hDC,(Width-s.cx)/2,(Height-s.cy)/2,@Hello,strlen(@Hello));
+
+      SetBkMode   (hDC, BkMode0);
+      SelectObject(hDC, hFont0);
+      EndPaint    (hWnd,@PS);
+
+      return 0;
+
+    case Message=WM_COMMAND:
+      select
+        case (wParam & $FFFF)=101:
+          MessageBox(hWnd,"Context-2 demonstration program",@Class,MB_OK);
+          return 0;
+
+        case (wParam & $FFFF)=102:
+          PostQuitMessage (0);
+          return 0;
+      end:select
+
+    case Message=WM_DESTROY:
+      PostQuitMessage (0);
+      return 0;
+  end:select
+
+  return DefWindowProc(hWnd,Message,wParam,lParam);
+end
+
+
+begin
+  HANDLE   hInst=GetModuleHandle(NULL);
+
+  WNDCLASS WndClass;
+
+  WndClass.style        = CS_HREDRAW|CS_VREDRAW;
+ @WndClass.lpfnWndProc  =@WndProc;
+  WndClass.cbClsExtra   = 0;
+  WndClass.cbWndExtra   = 0;
+  WndClass.hInstance    = hInst;
+  WndClass.hIcon        = LoadIcon      (0,IDI_WINLOGO);
+  WndClass.hCursor      = LoadCursor    (0,IDC_WAIT);
+  WndClass.hbrBackground= COLOR_WINDOW+1;
+ @WndClass.lpszMenuName = NULL;
+ @WndClass.lpszClassName=@Class;
+
+  Width =200;
+  Height=100;
+
+  CreateFont();
+
+  RegisterClass(@WndClass);
+
+  HWND hWnd=CreateWindowEx( 0,
+                           @Class,
+                           @Hello,
+                            WS_BORDER|WS_THICKFRAME|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX,
+                            100,
+                            75,
+                            Width,
+                            Height,
+                            0,
+                            0,
+                            hInst,
+                            NULL);
+
+  HMENU hMenu =CreateMenu();
+  HMENU hPopup=CreatePopupMenu();
+
+  AppendMenu(hPopup,MF_STRING,   101,"About...");
+  AppendMenu(hPopup,MF_SEPARATOR,  0,"");
+  AppendMenu(hPopup,MF_STRING,   102,"Exit");
+
+  AppendMenu(hMenu, MF_POPUP, hPopup,"Menu");
+
+  SetMenu   (hWnd,  hMenu);
+
+  ShowWindow  (hWnd,SW_SHOWNORMAL);
+  UpdateWindow(hWnd);
+
+  MSG   Message;
+  while GetMessage  (@Message,0,0,0)!=0 do
+    TranslateMessage(@Message);
+    DispatchMessage (@Message);
+  end:while
+
+  DeleteObject(hFont);
+end
+

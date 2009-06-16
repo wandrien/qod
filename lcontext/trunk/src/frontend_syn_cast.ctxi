@@ -1,0 +1,111 @@
+
+/*****************************************************************************/
+
+word CanExplicitCast(word To; word nPtrTo; word From; word nPtrFrom)
+
+	if nPtrTo = 0 & nPtrFrom = 0 then
+		if(To=st_char & From=st_byte)
+		| (To=st_char & From=st_word)
+		| (To=st_char & From=st_int )
+		| (To=st_byte & From=st_char)
+		| (To=st_word & From=st_char)
+		| (To=st_int  & From=st_char) then
+			return 1;
+		end:if
+	end:if
+
+	return 0;
+end
+
+/*****************************************************************************/
+
+void Cast(word pType1, pType2; word @P)
+
+	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
+	if pType1=st_int & Node[P].ID=iWORD then
+		Node[P].ID=iINT;
+		return;
+	end
+
+	word P1 = Peek();
+	word P2 = Peek();
+	Node[P1].ID    = iCAST;
+	Node[P1].Value = pType1;
+	Node[P1].pLeft = P2;
+
+	Node[P2].ID    = iEMPTY;
+	Node[P2].pLeft = P;
+
+	P = P1;
+end
+
+/*****************************************************************************/
+
+void Test(word pType1, nPtr1; word pType2, nPtr2; word @P)
+	select
+	case pType1=pType2 & nPtr1=nPtr2:
+		return;
+
+	case pType1=st_byte & nPtr1=0 & pType2=st_word & nPtr2=0:
+		return;
+
+	case pType1=st_byte & nPtr1=0 & pType2=st_int & nPtr2=0:
+		return;
+
+	case pType1=st_word & nPtr1=0 & pType2=st_byte & nPtr2=0:
+		Cast(pType1,pType2,@P);
+		return;
+
+	case pType1=st_word & nPtr1=0 & pType2=st_int & nPtr2=0:
+		return;
+
+	case pType1=st_int & nPtr1=0 & pType2=st_byte & nPtr2=0:
+		Cast(pType1,pType2,@P);
+		return;
+
+	case pType1=st_int & nPtr1=0 & pType2=st_word & nPtr2=0:
+		return;
+
+	case pType1=st_void & ((nPtr1>0 & nPtr2=nPtr1) | (nPtr1=1 & nPtr2>0)):
+		return;
+
+	case pType2=st_void & ((nPtr2>0 & nPtr1=nPtr2) | (nPtr2=1 & nPtr1>0)):
+		return;
+
+	case Dict[pType1].Class=cTYPE & Dict[pType1].Sub=sHEADER & Dict[pType2].Class=cFUNC:
+		if Dict[pType1].pType=Dict[pType2].pType then
+			if Dict[pType1].nPtr =Dict[pType2].nPtr  then
+				word pParm1=Dict[pType1].pIndx;
+				word pParm2=Dict[pType2].pIndx;
+				do
+					if pParm1>=Dict[pType1].nIndx then
+						if pParm2<Dict[pType2].nIndx then
+							exit;
+						end
+
+						return;
+					end
+
+					if pParm2>=Dict[pType2].nIndx then
+						exit;
+					end
+
+					if Parm[pParm1].pType!=Parm[pParm2].pType then
+						exit;
+					end
+
+					if Parm[pParm1].nPtr !=Parm[pParm2].nPtr  then
+						exit;
+					end
+
+					inc pParm2;
+					inc pParm1;
+				end:do
+			end:if
+		end:if
+	end:select
+
+	Stop(@eTYPE);
+end
+
+/*****************************************************************************/

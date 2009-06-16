@@ -1,0 +1,147 @@
+
+/*
+	Compile-Time Evaluations
+*/
+
+/* FIXME: Написать что-нибудь осмысленное вместо той каши, что есть сейчас. */
+/* TODO: Вычислять отдельным в проходе по дереву. */
+
+/*****************************************************************************/
+
+void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
+
+        if ID=iDIV then
+          if Node[Node[P2].pRight].ID=iWORD then
+            if Node[Node[P2].pRight].Value=0 then
+              Stop(@eCALCERR);
+            end
+          end
+        end
+
+        if Node[Node[P2].pLeft].ID=iWORD | Node[Node[P2].pLeft].ID=iINT then
+          if Node[Node[P2].pRight].ID=iWORD | Node[Node[P2].pRight].ID=iINT then
+            select
+              case ID=iADD | ID=iSUB:
+                if Node[Node[P2].pRight].ID=iINT then
+                  Node[Node[P2].pRight].ID   =iWORD;
+//                  Node[Node[P2].pRight].Value=$FFFFFFFF-Node[Node[P2].pRight].Value+1;
+                  Node[Node[P2].pRight].Value=-Node[Node[P2].pRight].Value;
+
+                  if ID=iADD then
+                    ID=iSUB;
+                  else
+                    ID=iADD;
+                  end
+                end
+
+              case ID=iMUL | ID=iDIV:
+                if Node[Node[P2].pLeft].ID=iINT then
+                //Node[Node[P2].pLeft].ID    =iWORD;
+                  Node[Node[P2].pLeft].Value =-Node[Node[P2].pLeft] .Value;
+                end
+
+                if Node[Node[P2].pRight].ID=iINT then
+                //Node[Node[P2].pRight].ID   =iWORD;
+                  Node[Node[P2].pRight].Value=-Node[Node[P2].pRight].Value;
+                end
+
+                if Node[Node[P2].pLeft].ID=Node[Node[P2].pRight].ID then
+                  Node[P2].ID=iWORD;
+                else
+                  Node[P2].ID=iINT;
+                end
+            end
+
+            select
+              case ID=iADD:
+                if Node[Node[P2].pLeft].ID=iWORD then
+                  Node[P2].ID   =iWORD;
+                  Node[P2].Value= Node[Node[P2].pLeft].Value+Node[Node[P2].pRight].Value;
+                else
+                  Node[Node[P2].pLeft].Value=-Node[Node[P2].pLeft].Value;
+                  if Node[Node[P2].pLeft].Value>Node[Node[P2].pRight].Value then
+                    Node[P2].ID   =iINT;
+                    Node[P2].Value= Node[Node[P2].pLeft] .Value-Node[Node[P2].pRight].Value;
+                    Node[P2].Value=-Node[P2].Value;
+                  else
+                    Node[P2].ID   =iWORD;
+                    Node[P2].Value= Node[Node[P2].pRight].Value-Node[Node[P2].pLeft] .Value;
+                  end
+                end
+
+              case ID=iSUB:
+                if Node[Node[P2].pLeft].ID=iWORD then
+                  if Node[Node[P2].pLeft].Value<Node[Node[P2].pRight].Value then
+                    Node[P2].ID   =iINT;
+                    Node[P2].Value= Node[Node[P2].pRight].Value-Node[Node[P2].pLeft].Value;
+
+                    if Node[P2].Value>$80000000 then
+                      Stop(@eCALCERR);
+                    end
+
+                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                  else
+                    Node[P2].ID   =iWORD;
+                    Node[P2].Value= Node[Node[P2].pLeft].Value-Node[Node[P2].pRight].Value;
+                  end
+                else
+                  Node[Node[P2].pLeft].Value=$FFFFFFFF-Node[Node[P2].pLeft].Value+1;
+                  Node[P2].Value=Node[Node[P2].pLeft].Value+Node[Node[P2].pRight].Value;
+
+                  Node[P2].ID   =iINT;
+                  Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                end
+
+              case ID=iMUL:
+                Node[P2].Value=Node[Node[P2].pLeft].Value*Node[Node[P2].pRight].Value;
+
+                if Node[P2].ID=iINT then
+                  if Node[P2].Value>$80000000 then // !!!
+                    Stop(@eCALCERR);
+                  end
+
+                  Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                end
+
+              case ID=iDIV:
+                Node[P2].Value=Node[Node[P2].pLeft].Value/Node[Node[P2].pRight].Value;
+
+                if Node[P2].Value!=0 then
+                  if Node[P2].ID=iINT then
+                    if Node[P2].Value>$80000000 then // !!!
+                      Stop(@eCALCERR);
+                    end
+
+//                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                    Node[P2].Value=-Node[P2].Value;
+                  end
+                else
+                  Node[P2].ID=iWORD;
+                end
+
+              default:
+                StopInternal();
+            end
+          end
+        end
+
+end
+
+/*****************************************************************************/
+
+void CTE2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
+
+        if Node[Node[P2].pRight].ID=iWORD then
+          if Node[Node[P2].pRight].Value=0 then
+            Stop(@eCALCERR);
+          end
+        end
+
+        if Node[Node[P2].pLeft].ID=iWORD & Node[Node[P2].pRight].ID=iWORD then
+          Node[P2].ID   =iWORD;
+          Node[P2].Value= Node[Node[P2].pLeft].Value%Node[Node[P2].pRight].Value;
+        end
+
+end
+
+/*****************************************************************************/

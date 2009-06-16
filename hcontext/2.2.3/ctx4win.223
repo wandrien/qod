@@ -1,0 +1,73 @@
+include "msg4win.223"
+include "sys4win.216"
+include "ctx4all.223"
+
+
+begin
+  char @Command=@GetCommandLine();
+
+  word  I=0;
+  while Command[I]!=#0 & Command[I]!=' ' do
+    inc I;
+  end
+
+  while Command[I] =' ' do
+    inc I;
+  end
+
+  char  Name [nBUFF];
+  word  K=0;
+  while Command[I]!=#0 & Command[I]!=' ' do
+    Name[K]=Command[I];
+    inc  K;
+
+    if   K>=nBUFF then
+    //puts("Слишком длинное имя файла~r~n");
+      puts(@eLONGFILENAME);
+      puts("~r~n");
+      return
+    end
+
+    inc  I;
+  end
+  Name[K]=#0;
+
+  while Command[I] =' ' do
+    inc I;
+  end
+
+  char  Dest [nBUFF];
+  word  M=0;
+  while Command[I]!=#0 & Command[I]!=' ' do
+    Dest[M]=Command[I];
+    inc  M;
+
+    if   M>=nBUFF then
+    //puts("Неизвестный паpаметp~r~n");
+      puts(@eWRONGPARM);
+      puts("~r~n");
+      return
+    end
+
+    inc  I;
+  end
+  Dest[M]=#0;
+
+  if K=0 then
+    puts("Тpанслятоp языка Context. Веpсия 2.2~r~n");
+    puts("(C) Хохлов А.В.  г.Москва  1995-2009~r~n");
+  //puts("Использование: context <файл> [/c|w]~r~n");
+    puts("Использование:   context <src> [tgt]~r~n");
+    puts("Фоpмат  (tgt):  /c  - Win32 console~r~n");
+    puts("                /w  - Win32 gui~r~n");
+    puts("                /l  - Linux~r~n");
+    puts("                /b  - binary~r~n");
+
+    return
+  end
+
+  Target=tPE;
+  Mode  =mCON;
+
+  Main  (@Name,@Dest);
+end

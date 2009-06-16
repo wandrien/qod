@@ -1,0 +1,491 @@
+
+/*
+	Процедуры синтаксического анализа вехнего уровня грамматики.
+*/
+
+/*****************************************************************************/
+
+void DeclMainFunc(char@ Buff)
+
+	word p = DictAlloc();
+
+	pFunc = p;
+	pParm = nParm;
+	pIndx = nIndx;
+
+	SetDictName(p, "");
+	Dict[p].Class = cFUNC;
+	Dict[p].Sub   = sMAIN;
+	Dict[p].pType = st_void;
+	Dict[p].nPtr  = 0;
+	Dict[p].pIndx = nParm;
+	Dict[p].nIndx = nParm;
+	Dict[p].Used  = 1;
+
+	Scan(@Buff);
+	Statements(@Dict[pFunc].pNode, @Buff, "end", NULL, NULL);
+
+	nIndx = pIndx;
+	nParm = pParm;
+
+end
+
+/*****************************************************************************/
+
+void DeclStruct(char @Buff)
+
+        word pType=Find(@Scan(@Buff));
+        if pType<nDict then
+          Stop(@eDUPLICATE);
+        end
+
+        word p = DictAlloc();
+        SetDictName(p, @Buff);
+        Dict[p]. Class=cTYPE;
+        Dict[p]. Sub  =sSTRUCT;
+        Dict[p].pIndx =nParm;
+
+        if strcmp(@Scan(@Buff),";")=0 then
+          Stop(@eNOTAVAIL);
+        end
+
+        word pParm=nParm;
+        do
+          pType=Find(@Buff);
+          if   pType>=nDict then
+            if strcmp(@Buff,@GetDictName(p))!=0 then
+              Stop(@eTYPEEXP);
+            end
+          else
+            if Dict[pType].Class!=cTYPE then
+              Stop(@eTYPEEXP);
+            end
+          end
+
+          do
+            word  nPtr=0;
+            while strcmp(@Scan(@Buff),"@")=0 do
+              inc nPtr;
+            end
+
+            if pType=st_void & nPtr<1 then
+              Stop(@eNOVOID);
+            end
+
+            if pType=p & nPtr<1 then
+              Stop(@eNODATA);
+            end
+
+            if Dict[pType].Sub=sHEADER & nPtr<1 then
+              Stop(@eNOVAL);
+            end
+
+            word  I=pParm; // I=pParm;
+            while I<nParm do
+              if strcmp(@Parm[I].Name,@Buff)=0 then
+                Stop(@eDUPLICATE);
+              end
+
+              inc I;
+            end
+
+            if nParm>=nPARM then
+              Stop(@eNOMEMORY);
+            end
+
+            Parm[nParm].pType=pType;           Copy(@Parm[nParm].Name,@Buff,0);
+            Parm[nParm].nPtr =nPtr;
+            Parm[nParm].pIndx=nIndx;
+            Parm[nParm].nIndx= Tabl(@Scan(@Buff));
+            inc  nParm;
+
+            if strcmp(@Buff,";") =0 then
+              Scan(@Buff);
+              exit;
+            end
+
+            if strcmp(@Buff,"end")=0 then
+              exit;
+            end
+
+            if strcmp(@Buff,",")!=0 then
+              Stop(@eSEMICOLONEXP);
+            end
+          end
+
+          if strcmp(@Buff,"end")=0 then
+            exit;
+          end
+        end
+
+        Dict[p].nIndx=nParm;
+
+end
+
+/*****************************************************************************/
+
+void DeclSynonym(char @Buff)
+
+	if Find(@Scan(@Buff)) < nDict then
+		Stop(@eDUPLICATE);
+	end
+
+	word D = DictAlloc();
+	SetDictName(D, @Buff);
+	Dict[D].Class = cNAME;
+
+	word pType = Find(@Scan(@Buff));
+	if pType >= nDict then
+		Stop(@eUNDEFINED);
+	end
+
+	Dict[D].pType = pType;
+end
+
+/*****************************************************************************/
+
+void DeclFunc1(char @Buff; word a)
+
+	pFunc=a;
+
+	Dict[pFunc].Class = cFUNC;
+	Dict[pFunc].Sub   = sFUNC;
+	FuncArgs(@Buff, pFunc);
+	//inc  nDict;
+
+	Scan(@Buff);
+
+	select
+		case strcmp(@Buff,";")=0: /* Прототип. */
+			Stop(@eNOTAVAIL);
+
+		case strcmp(@Buff,"external")=0: /* Внешняя функция. */
+			select
+				case TargetFileFormat = tPE:
+						null
+				default:
+					Stop(@eNOTALLOWED);
+			end
+
+			/* Читаем имя библиотеки. Добавляем библиотеку в словарь, если она туда еще не занесена. */
+			word pLib = Find(@Scan(@Buff));
+			if   pLib >= nDict then
+
+				pLib = DictAlloc();
+
+				//Copy(@Dict[pLib].Name1, @Buff, nDict);
+				SetDictName(pLib, @Buff);
+				Dict[pLib].Class = cLIB;
+
+			end // of if
+
+
+			/*
+				Если для функции в библиотеке указано имя, отличное от объявленного имени функции,
+				объявдленное имя делаем алиасом для библиотечного имени.
+				FIXME: Переделать! Бибиотечное имя не должно присутствовать в пространстве имён модуля.
+			*/
+			if strcmp(@Scan(@Buff),".")=0 then
+				if Find(@Scan(@Buff)) < nDict then
+					Stop(@eDUPLICATE);
+				end // of if
+
+				word pAlias = DictAlloc();
+
+				//strcpy(@Dict[pAlias].Name1, @Dict[pFunc].Name1);
+				SetDictName(pAlias, @GetDictName(pFunc));
+				Dict[pAlias].Class = cNAME;
+				Dict[pAlias].pType = pFunc;
+
+				//Copy(@Dict[pFunc].Name1, @Buff, nDict);
+				SetDictName(pFunc, @Buff);
+				Scan(@Buff);
+
+			end:if
+
+			Dict[pFunc].Sub   = sSYS;
+			Dict[pFunc].pNode = pLib;
+
+			if strcmp(@Buff,";")!=0 then
+				Stop(@eSEMICOLONEXP);
+			end:if
+
+		default: /* Тело функции. */
+			pParm=nParm;
+			pIndx=nIndx;
+			Statements(@Dict[pFunc].pNode, @Buff, "end", NULL, NULL);
+			nIndx=pIndx;
+			nParm=pParm;
+
+	end // of select
+
+end
+
+/*****************************************************************************/
+
+void DeclVarFuncType(char @Buff; word pType)
+
+	Scan(@Buff);
+	word nPtr = ReadPtrs(@Buff);
+
+	if Find(@Buff) < nDict then
+		Stop(@eDUPLICATE);
+	end
+
+	word D = DictAlloc();
+
+	SetDictName(D, @Buff);
+	Dict[D].Class = cTYPE;
+	Dict[D].Sub   = sHEADER;
+
+	if strcmp(@Scan(@Buff),"(")!=0 then
+		Stop(@eBRACKETEXP);
+	end
+
+	Dict[D].pType = pType;
+	Dict[D].nPtr  = nPtr;
+	FuncArgs(@Buff, D);
+
+	/*if (strcmp(@Scan(@Buff),";")!=0) then
+		Stop(@eSEMICOLONEXP);
+	end*/
+
+end
+
+/*****************************************************************************/
+
+void DeclVarFunc(char @Buff)
+
+	word pType = Find(@Buff);
+	if pType >= nDict | Dict[pType].Class != cTYPE then
+		Stop(@eTYPEEXP);
+	end
+
+	/* Функтор-тип. */
+	if strcmp(@Scan(@Buff),"function")=0 then
+		DeclVarFuncType(@Buff, pType);
+		return;
+	end
+
+
+	word First=1;
+
+	do
+		word nPtr = ReadPtrs(@Buff);
+
+		if Find(@Buff) < nDict then
+			Stop(@eDUPLICATE);
+		end
+
+		word D = DictAlloc();
+
+		SetDictName(D, @Buff);
+		Dict[D].pType = pType;
+		Dict[D].nPtr  = nPtr;
+
+		Scan(@Buff);
+
+		/* Функция. */
+		if strcmp(@Buff,"(")=0 then
+			if First = 0 then
+				Stop(@eNOFUNCTION);
+			end
+			DeclFunc1(@Buff, D);
+			return;
+		end
+
+		First = 1;
+
+		if pType=st_void & nPtr<1 then
+			Stop(@eNOVOID);
+		end
+
+		if Dict[pType].Sub=sHEADER & nPtr<1 then
+			Stop(@eNOVAL);
+		end
+
+		Dict[D]. Class=cDATA;
+		Dict[D].pIndx =nIndx;
+		Dict[D].nIndx = Tabl(@Buff);
+		Dict[D].pNode =nNODE;
+
+		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+			if Dict[D].pIndx<Dict[D].nIndx then
+				Stop(@eNOTAVAIL);
+			end
+
+			word P1=Peek();
+			word P2=Peek();
+			Node[P1].ID    =iASSIGN;
+			Node[P1].pLeft = P2;
+
+			word pType2, nPtr2;
+			word P3=Peek();
+			Node[P2].ID    =iEMPTY;
+			Node[P2].pLeft = P3;
+			Node[P2].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+			Node[P3].ID    =iDATA;
+			Node[P3].Value =D;
+
+			Test(pType,nPtr,pType2,nPtr2,@Node[P2].pRight);
+
+			Dict[D].pNode=P1;
+
+		end
+
+		if strcmp(@Buff,";") =0 then
+			exit;
+		end
+
+		if strcmp(@Buff,",")!=0 then
+			Stop(@eSEMICOLONEXP);
+		end
+
+		Scan(@Buff);
+
+	end:do
+
+end
+
+/*****************************************************************************/
+
+word DeclDefine(char @Buff)
+
+	word nPtr = ReadPtrs(@Scan(@Buff));
+
+	if Find(@Buff) < nDict then
+		Stop(@eDUPLICATE);
+	end
+
+	word D = DictAlloc();
+
+	SetDictName(D, @Buff);
+	Dict[D].Class = cCONST;
+	Dict[D].nPtr  = 0;
+
+	Scan(@Buff);
+	select
+		case nPtr=0:
+
+			word pType2, nPtr2;
+			word P = Expr(pZERO, @pType2, @nPtr2, @Buff);
+
+			select
+				case Node[P].ID=iWORD:
+					Dict[D].pType=st_word;
+					Dict[D].Value=Node[P].Value;
+
+				case Node[P].ID=iINT:
+					Dict[D].pType=st_int;
+					Dict[D].Value=Node[P].Value;
+
+				case Node[P].ID=iCHAR:
+					Dict[D].pType=st_char;
+					Dict[D].Value=Node[P].Value;
+
+				default:
+					Stop(@eTYPE);
+			end:select
+
+			if strcmp(@Buff,";")=0 then
+				Scan(@Buff);
+			end:if
+
+			return 1;
+
+		default:
+			if strcmp(@Buff,"~"")!=0 then
+				Stop(@eQUOTEXP);
+			end
+			ScanString(D);
+	end:select
+
+	return 0;
+end
+
+/*****************************************************************************/
+
+word DeclInclude(char @Buff)
+
+	/* Читаем имя файла. */
+
+	if strcmp(@Scan(@Buff),"~"")!=0 then
+		Stop(@eQUOTEXP);
+	end
+
+	word P=0;
+	while Read()!='"' do
+		if iswhitespace(Read()) != 0 then
+			Stop(@eQUOTEXP);
+		end
+
+		Buff[P]=Read();
+		inc  P;
+
+		if P>=nNAME then
+			Stop(@eLONGNAME);
+		end
+
+		Next();
+	end:while
+
+	Buff[P]=#0;
+	Next();
+
+	/* Проверка, подключался ли уже указанный файл. */
+	P=Find_cFILE(@Buff);
+	if P<nDict then
+		return 0;
+	end:if
+
+	/* Заносим имя файла в словарь. */
+	word D = DictAlloc();
+	SetDictName(D, @Buff);
+	Dict[D].Class = cFILE;
+
+	IncludeFile(@Buff);
+
+	return 0;
+end
+
+/*****************************************************************************/
+
+void Parse(char @Buff)
+
+	Scan(@Buff);
+
+	do
+		word R = 0;
+		select
+		case strcmp(@Buff,"begin")=0:         // Главная функция
+			DeclMainFunc(@Buff);
+			exit;
+		case strcmp(@Buff,"include")=0:       // Включаемый файл
+			R = DeclInclude(@Buff);
+		case strcmp(@Buff,"define")=0:        // Константа
+			R = DeclDefine(@Buff);
+		case strcmp(@Buff,"struct")=0:        // Стpуктуpа
+			DeclStruct(@Buff);
+		case strcmp(@Buff,"synonym")=0:       // Синоним
+			DeclSynonym(@Buff);
+		case strcmp(@Buff,"$context2")=0:
+			c_style_semicolons = 1;
+			ROStrings = 1;
+		case strcmp(@Buff,"$context")=0:
+			c_style_semicolons = 0;
+			ROStrings = 0;
+		default:                              // Пеpеменная, функция, ...
+			DeclVarFunc(@Buff);
+		end:select
+
+		if R = 0 then
+			Scan(@Buff);
+		end
+
+	end:do
+
+end
+
+/*****************************************************************************/
+

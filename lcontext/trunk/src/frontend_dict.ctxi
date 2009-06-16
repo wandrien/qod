@@ -1,0 +1,155 @@
+
+/*****************************************************************************/
+
+DICT     Dict [nDICT]; // Таблица имен
+word    nDict;
+
+/*****************************************************************************/
+
+word pKeyWords; /* Индекс в словаре, выше которого НЕ находятся ключевые слова.  */
+
+/* Индексы встроенных типов данных. */
+
+word st_void;
+word st_char;
+word st_byte;
+word st_word;
+word st_int;
+
+/*****************************************************************************/
+
+/*
+	Проверяет достаточность памяти таблице Dict для выделения одного элемента.
+	TODO: при нехватке памяти, перераспределять динамически.
+*/
+void DictMemCheck()
+	if nDict >= nDICT then
+		Stop(@eNOMEMORY);
+	end
+end
+
+/*****************************************************************************/
+
+void SetDictName(word D; char@ Name)
+
+	if D >= nDict then
+		StopInternal();
+	end
+
+	Dict[D].Name2    = SaveString0(@Name);
+	Dict[D].NameHash = strhash(@Name);
+end
+
+/*****************************************************************************/
+
+char @GetDictName(word D)
+
+	if D >= nDict then
+		StopInternal();
+	end
+
+	return @Char[Dict[D].Name2];
+end
+
+/*****************************************************************************/
+
+
+/* Выделить запись в таблице глобальных имён и вернуть её индекс.  */
+word DictAlloc()
+
+	DictMemCheck();
+
+	word r = nDict;
+	inc nDict;
+
+	Dict[r].Used = 0;
+
+	return r;
+
+end
+
+/*****************************************************************************/
+
+/*
+	Поиск объекта в словаре по имени.
+	(Кроме объектов класса cFILE.)
+*/
+word Find(char @Name)
+	word hash = strhash(@Name);
+	word P = 0;
+	while P < nDict do
+		if Dict[P].NameHash = hash & strcmp(@GetDictName(P), @Name) = 0 & Dict[P].Class != cFILE then
+			while Dict[P].Class = cNAME do
+				P = Dict[P].pType;
+			end
+
+			exit;
+		end
+
+		inc P;
+	end
+
+	return P;
+end
+
+/*****************************************************************************/
+
+/*
+	Поиск объекта с классом cFILE в словаре по имени.
+*/
+word Find_cFILE(char @Name)
+	word hash = strhash(@Name);
+	word  P = 0;
+	while P < nDict do
+		if Dict[P].NameHash = hash & strcmp(@GetDictName(P), @Name) = 0 & Dict[P].Class = cFILE then
+			exit;
+		end
+
+		inc P;
+	end
+
+	return P;
+end
+
+/*****************************************************************************/
+
+void A_Name(char @Name)
+	word P = 0;
+
+	while P < pKeyWords & Dict[P].Class = cWORD do
+		if strcmp(@GetDictName(P), @Name) = 0 then
+			Stop(@eEXPECTED);
+		end
+
+		inc P;
+	end
+
+	if isalpha(Name) = 0 then
+		Stop(@eEXPECTED);
+	end
+end
+
+/*****************************************************************************/
+
+/* Регистрирует ключевое слово. */
+void Word(char @Name)
+	word p = DictAlloc();
+	SetDictName(p, @Name);
+	Dict[p].Class = cWORD;
+	pKeyWords = p + 1;
+end
+
+/*****************************************************************************/
+
+/* Регистрирует базовый тип. */
+word Base(char @Name; word Size)
+	word p = DictAlloc();
+	SetDictName(p, @Name);
+	Dict[p].Class = cTYPE;
+	Dict[p].Sub   = sBASE;
+	Dict[p].Value = Size;
+	return p;
+end
+
+/*****************************************************************************/
+

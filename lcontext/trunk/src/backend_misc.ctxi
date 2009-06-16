@@ -1,0 +1,365 @@
+
+
+word NextLabelNr = 10000;
+
+word NewLabel()
+	word l = NextLabelNr;
+	inc NextLabelNr;
+	return l;
+end
+
+
+
+void EmitUsageInfo(char @Name; word Used; word Total)
+
+	char Buff[nBUFF];
+
+	strcpy(@Buff, "; ");
+	strcat(@Buff, @Name);
+	strcat(@Buff, ":   ");
+	strcat(@Buff, @str(Used));
+	strcat(@Buff, " of ");
+	strcat(@Buff, @str(Total));
+	strcat(@Buff, " (");
+	strcat(@Buff, @str(Used * 100 / Total));
+	strcat(@Buff, "%)");
+
+	EmitStringNL(@Buff);
+end
+
+
+void EmitInternalsInfo()
+
+	EmitNL();
+	EmitUsageInfo("Dict", nDict, nDICT);
+	EmitUsageInfo("Parm", nParm, nPARM);
+	EmitUsageInfo("Char", CharDataUsed(), CharDataTotal());
+	EmitUsageInfo("Node", nNode, nNODE);
+//	EmitUsageInfo("Text", nText, nTEXT);
+
+end
+
+
+define vcNone 0;
+define vcParm 1;
+define vcDict 2;
+struct ID_DESC
+	char @Name;
+	word ValueClass;
+	word RightList;
+end
+
+ID_DESC IDDesc[iID_COUNT];
+word IDDescInitialized = 0;
+
+void InitIDDesc2(word ID; char @Name; word vc; word RightList)
+	@IDDesc[ID].Name = @Name;
+	IDDesc[ID].ValueClass = vc;
+	IDDesc[ID].RightList  = RightList;
+end
+
+void InitIDDesc1(word ID; char @Name)
+	InitIDDesc2(ID, @Name, vcNone, 0);
+end
+
+void InitializeIDDesc()
+
+	if IDDescInitialized != 0 then
+		return;
+	end
+
+	IDDescInitialized = 1;
+
+	InitIDDesc1(iEMPTY  , "iEMPTY"  );
+	InitIDDesc1(iNULL   , "iNULL"   );
+	InitIDDesc1(iCHAR   , "iCHAR"   );
+	InitIDDesc1(iWORD   , "iWORD"   );
+	InitIDDesc1(iINT    , "iINT"    );
+	InitIDDesc2(iFUNC   , "iFUNC"   , vcDict, 0);
+	InitIDDesc1(iSTRING , "iSTRING" );
+	InitIDDesc2(iDATA   , "iDATA"   , vcDict, 0);
+	InitIDDesc2(iPARM   , "iPARM"   , vcParm, 0);
+	InitIDDesc1(iLOCAL  , "iLOCAL"  );
+	InitIDDesc1(iREF    , "iREF"    );
+
+	InitIDDesc1(iNOT    , "iNOT"    );
+	InitIDDesc1(iNEG    , "iNEG"    );
+
+	InitIDDesc1(iOR     , "iOR"     );
+	InitIDDesc1(iXOR    , "iXOR"    );
+	InitIDDesc1(iEQV    , "iEQV"    );
+	InitIDDesc1(iAND    , "iAND"    );
+
+	InitIDDesc1(iBIT_OR , "iBIT_OR" );
+	InitIDDesc1(iBIT_XOR, "iBIT_XOR");
+	InitIDDesc1(iBIT_AND, "iBIT_AND");
+	InitIDDesc1(iLT     , "iLT"     );
+	InitIDDesc1(iLE     , "iLE"     );
+	InitIDDesc1(iEQ     , "iEQ"     );
+	InitIDDesc1(iNE     , "iNE"     );
+	InitIDDesc1(iGE     , "iGE"     );
+	InitIDDesc1(iGT     , "iGT"     );
+	InitIDDesc1(iADD    , "iADD"    );
+	InitIDDesc1(iSUB    , "iSUB"    );
+	InitIDDesc1(iMUL    , "iMUL"    );
+	InitIDDesc1(iDIV    , "iDIV"    );
+	InitIDDesc1(iMOD    , "iMOD"    );
+
+	InitIDDesc2(iCALL   , "iCALL"   , vcDict, 0);
+	InitIDDesc2(iCALL2  , "iCALL2"  , vcDict, 0);
+	InitIDDesc1(iINDEX  , "iINDEX"  );
+	InitIDDesc1(iADDR   , "iADDR"   );
+	InitIDDesc2(iFIELD  , "iFIELD"  , vcParm, 0);
+	InitIDDesc1(iLOAD   , "iLOAD"   );
+	InitIDDesc1(iLPTR   , "iLPTR"   );
+
+	InitIDDesc2(iDEF    , "iDEF"    , vcDict, 1);
+	InitIDDesc1(iSELECT , "iSELECT" );
+	InitIDDesc2(iWHILE  , "iWHILE"  , vcNone, 1);
+	InitIDDesc2(iREPEAT , "iREPEAT" , vcNone, 1);
+	InitIDDesc1(iLOOP   , "iLOOP"   );
+	InitIDDesc1(iEXIT   , "iEXIT"   );
+	InitIDDesc2(iCAST   , "iCAST"   , vcDict, 0);
+	InitIDDesc2(iINC    , "iINC"    , vcNone, 1);
+	InitIDDesc2(iDEC    , "iDEC"    , vcNone, 1);
+	InitIDDesc2(iPUSH   , "iPUSH"   , vcNone, 1);
+	InitIDDesc2(iASSIGN , "iASSIGN" , vcNone, 1);
+	InitIDDesc1(iINLINE , "iINLINE" );
+	InitIDDesc2(iRETURN , "iRETURN" , vcNone, 1);
+
+end
+
+
+word NodeDeep(word P)
+
+	if P >= nNODE then
+		return 0;
+	end
+
+	word D1 = NodeDeep(Node[P].pLeft);
+	word D2 = NodeDeep(Node[P].pRight);
+
+	if D2 > D1 then
+		D1 = D2;
+	end
+
+	return D1 + 1;
+end
+
+void OutputNodeName(word P)
+	char @N = @IDDesc[Node[P].ID].Name;
+	if @N = NULL then
+		@N = @str(Node[P].ID);
+	end
+	EmitString(@N);
+end
+
+void OutputNodeValue(word P)
+	char @N;
+	select
+		case IDDesc[Node[P].ID].ValueClass = vcParm:
+			@N = @Parm[Node[P].Value].Name;
+		case IDDesc[Node[P].ID].ValueClass = vcDict:
+			@N = @GetDictName(Node[P].Value);
+		default:
+			@N = @str(Node[P].Value);
+	end:select
+	EmitString(@N);
+end
+
+void OutputTree_Prefix(int Pad; char @LinePrefix)
+
+	if Pad < 0 then
+		EmitChar(' ');
+		return;
+	end
+
+	EmitNL();
+	EmitString(@LinePrefix);
+	int i = 0;
+	while i < Pad do
+		EmitChar(' ');
+		inc i;
+	end
+end
+
+
+/*
+
+(ID Value Left Right)
+
+(ID
+ Value
+ Left
+ Right
+)
+
+(ID
+ Value
+ Left
+*ID
+ Value
+ Left
+)
+
+*/
+
+void OutputTree(word P; int Pad; char @LinePrefix)
+
+	if P >= nNODE then
+		OutputTree_Prefix(Pad , @LinePrefix);
+		EmitString("0");
+		return;
+	end
+
+	if Pad < 0 then
+		EmitString("(");
+		OutputNodeName(P);
+		EmitString(" ");
+		OutputNodeValue(P);
+		EmitString(" ");
+		OutputTree(Node[P].pLeft , Pad, "");
+		EmitString(" ");
+		OutputTree(Node[P].pRight, Pad, "");
+		EmitString(")");
+		return;
+	end
+
+/*
+	if 1 = 1 then
+		OutputTree_Prefix(Pad    , @LinePrefix); EmitString("("); OutputNodeName(P);
+		OutputTree_Prefix(Pad + 1, @LinePrefix); OutputNodeValue(P);
+		OutputTree(Node[P].pLeft , Pad + 1, @LinePrefix);
+		OutputTree(Node[P].pRight, Pad + 1, @LinePrefix);
+		OutputTree_Prefix(Pad    , @LinePrefix); EmitString(")");
+		return
+	end
+*/
+
+	OutputTree_Prefix(Pad, @LinePrefix);
+
+	word Deep = NodeDeep(P);
+	if Deep < 3 then
+		OutputTree(P, -1, "");
+		return;
+	end
+
+
+	EmitString("(");
+
+	do
+		word RightList = IDDesc[Node[P].ID].RightList;
+/*
+		word RightList = 0;
+		if Node[P].ID = iPUSH then
+			RightList = 1;
+		end
+*/
+		OutputNodeName(P);
+		EmitString(" "); OutputNodeValue(P);
+		OutputTree(Node[P].pLeft , Pad + 1, @LinePrefix);
+
+		if RightList = 0 then
+			OutputTree(Node[P].pRight, Pad + 1, @LinePrefix);
+			exit;
+		end
+
+		P = Node[P].pRight;
+		if P >= nNODE then
+			exit;
+		end
+
+		OutputTree_Prefix(Pad, @LinePrefix);
+		EmitString("*");
+	end
+
+	OutputTree_Prefix(Pad, @LinePrefix);
+	EmitString(")");
+
+end
+
+
+void OutputFunctionTrees()
+
+	InitializeIDDesc();
+
+	char @LinePrefix = "; ";
+
+	word I = 0;
+	while I < nDict do
+		select
+			case Dict[I].Class = cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
+				EmitNL();
+				EmitString(@LinePrefix);
+				EmitString("== ");
+				EmitString(@GetDictName(I));
+				EmitString(" ");
+				word j = strlen(@GetDictName(I));
+				while j < 74 do
+					EmitString("=");
+					inc j;
+				end
+				EmitNL();
+				EmitString(@LinePrefix);
+				OutputTree(Dict[I].pNode, 0, @LinePrefix);
+		end
+		inc I;
+	end
+
+end
+
+
+
+word _Optimize1(word P)
+
+	if (P >= nNODE) then
+		return P;
+	end
+
+	word L = _Optimize1(Node[P].pLeft );
+	word R = _Optimize1(Node[P].pRight);
+
+	Node[P].pLeft  = L;
+	Node[P].pRight = R;
+
+	word Value = 0;
+
+	select
+		case Node[L].ID = iWORD & Node[R].ID = iWORD:
+			word LValue = Node[L].Value;
+			word RValue = Node[R].Value;
+			select 
+				case Node[P].ID = iSUB:
+					Value = LValue - RValue;
+				case Node[P].ID = iMUL:
+					Value = LValue * RValue;
+				case Node[P].ID = iADD:
+					Value = LValue + RValue;
+				case Node[P].ID = iDIV & RValue != 0:
+					Value = LValue / RValue;
+				default:
+					return P;
+			end
+		default:
+			return P;
+	end:select
+
+	L = P;
+	Node[P].Value = Value;
+
+	return P;
+end
+
+
+void Optimize1()
+
+	word I = 0;
+	while I < nDict do
+		select
+			case Dict[I].Class = cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
+				Dict[I].pNode = _Optimize1(Dict[I].pNode);
+		end
+		inc I;
+	end
+
+end

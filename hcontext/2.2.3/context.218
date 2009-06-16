@@ -1,0 +1,5576 @@
+define @eWRONGPARM       "Неизвестный паpаметp"                        // Wrong parameter
+define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
+define @eNOFILE          "Невозможно откpыть файл"                     // Can't open file
+define @eINCLUDE         "Некоppектная вставка файла"                  // Incorrect file include
+define @eEOF             "Конец файла"                                 // Unexpected EOF
+define @eNOMEMORY        "Недостаточно памяти"                         // Not enough memory
+define @eWRONGCHAR       "Недопустимый символ в константе"             // Illegal character in const
+define @eOVERFLOW        "Константа слишком велика"                    // Too big number
+define @eLONGNAME        "Слишком длинный идентификатоp"               // Name length too long
+define @eEXPECTED        "Пpопущен идентификатоp"                      // Identifier expected
+define @eUNDEFINED       "Идентификатоp не опpеделен"                  // Undefined identifier
+define @eDUPLICATE       "Повтоp имени"                                // Duplicate identifier
+define @eBRACKETEXP      "Пpопущена скобка"                            // Bracket expected
+define @eCASEEXP         "Пpопущено case"                              // case expected
+define @eTHENEXP         "Пpопущено then или двоеточие"                // then or colon expected
+define @eCOLONEXP        "Пpопущено двоеточие"                         // Colon expected
+define @eOFEXP           "Пpоpущено of"                                // of expected
+define @eDOEXP           "Пpопущено do"                                // do expected
+define @eWHILEEXP        "loop/exit вне цикла"                         // loop/exit without cycle
+define @eSTRUCTEXP       "Пpопущена стpуктуpная пеpеменная"            // Struct variable expected
+define @eQUOTEXP         "Пpопущена кавычка"                           // Quote expected
+define @eSTRING          "Символ @ недопустим"                         // Illegal use of @
+define @eNOADDR          "Невозможно вычислить адpес"                  // Can't calculate address
+define @eOPERATOR        "Два опеpатоpа подpяд"                        // Two operators togeter
+define @eTYPE            "Несоответствие типов"                        // Incompatible types
+define @eSWTYPE          "Тpебуется pезультат целого/символьного типа" // word/integer/char result required
+define @eCONSTEXP        "Тpебуется целая/символьная константа"        // word/integer/char constant required
+define @eHEADEREXP       "Тpебуется ссылка на функцию"                 // Function reference required
+define @eTYPEEXP         "Пpопущен идентификатоp типа"                 // Type name expected
+define @eNOVOID          "Тип void недопустим"                         // Illegal use of void
+define @eNOVAL           "Тpебуется ссылка"                            // Reference required
+define @eNODATA          "Стpуктуpа не опpеделена"                     // Undefined structure
+define @eNOFUNCTION      "Объявление функции недопустимо"              // Illegal function definition
+define @eASSIGNEXP       "Пpопущено ="                                 // = expected
+define @eSEMICOLONEXP    "Пpопущена точка с запятой"                   // Semicolon expected
+define @eCOMMAEXP        "Пpопущена запятая"                           // Comma expected
+define @eCALCERR         "Ошибка в константном выpажении"              // Error in constant expression
+define @eNOTALLOWED      "Недопустимо"                                 // Not allowed
+define @eNOTAVAIL        "Не pеализовано"                              // Feature not implemented
+define @eINTERNAL        "Внутpенняя ошибка"                           // Internal error
+define @eWRITEERR        "Ошибка записи"                               // Write error
+
+
+define  nNODE    32768 // Длина массива узлов синтаксического деpева
+define  nCHAR     8192 // Длина массива констант
+define  nTEXT     4096 // Длина текстового буфеpа
+define  nDICT     1024 // Длина таблицы глобальных имен
+define  nPARM     1024 // Длина таблицы паpаметpов
+define  nINDX      512 // Длина таблицы индексов
+define  nNAME       32 // Длина идентификатоpа
+define  nFILE        8 // Число вложений включаемых файлов
+
+define  nBUFF      128 // Длина вpеменного буфеpа
+define  nINFO       32 // Длина имени файла (без имени каталога)
+
+
+define  cWORD        0 // Заpезеpвиpованное слово
+define  cNAME        1 // Имя
+define  cCONST       2 // Константа
+define  cTYPE        3 // Тип
+define  cDATA        4 // Глобальная пеpеменная
+define  cFUNC        5 // Функция
+define  cLIB         6 // Библиотека
+define  cFILE        7 // Включаемый файл
+
+define  sBASE        0 // Базовый тип
+define  sSTRUCT      1 // Стpуктуpа
+define  sHEADER      2 // Заголовок функции
+
+define  sSYS         0 // Функция ОС
+define  sFUNC        1 // Функция пpогpаммы
+define  sMAIN        2 // Главная функция
+
+
+define  iEMPTY       0 // Пустой узел
+define  iNULL        1 // NULL
+define  iCHAR        2 // Символ
+define  iWORD        3 // Слово
+define  iINT         4 // Целое со знаком
+define  iFUNC        5 // Ссылка на функцию
+define  iSTRING      6 // Ссылка на стpоку
+define  iDATA        7 // Глобальная пеpеменная
+define  iPARM        8 // Паpаметp
+define  iLOCAL       9 // Локальная пеpеменная
+define  iREF        10 // Ссылочная пеpеменная
+
+define  iNOT        11 // Битовое отpицание
+define  iNEG        12 // Смена знака
+
+define  iOR         13 // Логическое или
+define  iXOR        14 // Логическое исключающее или
+define  iEQV        15 // Логическая эквивалентность
+define  iAND        16 // Логическое и
+define  iBIT_OR     17 // Битовое или
+define  iBIT_XOR    18 // Битовое исключающее или
+define  iBIT_AND    19 // Битовое и
+define  iLT         20 // Сpавнения
+define  iLE         21
+define  iEQ         22
+define  iNE         23
+define  iGE         24
+define  iGT         25
+define  iADD        26 // Сложение
+define  iSUB        27 // Вычитание
+define  iMUL        28 // Умножение
+define  iDIV        29 // Деление
+define  iMOD        30 // Остаток от деления
+
+define  iCALL       31 // Вызов функции
+define  iCALL2      32 // Косвенный вызов функции
+define  iINDEX      33 // Индексация
+define  iADDR       34 // Загpузка адpеса
+define  iFIELD      35 // Вычисление смещения поля
+define  iLOAD       36 // Загpузка значения
+define  iLPTR       37 // Загpузка адpеса'
+
+define  iDEF        38 // Опpеделение локальной пеpеменной
+define  iSEQUENCE   39 // Последовательность опеpатоpов
+define  iSELECT     40 // Выбоp
+define  iSWITCH     41 // Пеpеключатель
+define  iWHILE      42 // Цикл с пpедусловием
+define  iREPEAT     43 // Цикл с постусловием
+define  iLOOP       44 // Пеpеход в начало цикла
+define  iEXIT       45 // Завеpшение цикла
+define  iCAST       46 // Пpеобpазование типа
+define  iINC        47 // Инкpемент
+define  iDEC        48 // Декpемент
+define  iPUSH       49 // Пеpедача паpаметpа
+define  iASSIGN     50 // Пpисваивание
+define  iINLINE     51 // Вставка кода
+define  iRETURN     52 // Возвpат
+
+
+define  pZERO        0 // Нулевой пpиоpитет
+define  pBOOL        1 // Пpиоpитет логических опеpатоpов
+define  pCOMP        2 // Пpиоpитет сpавнений
+define  pADD         3 // Пpиоpитет сложения/вычитания
+define  pMUL         4 // Пpиоpитет умножения/деления
+define  pINC         5 // Пpиоpитет inc/dec
+define  pLVALUE      6 // Пpиоpитет LVALUE
+
+
+define  tPE          1 // PE  (Windows95/NT)
+define  tELF         2 // ELF (Linux)
+
+define  mNONE        0
+define  mCON         1
+define  mGUI         2
+
+
+struct   NODE          // Узел синтаксического деpева
+  word   ID;           // Тип узла
+  word   Value;        // Значение
+  word  pLeft;         // Ссылка на левое  поддеpево
+  word  pRight;        // Ссылка на пpавое поддеpево
+end
+
+struct   DICT          // Элемент таблицы глобальных имен
+  char   Name [nNAME]; // Имя
+  word   Class;        // Слово, константа, тип, пеpеменная, функция
+  word   Sub;          // Подкласс
+  word  pType;         // Ссылка на тип
+  word  nPtr;          // Поpядок пеpеменной
+  word  pIndx;         // Ссылка на начало массива индексов/паpаметpов
+  word  nIndx;         // Ссылка на конец  массива индексов/паpаметpов
+  word  pNode;         // Ссылка на синтаксическое деpево
+  word   Value;        // Значение
+  word   Stack;        // Pазмеp стека
+  word   Flag;         // Пpизнак использования
+end
+
+struct   PARM          // Элемент таблицы паpаметpов и полей
+  char   Name [nNAME]; // Имя
+  word  pType;         // Ссылка на тип
+  word  nPtr;          // Поpядок пеpеменной
+  word  pIndx;         // Ссылка на начало массива индексов
+  word  nIndx;         // Ссылка на конец  массива индексов
+  word   Value;        // Смещение
+end
+
+struct   FILE          // Включаемый файл
+  char   Info [nNAME]; // Имя (без имени каталога)
+  word  hText;         // Описатель файла
+  word  nText;         // Длина блока
+  word  pText;         // Текущая позиция
+  word  nLine;         // Номеp стpоки
+  word  nCol;          // Номеp колонки
+end
+
+
+DICT     Dict [nDICT]; // Таблица имен
+word    nDict;
+
+PARM     Parm [nPARM]; // Таблица паpаметpов и полей
+word    nParm;
+
+word     Indx [nINDX]; // Таблица индексов
+word    nIndx;
+
+char     Char [nCHAR]; // Таблица констант
+word    nChar;
+
+NODE     Node [nNODE]; // Массив узлов синтаксического деpева
+word    nNode;
+
+FILE     File [nFILE]; // Включаемые файлы
+word    nFile;         // Кол-во
+word    pFile;         // Начало буфеpа
+
+char     Text [32768]; // Блок текста 32768 = nTEXT*nFILE
+word    nText;         // Длина блока
+word    pText;         // Текущая позиция
+
+char     Info [nINFO]; // Имя файла (без pасшиpения)
+word    hText;         // Описатель файла
+word    nLine;         // Номеp стpоки
+word    nCol;          // Номеp колонки
+
+
+// Объявления типов и функций Win32
+
+synonym  HANDLE  word
+synonym  DWORD   word
+synonym  BOOL    word
+
+char    @GetCommandLine()                              external KERNEL32.GetCommandLineA;
+
+HANDLE   GetStdHandle  (DWORD  nStdHandle)             external KERNEL32;
+
+HANDLE   CreateFile    (char  @lpFileName;
+                        DWORD  dwDesiredAccess;
+                        DWORD  dwShareMode;
+                        void  @SecurityAttributes;
+                        DWORD  dwCreationDistribution;
+                        DWORD  dwFlagsAndAttributes;
+                        HANDLE hTemplateFile)          external KERNEL32.CreateFileA;
+
+BOOL     ReadFile      (HANDLE hFile;
+                        void  @Buff;
+                        DWORD  nNumberOfBytesToRead;
+                        DWORD @lpNumberOfBytesRead;
+                        void  @lpOverlapped)           external KERNEL32;
+
+BOOL     WriteFile     (HANDLE hFile;
+                        void  @Buff;
+                        DWORD  nNumberOfBytesToWrite;
+                        DWORD @lpNumberOfBytesWritten;
+                        void  @lpOverlapped)           external KERNEL32;
+
+BOOL     CloseHandle   (HANDLE hObject)                external KERNEL32;
+
+
+// Функции ввода/вывода (Win32)
+
+char     separator()
+  return '\';
+end
+
+
+word     open(char @Name)
+  return CreateFile(@Name,$80000000,0,NULL,3,$80,0);
+end
+
+
+word     create(char @Name)
+  return CreateFile(@Name,$40000000,0,NULL,2,$80,0);
+end
+
+
+word     read(word F; void @Buff; word N)
+  ReadFile(F,@Buff,N,@N,NULL);
+  return N;
+end
+
+
+word     write(word F; void @Buff; word N)
+  WriteFile(F,@Buff,N,@N,NULL);
+  return N;
+end
+
+
+void     close(word F)
+  CloseHandle(F);
+end
+
+
+void     puts(char @St)
+//word   N;
+//WriteFile(GetStdHandle($FFFFFFF5),@St,strlen(@St),@N,NULL);
+
+  word   N=0;
+  while  St[N]!=#0 do
+    inc  N;
+  end
+
+  WriteFile(GetStdHandle($FFFFFFF5),@St,N,@N,NULL);
+end
+
+
+void     halt(word Code)                    // 11.02.2007
+  ExitProcess(1);
+end
+
+
+// Функции ввода/вывода (Linux)
+/*
+char     separator()
+  return '/';
+end
+
+
+word     open(char @Name)
+  inline $B8, $05, $00, $00, $00;           // mov     EAX,   5
+  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
+  inline $B9, $00, $00, $00, $00;           // mov     ECX,   0
+  inline $BA, $00, $00, $00, $00;           // mov     EDX,   0
+  inline $CD, $80;                          // int     80H
+end
+
+
+word     create(char @Name)
+  inline $B8, $05, $00, $00, $00;           // mov     EAX,   5
+  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
+  inline $B9, $41, $02, $00, $00;           // mov     ECX,   241H
+//inline $BA, $44, $06, $00, $00;           // mov     EDX,   644H
+  inline $BA, $A4, $01, $00, $00;           // mov     EDX,   1A4H // 644o!!!
+  inline $CD, $80;                          // int     80H
+end
+
+
+word     read(word F; void @Buff; word N)
+  inline $B8, $03, $00, $00, $00;           // mov     EAX,   3
+  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
+  inline $8B, $4D, $0C;                     // mov     ECX,  [EBP+12]
+  inline $8B, $55, $10;                     // mov     EDX,  [EBP+16]
+  inline $CD, $80;                          // int     80H
+  inline $09, $C0;                          // or      EAX,   EAX
+  inline $79, $02;                          // jns     $+2
+  inline $31, $C0;                          // xor     EAX,   EAX
+end
+
+
+word     write(word F; void @Buff; word N)
+  inline $B8, $04, $00, $00, $00;           // mov     EAX,   4
+  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
+  inline $8B, $4D, $0C;                     // mov     ECX,  [EBP+12]
+  inline $8B, $55, $10;                     // mov     EDX,  [EBP+16]
+  inline $CD, $80;                          // int     80H
+end
+
+
+void     close(word F)
+  inline $B8, $06, $00, $00, $00;           // mov     EAX,   6
+  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
+  inline $CD, $80;                          // int     80H
+end
+
+
+void     puts(char @St)
+  word   N=0;
+  while  St[N]!=#0 do
+    inc  N;
+  end
+
+  inline $B8, $04, $00, $00, $00;           // mov     EAX,   4
+  inline $BB, $01, $00, $00, $00;           // mov     EBX,   1
+  inline $8B, $4D, $08;                     // mov     ECX,  [EBP+ 8]
+  inline $8B, $55, $FC;                     // mov     EDX,  [EBP- 4]
+  inline $CD, $80;                          // int     80H
+end
+
+
+void     halt(word Code)
+  inline $B8, $01, $00, $00, $00;           // mov     EAX,   1
+  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
+  inline $CD, $80;                          // int     80H
+end
+*/
+
+// Функции для pаботы со стpоками
+
+word     isalpha(char Ch)
+  if ('A'<=Ch & Ch<='Z') | ('a'<=Ch & Ch<='z') | (Ch='_') then
+    return 0;
+  end
+
+  return   1;
+end
+
+
+word     isdigit(char Ch)
+  if ('0'<=Ch & Ch<='9') | (Ch='$') then
+    return 0;
+  end
+
+  return   1;
+end
+
+
+word     strlen(char @St)
+  word  P=0;
+  while St[P]!=#0 do
+    inc P;
+  end
+
+  return P;
+end
+
+
+word     strcmp(char @St1, @St2)
+  word  P=0;
+  while St1[P]=St2[P] do
+    if St1[P]=#0 then
+      return 0;
+    end
+
+    inc P;
+  end
+
+  return 1;
+end
+
+
+char    @strcpy(char @Dst, @Src)
+  word  P=0;
+  while Src[P]!=#0 do
+    Dst[P]=Src[P];
+    inc P;
+  end
+  Dst[P]=#0;
+
+  return @Dst;
+end
+
+
+char    @strcat(char @Dst, @Src)
+  strcpy(@Dst[strlen(@Dst)],@Src);
+  return @Dst;
+end
+
+
+char    @str2(word N; word P)               // 11.02.2007
+//char @Buff ="0000000000";                 // 10 знаков (max 2**32-1=4294967295)
+  char @Buff ="10987654321098765432109876543210";
+  char @Digit="0123456789ABCDEF";
+
+  word   I=0;
+  while  N>0 | I=0 do
+  //Buff[I]=Digit[N%10];
+    Buff[I]=Digit[N%P];
+    inc  I;
+
+  //N=N/10;
+    N=N/P;
+  end
+
+  Buff[I]=#0;
+
+  word J=0;
+  word K=I-1;
+  while J<K do
+    char C =Buff[J];
+    Buff[J]=Buff[K];
+    Buff[K]=C;
+
+    dec  K;
+    inc  J;
+  end
+
+  return @Buff;
+end
+
+
+char    @str(word N)
+  return @str2(N,10);
+end
+
+
+void     Dbg (char @Msg)
+  puts("~r~n");
+  puts(@Msg);
+  puts("~r~n");
+end
+
+
+void     Stop(char @Msg)
+  char   Buff[nBUFF];
+//puts   (@strcat(@strcat(@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,"~r"),@Info),"("),@str(nLine)),"): "),@Msg),"~r~n"));
+  puts   ("~r");
+  puts   (@Info);
+  puts   ("(");
+  puts   (@str(nLine));
+  puts   (",");
+  puts   (@str(nCol));
+  puts   ("): ");
+  puts   (@Msg);
+  puts   ("~r~n");
+
+//close (hText);
+  while  nFile>0 do
+    dec  nFile;
+    close(File[nFile].hText);
+  end
+
+  close(hText);                             // 23.06.2007
+
+//ExitProcess(1);
+  halt(1);
+end
+
+
+word     val(char @Buff)
+  char @D="0123456789ABCDEF";
+  word  W=$10000;
+
+  word  E=10;
+  word  P= 0;
+
+  select
+    case Buff[0]='$':
+      E=16;
+      P= 1;
+
+    case Buff[0]='0' & Buff[1]='x':         // 11.02.2007
+      E=16;
+      P= 2;
+  end
+
+  word  L=0;
+  word  H=0;
+  while Buff[P]!=#0 do
+    word  S=0;
+    while D[S]!=Buff[P] do
+      inc S;
+      if  S>=E then
+        Stop(@eWRONGCHAR);
+      end
+    end
+
+    S=E*L+S;
+    L=S%W;
+    S=E*H+S/W;
+    H=S%W;
+    S=S/W;
+
+    if S>0 then
+      Stop(@eOVERFLOW);
+    end
+
+    inc P;
+  end
+
+  return W*H+L;
+end
+
+
+// Функции для pаботы с таблицами компилятоpа
+
+void     Copy(char @Dest, @Name; word P)
+  while P<nDict & Dict[P].Class=cWORD do
+    if strcmp(@Dict[P].Name,@Name)=0 then
+      Stop(@eEXPECTED);
+    end
+
+    inc P;
+  end
+
+  if isalpha(Name)!=0 then
+    Stop(@eEXPECTED);
+  end
+
+  strcpy(@Dest,@Name);
+end
+
+
+word     Find(char @Name)
+  word  P=0;
+  while P<nDict do
+    if strcmp(@Dict[P].Name,@Name)=0 then
+      while Dict[P].Class=cNAME do
+        P=Dict[P].pType;
+      end
+
+      exit
+    end
+
+    inc P;
+  end
+
+  return P;
+end
+
+
+void     Word(char @Name)
+  Dict[nDict].Class=cWORD;                     strcpy(@Dict[nDict].Name,@Name);
+  Dict[nDict].Flag =    0;
+  inc  nDict;
+end
+
+
+void     Base(char @Name; word Size)
+  Dict[nDict].Class=cTYPE;                     strcpy(@Dict[nDict].Name,@Name);
+  Dict[nDict].Sub  =sBASE;
+  Dict[nDict].Value= Size;
+  Dict[nDict].Flag =    0;
+  inc  nDict;
+end
+
+
+// Сканеp
+
+word    nFile0;                             // 23.06.2007
+word    fFile;
+
+char     Read()
+  if fFile!=0 then
+    return ' ';
+  end
+
+  word   Flag =0;
+  while pText>=nText do
+    if Flag=0 then
+      nText=pFile+read(hText,@Text[pFile],nTEXT);
+      pText=pFile;
+      Flag =1;
+    else
+      if nFile<1 then
+      //Stop(@eEOF);
+        return #0;                          // 11.02.2007
+      end
+
+      char   Temp[nBUFF];
+      puts (@strcat(@strcat(@strcat(@strcat(@strcpy(@Temp,"~r"),@Info),"("),@str(nLine)),")~r~n"));
+      close(hText);
+
+      dec        nFile;
+      hText=File[nFile].hText;                 strcpy(@Info,@File[nFile].Info);
+      nText=File[nFile].nText;
+      pText=File[nFile].pText;
+      nLine=File[nFile].nLine;
+      nCol =File[nFile].nCol;               // 24.03.2007
+
+      pFile=pFile-nTEXT;
+      fFile=1;                              // 23.06.2007
+      Flag =0;
+    end
+  end
+
+  return Text[pText];
+end
+
+
+void     Next()
+  nFile0=nFile;                             // 23.06.2007
+  fFile =0;
+
+  inc nCol;                                 // 24.03.2007
+  inc pText;
+end
+
+
+char     Sign()
+  char Ch=Read();
+  Next();
+
+  if Ch='~~' then
+    Ch=Read();
+    select
+      case Ch='n':
+        Ch='~n';
+
+      case Ch='r':
+        Ch='~r';
+
+      case Ch='t':
+        Ch='~t';
+
+      case Ch='0':
+        Ch='~0';
+    end
+
+    Next();
+  end
+
+  return Ch;
+end
+
+
+void     Line()
+  Dict[nDict].pType= Find("char");
+  Dict[nDict].nPtr = 1;
+  Dict[nDict].pIndx=nChar;
+
+  while Read()!='"' do
+    if Read()='~r' | Read()='~n' then
+      Stop(@eQUOTEXP);
+    end
+
+    if nChar>=nCHAR then
+      Stop(@eNOMEMORY);
+    end
+
+    Char[nChar]=Sign();
+    inc  nChar;
+  end
+
+  Next();
+
+  if nChar>=nCHAR then
+    Stop(@eNOMEMORY);
+  end
+
+  Char[nChar]=#0;
+  inc  nChar;
+
+  Dict[nDict].nIndx=nChar;
+end
+
+
+char    @Scan(char @Buff)
+  word  N=0;
+  do
+    while Read()='~n' | Read()='~r' | Read()='~t' | Read()=' ' do
+      if Read()='~n' then
+        if  nLine%100=0 then
+          puts(@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,"~r"),@Info),"("),@str(nLine)),")"));
+        end
+
+        nCol=0;                             // 24.03.2007
+
+        inc nLine;
+      end
+
+      Next();
+    end
+
+    if Read()='/' then
+      Next();
+      if Read()='*' then
+        Next();
+        inc N;
+
+        loop                                // 11.02.2007
+      end
+
+    /*if N>0 then                           // 11.02.2007
+        loop
+      end*/
+
+      if Read()='/' then
+        while Read()!='~n' do
+          if Read()=#0 then                 // 11.02.2007
+            Stop(@eEOF);
+          end
+
+          Next();
+        end
+
+        loop
+      end
+
+      if N>0 then                           // 11.02.2007
+        loop
+      end
+
+      return @strcpy(@Buff,"/");
+    end
+
+    if N=0 then
+      exit
+    end
+
+    if Read()='*' then
+      Next();
+      if Read()='/' then
+        Next();
+        dec N;
+      end
+
+      loop
+    end
+
+    if Read()=#0 then                       // 11.02.2007
+      Stop(@eEOF);
+    end
+
+    Next();
+  end
+
+  word  P=0;
+  while isalpha(Read())=0 | isdigit(Read())=0 do
+    Buff[P]=Read();
+    inc  P;
+    if   P>=nNAME then
+      Stop(@eLONGNAME);
+    end
+
+    Next();
+  end
+
+  if P=0 then
+    Buff[P]=Read();
+    inc  P;
+
+    Next();
+    select
+      case Buff[0]='!':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,"!=");
+        end
+
+      case Buff[0]='<':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,"<=");
+        end
+
+      case Buff[0]='>':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,">=");
+        end
+
+      case Buff[0]=':':
+        if Read()='=' then
+          Next();
+          return @strcpy(@Buff,":=");
+        end
+    end
+  end
+
+  Buff[P]=#0;
+  return  @Buff;
+end
+
+/*
+word     Tabl(char @Buff)
+  while strcmp(@Buff,"[")=0 do
+    if nIndx>=nINDX then
+      Stop(@eNOMEMORY);
+    end
+
+    word P=Find(@Scan(@Buff));
+    if   P<nDict & Dict[P].Class=cCONST & Dict[P].pType=Find("word") then
+      Indx[nIndx]=Dict[P].Value;
+    else
+      Indx[nIndx]=val(@Buff);
+    end
+    inc    nIndx;
+
+    if strcmp(@Scan(@Buff),"]")!=0 then
+      Stop(@eBRACKETEXP);
+    end
+
+    Scan(@Buff);
+  end
+
+  return nIndx;
+end
+*/
+
+word     List(char @Buff)
+  word  P=nParm;
+  while strcmp(@Buff,")")!=0 do
+    word pType=Find(@Buff);
+    if   pType>=nDict | Dict[pType].Class!=cTYPE then
+      Stop(@eTYPEEXP);
+    end
+
+    do
+      word  nPtr=0;
+      while strcmp(@Scan(@Buff),"@")=0 do
+        inc nPtr;
+      end
+
+      if pType=Find("void") & nPtr<1 then
+        Stop(@eNOVOID);
+      end
+
+      if Dict[pType].Sub=sHEADER & nPtr<1 then
+        Stop(@eNOVAL);
+      end
+
+      word  I=P;
+      while I<nParm do
+        if strcmp(@Parm[I].Name,@Buff)=0 then
+          Stop(@eDUPLICATE);
+        end
+
+        inc I;
+      end
+
+      if nParm>=nPARM then
+        Stop(@eNOMEMORY);
+      end
+
+      Parm[nParm].pType=pType;                 Copy(@Parm[nParm].Name,@Buff,0);
+      Parm[nParm].nPtr =nPtr;
+      inc  nParm;
+
+      if strcmp(@Scan(@Buff),",")!=0 then
+        exit
+      end
+    end
+
+    if strcmp(@Buff,")")!=0 then
+      if strcmp(@Buff,";")!=0 then
+        Stop(@eSEMICOLONEXP);
+      end
+
+      if strcmp(@Scan(@Buff),")")=0 then
+        Stop(@eTYPEEXP);
+      end
+    end
+  end
+
+  return nParm;
+end
+
+
+word     Peek()
+  word N =nNode;
+  if   N>=nNODE then
+    Stop(@eNOMEMORY);
+  end
+
+  Node  [nNode].pLeft =nNODE;
+  Node  [nNode].pRight=nNODE;
+  inc    nNode;
+
+  return  N;
+end
+
+
+// Пpеобpазование типа
+
+void     Cast(word pType1, pType2; word @P)
+  if pType1=Find("int") & Node[P].ID=iWORD then
+    Node[P].ID=iINT;
+    return
+  end
+
+  word P1=Peek();
+  word P2=Peek();
+  Node[P1]. ID   =iCAST;
+  Node[P1]. Value=pType1;
+  Node[P1].pLeft = P2;
+
+  Node[P2]. ID   =iEMPTY;
+  Node[P2].pLeft = P;
+
+  P=P1;
+end
+
+
+// Пpовеpка совместимости типов
+
+void     Test(word pType1, nPtr1; word pType2, nPtr2; word @P)
+  select
+    case pType1=pType2 & nPtr1=nPtr2:
+      return
+
+    case pType1=Find("byte") & nPtr1=0 & pType2=Find("word") & nPtr2=0:
+      return
+
+    case pType1=Find("byte") & nPtr1=0 & pType2=Find("int")  & nPtr2=0:
+      return
+
+    case pType1=Find("word") & nPtr1=0 & pType2=Find("byte") & nPtr2=0:
+      Cast(pType1,pType2,@P);
+      return
+
+    case pType1=Find("word") & nPtr1=0 & pType2=Find("int")  & nPtr2=0:
+      return
+
+    case pType1=Find("int")  & nPtr1=0 & pType2=Find("byte") & nPtr2=0:
+      Cast(pType1,pType2,@P);
+      return
+
+    case pType1=Find("int")  & nPtr1=0 & pType2=Find("word") & nPtr2=0:
+      return
+
+    case pType1=Find("void") & ((nPtr1>0 & nPtr2=nPtr1) | (nPtr1=1 & nPtr2>0)):
+      return
+
+    case pType2=Find("void") & ((nPtr2>0 & nPtr1=nPtr2) | (nPtr2=1 & nPtr1>0)):
+      return
+
+    case Dict[pType1].Class=cTYPE & Dict[pType1].Sub=sHEADER & Dict[pType2].Class=cFUNC:
+      if Dict[pType1].pType=Dict[pType2].pType then
+        if Dict[pType1].nPtr =Dict[pType2].nPtr  then
+          word pParm1=Dict[pType1].pIndx;
+          word pParm2=Dict[pType2].pIndx;
+          do
+            if pParm1>=Dict[pType1].nIndx then
+              if pParm2<Dict[pType2].nIndx then
+                exit
+              end
+
+              return
+            end
+
+            if pParm2>=Dict[pType2].nIndx then
+              exit
+            end
+
+            if Parm[pParm1].pType!=Parm[pParm2].pType then
+              exit
+            end
+
+            if Parm[pParm1].nPtr !=Parm[pParm2].nPtr  then
+              exit
+            end
+
+            inc pParm2;
+            inc pParm1;
+          end
+        end
+      end
+  end
+
+  Stop(@eTYPE);
+end
+
+
+// Отpицание условия
+
+void     Not (word P)
+  select
+    case Node[P].ID=iOR:
+      Node[P].ID=iAND;
+      Not (Node[P].pLeft);
+      Not (Node[P].pRight);
+
+    case Node[P].ID=iXOR:
+      Node[P].ID=iEQV;
+
+    case Node[P].ID=iEQV:
+      Node[P].ID=iXOR;
+
+    case Node[P].ID=iAND:
+      Node[P].ID=iOR;
+      Not (Node[P].pLeft);
+      Not (Node[P].pRight);
+
+    case Node[P].ID=iLT:
+      Node[P].ID=iGE;
+
+    case Node[P].ID=iLE:
+      Node[P].ID=iGT;
+
+    case Node[P].ID=iEQ:
+      Node[P].ID=iNE;
+
+    case Node[P].ID=iNE:
+      Node[P].ID=iEQ;
+
+    case Node[P].ID=iGE:
+      Node[P].ID=iLT;
+
+    case Node[P].ID=iGT:
+      Node[P].ID=iLE;
+
+    default:
+      Stop(@eINTERNAL);
+  end
+end
+
+
+// Клониpование поддеpева
+
+word     Dup (word P)
+  if P>=nNODE then
+    return P;
+  end
+
+  word P1=Peek();
+  Node[P1].ID    =Node[P].ID;
+  Node[P1].Value =Node[P].Value;
+  Node[P1].pLeft =Dup (Node[P].pLeft);
+  Node[P1].pRight=Dup (Node[P].pRight);
+
+  return P1;
+end
+
+
+// Анализатоp выpажений
+
+word    pFunc;
+word    pParm;
+word    pIndx;
+word    pLoop;
+word    nFile00;                            // 23.06.2007
+
+word     Expr(word Prty; word @pType, @nPtr; char @Buff)
+  word Flag=0;
+  word Call=0;
+  word P1;
+  select
+    case strcmp(@Buff,"(")=0:
+      P1=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+      if strcmp(@Buff,")")!=0 then
+        Stop(@eBRACKETEXP);
+      end
+
+    case strcmp(@Buff,"!")=0:
+      if Prty>pBOOL then
+        Stop(@eOPERATOR);
+      end
+
+      word P2=Expr(pMUL,@pType,@nPtr,@Scan(@Buff));
+
+      if pType<nDICT & nPtr>0 then
+        Stop(@eTYPE);
+      end
+
+      select
+        case pType=Find("byte") | pType=Find("word"):
+          P1=Peek();
+          Node[P1].ID    =iNOT;
+          Node[P1].pLeft = P2;
+
+        case pType>=nDICT:
+          Not(P2);
+          P1= P2;
+
+        default:
+          Stop(@eTYPE);
+      end
+
+      Flag=1;
+
+    case strcmp(@Buff,"-")=0:
+      if Prty>pCOMP then
+        Stop(@eOPERATOR);
+      end
+
+      P1=Peek();
+      Node[P1]. ID  =iNEG;
+      Node[P1].pLeft= Expr(pMUL,@pType,@nPtr,@Scan(@Buff));
+
+      select
+        case Node[Node[P1].pLeft].ID=iWORD:
+          if Node[Node[P1].pLeft].Value>$80000000 then
+            Stop(@eCALCERR);
+          end
+
+          if Node[Node[P1].pLeft].Value!=0 then
+            Node[P1].ID   =iINT;
+            Node[P1].Value=$FFFFFFFF-Node[Node[P1].pLeft].Value+1;
+            pType         = Find("int");
+          else
+            Node[P1].ID   =iWORD;
+            Node[P1].Value= 0;
+            pType         = Find("word");
+          end
+
+        case Node[P1].ID=iINT:
+          Node[P1].ID   =iWORD;
+          Node[P1].Value=$FFFFFFFF-Node[Node[P1].pLeft].Value+1;
+          pType         = Find("word");
+
+        default:
+          Test(Find("int"),0,pType,nPtr,@Node[P1].pLeft);
+          pType         = Find("int");
+      end
+
+      Flag= 1;
+
+    case strcmp(@Buff,"#")=0:
+      word N=val(@Scan(@Buff));
+      if   N>255 then
+        Stop(@eOVERFLOW);
+      end
+
+      P1=Peek();
+      Node[P1].ID    =iCHAR;
+      Node[P1].Value = N;
+      pType          = Find("char");
+      nPtr           = 0;
+
+    case strcmp(@Buff,"'")=0:
+      P1=Peek();
+      Node[P1].ID    =iCHAR;
+      Node[P1].Value = word(Sign());
+      pType          = Find("char");
+      nPtr           = 0;
+
+      if Read()!='~'' then
+        Stop(@eQUOTEXP);
+      end
+      Next();
+
+    case strcmp(@Buff,"NULL")=0:
+      P1=Peek();
+      Node[P1].ID    =iNULL;
+      pType          = Find("void");
+      nPtr           = 1;
+
+    case isdigit(Buff)=0:
+      P1=Peek();
+      Node[P1].ID    =iWORD;
+      Node[P1].Value = val (@Buff);
+      pType          = Find("word");
+      nPtr           = 0;
+
+    default:
+      nPtr=0;
+      while strcmp(@Buff,"@")=0 do
+        inc  nPtr;
+        Scan(@Buff);
+      end
+
+      word nPtr1=0;
+      word pIndx=0;
+      word nIndx=0;
+      if Flag=0 then
+        if strcmp(@Buff,"~"")=0 then
+          if nPtr>0 then
+            Stop(@eSTRING);
+          end
+
+          nPtr=1;
+
+          if nDict>=nDICT then
+            Stop(@eNOMEMORY);
+          end
+
+          Dict[nDict].Class=cCONST;            strcpy(@Dict[nDict].Name,"");
+          Dict[nDict].Flag =     0;
+          Line();
+
+          P1=Peek();
+          Node[P1].ID    =iSTRING;
+          Node[P1].Value =nDict;
+          pType          = Find("char");
+          Flag           = 1;
+
+          inc  nDict;
+        end
+      end
+
+      if Flag=0 then
+        word  I=pParm;
+        while I<nParm do
+          if strcmp(@Parm[I].Name,@Buff)=0 then
+            P1=Peek();
+            Node[P1].ID    =iLOCAL;
+            Node[P1].Value = I-pParm;
+            pType          = Parm[I].pType;
+            nPtr1          = Parm[I].nPtr;
+            pIndx          = Parm[I].pIndx;
+            nIndx          = Parm[I].nIndx;
+            Flag           = 1;
+
+            exit
+          end
+
+          inc I;
+        end
+      end
+
+      if Flag=0 then
+        word I=Dict[pFunc].pIndx;
+        while I<Dict[pFunc].nIndx do
+          if strcmp(@Parm[I].Name,@Buff)=0 then
+            P1=Peek();
+            Node[P1].ID    =iPARM;
+            Node[P1].Value = I;
+            pType          = Parm[I].pType;
+            nPtr1          = Parm[I].nPtr;
+            Flag           = 1;
+
+            exit
+          end
+
+          inc I;
+        end
+      end
+
+      if Flag=0 then
+        word I=Find(@Buff);
+      //if I>nDict then
+        if I>=nDict then // 10.12.2005
+          Stop(@eUNDEFINED);
+        end
+
+        select
+          case Dict[I].Class=cCONST:
+            P1=Peek();
+            select
+              case Dict[I].pType=Find("word"):
+                Node[P1].ID    =iWORD;
+                Node[P1].Value = Dict[I].Value;
+
+              case Dict[I].pType=Find("int"):
+                Node[P1].ID    =iINT;
+                Node[P1].Value = Dict[I].Value;
+
+              case Dict[I].nPtr=0:
+                Node[P1].ID    =iCHAR;
+                Node[P1].Value = Dict[I].Value;
+
+              default:
+                Node[P1].ID    =iSTRING;
+                Node[P1].Value = I;
+            end
+
+            pType          = Dict[I].pType;
+
+          case Dict[I].Class=cDATA | Dict[I].Class=cFUNC:
+            P1=Peek();
+            Node[P1].ID    =iDATA;
+            Node[P1].Value = I;
+            pType          = Dict[I].pType;
+            nPtr1          = Dict[I].nPtr;
+
+            if Dict[I].Class=cFUNC then
+              if strcmp(@Scan(@Buff),"(")=0 then
+                word P2=Peek();
+                Node[P1].pLeft = P2;
+                Node[P2].ID    =iCALL;
+                Node[P2].Value = I;
+                Call           = 1;
+
+                word @P3=@Node[P2].pLeft;
+
+                Scan(@Buff);
+
+                word  pParm=Dict[I].pIndx;
+                while pParm<Dict[I].nIndx do
+                  word pType2, nPtr2;
+                  word P4=Peek();
+                  Node[P4].ID   =iPUSH;
+                  Node[P4].pLeft=Expr(pZERO,@pType2,@nPtr2,@Buff);
+
+                  Test(Parm[pParm].pType,Parm[pParm].nPtr,pType2,nPtr2,@Node[P4].pLeft);
+
+                  P3 = P4;
+                  @P3=@Node[P4].pRight;
+
+                  inc pParm;
+                  if  pParm<Dict[I].nIndx then
+                    if strcmp(@Buff,",")!=0 then
+                      Stop(@eCOMMAEXP);
+                    end
+
+                    Scan(@Buff);
+                  end
+                end
+
+                if strcmp(@Buff,")")!=0 then
+                  Stop(@eBRACKETEXP);
+                end
+              else
+                if Prty>=pINC | nPtr!=1 then
+                  Stop(@eNOADDR);
+                end
+
+                Node[P1].ID    =iFUNC;
+                Node[P1].Value = I;
+              //pType          = Find("void");
+                pType          = I;
+
+                return P1;
+              end
+            else
+              pIndx            = Dict[I].pIndx;
+              nIndx            = Dict[I].nIndx;
+            end
+
+          case Dict[I].Class=cTYPE:
+            if Prty<pLVALUE then
+              if strcmp(@Scan(@Buff),"(")!=0 then
+                Stop(@eBRACKETEXP);
+              end
+
+              P1             = Peek();
+              word P2        = Peek();
+              Node[P1]. ID   =iCAST;
+              Node[P1]. Value= I;
+              Node[P1].pLeft = P2;
+
+              Node[P2]. ID   = iEMPTY;
+              Node[P2].pLeft = Expr(pZERO,@pType,@nPtr1,@Scan(@Buff));
+
+              if strcmp(@Buff,")")!=0 then
+                Stop(@eBRACKETEXP);
+              end
+
+              select
+                case I=Find("char") & nPtr=0 & pType=Find("byte") & nPtr1=0:
+                  pType=I;
+
+                case I=Find("char") & nPtr=0 & pType=Find("word") & nPtr1=0:
+                  pType=I;
+
+                case I=Find("char") & nPtr=0 & pType=Find("int")  & nPtr1=0:
+                  pType=I;
+
+                case I=Find("byte") & nPtr=0 & pType=Find("char") & nPtr1=0:
+                  pType=I;
+
+                case I=Find("word") & nPtr=0 & pType=Find("char") & nPtr1=0:
+                  pType=I;
+
+                case I=Find("int")  & nPtr=0 & pType=Find("char") & nPtr1=0:
+                  pType=I;
+
+                default:
+                  Stop(@eTYPE);
+              end
+            else
+              if nPtr>0 then
+                Stop(@eUNDEFINED);
+              end
+
+              return nNODE;
+            end
+
+          default:
+            Stop(@eUNDEFINED);
+        end
+      end
+
+      word @P2=@Node[P1].pLeft;
+      if Node[P1].pLeft<nNODE then
+        @P2=@Node[Node[P1].pLeft].pRight;
+      end
+
+      do
+        Scan(@Buff);
+        word pIndx1=pIndx;
+        while pIndx<nIndx do
+          if strcmp(@Buff,"[")!=0 then
+            if pIndx!=pIndx1 | strcmp(@Buff,".")=0 then
+              Stop(@eBRACKETEXP);
+            end
+
+            exit
+          end
+
+          word pType2, nPtr2;
+          word P3=Peek();
+          Node[P3].ID   =iINDEX;
+          Node[P3].Value= Indx[pIndx];
+          Node[P3].pLeft= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+          if strcmp(@Buff,"]")!=0 then
+            Stop(@eBRACKETEXP);
+          end
+
+          Test(Find("word"),0,pType2,nPtr2,@Node[P3].pLeft);
+
+          P2 = P3;
+          @P2=@Node[P3].pRight;
+
+          Scan(@Buff);
+          inc  pIndx;
+        end
+
+        while strcmp(@Buff,"[")=0 do
+          if nPtr1<1 then
+            Stop(@eNOADDR);
+          end
+
+          word pType2, nPtr2;
+          word P3=Peek();
+          Node[P3].ID   =iADDR;
+          Node[P3].pLeft= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+          if strcmp(@Buff,"]")!=0 then
+            Stop(@eBRACKETEXP);
+          end
+
+          Test(Find("word"),0,pType2,nPtr2,@Node[P3].pLeft);
+
+          P2 = P3;
+          @P2=@Node[P3].pRight;
+
+          dec nPtr1;
+          Call=   0;
+
+          Scan(@Buff);
+        end
+
+        select
+          case strcmp(@Buff,"(")=0:
+            if Dict[pType].Sub!=sHEADER then
+              Stop(@eHEADEREXP);
+            end
+
+            while nPtr1>0 do
+              word P3=Peek();
+              Node[P3].ID   =iADDR;
+
+              P2 = P3;
+              @P2=@Node[P3].pRight;
+
+              dec nPtr1;
+              Call=   0;
+            end
+
+            word  P3        = Peek();
+            Node [P3].ID    =iLPTR;
+            P2              = P3;
+
+            word  P4        = Peek();
+            Node [P4].ID    =iDATA;
+
+            word  P5        = Peek();
+            Node [P5].ID    =iCALL2;
+            Node [P5].Value =pType;
+
+            Node [P4].pLeft = P5;
+
+            word  P6        = Peek();
+            Node [P6].ID    =iEMPTY;
+            Node [P6].pLeft = P1;
+
+            Node [P5].pLeft = P6;
+
+            word @P7=@Node[P6].pRight;
+
+            Scan(@Buff);
+
+            word  pParm=Dict[pType].pIndx;
+            while pParm<Dict[pType].nIndx do
+              word pType2, nPtr2;
+              word P8=Peek();
+              Node[P8].ID   =iPUSH;
+              Node[P8].pLeft=Expr(pZERO,@pType2,@nPtr2,@Buff);
+
+              Test(Parm[pParm].pType,Parm[pParm].nPtr,pType2,nPtr2,@Node[P8].pLeft);
+
+              P7 = P8;
+              @P7=@Node[P8].pRight;
+
+              inc pParm;
+              if  pParm<Dict[pType].nIndx then
+                if strcmp(@Buff,",")!=0 then
+                  Stop(@eCOMMAEXP);
+                end
+
+                Scan(@Buff);
+              end
+            end
+
+            if strcmp(@Buff,")")!=0 then
+              Stop(@eBRACKETEXP);
+            end
+
+            word pType0     =pType;
+          //INFO Ошибка     - Вместо Dict использовался Parm
+          //pType           = Parm[pType0].pType;
+            pType           = Dict[pType0].pType;
+            nPtr1           = Dict[pType0].nPtr;
+            pIndx           = 0;
+            nIndx           = 0;
+            Call            = 1;
+
+            P1 = P4;
+            @P2=@Node[P5].pRight;
+
+          case strcmp(@Buff,".")=0:
+            if Dict[pType].Sub!=sSTRUCT then
+              Stop(@eSTRUCTEXP);
+            end
+
+            while nPtr1>0 do
+              word P3=Peek();
+              Node[P3].ID   =iADDR;
+
+              P2 = P3;
+              @P2=@Node[P3].pRight;
+
+              dec nPtr1;
+              Call=   0;
+            end
+
+            if Call!=0 then
+              Stop(@eNOTAVAIL);
+            end
+
+            Scan(@Buff);
+
+            word I=Dict[pType].pIndx;
+            do
+              if I>=Dict[pType].nIndx then
+                Stop(@eUNDEFINED);
+              end
+
+              if strcmp(@Parm[I].Name,@Buff)=0 then
+                exit
+              end
+
+              inc I;
+            end
+
+            word P3=Peek();
+            Node[P3].ID   =iFIELD;
+            Node[P3].Value= I;
+            pType         = Parm[I].pType;
+            nPtr1         = Parm[I].nPtr;
+            pIndx         = Parm[I].pIndx;
+            nIndx         = Parm[I].nIndx;
+            Call          = 0;
+
+            P2 = P3;
+            @P2=@Node[P3].pRight;
+
+          default:
+            exit
+        end
+      end
+
+      if Prty>=pLVALUE & strcmp(@Buff,"=")!=0 & strcmp(@Buff,":=")!=0 then
+        if Call=0 | nPtr>0 then
+          Stop(@eASSIGNEXP);
+        end
+
+        nPtr1=0;
+      end
+
+      word P4=nNODE;
+      if Prty<pINC then
+        if nPtr>nPtr1+1 then
+          Stop(@eNOADDR);
+        end
+
+        P4=Peek();
+        if nPtr>nPtr1 then
+          Node[P4].ID=iLPTR;
+        else
+          Node[P4].ID=iLOAD;
+        end
+      else
+        if (nPtr>nPtr1) | (Node[P1].ID=iCHAR) | (Node[P1].ID=iWORD) | (Node[P1].ID=iSTRING) | (nPtr>=nPtr1 & Call!=0 & (strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0)) then
+          Stop(@eNOADDR);
+        end
+      end
+
+      while nPtr1>nPtr do
+        word P3=Peek();
+        Node[P3].ID   =iADDR;
+
+        P2 = P3;
+        @P2=@Node[P3].pRight;
+
+        dec nPtr1;
+      end
+
+      P2  =P4;
+      Flag=1;
+  end
+
+  if Flag=0 then
+    if Prty>=pINC then
+      Stop(@eNOADDR);
+    end
+
+    nFile00=nFile0;
+
+    Scan(@Buff);
+  end
+
+  do
+    word ID;
+    word P;
+    select
+      case strcmp(@Buff,"|")=0:
+        ID=iOR;
+        P =pBOOL;
+
+      case strcmp(@Buff,"^")=0:
+        ID=iXOR;
+        P =pBOOL;
+
+      case strcmp(@Buff,"&")=0:
+        ID=iAND;
+        P =pBOOL;
+
+      case strcmp(@Buff,"<")=0:
+        ID=iLT;
+        P =pCOMP;
+
+      case strcmp(@Buff,"<=")=0:
+        ID=iLE;
+        P =pCOMP;
+
+      case strcmp(@Buff,"=")=0:
+        ID=iEQ;
+        P =pCOMP;
+
+      case strcmp(@Buff,"!=")=0:
+        ID=iNE;
+        P =pCOMP;
+
+      case strcmp(@Buff,">=")=0:
+        ID=iGE;
+        P =pCOMP;
+
+      case strcmp(@Buff,">")=0:
+        ID=iGT;
+        P =pCOMP;
+
+      case strcmp(@Buff,"+")=0:
+        ID=iADD;
+        P =pADD;
+
+      case strcmp(@Buff,"-")=0:
+        ID=iSUB;
+        P =pADD;
+
+      case strcmp(@Buff,"*")=0:
+        ID=iMUL;
+        P =pMUL;
+
+      case strcmp(@Buff,"/")=0:
+        ID=iDIV;
+        P =pMUL;
+
+      case strcmp(@Buff,"%")=0:
+        ID=iMOD;
+        P =pMUL;
+
+      default:
+        P =pZERO;
+    end
+
+    if P<=Prty then
+      exit
+    end
+
+    word pType2, nPtr2;
+    word P2=Peek();
+    Node[P2].ID    =ID;
+    Node[P2].pLeft =P1;
+    Node[P2].pRight=Expr(P,@pType2,@nPtr2,@Scan(@Buff));
+
+    if nPtr=0 & nPtr2=0 then
+      if pType2!=pType then
+        select
+          case pType=Find("byte") & pType2=Find("word"):
+            Cast(pType2,pType,@Node[P2].pLeft);
+            pType=pType2;
+
+          case pType=Find("byte") & pType2=Find("int"):
+            Cast(pType2,pType,@Node[P2].pLeft);
+            pType=pType2;
+
+          case pType=Find("word") & pType2=Find("byte"):
+            Cast(pType,pType2,@Node[P2].pRight);
+
+          case pType=Find("word") & pType2=Find("int"):
+            Cast(pType2,pType,@Node[P2].pLeft);
+            pType=pType2;
+
+          case pType=Find("int")  & pType2=Find("byte"):
+            Cast(pType,pType2,@Node[P2].pRight);
+
+          case pType=Find("int")  & pType2=Find("word"):
+            Cast(pType,pType2,@Node[P2].pRight);
+
+          default:
+            Stop(@eTYPE);
+        end
+      end
+    else
+      if nPtr=0 | Node[Node[P2].pRight].ID!=iNULL then
+        Stop(@eTYPE);
+      end
+    end
+
+    select
+      case nPtr>0:
+        if ID!=iEQ & ID!=iNE then
+          Stop(@eTYPE);
+        end
+
+        pType=nDICT;
+
+      case ID=iOR:
+        select
+          case pType=Find("byte") | pType=Find("word"):
+            Node[P2].ID=iBIT_OR;
+
+          case pType<nDICT:
+            Stop(@eTYPE);
+        end
+
+      case ID=iXOR:
+        select
+          case pType=Find("byte") | pType=Find("word"):
+            Node[P2].ID=iBIT_XOR;
+
+          case pType>=nDICT:
+            word P3=Peek();
+            Node[P3]. ID   =iEMPTY;
+            Node[P3].pLeft = Node[P2].pLeft;
+            Node[P3].pRight= Node[P2].pRight;
+
+            Node[P2].pLeft = P3;
+            Node[P2].pRight= Dup(Node[P2].pRight);
+
+          default:
+            Stop(@eTYPE);
+        end
+
+      case ID=iAND:
+        select
+          case pType=Find("byte") | pType=Find("word"):
+            Node[P2].ID=iBIT_AND;
+
+          case pType<nDICT:
+            Stop(@eTYPE);
+        end
+
+      case iLT<=ID & ID<=iGT:
+        if pType!=Find("char") & pType!=Find("byte") & pType!=Find("word") & pType!=Find("int") then
+          Stop(@eTYPE);
+        end
+
+        pType=nDICT;
+
+      case iADD<=ID & ID<=iDIV:
+        if pType!=Find("byte") & pType!=Find("word") & pType!=Find("int") then
+          Stop(@eTYPE);
+        end
+
+        if ID=iDIV then
+          if Node[Node[P2].pRight].ID=iWORD then
+            if Node[Node[P2].pRight].Value=0 then
+              Stop(@eCALCERR);
+            end
+          end
+        end
+
+        if Node[Node[P2].pLeft].ID=iWORD | Node[Node[P2].pLeft].ID=iINT then
+          if Node[Node[P2].pRight].ID=iWORD | Node[Node[P2].pRight].ID=iINT then
+            select
+              case ID=iADD | ID=iSUB:
+                if Node[Node[P2].pRight].ID=iINT then
+                  Node[Node[P2].pRight].ID   =iWORD;
+                  Node[Node[P2].pRight].Value=$FFFFFFFF-Node[Node[P2].pRight].Value+1;
+
+                  if ID=iADD then
+                    ID=iSUB;
+                  else
+                    ID=iADD;
+                  end
+                end
+
+              case ID=iMUL | ID=iDIV:
+                if Node[Node[P2].pLeft].ID=iINT then
+                //Node[Node[P2].pLeft].ID    =iWORD;
+                  Node[Node[P2].pLeft].Value =$FFFFFFFF-Node[Node[P2].pLeft] .Value+1;
+                end
+
+                if Node[Node[P2].pRight].ID=iINT then
+                //Node[Node[P2].pRight].ID   =iWORD;
+                  Node[Node[P2].pRight].Value=$FFFFFFFF-Node[Node[P2].pRight].Value+1;
+                end
+
+                if Node[Node[P2].pLeft].ID=Node[Node[P2].pRight].ID then
+                  Node[P2].ID=iWORD;
+                else
+                  Node[P2].ID=iINT;
+                end
+            end
+
+            select
+              case ID=iADD:
+                if Node[Node[P2].pLeft].ID=iWORD then
+                  Node[P2].ID   =iWORD;
+                  Node[P2].Value= Node[Node[P2].pLeft].Value+Node[Node[P2].pRight].Value;
+                else
+                  Node[Node[P2].pLeft].Value=$FFFFFFFF-Node[Node[P2].pLeft].Value+1;
+                  if Node[Node[P2].pLeft].Value>Node[Node[P2].pRight].Value then
+                    Node[P2].ID   =iINT;
+                    Node[P2].Value= Node[Node[P2].pLeft] .Value-Node[Node[P2].pRight].Value;
+                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                  else
+                    Node[P2].ID   =iWORD;
+                    Node[P2].Value= Node[Node[P2].pRight].Value-Node[Node[P2].pLeft] .Value;
+                  end
+                end
+
+              case ID=iSUB:
+                if Node[Node[P2].pLeft].ID=iWORD then
+                  if Node[Node[P2].pLeft].Value<Node[Node[P2].pRight].Value then
+                    Node[P2].ID   =iINT;
+                    Node[P2].Value= Node[Node[P2].pRight].Value-Node[Node[P2].pLeft].Value;
+
+                    if Node[P2].Value>$80000000 then
+                      Stop(@eCALCERR);
+                    end
+
+                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                  else
+                    Node[P2].ID   =iWORD;
+                    Node[P2].Value= Node[Node[P2].pLeft].Value-Node[Node[P2].pRight].Value;
+                  end
+                else
+                  Node[Node[P2].pLeft].Value=$FFFFFFFF-Node[Node[P2].pLeft].Value+1;
+                  Node[P2].Value=Node[Node[P2].pLeft].Value+Node[Node[P2].pRight].Value;
+
+                  Node[P2].ID   =iINT;
+                  Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                end
+
+              case ID=iMUL:
+                Node[P2].Value=Node[Node[P2].pLeft].Value*Node[Node[P2].pRight].Value;
+
+                if Node[P2].ID=iINT then
+                  if Node[P2].Value>$80000000 then // !!!
+                    Stop(@eCALCERR);
+                  end
+
+                  Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                end
+
+              case ID=iDIV:
+                Node[P2].Value=Node[Node[P2].pLeft].Value/Node[Node[P2].pRight].Value;
+
+                if Node[P2].Value!=0 then
+                  if Node[P2].ID=iINT then
+                    if Node[P2].Value>$80000000 then // !!!
+                      Stop(@eCALCERR);
+                    end
+
+                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                  end
+                else
+                  Node[P2].ID=iWORD;
+                end
+
+              default:
+                Stop(@eINTERNAL);
+            end
+          end
+        end
+
+      case ID=iMOD:
+        if pType!=Find("byte") & pType!=Find("word") then
+          Stop(@eTYPE);
+        end
+
+        if Node[Node[P2].pRight].ID=iWORD then
+          if Node[Node[P2].pRight].Value=0 then
+            Stop(@eCALCERR);
+          end
+        end
+
+        if Node[Node[P2].pLeft].ID=iWORD & Node[Node[P2].pRight].ID=iWORD then
+          Node[P2].ID   =iWORD;
+          Node[P2].Value= Node[Node[P2].pLeft].Value%Node[Node[P2].pRight].Value;
+        end
+
+      default:
+        Stop(@eINTERNAL);
+    end
+
+    P1 = P2;
+  end
+
+  return P1;
+end
+
+
+word     Tabl(char @Buff)
+  while strcmp(@Buff,"[")=0 do
+    if nIndx>=nINDX then
+      Stop(@eNOMEMORY);
+    end
+
+  /*word P=Find(@Scan(@Buff));
+    if   P<nDict & Dict[P].Class=cCONST & Dict[P].pType=Find("word") then
+      Indx[nIndx]=Dict[P].Value;
+    else
+      Indx[nIndx]=val(@Buff);
+    end*/
+
+    word pType,  nPtr;
+    word  P=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+
+    if Node[P].ID!=iWORD then
+      Stop(@eTYPE);
+    end
+
+    Indx[nIndx]=Node[P].Value;
+    inc  nIndx;
+
+    if strcmp(@Buff,"]")!=0 then // strcmp(@Scan(@Buff),"]")!=0
+      Stop(@eBRACKETEXP);
+    end
+
+    Scan(@Buff);
+  end
+
+  return nIndx;
+end
+
+
+// Анализатоp упpавляющих констpукций
+
+word     Ctrl(char @Buff)
+  word P1=Peek();
+  select
+    case strcmp(@Buff,"sequence")=0:
+      Node [P1].ID=iSEQUENCE;
+      word @P2    =@Node[P1].pLeft;
+
+      word nParm1=nParm;
+      word nIndx1=nIndx;
+      word  Flag =    0;
+
+      Scan(@Buff);
+      while Flag=0 | strcmp(@Buff,"end")!=0 do
+        P2  = Ctrl(@Buff);
+        @P2 =@Node[P2].pRight;
+        Flag= 1;
+      end
+
+      nIndx=nIndx1;
+      nParm=nParm1;
+
+    case strcmp(@Buff,"if")=0 | strcmp(@Buff,"select")=0:
+      Node [P1].ID=iSELECT;
+
+      char @Case="";
+      char @Then="then";
+      char @Else="else";
+      if strcmp(@Buff,"select")=0 then
+        @Case="case";
+        @Then=":";
+        @Else="default";
+
+        if strcmp(@Scan(@Buff),"case")!=0 then
+          Stop(@eCASEEXP);
+        end
+      else
+        strcpy(@Buff,@Case);
+      end
+
+      word @P2=@Node[P1].pLeft;
+      while strcmp(@Buff,"end")!=0 do
+        word  P3=Peek();
+        word  P4=Peek();
+        Node [P3]. ID  =iEMPTY;
+        Node [P3].pLeft= P4;
+
+        Node [P4]. ID  =iEMPTY;
+
+        if strcmp(@Buff,@Case)=0 then
+          word pType, nPtr;
+          Node [P4].pLeft= Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+
+          if strcmp(@Buff,@Then)!=0 then
+            Stop(@eTHENEXP);
+          end
+
+          if pType<nDICT then
+            Stop(@eTYPE);
+          end
+        else
+          if strcmp(@Else,"default")=0 then
+            if strcmp(@Scan(@Buff),":")!=0 then
+              Stop(@eCOLONEXP);
+            end
+          end
+
+          @Case="";
+          @Else="";
+        end
+
+        word @P5=@Node[P4].pRight;
+
+        word nParm1=nParm;
+        word nIndx1=nIndx;
+        word  Flag =    0;
+
+        Scan(@Buff);
+        while Flag=0 | (strcmp(@Buff,@Case)!=0 & strcmp(@Buff,@Else)!=0 & strcmp(@Buff,"end")!=0) do
+          P5  = Ctrl(@Buff);
+          @P5 =@Node[P5].pRight;
+          Flag= 1;
+        end
+
+        nIndx=nIndx1;
+        nParm=nParm1;
+
+        P2 = P3;
+        @P2=@Node[P3].pRight;
+      end
+
+    case strcmp(@Buff,"switch")=0:
+      word  P2=Peek();
+      Node [P1].ID    =iSWITCH;
+      Node [P1].pLeft = P2;
+
+      Node [P2].ID    =iEMPTY;
+
+      word pType, nPtr;
+      Node [P2].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+
+      if nPtr !=0 then
+        Stop(@eSWTYPE);
+      end
+
+      if pType!=Find("char") & pType != Find("byte") & pType!=Find("word") & pType!=Find("int") then
+        Stop(@eSWTYPE);
+      end
+
+      if strcmp(@Buff,"of")!=0 then
+        Stop(@eOFEXP);
+      end
+
+      if strcmp(@Scan(@Buff),"case")!=0 then
+        Stop(@eCASEEXP);
+      end
+
+      word @P3=@Node[P2].pRight;
+
+      while strcmp(@Buff,"case")=0 do
+        word P4=Peek();
+        word P5=Peek();
+        Node[P4].ID    =iEMPTY;
+        Node[P4].pLeft = P5;
+
+        Node[P5].ID    =iEMPTY;
+
+        word @P6=@Node[P5].pLeft;
+
+        strcpy(@Buff,",");
+        while strcmp(@Buff,",")=0 do
+          word pType2, nPtr2;
+          word  P7=Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+          select
+            case pType=Find("char"):
+              if Node[P7].ID!=iCHAR then
+                Stop(@eTYPE);
+              end
+
+            case pType=Find("byte"):
+              if Node[P7].ID!=iWORD then
+                Stop(@eTYPE);
+              end
+
+            case pType=Find("word"):
+              if Node[P7].ID!=iWORD then
+                Stop(@eTYPE);
+              end
+
+            case pType=Find("int"):
+              if Node[P7].ID!=iWORD & Node[P7].ID!=iINT then
+                Stop(@eTYPE);
+              end
+
+            default:
+              Stop(@eCONSTEXP);
+          end
+
+        //TODO Некоppектно, узел iLOAD не должен создаваться
+          Node[P7].pLeft=nNODE;
+
+          P6 = P7;
+          @P6=@Node[P7].pLeft;
+        end
+
+        if strcmp(@Buff,":")!=0 then
+          Stop(@eCOLONEXP);
+        end
+
+        word @P7=@Node[P5].pRight;
+
+        word nParm1=nParm;
+        word nIndx1=nIndx;
+        word  Flag =    0;
+
+        Scan(@Buff);
+        while Flag=0 | (strcmp(@Buff,"case")!=0 & strcmp(@Buff,"default")!=0 & strcmp(@Buff,"end")!=0) do
+          P7  = Ctrl(@Buff);
+          @P7 =@Node[P7].pRight;
+          Flag= 1;
+        end
+
+        nIndx=nIndx1;
+        nParm=nParm1;
+
+        P3 = P4;
+        @P3=@Node[P4].pRight;
+      end
+
+      if strcmp(@Buff,"default")=0 then
+        if strcmp(@Scan(@Buff),":")!=0 then
+          Stop(@eCOLONEXP);
+        end
+
+        word P4=Peek();
+        word P5=Peek();
+        Node[P4].ID    =iEMPTY;
+        Node[P4].pLeft = P5;
+
+        Node[P5].ID    =iEMPTY;
+
+        word @P6=@Node[P5].pRight;
+
+        word nParm1=nParm;
+        word nIndx1=nIndx;
+        word  Flag =    0;
+
+        Scan(@Buff);
+        while Flag=0 | strcmp(@Buff,"end")!=0 do
+          P6  = Ctrl(@Buff);
+          @P6 =@Node[P6].pRight;
+          Flag= 1;
+        end
+
+        nIndx=nIndx1;
+        nParm=nParm1;
+
+        P3 = P4;
+      end
+
+    case strcmp(@Buff,"while")=0 | strcmp(@Buff,"do")=0:
+      word  P2=Peek();
+      word  P3=Peek();
+      Node [P1].ID    =iWHILE;
+      Node [P1].pLeft = P2;
+
+      Node [P2].ID    =iEMPTY;
+      Node [P2].pLeft = P3;
+
+      Node [P3].ID    =iEMPTY;
+
+      if strcmp(@Buff,"while")=0 then
+        word pType, nPtr;
+      //Node[P3].pLeft =Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+        Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+
+        if strcmp(@Buff,"do")!=0 then
+          Stop(@eDOEXP);
+        end
+
+        if pType<nDICT then
+          Stop(@eTYPE);
+        end
+      end
+
+      word @P4=@Node[P2].pRight;
+
+      word nParm1=nParm;
+      word nIndx1=nIndx;
+      word pLoop1=pLoop;
+      word  Flag =    0;
+
+      pLoop=P1;
+
+      Scan(@Buff);
+      while Flag=0 | strcmp(@Buff,"end")!=0 do
+        P4  = Ctrl(@Buff);
+        @P4 =@Node[P4].pRight;
+        Flag= 1;
+      end
+
+      pLoop=pLoop1;
+      nIndx=nIndx1;
+      nParm=nParm1;
+
+    case strcmp(@Buff,"repeat")=0:
+      word  P2=Peek();
+      word  P3=Peek();
+      Node [P1].ID    =iREPEAT;
+      Node [P1].pLeft = P2;
+
+      Node [P2].ID    =iEMPTY;
+      Node [P2].pRight= P3;
+
+      Node [P3].ID    =iEMPTY;
+
+      word @P4   =@Node[P3].pLeft;
+
+      word nParm1=nParm;
+      word nIndx1=nIndx;
+      word pLoop1=pLoop;
+      word  Flag =    0;
+
+      pLoop=P1;
+
+      Scan(@Buff);
+      while Flag=0 | strcmp(@Buff,"until")!=0 do
+        P4  = Ctrl(@Buff);
+        @P4 =@Node[P4].pRight;
+        Flag= 1;
+      end
+
+      word pType, nPtr;
+      Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+
+      if strcmp(@Buff,";")!=0 then
+        Stop(@eSEMICOLONEXP);
+      end
+
+      if pType<nDICT then
+        Stop(@eTYPE);
+      end
+
+      pLoop=pLoop1;
+      nIndx=nIndx1;
+      nParm=nParm1;
+
+    case strcmp(@Buff,"loop")=0:
+      if pLoop>=nNODE then
+        Stop(@eWHILEEXP);
+      end
+
+      Node[P1].ID=iLOOP;
+
+      select
+        case Node[pLoop].ID=iWHILE:
+          Node[P1].Value=Node[Node[pLoop].pLeft].pLeft;
+
+        case Node[pLoop].ID=iREPEAT:
+          Node[P1].Value=Node[pLoop].pLeft;
+
+        default:
+          Stop(@eINTERNAL);
+      end
+
+    case strcmp(@Buff,"exit")=0:
+      if pLoop>=nNODE then
+        Stop(@eWHILEEXP);
+      end
+
+      Node[P1].ID   =iEXIT;
+      Node[P1].Value=pLoop;
+
+    case strcmp(@Buff,"inc")=0 | strcmp(@Buff,"dec")=0:
+      if strcmp(@Buff,"inc")=0 then
+        Node[P1].ID =iINC;
+      else
+        Node[P1].ID =iDEC;
+      end
+
+      word pType, nPtr;
+      Node[P1].pLeft= Expr(pINC,@pType,@nPtr,@Scan(@Buff));
+
+      if strcmp(@Buff,";")!=0 then
+        Stop(@eSEMICOLONEXP);
+      end
+
+      if (pType!=Find("byte") & pType!=Find("word") & pType!=Find("int")) | nPtr!=0 then
+        Stop(@eTYPE);
+      end
+
+    case strcmp(@Buff,"inline")=0:          // 11.02.2007
+      word Code=val(@Scan(@Buff));
+      if   Code>255 then
+        Stop(@eOVERFLOW);
+      end
+
+      Node[P1].ID   =iINLINE;
+      Node[P1].Value= Code;
+
+      if strcmp(@Scan(@Buff),",")=0 then
+        strcpy (@Buff,"inline");
+        return   P1;
+      end
+
+      if strcmp(@Buff,";")!=0 then
+        Stop(@eSEMICOLONEXP);
+      end
+
+    case strcmp(@Buff,"return")=0:
+      Node[P1].ID   =iRETURN;
+      if Dict[pFunc].nPtr!=0 | strcmp(@Dict[Dict[pFunc].pType].Name,"void")!=0 then
+        word pType2, nPtr2;
+        Node[P1].pLeft=Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+        if strcmp(@Buff,";")!=0 then
+          Stop(@eSEMICOLONEXP);
+        end
+
+        Test(Dict[pFunc].pType,Dict[pFunc].nPtr,pType2,nPtr2,@Node[P1].pLeft);
+      end
+
+    case strcmp(@Buff,"null")=0:
+      Node[P1].ID   =iEMPTY;
+
+    default:
+      word pType1, nPtr1;
+      word P2=Expr(pLVALUE,@pType1,@nPtr1,@Buff);
+      if P2<nNODE then
+        word P3=Peek();
+        Node[P1].ID    =iASSIGN;
+        Node[P1].pLeft = P3;
+
+        Node[P3].ID    =iEMPTY;
+        Node[P3].pLeft = P2;
+
+        if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+          word pType2, nPtr2;
+          Node[P3].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+          Test(pType1,nPtr1,pType2,nPtr2,@Node[P3].pRight);
+        end
+      else
+        word pType=Find(@Buff);
+        if pType>=nDict | Dict[pType].Class!=cTYPE then
+          Stop(@eUNDEFINED);
+        end
+
+        word  nPtr=0;
+        while strcmp(@Scan(@Buff),"@")=0 do
+          inc nPtr;
+        end
+
+        if pType=Find("void") & nPtr<1 then
+          Stop(@eNOVOID);
+        end
+
+        if Dict[pType].Sub=sHEADER & nPtr<1 then
+          Stop(@eNOVAL);
+        end
+
+        word I=pParm;
+        while I<nParm do
+          if strcmp(@Parm[I].Name,@Buff)=0 then
+            Stop(@eDUPLICATE);
+          end
+
+          inc I;
+        end
+
+        if nParm>=nPARM then
+          Stop(@eNOMEMORY);
+        end
+
+        Parm[nParm].pType=pType;               Copy(@Parm[nParm].Name,@Buff,0);
+        Parm[nParm].nPtr =nPtr;
+        Parm[nParm].pIndx=nIndx;
+        Parm[nParm].nIndx= Tabl(@Scan(@Buff));
+
+        word  N=1;
+        word  K=Parm[nParm].pIndx;
+        while K<Parm[nParm].nIndx do
+          N = Indx[K]*N;
+          inc K;
+        end
+
+        word P3=Peek();
+        Node[P1].ID   =iDEF;
+        Node[P1].Value=pType;
+        Node[P1].pLeft =P3;
+
+        word P4=Peek();
+        Node[P3].ID    =iEMPTY;
+        Node[P3].Value =nPtr;
+        Node[P3].pLeft = P4;
+
+        Node[P4].ID    =iEMPTY;
+        Node[P4].Value = N;
+
+        if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+          if Parm[nParm].pIndx<Parm[nParm].nIndx then
+            Stop(@eNOTAVAIL);
+          end
+
+          word P5=Peek();
+          Node[P4].ID    =iASSIGN;
+          Node[P4].pLeft = P5;
+
+          word pType2, nPtr2;
+          word P6=Peek();
+          Node[P5].ID    =iEMPTY;
+          Node[P5].pLeft = P6;
+          Node[P5].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+          Node[P6].ID    =iLOCAL;
+          Node[P6].Value =nParm-pParm;
+
+          Test(pType,nPtr,pType2,nPtr2,@Node[P5].pRight);
+        end
+
+        inc nParm;
+
+        if strcmp(@Buff,",")=0 then
+          strcpy(@Buff,@Dict[pType].Name);
+          return  P1;
+        end
+      end
+
+      if strcmp(@Buff,";")!=0 then
+        Stop(@eSEMICOLONEXP);
+      end
+  end
+
+  Scan (@Buff);
+
+  return P1;
+end
+
+
+// Генеpатоp кода
+
+void     Save(char Ch)
+  if nText>=nTEXT then
+  //write(hText,@Text,nText);
+    if write(hText,@Text,nText)!=nText then  // 11.02.207
+      Stop(@eWRITEERR);
+    end
+
+    nText=0;
+  end
+
+  Text[nText]=Ch;
+  inc  nText;
+end
+
+
+void     Decl(char @Inst)
+  word   I=0;
+  while  Inst[I]!=#0 do
+    Save(Inst[I]);
+    inc  I;
+  end
+
+  Save('~r');
+  Save('~n');
+end
+
+
+void     Emit(word L; char @Inst)
+  if L!=0 then
+    Save('@');
+
+    char  @P=@str(L);
+    word   I=0;
+    while  P[I]!=#0 do
+      Save(P[I]);
+      inc    I;
+    end
+
+    Save(':');
+    Save(' ');
+  else
+    word  I=0;
+    while I<8 do
+      Save(' ');
+      inc I;
+    end
+  end
+
+  Decl(@Inst);
+end
+
+
+word     Even(word Ofs)
+  while  Ofs%4!=0 do
+    inc  Ofs;
+  end
+
+  return Ofs;
+end
+
+
+// Отметка используемых объектов
+
+void     Mark(word P)
+  if P>=nNODE then
+    return
+  end
+
+  select
+    case Node[P].ID=iCALL:
+      if Dict[Node[P].Value].Flag=0 then
+        Dict [Node[P].Value].Flag=1;
+        if Dict[Node[P].Value].Sub=sFUNC then
+          Mark (Dict[Node[P].Value].pNode);
+        end
+      end
+
+    case Node[P].ID=iDATA:
+      select
+        case Node[P].pLeft>=nNODE:
+          if Dict[Node[P].Value].Flag=0 then
+            Dict [Node[P].Value].Flag=1;
+            Mark (Dict[Node[P].Value].pNode);
+          end
+
+        case Node[Node[P].pLeft].ID!=iCALL:
+          if Dict[Node[P].Value].Flag=0 then
+            Dict [Node[P].Value].Flag=1;
+            Mark (Dict[Node[P].Value].pNode);
+          end
+      end
+
+    case Node[P].ID=iFUNC:
+      if Dict[Node[P].Value].Flag=0 then
+        Dict [Node[P].Value].Flag=1;
+        if Dict[Node[P].Value].Sub=sFUNC then
+          Mark (Dict[Node[P].Value].pNode);
+        end
+      end
+
+    case Node[P].ID=iSTRING:
+      Dict[Node[P].Value].Flag=1;
+  end
+
+  Mark(Node[P].pLeft );
+  Mark(Node[P].pRight);
+end
+
+
+// Pасстановка меток
+
+word     Enum(word P; word Flag; word @L)
+  if P>=nNODE then
+    return 0;
+  end
+
+  select
+    case Flag!=0:
+      word  S=0;
+      word  M=0;
+      while P<nNODE do
+        select
+          case Node[P].ID=iSEQUENCE:
+            word  P1=Node[P].pLeft;
+            while P1<nNODE do
+              Enum(P1,1,@L);
+              P1=Node[P1].pRight;
+            end
+
+          case Node[P].ID=iSELECT:
+            word  P1=Node[P].pLeft;
+            while P1<nNODE do
+              word P2=Node[P1].pLeft;
+
+              Enum(Node[P2].pLeft,0,@L);
+
+              Node[P2].Value=L;
+              inc  L;
+
+              word V=Enum(Node[P2].pRight,1,@L);
+              if M<S+V then
+                M=S+V;
+              end
+
+              Node[P1].Value=L;
+              inc  L;
+
+              P1=Node[P1].pRight;
+            end
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iSWITCH:
+            word  P1=Node[Node[P].pLeft].pRight;
+            while P1<nNODE do
+              Node[P1].Value=L;
+              inc  L;
+
+              word V=Enum(Node[Node[P1].pLeft].pRight,1,@L);
+              if M<S+V then
+                M=S+V;
+              end
+
+              P1=Node[P1].pRight;
+            end
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iWHILE:
+            word P1=Node[P] .pLeft;
+            word P2=Node[P1].pLeft;
+
+            Node[P2].Value=L;
+            inc  L;
+
+          //Enum(Node[P2].pLeft, 0,@L);
+            Enum(Node[P2].pRight,0,@L);
+
+            Node[P1].Value=L;
+            inc  L;
+
+            word V=Enum(Node[P1].pRight,1,@L);
+            if M<S+V then
+              M=S+V;
+            end
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iREPEAT:
+            word P1=Node[P].pLeft;
+
+            Node[P1].Value=L;
+            inc  L;
+
+            word V=Enum(Node[Node[P1].pRight].pLeft,1,@L);
+            if M<S+V then
+              M=S+V;
+            end
+
+            Enum(Node[Node[P1].pRight].pRight,0,@L);
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iDEF:
+            word Size=4;
+            if Node[Node[P].pLeft].Value=0 then
+              Size=Dict[Node[P].Value].Value;
+            end
+
+            S=S+Even(Node[Node[Node[P].pLeft].pLeft].Value*Size);
+            if M<S then
+              M=S;
+            end
+        end
+
+        P=Node[P].pRight;
+      end
+
+      return M;
+
+    case Node[P].ID!=iASSIGN & Node[P].ID!=iINC & Node[P].ID!=iDEC:
+      Enum(Node[P].pLeft, 0,@L);
+
+      if (iOR<=Node[P].ID & Node[P].ID<=iAND) | (Node[P].ID=iEMPTY) then
+        Node[P].Value=L;
+        inc  L;
+      end
+
+      Enum(Node[P].pRight,0,@L);
+  end
+
+  return 0;
+end
+
+
+word     Target;                            // 11.02.2007
+word     Mode;
+word    pSize;
+word    pVar;
+word    fEAX;
+
+word     Code(word P; word F; word T; word M)
+  char Buff [nBUFF];
+  select
+    case Node[P].ID=iNULL:
+      if fEAX=0 then
+        Emit(0,"xor     EAX,  EAX");
+      else
+        Emit(0,"xor     EBX,  EBX");
+      end
+
+      return nDICT;
+
+    case Node[P].ID=iCHAR:
+      if fEAX=0 then
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     AL,   "),@str(Node[P].Value)));
+        strcpy(@Buff,"mov     AL,   ");
+      else
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     BL,   "),@str(Node[P].Value)));
+        strcpy(@Buff,"mov     BL,   ");
+      end
+
+      Emit(0,@strcat(@Buff,@str(Node[P].Value)));
+
+      return  Find("char");
+
+    case Node[P].ID=iWORD:
+      if fEAX=0 then
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  "),@str(Node[P].Value)));
+        strcpy(@Buff,"mov     EAX,  ");
+      else
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EBX,  "),@str(Node[P].Value)));
+        strcpy(@Buff,"mov     EBX,  ");
+      end
+
+      Emit(0,@strcat(@Buff,@str(Node[P].Value)));
+
+      return  Find("word");
+
+    case Node[P].ID=iINT:
+      if fEAX=0 then
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  "),@str(Node[P].Value)));
+        strcpy(@Buff,"mov     EAX,  ");
+      else
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EBX,  "),@str(Node[P].Value)));
+        strcpy(@Buff,"mov     EBX,  ");
+      end
+
+      Emit(0,@strcat(@Buff,@str(Node[P].Value)));
+
+      return  Find("int");
+
+    case Node[P].ID=iFUNC:
+      if fEAX=0 then
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  offset @"),@str(Dict[Node[P].Value].Value))); // TASM
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  @"),@str(Dict[Node[P].Value].Value)));        // FASM
+        strcpy(@Buff,"mov     EAX,  @");
+      else
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EBX,  offset @"),@str(Dict[Node[P].Value].Value))); // TASM
+      //Emit(0,@strcat(@strcpy(@Buff,"mov     EBX,  @"),@str(Dict[Node[P].Value].Value)));        // FASM
+        strcpy(@Buff,"mov     EBX,  @");
+      end
+
+      Emit(0,@strcat(@Buff,@str(Dict[Node[P].Value].Value)));
+
+      return nDICT;
+
+    case Node[P].ID=iDATA | Node[P].ID=iPARM | Node[P].ID=iLOCAL | Node[P].ID=iSTRING | Node[P].ID=iINC | Node[P].ID=iDEC:
+      word ID1=Node[P].ID;
+      if ID1=iINC | ID1=iDEC then
+        fEAX=0;
+        P   =Node[P].pLeft;
+      end
+
+      word pType;
+      word nPtr;
+      word  Ofs;
+      select
+        case Node[P].ID=iDATA:
+          pType=Dict[Node[P].Value].pType;
+          nPtr =Dict[Node[P].Value].nPtr;
+          Ofs  =Dict[Node[P].Value]. Value;
+
+        case Node[P].ID=iPARM:
+          pType=Parm[Node[P].Value].pType;
+          nPtr =Parm[Node[P].Value].nPtr;
+          Ofs  =Parm[Node[P].Value]. Value;
+
+        case Node[P].ID=iLOCAL:
+          pType=Parm[Node[P].Value+pParm].pType;
+          nPtr =Parm[Node[P].Value+pParm].nPtr;
+          Ofs  =Parm[Node[P].Value+pParm]. Value;
+
+        case Node[P].ID=iSTRING:
+          pType=Dict[Node[P].Value].pType;
+          nPtr =1;
+          Ofs  =Dict[Node[P].Value]. Value;
+
+        default:
+          Stop(@eINTERNAL);
+      end
+
+      word ID=Node[P]. ID;
+      word IX=0;
+
+      word P1=Node[P].pLeft;
+      do
+        select
+          case P1>=nNODE:
+            select
+              case ID1=iINC | ID1=iDEC:
+                if IX=2 | nPtr>0 then
+                  Stop(@eINTERNAL);
+                end
+
+                if ID1=iINC then
+                  strcpy(@Buff,"inc     ");
+                else
+                  strcpy(@Buff,"dec     ");
+                end
+
+                word Size=Dict[pType].Value;
+                select
+                  case Size=1:
+                  //strcat(@Buff,"byte  ptr "); // TASM
+                    strcat(@Buff,"byte  ");     // FASM
+
+                  case Size=4:
+                  //strcat(@Buff,"dword ptr "); // TASM
+                    strcat(@Buff,"dword ");     // FASM
+
+                  default:
+                    Stop(@eINTERNAL);
+                end
+
+                if IX!=0 then
+                  select
+                    case ID=iDATA:
+                    //Emit(0,@strcat(@strcat(@strcat(@Buff,"@@DATA[EAX+"),@str(Ofs)),"]"));  // TASM
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[@@DATA+EAX+"),@str(Ofs)),"]")); // FASM
+
+                    case ID=iPARM:
+                    //Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP][EAX+"),@str(Ofs)),"]"));   // TASM
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+EAX+"),@str(Ofs)),"]"));    // FASM
+
+                    case ID=iLOCAL:
+                    //Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP][EAX-"),@str(Ofs)),"]"));   // TASM
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+EAX-"),@str(Ofs)),"]"));    // FASM
+
+                    case ID=iREF:
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[EAX+"),@str(Ofs)),"]"));
+
+                    default:
+                      Stop(@eINTERNAL);
+                  end
+                else
+                  select
+                    case ID=iDATA:
+                    //Emit(0,@strcat(@strcat(@strcat(@Buff,"@@DATA["),@str(Ofs)),"]"));      // TASM
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]"));     // FASM
+
+                    case ID=iPARM:
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
+
+                    case ID=iLOCAL:
+                      Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
+
+                    default:
+                      Stop(@eINTERNAL);
+                  end
+                end
+
+              case ID!=iCALL:
+                word Size=4;
+                if nPtr=0 then
+                  Size=Dict[pType].Value;
+                end
+
+                select
+                  case Size=1:
+                  //strcpy(@Buff,"mov     byte  ptr "); // TASM
+                    strcpy(@Buff,"mov     byte  ");     // FASM
+
+                  case Size=4:
+                  //strcpy(@Buff,"mov     dword ptr "); // TASM
+                    strcpy(@Buff,"mov     dword ");     // FASM
+
+                  default:
+                  //Stop(@eINTERNAL);
+                    strcpy(@Buff,"lea     EDI,  ");
+                end
+
+                if IX!=0 then
+                  char RX[4];
+                  if IX=1 then
+                    strcpy(@RX,"EAX");
+                  else
+                    strcpy(@RX,"EBX");
+                  end
+
+                  select
+                    case ID=iDATA:
+                    //strcat(@strcat(@strcat(@Buff,"@@DATA["),@RX),"+");  // TASM
+                      strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"); // FASM
+
+                    case ID=iPARM:
+                    //strcat(@strcat(@strcat(@Buff,"[EBP]["),@RX),"+");   // TASM
+                      strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+");    // FASM
+
+                    case ID=iLOCAL:
+                    //strcat(@strcat(@strcat(@Buff,"[EBP]["),@RX),"-");   // TASM
+                      strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-");    // FASM
+
+                    case ID=iREF:
+                      strcat(@strcat(@strcat(@Buff,"["),@RX),"+");
+
+                    default:
+                      Stop(@eINTERNAL);
+                  end
+                else
+                  select
+                    case ID=iDATA:
+                    //strcat(@Buff,"@@DATA[");  // TASM
+                      strcat(@Buff,"[@@DATA+"); // FASM
+
+                    case ID=iPARM:
+                      strcat(@Buff,"[EBP+");
+
+                    case ID=iLOCAL:
+                      strcat(@Buff,"[EBP-");
+
+                    default:
+                      Stop(@eINTERNAL);
+                  end
+                end
+
+              //strcat(@strcat(@Buff,@str(Ofs)),"], ");
+                strcat(@strcat(@Buff,@str(Ofs)),"]");
+
+                select
+                  case fEAX!=0:
+                    select
+                      case Size=1:
+                      //Emit(0,@strcat(@Buff,"AL"));
+                        Emit(0,@strcat(@Buff,", AL"));
+
+                      case Size=4:
+                      //Emit(0,@strcat(@Buff,"EAX"));
+                        Emit(0,@strcat(@Buff,", EAX"));
+
+                      default:
+                      //Stop(@eINTERNAL);
+                        Emit(0,"mov     ESI,  EAX");
+                        Emit(0,@Buff);
+                    end
+
+                  case IX=1:
+                  //Emit(0,"pop     EBX");
+
+                    select
+                      case Size=1:
+                      //Emit(0,@strcat(@Buff,"BL"));
+                        Emit(0,"pop     EBX");
+                        Emit(0,@strcat(@Buff,", BL"));
+
+                      case Size=4:
+                      //Emit(0,@strcat(@Buff,"EBX"));
+                        Emit(0,"pop     EBX");
+                        Emit(0,@strcat(@Buff,", EBX"));
+
+                      default:
+                      //Stop(@eINTERNAL);
+                        Emit(0,"pop     ESI");
+                        Emit(0,@Buff);
+                    end
+
+                  case IX=2:
+                  //Emit(0,"pop     EAX");
+
+                    select
+                      case Size=1:
+                      //Emit(0,@strcat(@Buff,"AL"));
+                        Emit(0,"pop     EAX");
+                        Emit(0,@strcat(@Buff,", AL"));
+
+                      case Size=4:
+                      //Emit(0,@strcat(@Buff,"EAX"));
+                        Emit(0,"pop     EAX");
+                        Emit(0,@strcat(@Buff,", EAX"));
+
+                      default:
+                      //Stop(@eINTERNAL);
+                        Emit(0,"pop     ESI");
+                        Emit(0,@Buff);
+                    end
+                end
+
+                if Size!=1 & Size!=4 then
+                   Emit(0,"cld");
+                   Emit(0,@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+                   Emit(0,"rep     movsb");
+                end
+            end
+
+            exit
+
+          case Node[P1].ID=iLOAD:
+            word Size=4;
+            if nPtr=0 then
+              Size=Dict[pType].Value;
+            end
+
+            select
+              case Size=1:
+                if fEAX=0 then
+                //strcpy(@Buff,"mov     AL,   byte  ptr "); // TASM
+                  strcpy(@Buff,"mov     AL,   byte  ");     // FASM
+                else
+                //strcpy(@Buff,"mov     BL,   byte  ptr "); // TASM
+                  strcpy(@Buff,"mov     BL,   byte  ");     // FASM
+                end
+
+              case Size=4:
+                if fEAX=0 then
+                //strcpy(@Buff,"mov     EAX,  dword ptr "); // TASM
+                  strcpy(@Buff,"mov     EAX,  dword ");     // FASM
+                else
+                //strcpy(@Buff,"mov     EBX,  dword ptr "); // TASM
+                  strcpy(@Buff,"mov     EBX,  dword ");     // FASM
+                end
+
+              default:
+              //Stop(@eINTERNAL);
+                if fEAX=0 then
+                  strcpy(@Buff,"lea     EAX,  ");
+                else
+                  strcpy(@Buff,"lea     EBX,  ");
+                end
+            end
+
+            if IX!=0 then
+              char RX[4];
+              if IX=1 then
+                strcpy(@RX,"EAX");
+              else
+                strcpy(@RX,"EBX");
+              end
+
+              select
+                case ID=iDATA:
+                //Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"@@DATA["),@RX),"+"),@str(Ofs)),"]"));  // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]")); // FASM
+
+                case ID=iPARM:
+                //Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP]["),@RX),"+"),@str(Ofs)),"]"));   // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));    // FASM
+
+                case ID=iLOCAL:
+                //Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP]["),@RX),"-"),@str(Ofs)),"]"));   // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));    // FASM
+
+                case ID=iREF:
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
+
+                default:
+                  Stop(@eINTERNAL);
+              end
+            else
+              select
+                case ID=iDATA:
+                //Emit(0,@strcat(@strcat(@strcat(@Buff,"@@DATA["),@str(Ofs)),"]"));  // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]")); // FASM
+
+                case ID=iPARM:
+                  Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
+
+                case ID=iLOCAL:
+                  Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
+
+                case ID!=iCALL:
+                  Stop(@eINTERNAL);
+              end
+            end
+
+            if nPtr>0 then
+              return nDICT;
+            else
+              return pType;
+            end
+
+          case Node[P1].ID=iLPTR:
+            if fEAX!=0 | IX=2 then
+              Stop(@eINTERNAL);
+            end
+
+            if IX!=0 then
+              select
+                case ID=iDATA:
+                //Emit(0,@strcat(@strcat(@strcpy(@Buff,"add     EAX,  offset @@DATA["),@str(Ofs)),"]")); // TASM
+                  Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  @@DATA+"),@str(Ofs)));                     // FASM
+
+                case ID=iPARM:
+                //Emit(0,"add     EAX,  EBP");
+                //Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
+                  Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX+"),@str(Ofs)),"]"));
+
+                case ID=iLOCAL:
+                //Emit(0,"add     EAX,  EBP");
+                //Emit(0,@strcat(@strcpy(@Buff,"sub     EAX,  "),@str(Ofs)));
+                  Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX-"),@str(Ofs)),"]"));
+
+                case ID=iSTRING:
+                //Emit(0,@strcat(@strcat(@strcpy(@Buff,"add     EAX,  offset @@TEXT["),@str(Ofs)),"]")); // TASM
+                  Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  @@TEXT+"),@str(Ofs)));                     // FASM
+
+                case ID=iREF & Ofs!=0:
+                  Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
+
+                case ID!=iREF & ID!=iCALL:
+                  Stop(@eINTERNAL);
+              end
+            else
+              select
+                case ID=iDATA:
+                //Emit(0,@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  offset @@DATA["),@str(Ofs)),"]")); // TASM
+                  Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  @@DATA+"),@str(Ofs)));                     // FASM
+
+                case ID=iPARM:
+                //Emit(0,"mov     EAX,  EBP");
+                //Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
+                  Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+"),@str(Ofs)),"]"));
+
+                case ID=iLOCAL:
+                //Emit(0,"mov     EAX,  EBP");
+                //Emit(0,@strcat(@strcpy(@Buff,"sub     EAX,  "),@str(Ofs)));
+                  Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP-"),@str(Ofs)),"]"));
+
+                case ID=iSTRING:
+                //Emit(0,@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  offset @@TEXT["),@str(Ofs)),"]")); // TASM
+                  Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  @@TEXT+"),@str(Ofs)));                     // FASM
+
+                case ID!=iCALL:
+                  Stop(@eINTERNAL);
+              end
+            end
+
+            return nDICT;
+
+          case Node[P1].ID=iCALL:
+            if fEAX!=0 then
+              Emit(0,"push    EAX");
+              fEAX=0;
+            end
+
+            if Node[P1].pLeft<nNODE then
+              Code(Node[P1].pLeft,0,0,0);
+            end
+
+            if Dict[Node[P1].Value].Sub=sSYS then
+            //Emit(0,@strcat(@strcpy(@Buff,"call    "),@Dict[Node[P1].Value].Name));                     // TASM
+              Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Value)),"]")); // FASM
+            else
+              Emit(0,@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Value)));
+            end
+
+            ID =iCALL;
+            Ofs=    0;
+
+          case Node[P1].ID=iCALL2:
+            if fEAX!=0 then
+              Emit(0,"push    EAX");
+              fEAX=0;
+            end
+
+            word P2=Node[P1].pLeft;
+
+            if Node[P2].pRight<nNODE then
+              Code(Node[P2].pRight,0,0,0);
+            end
+
+            Code(Node[P2].pLeft,0,0,0);
+
+            Emit(0,"call    dword [EAX]");
+
+          //INFO Ошибка - Вместо Dict использовался Parm
+          //pType=Parm[Node[P1].Value].pType;
+            pType=Dict[Node[P1].Value].pType;
+            nPtr =Dict[Node[P1].Value].nPtr;
+
+            ID   =iCALL;
+            Ofs  =    0;
+
+          case Node[P1].ID=iINDEX:
+            word IX1;
+            word Flag=0;
+            do
+              if Flag=0 then
+                if IX!=0 then
+                  if IX=2 then
+                    if fEAX!=0 then
+                      Emit(0,"push    EAX");
+                    end
+
+                    Emit(0,"xchg    EAX,  EBX");
+                    IX=1;
+                  end
+
+                  fEAX=1;
+
+                  Code(Node[P1].pLeft,0,0,0);
+                  if fEAX=0 then
+                    IX1=1;
+                  else
+                    IX1=2;
+                  end
+
+                  fEAX=0;
+                else
+                  Code(Node[P1].pLeft,0,0,0);
+                  if fEAX=0 then
+                    IX1=1;
+                  else
+                    IX1=2;
+                  end
+                end
+              else
+                if IX1=2 then
+                  if fEAX!=0 then
+                    Emit(0,"push    EAX");
+                  end
+
+                  Emit(0,"xchg    EAX,  EBX");
+                  IX1=1;
+                end
+
+                Emit(0,@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Node[P1].Value)));
+
+                fEAX=1;
+                Code(Node[P1].pLeft,0,0,0);
+
+                if fEAX=0 then
+                  Emit(0,"pop     EBX");
+                end
+
+                Emit(0,"add     EAX,  EBX");
+                fEAX=0;
+              end
+
+              if Node[P1].pRight>=nNODE then
+                exit
+              end
+
+              if Node[Node[P1].pRight].ID!=iINDEX then
+                exit
+              end
+
+              P1  =Node[P1].pRight;
+              Flag=1;
+            end
+
+            word Size=4;
+            if nPtr=0 then
+              Size=Dict[pType].Value;
+            end
+
+            select
+              case Size=4:
+                if IX1=1 then
+                  Emit(0,"shl     EAX,  2");
+                else
+                  Emit(0,"shl     EBX,  2");
+                end
+
+              case Size>1:
+                if IX1=1 then
+                //Emit(0,@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Size)));
+                  strcpy(@Buff,"imul    EAX,  ");
+                else
+                //Emit(0,@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(Size)));
+                  strcpy(@Buff,"imul    EBX,  ");
+                end
+
+                Emit(0,@strcat(@Buff,@str(Size)));
+            end
+
+            if IX!=0 then
+              if IX1=1 then
+                Emit(0,"pop     EBX");
+              end
+
+              Emit(0,"add     EAX,  EBX");
+              IX=1;
+            else
+              IX=IX1;
+            end
+
+          case Node[P1].ID=iADDR:
+            if nPtr<1 then
+              Stop(@eINTERNAL);
+            end
+
+            dec nPtr;
+
+            if Node[P1].pLeft<nNODE then
+              word Size=4;
+              if nPtr=0 then
+                Size=Dict[pType].Value;
+              end
+
+              select
+                case IX=2:
+                  if fEAX!=0 then
+                    Emit(0,"push    EAX");
+                  end
+
+                  Emit(0,"xchg    EAX,  EBX");
+                  IX  =1;
+                  fEAX=1;
+
+                case IX=1:
+                  fEAX=1;
+              end
+
+              Code(Node[P1].pLeft,0,0,0);
+              if fEAX=0 then
+                select
+                  case Size=4:
+                    Emit(0,"shl     EAX,  2");
+
+                  case Size>1:
+                    Emit(0,@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Size)));
+                end
+
+                if IX!=0 then
+                  Emit(0,"pop     EBX");
+                  IX=2;
+                end
+
+              //strcpy(@Buff,"add     EAX,  dword ptr "); // TASM
+                strcpy(@Buff,"add     EAX,  dword ");     // FASM
+              else
+                select
+                  case Size=4:
+                    Emit(0,"shl     EBX,  2");
+
+                  case Size>1:
+                    Emit(0,@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(Size)));
+                end
+
+              //strcpy(@Buff,"add     EBX,  dword ptr "); // TASM
+                strcpy(@Buff,"add     EBX,  dword ");     // FASM
+              end
+            else
+              if fEAX=0 then
+              //strcpy(@Buff,"mov     EAX,  dword ptr "); // TASM
+                strcpy(@Buff,"mov     EAX,  dword ");     // FASM
+              else
+              //strcpy(@Buff,"mov     EBX,  dword ptr "); // TASM
+                strcpy(@Buff,"mov     EBX,  dword ");     // FASM
+              end
+            end
+
+            if IX!=0 then
+              char RX[4];
+              if IX=1 then
+                strcpy(@RX,"EAX");
+              else
+                strcpy(@RX,"EBX");
+              end
+
+              select
+                case ID=iDATA:
+                //Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"@@DATA["),@RX),"+"),@str(Ofs)),"]"));  // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]")); // FASM
+
+                case ID=iPARM:
+                //Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP]["),@RX),"+"),@str(Ofs)),"]"));   // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));    // FASM
+
+                case ID=iLOCAL:
+                //Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP]["),@RX),"-"),@str(Ofs)),"]"));   // TASM
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));    // FASM
+
+                case ID=iREF:
+                  Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
+
+                default:
+                  Stop(@eINTERNAL);
+              end
+            else
+              select
+                case ID=iDATA:
+                //Emit(0,@strcat(@strcat(@strcat(@Buff,"@@DATA["),@str(Ofs)),"]"));  // TASM // 10.12.2005
+                  Emit(0,@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]")); // FASM
+
+                case ID=iPARM:
+                  Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
+
+                case ID=iLOCAL:
+                  Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
+
+              //TODO Пpовеpить!
+                case ID=iCALL:
+                  null
+
+                default:
+                  Stop(@eINTERNAL);
+              end
+            end
+
+            if fEAX=0 then
+              IX=1;
+            else
+              if IX!=0 then
+                fEAX=0;
+              end
+
+              IX=2;
+            end
+
+            ID =iREF;
+            Ofs=   0;
+
+          case Node[P1].ID=iFIELD:
+            pType=Parm[Node[P1].Value].pType;
+            nPtr =Parm[Node[P1].Value].nPtr;
+            if ID!=iLOCAL then
+              Ofs=Ofs+Parm[Node[P1].Value].Value;
+            else
+              Ofs=Ofs-Parm[Node[P1].Value].Value;
+            end
+
+          default:
+            Stop(@eINTERNAL);
+        end
+
+        P1=Node[P1].pRight;
+      end
+
+    case Node[P].ID=iCAST:
+      word pType=Code(Node[Node[P].pLeft].pLeft,0,0,0);
+      select
+        case Node[P].Value=Find("char") & pType=Find("byte"):
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("char") & pType=Find("word"):
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("char") & pType=Find("int"):
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("byte") & pType=Find("char"):
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("word") & pType=Find("char"):
+          if fEAX=0 then
+            Emit(0,"and     EAX,  0FFH");
+          else
+            Emit(0,"and     EBX,  0FFH");
+          end
+
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("word") & pType=Find("byte"):
+          if fEAX=0 then
+            Emit(0,"and     EAX,  0FFH");
+          else
+            Emit(0,"and     EBX,  0FFH");
+          end
+
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("int")  & pType=Find("char"):
+          if fEAX=0 then
+            Emit(0,"and     EAX,  0FFH");
+          else
+            Emit(0,"and     EBX,  0FFH");
+          end
+
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("int")  & pType=Find("byte"):
+          if fEAX=0 then
+            Emit(0,"and     EAX,  0FFH");
+          else
+            Emit(0,"and     EBX,  0FFH");
+          end
+
+          return  Node[P].Value;
+
+        case Node[P].Value=Find("int")  & pType=Find("word"):
+          return  Node[P].Value;
+
+        default:
+          Stop(@eINTERNAL);
+      end
+
+    case Node[P].ID=iNOT:
+      word pType=Code(Node[P].pLeft,0,0,0);
+      word  Size=Dict[pType].Value;
+      select
+        case Size=1:
+          if fEAX=0 then
+            Emit(0,"not     AL");
+          else
+            Emit(0,"not     BL");
+          end
+
+        case Size=4:
+          if fEAX=0 then
+            Emit(0,"not     EAX");
+          else
+            Emit(0,"not     EBX");
+          end
+
+        default:
+          Stop(@eINTERNAL);
+      end
+
+      return pType;
+
+    case Node[P].ID=iNEG:
+      if Node[Node[P].pLeft].ID=iWORD then
+        if fEAX=0 then
+          Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  "),@str($FFFFFFFF-Node[Node[P].pLeft].Value+1)));
+        else
+          Emit(0,@strcat(@strcpy(@Buff,"mov     EBX,  "),@str($FFFFFFFF-Node[Node[P].pLeft].Value+1)));
+        end
+
+        return Find("int");
+      end
+
+      Code(Node[P].pLeft,0,0,0);
+
+      if fEAX=0 then
+        Emit(0,"neg     EAX");
+      else
+        Emit(0,"neg     EBX");
+      end
+
+      return Find("int");
+
+    case Node[P].ID=iOR:
+      if T=0 then
+        Code(Node[P].pLeft, 0,M,Node[P].Value);
+        Emit(Node[P].Value,"");
+        Code(Node[P].pRight,F,0,M);
+      else
+        Code(Node[P].pLeft, 0,T,Node[P].Value);
+        Emit(Node[P].Value,"");
+        Code(Node[P].pRight,0,T,M);
+      end
+
+    case Node[P].ID=iXOR:
+      word L1=Node[Node[P].pLeft] .Value;
+      word L2=Node[P].Value;
+      if T=0 then
+        Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+        Emit(L1,"");
+        Code(Node[Node[P].pLeft] .pRight,M, 0,F);
+        Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(F)));
+        Emit(L2,"");
+        Code(Node[P].pRight,             F, 0,M);
+      else
+        Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+        Emit(L1,"");
+        Code(Node[Node[P].pLeft] .pRight,T, 0,M);
+        Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+        Emit(L2,"");
+        Code(Node[P].pRight,             M, 0,T);
+      end
+
+    case Node[P].ID=iEQV:
+      word L1=Node[Node[P].pLeft] .Value;
+      word L2=Node[P].Value;
+      if T=0 then
+        Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+        Emit(L1,"");
+        Code(Node[Node[P].pLeft] .pRight,F, 0,M);
+        Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+        Emit(L2,"");
+        Code(Node[P].pRight,             0, F,M);
+      else
+        Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+        Emit(L1,"");
+        Code(Node[Node[P].pLeft] .pRight,0, T,M);
+        Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+        Emit(L2,"");
+        Code(Node[P].pRight,             T, 0,M);
+      end
+
+    case Node[P].ID=iAND:
+      if T=0 then
+        Code(Node[P].pLeft, F,0,Node[P].Value);
+        Emit(Node[P].Value,"");
+        Code(Node[P].pRight,F,0,M);
+      else
+        Code(Node[P].pLeft, M,0,Node[P].Value);
+        Emit(Node[P].Value,"");
+        Code(Node[P].pRight,0,T,M);
+      end
+
+    case iBIT_OR<=Node[P].ID & Node[P].ID<=iMOD:
+      if iLT<=Node[P].ID & Node[P].ID<=iGT then
+        fEAX=0;
+      end
+
+      if fEAX!=0 then
+        Emit(0,"push    EAX");
+        fEAX=0;
+      end
+
+      word fSwap=0;
+      word pType;
+      select
+        case Node[Node[P].pRight].ID=iCHAR | Node[Node[P].pRight].ID=iWORD | Node[Node[P].pRight].ID=iINT:
+          pType=Code(Node[P].pLeft,0,0,0);
+          fSwap=2;
+
+        case Node[Node[P].pLeft].ID=iCHAR | Node[Node[P].pLeft].ID=iWORD | Node[Node[P].pLeft].ID=iINT:
+          Code(Node[P].pRight,0,0,0);
+          fEAX =1;
+          pType=Code(Node[P].pLeft,0,0,0);
+          fSwap=1;
+
+        case Node[Node[Node[P].pLeft].pLeft].ID=iLOAD:
+          Code(Node[P].pRight,0,0,0);
+          fEAX =1;
+          pType=Code(Node[P].pLeft,0,0,0);
+          fSwap=1;
+
+        default:
+          pType=Code(Node[P].pLeft,0,0,0);
+          fEAX =1;
+          Code(Node[P].pRight,0,0,0);
+          if fEAX=0 then
+            Emit(0,"pop     EBX");
+            fSwap=1;
+          end
+      end
+
+      word ID=Node[P].ID;
+      select
+        case fSwap=1:
+          select
+            case ID=iLT:
+              ID=iGT;
+
+            case ID=iLE:
+              ID=iGE;
+
+            case ID=iGE:
+              ID=iLE;
+
+            case ID=iGT:
+              ID=iLT;
+
+            case ID=iSUB | ID=iDIV | ID=iMOD:
+              Emit(0,"xchg    EAX,  EBX");
+          end
+
+        case fSwap=2:
+          select
+            case ID=iMUL | ID=iDIV | ID=iMOD:
+              fEAX =1;
+              Code(Node[P].pRight,0,0,0);
+          end
+      end
+
+      fEAX=0;
+
+      word Size=4;
+      if pType<nDICT then
+        Size=Dict[pType].Value;
+      end
+
+      select
+        case iLT<=ID & ID<=iGT:
+          select
+            case Size=1:
+              select
+                case fSwap=2:
+                  Emit(0,@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
+
+                default:
+                  Emit(0,"cmp     AL,   BL");
+              end
+
+            case Size=4:
+              select
+                case fSwap=2:
+                  Emit(0,@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
+
+                default:
+                  Emit(0,"cmp     EAX,  EBX");
+              end
+
+            default:
+              Stop(@eINTERNAL);
+          end
+
+          if T=0 then
+            select
+              case ID=iLT:
+                ID=iGE;
+
+              case ID=iLE:
+                ID=iGT;
+
+              case ID=iEQ:
+                ID=iNE;
+
+              case ID=iNE:
+                ID=iEQ;
+
+              case ID=iGE:
+                ID=iLT;
+
+              case ID=iGT:
+                ID=iLE;
+
+              default:
+                Stop(@eINTERNAL);
+            end
+
+            T=F;
+            F=0;
+          end
+
+          if T=0 | F!=0 then
+            Stop(@eINTERNAL);
+          end
+
+          select
+            case pType=Find("int"):
+              select
+                case ID=iLT:
+                  Emit(0,@strcat(@strcpy(@Buff,"jl      @"),@str(T)));
+
+                case ID=iLE:
+                  Emit(0,@strcat(@strcpy(@Buff,"jle     @"),@str(T)));
+
+                case ID=iEQ:
+                  Emit(0,@strcat(@strcpy(@Buff,"je      @"),@str(T)));
+
+                case ID=iNE:
+                  Emit(0,@strcat(@strcpy(@Buff,"jne     @"),@str(T)));
+
+                case ID=iGE:
+                  Emit(0,@strcat(@strcpy(@Buff,"jge     @"),@str(T)));
+
+                case ID=iGT:
+                  Emit(0,@strcat(@strcpy(@Buff,"jg      @"),@str(T)));
+
+                default:
+                  Stop(@eINTERNAL);
+              end
+
+            default:
+              select
+                case ID=iLT:
+                  Emit(0,@strcat(@strcpy(@Buff,"jb      @"),@str(T)));
+
+                case ID=iLE:
+                  Emit(0,@strcat(@strcpy(@Buff,"jbe     @"),@str(T)));
+
+                case ID=iEQ:
+                  Emit(0,@strcat(@strcpy(@Buff,"je      @"),@str(T)));
+
+                case ID=iNE:
+                  Emit(0,@strcat(@strcpy(@Buff,"jne     @"),@str(T)));
+
+                case ID=iGE:
+                  Emit(0,@strcat(@strcpy(@Buff,"jae     @"),@str(T)));
+
+                case ID=iGT:
+                  Emit(0,@strcat(@strcpy(@Buff,"ja      @"),@str(T)));
+
+                default:
+                  Stop(@eINTERNAL);
+              end
+          end
+
+          return nDICT;
+
+        case ID=iBIT_OR:
+          strcpy(@Buff,"or      ");
+
+        case ID=iBIT_XOR:
+          strcpy(@Buff,"xor     ");
+
+        case ID=iBIT_AND:
+          strcpy(@Buff,"and     ");
+
+        case ID=iADD:
+          strcpy(@Buff,"add     ");
+
+        case ID=iSUB:
+          strcpy(@Buff,"sub     ");
+
+        case ID=iMUL:
+          select
+            case pType=Find("byte"):
+              Emit(0,"mul     BL");
+
+            case pType=Find("word"):
+              Emit(0,"mul     EBX");
+
+            case pType=Find("int"):
+              Emit(0,"imul    EBX");
+
+            default:
+              Stop(@eINTERNAL);
+          end
+
+          return pType;
+
+        case ID=iDIV:
+          select
+            case pType=Find("byte"):
+              Emit(0,"xor     AH,   AH");
+              Emit(0,"div     BL");
+
+            case pType=Find("word"):
+              Emit(0,"xor     EDX,  EDX");
+              Emit(0,"div     EBX");
+
+            case pType=Find("int"):
+              Emit(0,"xor     EDX,  EDX");
+              Emit(0,"idiv    EBX");
+
+            default:
+              Stop(@eINTERNAL);
+          end
+
+          return pType;
+
+        case ID=iMOD:
+          select
+            case pType=Find("byte"):
+              Emit(0,"xor     AH,   AH");
+              Emit(0,"div     BL");
+              Emit(0,"xchg    AL,   AH");
+
+            case pType=Find("word"):
+              Emit(0,"xor     EDX,  EDX");
+              Emit(0,"div     EBX");
+              Emit(0,"xchg    EAX,  EDX");
+
+            default:
+              Stop(@eINTERNAL);
+          end
+
+          return pType;
+
+        default:
+          Stop(@eINTERNAL);
+      end
+
+      select
+        case Size=1:
+          select
+            case fSwap=2:
+              Emit(0,@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
+
+            default:
+              Emit(0,@strcat(@Buff,"AL,   BL"));
+          end
+
+        case Size=4:
+          select
+            case fSwap=2:
+              Emit(0,@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
+
+            default:
+              Emit(0,@strcat(@Buff,"EAX,  EBX"));
+          end
+
+        default:
+          Stop(@eINTERNAL);
+      end
+
+      return pType;
+
+    case Node[P].ID=iDEF:
+      if nParm>=nPARM then
+        Stop(@eNOMEMORY);
+      end
+
+      word pType=Node[P].Value;
+      word nPtr =Node[Node[P].pLeft].Value;
+      word  Size=4;
+      if nPtr=0 then
+        Size=Dict[Node[P].Value].Value;
+      end
+
+      pVar=pVar+Even(Node[Node[Node[P].pLeft].pLeft].Value*Size);
+
+      Parm[nParm].pType=pType;
+      Parm[nParm].nPtr =nPtr;
+      Parm[nParm].Value=pVar;
+      inc  nParm;
+
+      Code(Node[Node[P].pLeft].pLeft,0,0,0);
+
+    case Node[P].ID=iPUSH:
+      if Node[P].pRight<nNODE then
+        Code(Node[P].pRight,0,0,0);
+      end
+
+    //fEAX=0;
+    //Code(Node[P].pLeft,0,0,0);
+    //Emit(0,"push    EAX");
+
+    //10.12.2005
+      fEAX=0;
+      word pType=Code(Node[P].pLeft,0,0,0);
+      word  Size=4;
+      if pType<nDICT then
+        Size=Dict[pType].Value;
+      end
+
+      select
+        case Size=1:
+          Emit(0,"push    EAX");
+
+        case Size=4:
+          Emit(0,"push    EAX");
+
+        default:
+          Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Even(Size))));
+          Emit(0,"mov     ESI,  EAX");
+          Emit(0,"mov     EDI,  ESP");
+          Emit(0,"cld");
+          Emit(0,@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+          Emit(0,"rep     movsb");
+      end
+
+    case Node[P].ID=iASSIGN:
+      P   =Node[P].pLeft;
+      fEAX=0;
+      if Node[P].pRight<nNODE then
+        Code(Node[P].pRight,0,0,0);
+        fEAX=1;
+      end
+
+      Code(Node[P].pLeft,0,0,0);
+
+    case Node[P].ID=iRETURN:
+      if Node[P].pLeft<nNODE then
+      //fEAX=0;
+      //Code(Node[P].pLeft,0,0,0);
+
+      //10.12.2005
+        fEAX=0;
+        word pType=Code(Node[P].pLeft,0,0,0);
+        word  Size=4;
+        if pType<nDICT then
+          Size=Dict[pType].Value;
+        end
+
+        if Size!=1 & Size!=4 then
+          Stop(@eINTERNAL);
+        end
+      end
+
+      Emit(0,"mov     ESP,  EBP");
+      Emit(0,"pop     EBP");
+
+      if Dict[pFunc].Sub=sMAIN then
+      //Emit(0,"xor     EAX,  EAX");
+      //Emit(0,"push    EAX");
+      //Emit(0,"call    ExitProcess");                                                                  // TASM
+      //Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]")); // FASM
+        select
+          case Target=tPE:
+            Emit(0,"xor     EAX,  EAX");
+            Emit(0,"push    EAX");
+            Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
+
+          case Target=tELF:
+            Emit(0,"mov     EAX,  1");
+            Emit(0,"xor     EBX,  EBX");
+            Emit(0,"int     80H");
+
+          default:
+            Stop(@eINTERNAL);
+        end
+      else
+        Emit(0,@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
+      end
+
+    case Node[P].ID=iINLINE:                // 11.02.2007
+      Emit(0,@strcat(@strcpy(@Buff,"db      0x"),@str2(Node[P].Value,16)));
+
+    case Node[P].ID=iSEQUENCE:
+      word nParm1=nParm;
+      word pVar1 =pVar;
+
+      word  P1=Node[P].pLeft;
+      while P1<nNODE do
+        Code(P1,0,0,0);
+        P1=Node[P1].pRight;
+      end
+
+      pVar =pVar1;
+      nParm=nParm1;
+
+    case Node[P].ID=iSELECT:
+      word E=Node[P].Value;
+
+      P=Node[P].pLeft;
+      while P<nNODE do
+        if Node[Node[P].pLeft].pLeft<nNODE then
+          F=Node[P].Value;
+          T=Node[Node[P].pLeft].Value;
+          Code(Node[Node[P].pLeft].pLeft,F,0,T);
+          Emit(T,"");
+        end
+
+        word nParm1=nParm;
+        word pVar1 =pVar;
+
+        word  P1=Node[Node[P].pLeft].pRight;
+        while P1<nNODE do
+          Code(P1,0,0,0);
+          P1=Node[P1].pRight;
+        end
+
+        pVar =pVar1;
+        nParm=nParm1;
+
+        if Node[P].pRight<nNODE then
+          Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
+        end
+
+        if Node[Node[P].pLeft].pLeft<nNODE then
+          Emit(F,"");
+        end
+
+        P=Node[P].pRight;
+      end
+
+      Emit(E,"");
+
+    case Node[P].ID=iSWITCH:
+      word E=Node[P].Value;
+      word D=E;
+
+      fEAX=0;
+      word pType=Code(Node[Node[P].pLeft].pLeft,0,0,0);
+      if   pType=Find("byte") then
+        Emit(0,"and     EAX,  0FFH");
+      end
+
+      word  P1=Node[Node[P].pLeft].pRight;
+      while P1<nNODE do
+        word  P2 = Node[Node[P1].pLeft].pLeft;
+        if    P2 =nNODE then
+          D=Node[P1].Value;
+        end
+
+        while P2!=nNODE do
+          if pType=Find("char") then
+            Emit(0,@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[P2].Value)));
+          else
+            Emit(0,@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[P2].Value)));
+          end
+
+          Emit(0,@strcat(@strcpy  (@Buff,"je      @"),@str(Node[P1].Value)));
+
+          P2=Node[P2].pLeft;
+        end
+
+        P1=Node[P1].pRight;
+      end
+
+      Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(D)));
+
+      word  P2= Node[Node[P].pLeft].pRight;
+      while P2<nNODE do
+        Emit(Node[P2].Value,"");
+
+        word nParm1=nParm;
+        word pVar1 =pVar;
+
+        word  P3=Node[Node[P2].pLeft].pRight;
+        while P3<nNODE do
+          Code(P3,0,0,0);
+          P3=Node[P3].pRight;
+        end
+
+        pVar =pVar1;
+        nParm=nParm1;
+
+        Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
+
+        P2=Node[P2].pRight;
+      end
+
+      Emit(E,"");
+
+    case Node[P].ID=iWHILE:
+      F=Node[P].Value;
+      P=Node[P].pLeft;
+      T=Node[P].Value;
+
+      word L=Node[Node[P].pLeft].Value;
+      Emit(L,"");
+      if Node[Node[P].pLeft].pRight<nNODE then  // Node[Node[P].pLeft].pLeft<nNODE
+        Code(Node[Node[P].pLeft].pRight,F,0,T); // Code(Node[Node[P].pLeft].pLeft,F,0,T);
+        Emit(T,"");
+      end
+
+      word nParm1=nParm;
+      word pVar1 =pVar;
+
+      word  P1=Node[P].pRight;
+      while P1<nNODE do
+        Code(P1,0,0,0);
+        P1=Node[P1].pRight;
+      end
+
+      pVar =pVar1;
+      nParm=nParm1;
+
+      Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(L)));
+      Emit(F,"");
+
+    case Node[P].ID=iREPEAT:
+      T=Node[P].Value;
+      P=Node[P].pLeft;
+      F=Node[P].Value;
+      P=Node[P].pRight;
+
+      Emit(F,"");
+
+      word nParm1=nParm;
+      word pVar1 =pVar;
+
+      word  P1=Node[P].pLeft;
+      while P1<nNODE do
+        Code(P1,0,0,0);
+        P1=Node[P1].pRight;
+      end
+
+      Code(Node[P].pRight,F,0,T);
+
+      pVar =pVar1;
+      nParm=nParm1;
+
+      Emit(T,"");
+
+    case Node[P].ID=iLOOP | Node[P].ID=iEXIT:
+      Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(Node[Node[P].Value].Value)));
+
+    case Node[P].ID=iEMPTY:
+      null
+
+    default:
+      Stop(@eINTERNAL);
+  end
+
+  return nDICT;
+end
+
+
+void Main(char @Name)
+  nDict=0;                                  // Инициализация счетчиков
+  nParm=0;
+  nIndx=0;
+  nChar=0;
+  nNode=0;
+
+  nFile=0;
+  pFile=0;
+  fFile=0;
+
+  select
+    case Target=tPE:
+      strcpy(@Text,"define @COMPILER ~"Context 2.0 for Win32~"~r~n");
+      strcat(@Text,"void    ExitProcess(word uExitCode) external KERNEL32;");
+
+    case Target=tELF:
+      strcpy(@Text,"define @COMPILER ~"Context 2.0 for Linux~"~r~n");
+
+    default:
+      Stop(@eINTERNAL);
+  end
+
+  nText=strlen(@Text);
+  pText=0;
+  nLine=0;
+  nCol =1;                                  // 24.03.2007
+
+  pLoop=nNODE;
+
+  Word("include");                          // Заполнение таблицы имен
+  Word("define");
+  Word("struct");
+  Word("synonym");
+  Word("function");
+  Word("external");
+  Word("is");                               // 29.09.2008
+  Word("begin");
+  Word("sequence");                         // 14.09.2007
+  Word("select");
+  Word("case");
+  Word("default");
+  Word("if");
+  Word("then");
+  Word("else");
+  Word("switch");                           // 11.10.2008
+  Word("of");
+  Word("while");
+  Word("do");
+  Word("repeat");                           // 11.02.2007
+  Word("until");
+  Word("loop");
+  Word("exit");
+  Word("inc");
+  Word("dec");
+  Word("inline");                           // 11.02.2007
+  Word("return");
+  Word("null");
+  Word("NULL");
+  Word("end");
+
+  Base("void",0);
+  Base("char",1);
+  Base("byte",1);
+  Base("word",4);
+  Base("int", 4);
+
+  char  Buff [nBUFF];
+
+  word nFile1=0;                            // 23.06.2007
+
+  Scan(@Buff);
+
+  do                                        // Синтаксический анализ
+  //Scan(@Buff);
+
+    select
+      case strcmp(@Buff,"begin")=0:         // Главная функция
+        if nFile> 0 then                    // 23.06.2007
+          Stop(@eINCLUDE);
+        end
+
+        if nDict>=nDICT then
+          Stop(@eNOMEMORY);
+        end
+
+        pFunc=nDict;
+        pParm=nParm;
+        pIndx=nIndx;
+
+        Dict[nDict]. Class=cFUNC;              strcpy(@Dict[nDict].Name,"");
+        Dict[nDict]. Sub  =sMAIN;
+        Dict[nDict].pType = Find("void");
+        Dict[nDict].nPtr  = 0;
+        Dict[nDict].pIndx =nParm;
+        Dict[nDict].nIndx =nParm;
+        Dict[nDict]. Flag =    1;
+        inc  nDict;
+
+        word @P   =@Dict[pFunc].pNode;
+        word  Flag= 0;
+
+        Scan(@Buff);
+        while Flag=0 | strcmp(@Buff,"end")!=0 do
+          P   = Ctrl(@Buff);
+          @P  =@Node[P].pRight;
+          Flag= 1;
+        end
+
+        nIndx=pIndx;
+        nParm=pParm;
+
+        exit
+
+      case strcmp(@Buff,"include")=0:       // Включаемый файл
+        if strcmp(@Scan(@Buff),"~"")!=0 then
+          Stop(@eQUOTEXP);
+        end
+
+        word P=0;
+        while Read()!='"' do
+          if Read()='~n' | Read()='~r' | Read()='~t' | Read()=' ' then
+            Stop(@eQUOTEXP);
+          end
+
+          Buff[P]=Read();
+          inc  P;
+
+          if P>=nNAME then
+            Stop(@eLONGNAME);
+          end
+
+          Next();
+        end
+
+        Buff[P]=#0;
+        Next();
+
+        if nFile0!=nFile1 then              // 23.06.2007
+          Stop(@eINCLUDE);
+        end
+
+        P=Find(@Buff);
+        if P<nDict then
+          if Dict[P].Class!=cFILE then
+            Stop(@eDUPLICATE);
+          end
+
+          if nFile0!=nFile1 then            // 23.06.2007
+            Stop(@eINCLUDE);
+          end
+
+          nFile1=nFile;
+
+          Scan(@Buff);
+          loop
+        end
+
+        if nDict>=nDICT then
+          Stop(@eNOMEMORY);
+        end
+
+        Dict[nDict].Class=cFILE;               strcpy(@Dict[nDict].Name,@Buff);
+        Dict[nDict].Flag =    0;
+        inc  nDict;
+
+        if nFile>=nFILE then
+          Stop(@eNOMEMORY);
+        end
+
+        word hFile=open(@Buff);
+      //if hFile =$FFFFFFFF then
+        if hFile>=$80000000 then
+          Stop(@eNOFILE);
+        end
+
+        char   Temp[nBUFF];
+        puts (@strcat(@strcat(@strcat(@strcat(@strcpy(@Temp,"~r"),@Info),"("),@str(nLine)),")~r~n"));
+
+        File[nFile].hText=hText;               strcpy(@File[nFile].Info,@Info);
+        File[nFile].nText=nText;
+        File[nFile].pText=pText;
+        File[nFile].nLine=nLine;
+        File[nFile].nCol =nCol;             // 24.03.2007
+        inc  nFile;
+
+        word I=0; // I=0;
+        word K=0; // K=0;
+        while Buff[I]!=#0 do
+        //if Buff[I]='\' then
+          if Buff[I]=separator() then       // 23.06.2007
+            K=I+1;
+          end
+
+          inc I;
+        end
+
+        pFile=pFile+nTEXT;
+
+        hText =hFile;                          strcpy(@Info,@Buff[K]);
+        nText =pFile;
+        pText =pFile;
+        nFile0=nFile;                       // 23.06.2007
+        nFile1=nFile;
+        nLine =    1;
+        nCol  =    1;                       // 24.03.2007
+
+      case strcmp(@Buff,"define")=0:        // Константа
+        word nPtr=0;
+        if strcmp(@Scan(@Buff),"@")=0 then
+          Scan(@Buff);
+          nPtr=1;
+        end
+
+        if Find(@Buff)<nDict then
+          Stop(@eDUPLICATE);
+        end
+
+        if nDict>=nDICT then
+          Stop(@eNOMEMORY);
+        end
+
+        Dict[nDict]. Class=cCONST;             Copy(@Dict[nDict].Name,@Buff,nDict);
+        Dict[nDict].nPtr  =     0;
+        Dict[nDict]. Flag =     0;
+
+        Scan(@Buff);
+        select
+          case nPtr=0:
+            select
+              case strcmp(@Buff,"'")=0:
+                Dict[nDict].pType=Find("char");
+                Dict[nDict].Value=word(Sign());
+                if Read()!='~'' then
+                  Stop(@eQUOTEXP);
+                end
+                Next();
+
+              case strcmp(@Buff,"#")=0:
+                word N=val(@Scan(@Buff));
+                if   N>255 then
+                  Stop(@eOVERFLOW);
+                end
+
+                Dict[nDict].pType=Find("char");
+                Dict[nDict].Value=N;
+
+              default:
+                word pType2,  nPtr2;
+                word  P=Expr(pZERO,@pType2,@nPtr2,@Buff);
+
+                select
+                  case Node[P].ID=iWORD:
+                    Dict[nDict].pType=Find("word");
+                    Dict[nDict].Value=Node[P].Value; // val (@Buff);
+
+                  case Node[P].ID=iINT:
+                    Dict[nDict].pType=Find("int");
+                    Dict[nDict].Value=Node[P].Value; // val (@Buff);
+
+                  default:
+                    Stop(@eTYPE);
+                end
+
+                inc nDict;
+
+              //TODO Пpовеpить
+                if strcmp(@Buff,";")=0 then  // 23.06.2007
+                  if nFile0 !=nFile1 then
+                    Stop(@eINCLUDE);
+                  end
+
+                  Scan(@Buff);
+                else
+                  if nFile00!=nFile1 then
+                    Stop(@eINCLUDE);
+                  end
+                end
+
+                nFile1=nFile0;
+
+                loop
+            end
+
+          default:
+            if strcmp(@Buff,"~"")!=0 then
+              Stop(@eQUOTEXP);
+            end
+
+            Line();
+        end
+
+        inc nDict;
+
+      case strcmp(@Buff,"struct")=0:        // Стpуктуpа
+        word pType=Find(@Scan(@Buff));
+        if pType<nDict then
+          Stop(@eDUPLICATE);
+        end
+
+        if nDict>=nDICT then
+          Stop(@eNOMEMORY);
+        end
+
+        Dict[nDict]. Class=cTYPE;              Copy(@Dict[nDict].Name,@Buff,nDict);
+        Dict[nDict]. Sub  =sSTRUCT;
+        Dict[nDict].pIndx =nParm;
+
+        if strcmp(@Scan(@Buff),";")=0 then
+          Stop(@eNOTAVAIL);
+        end
+
+        word pParm=nParm;
+        do
+          pType=Find(@Buff);
+          if   pType>=nDict then
+            if strcmp(@Buff,@Dict[nDict].Name)!=0 then
+              Stop(@eTYPEEXP);
+            end
+          else
+            if Dict[pType].Class!=cTYPE then
+              Stop(@eTYPEEXP);
+            end
+          end
+
+          do
+            word  nPtr=0;
+            while strcmp(@Scan(@Buff),"@")=0 do
+              inc nPtr;
+            end
+
+            if pType=Find("void") & nPtr<1 then
+              Stop(@eNOVOID);
+            end
+
+            if pType=nDict & nPtr<1 then
+              Stop(@eNODATA);
+            end
+
+            if Dict[pType].Sub=sHEADER & nPtr<1 then
+              Stop(@eNOVAL);
+            end
+
+            word  I=pParm; // I=pParm;
+            while I<nParm do
+              if strcmp(@Parm[I].Name,@Buff)=0 then
+                Stop(@eDUPLICATE);
+              end
+
+              inc I;
+            end
+
+            if nParm>=nPARM then
+              Stop(@eNOMEMORY);
+            end
+
+            Parm[nParm].pType=pType;           Copy(@Parm[nParm].Name,@Buff,0);
+            Parm[nParm].nPtr =nPtr;
+            Parm[nParm].pIndx=nIndx;
+            Parm[nParm].nIndx= Tabl(@Scan(@Buff));
+            inc  nParm;
+
+            if strcmp(@Buff,";") =0 then
+              Scan(@Buff);
+              exit
+            end
+
+            if strcmp(@Buff,"end")=0 then
+              exit
+            end
+
+            if strcmp(@Buff,",")!=0 then
+              Stop(@eSEMICOLONEXP);
+            end
+          end
+
+          if strcmp(@Buff,"end")=0 then
+            exit
+          end
+        end
+
+        Dict[nDict].nIndx=nParm;
+        Dict[nDict]. Flag=    0;
+        inc  nDict;
+
+      case strcmp(@Buff,"synonym")=0:       // Синоним
+        if Find(@Scan(@Buff))<nDict then
+          Stop(@eDUPLICATE);
+        end
+
+        if nDict>=nDICT then
+          Stop(@eNOMEMORY);
+        end
+
+        Dict[nDict].Class=cNAME;               Copy(@Dict[nDict].Name,@Buff,nDict);
+
+        word pType=Find(@Scan(@Buff));
+        if pType>=nDict then
+          Stop(@eUNDEFINED);
+        end
+
+        Dict[nDict].pType=pType;
+        Dict[nDict]. Flag=    0;
+        inc  nDict;
+
+      default:                              // Пеpеменная, функция, ...
+        word pType=Find(@Buff);
+        if   pType>=nDict | Dict[pType].Class!=cTYPE then
+          Stop(@eTYPEEXP);
+        end
+
+        if strcmp(@Scan(@Buff),"function")=0 then
+          word  nPtr=0;
+          while strcmp(@Scan(@Buff),"@")=0 do
+            inc nPtr;
+          end
+
+          if Find(@Buff)<nDict then
+            Stop(@eDUPLICATE);
+          end
+
+          if nDict>=nDICT then
+            Stop(@eNOMEMORY);
+          end
+
+          Dict[nDict]. Class=cTYPE;            Copy(@Dict[nDict].Name,@Buff,nDict);
+          Dict[nDict]. Sub  =sHEADER;
+
+          if strcmp(@Scan(@Buff),"(")!=0 then
+            Stop(@eBRACKETEXP);
+          end
+
+          Dict[nDict].pType =pType;
+          Dict[nDict].nPtr  =nPtr;
+          Dict[nDict].pIndx =nParm;
+          Dict[nDict].nIndx = List(@Scan(@Buff));
+          Dict[nDict]. Flag = 0;
+          inc  nDict;
+
+        /*if (strcmp(@Scan(@Buff),";")!=0) then
+            Stop(@eSEMICOLONEXP);
+          end*/
+        else
+          word Flag=0;
+          do
+            word  nPtr=0;
+            while strcmp(@Buff,"@")=0 do
+              inc nPtr;
+              Scan(@Buff);
+            end
+
+            if Find(@Buff)<nDict then
+              Stop(@eDUPLICATE);
+            end
+
+            if nDict>=nDICT then
+              Stop(@eNOMEMORY);
+            end
+
+            Dict[nDict].pType=pType;           Copy(@Dict[nDict].Name,@Buff,nDict);
+            Dict[nDict].nPtr =nPtr;
+            Dict[nDict]. Flag=   0;
+
+            Scan(@Buff);
+            select
+              case strcmp(@Buff,"(")=0:     // Функция
+                if Flag!=0 then
+                  Stop(@eNOFUNCTION);
+                end
+
+                pFunc=nDict;
+
+                Dict[nDict].Class=cFUNC;
+                Dict[nDict].Sub  =sFUNC;
+                Dict[nDict].pIndx=nParm;
+                Dict[nDict].nIndx= List(@Scan(@Buff));
+                inc  nDict;
+
+                Scan(@Buff);
+                select
+                  case strcmp(@Buff,";")=0:
+                    Stop(@eNOTAVAIL);
+
+                  case strcmp(@Buff,"external")=0:
+                    select
+                      case Target=tPE:
+                        null
+
+                      default:
+                        Stop(@eNOTALLOWED);
+                    end
+
+                    word pLib=Find(@Scan(@Buff));
+                    if   pLib>=nDict then
+                      if nDict>=nDICT then
+                        Stop(@eNOMEMORY);
+                      end
+
+                      Dict[nDict]. Class=cFUNC;strcpy(@Dict[nDict].Name,@Dict[pFunc].Name);
+                      Dict[nDict].pType =pType;
+                      Dict[nDict].nPtr  =nPtr;
+                      Dict[nDict].pIndx = Dict[pFunc].pIndx;
+                      Dict[nDict].nIndx = Dict[pFunc].nIndx;
+                      Dict[nDict]. Flag = 0;
+
+                      Dict[pFunc]. Class=cLIB; Copy  (@Dict[pFunc].Name,@Buff,nDict);
+                      Dict[pFunc]. Flag = 0;
+
+                      pLib =pFunc;
+                      pFunc=nDict;
+                      inc   nDict;
+                    end
+
+                    if strcmp(@Scan(@Buff),".")=0 then
+                      if Find(@Scan(@Buff))<nDict then
+                        Stop(@eDUPLICATE);
+                      end
+
+                      if nDict>=nDICT then
+                        Stop(@eNOMEMORY);
+                      end
+
+                      Dict[nDict]. Class=cNAME;strcpy(@Dict[nDict].Name,@Dict[pFunc].Name);
+                      Dict[nDict].pType =pFunc;
+                      Dict[nDict]. Flag =    0;
+                      inc  nDict;
+
+                      Copy(@Dict[pFunc].Name,@Buff,nDict);
+                      Scan(@Buff);
+                    end
+
+                    Dict[pFunc].Sub  =sSYS;
+                    Dict[pFunc].pNode=pLib;
+
+                    if strcmp(@Buff,";")!=0 then
+                      Stop(@eSEMICOLONEXP);
+                    end
+
+                  default:
+                    if strcmp(@Buff,"is")=0 then // 29.09.2008
+                      Scan(@Buff);
+                    end
+
+                    pParm=nParm;
+                    pIndx=nIndx;
+                    Flag =    0;
+
+                    word @P=@Dict[pFunc].pNode;
+                    while Flag=0 | strcmp(@Buff,"end")!=0 do
+                      P   = Ctrl(@Buff);
+                      @P  =@Node[P].pRight;
+                      Flag= 1;
+                    end
+
+                    nIndx=pIndx;
+                    nParm=pParm;
+                end
+
+                exit
+
+              default:                      // Пеpеменная
+                if pType=Find("void") & nPtr<1 then
+                  Stop(@eNOVOID);
+                end
+
+                if Dict[pType].Sub=sHEADER & nPtr<1 then
+                  Stop(@eNOVAL);
+                end
+
+                Dict[nDict]. Class=cDATA;
+                Dict[nDict].pIndx =nIndx;
+                Dict[nDict].nIndx = Tabl(@Buff);
+                Dict[nDict].pNode =nNODE;
+              //inc  nDict;
+
+                if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+                  if Dict[nDict].pIndx<Dict[nDict].nIndx then
+                    Stop(@eNOTAVAIL);
+                  end
+
+                  word P1=Peek();
+                  word P2=Peek();
+                  Node[P1].ID    =iASSIGN;
+                  Node[P1].pLeft = P2;
+
+                  word pType2, nPtr2;
+                  word P3=Peek();
+                  Node[P2].ID    =iEMPTY;
+                  Node[P2].pLeft = P3;
+                  Node[P2].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+
+                  Node[P3].ID    =iDATA;
+                  Node[P3].Value =nDict;
+
+                  Test(pType,nPtr,pType2,nPtr2,@Node[P2].pRight);
+
+                  Dict[nDict].pNode=P1;
+                end
+
+                inc  nDict;
+
+                if strcmp(@Buff,";") =0 then
+                  exit
+                end
+
+                if strcmp(@Buff,",")!=0 then
+                  Stop(@eSEMICOLONEXP);
+                end
+
+                Scan(@Buff);
+            end
+
+            Flag=1;
+          end
+        end
+    end
+
+    if nFile0!=nFile1 then                  // 23.06.2007
+      Stop(@eINCLUDE);
+    end
+
+    Scan(@Buff);
+
+    nFile1=nFile0;                          // 23.06.2007
+  end
+
+  close (hText);
+  while  nFile>0 do
+    dec  nFile;
+    close(File[nFile].hText);
+  end
+
+  Mark(Dict[pFunc].pNode);                  // Отметка используемых объектов
+
+  Dict[Find("COMPILER")]   .Flag=1;
+//Dict[Find("ExitProcess")].Flag=1;
+
+  select
+    case Target=tPE:
+      Dict[Find("ExitProcess")].Flag=1;
+  end
+
+//strcpy(@Name[pExt],".asm");               // Генеpация кода
+
+  hText=create(@Name);
+  nText=0;
+
+/*Decl(".386");
+  Decl(".model  flat,   stdcall");
+  Decl("");
+
+  I=0;
+  while I<nDict do
+    if Dict[I].Class=cFUNC & Dict[I].Sub=sSYS & Dict[I].Flag!=0 then
+      word  N=strlen(@strcat(@strcpy(@Buff,"extrn   "),@Dict[I].Name));
+      while N<nNAME+8 do
+        Buff[N]=' ';
+        inc  N;
+      end
+      Buff[N]=#0;
+
+      Emit(0,@strcat(@Buff,":proc"));
+    end
+
+    inc I;
+  end*/
+
+//Decl(@strcat(@strcpy(@Buff,"format  PE      "),@Dest)); // FASM
+
+  select
+    case Target=tPE & Mode=mCON:
+      Decl("format  PE      CONSOLE");
+
+    case Target=tPE & Mode=mGUI:
+      Decl("format  PE      GUI");
+
+    case Target=tELF:
+      Decl("format  ELF      executable");
+
+    default:
+      Stop(@eINTERNAL);
+  end
+
+  word T=0;
+
+  word  I=0; // I=0;
+  while I<nDict do
+    if Dict[I].Class=cCONST & Dict[I].nPtr>0 & Dict[I].Flag!=0 then
+      Dict[I].Value=T;
+      T=T+(Dict[I].nIndx-Dict[I].pIndx);
+    end
+
+    inc I;
+  end
+
+  Decl("");
+//Decl(".code");                                      // TASM
+//Decl("section ~".code~" code readable executable"); // FASM
+
+  select
+    case Target=tPE:
+      Decl("section ~".code~" code readable executable");
+
+    case Target=tELF:
+    //Decl("section readable executable");
+      Decl("segment readable executable");            // FASM 1.66
+
+    default:
+      Stop(@eINTERNAL);
+  end
+
+  word L=10000;
+
+  I=0;
+  while I<nDict do
+    select
+      case Dict[I].Class=cTYPE & Dict[I].Sub=sSTRUCT:
+        word D1=0;
+
+        word  K=Dict[I].pIndx; // K=Dict[I].pIndx;
+        while K<Dict[I].nIndx do
+          Parm[K].Value=D1;
+
+          word D2=4;
+          if Parm[K].nPtr=0 then
+            D2=Dict[Parm[K].pType].Value;
+          end
+
+          word  N=Parm[K].pIndx;
+          while N<Parm[K].nIndx do
+            D2= Indx[N]*D2;
+            inc N;
+          end
+
+          D1=D1+D2;
+
+          inc K;
+        end
+
+        Dict[I].Value=D1;
+
+      case Dict[I].Class=cFUNC & Dict[I].Sub!=sSYS & Dict[I].Flag!=0:
+        Dict [I].Value=L;
+        inc   L;
+
+        Dict [I].Stack=Enum(Dict[I].pNode,1,@L);
+    end
+
+    inc I;
+  end
+
+  word nLib=0;
+
+  I=0;
+  while I<nDict do
+    if Dict[I].Class=cLIB then
+      word  J=0;
+      while J<nDict do
+        if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Flag!=0 then
+          if Dict[I].Flag=0 then
+            Dict[I].Value=L;
+            Dict[I].Flag =1;
+            inc nLib;
+          end
+
+          Dict [J].Value=L;
+          inc   L;
+        end
+
+        inc J;
+      end
+    end
+
+    inc I;
+  end
+
+  word D=0;
+  word S;
+
+  word pRet    = Peek();
+  Node[pRet].ID=iRETURN;
+
+  I=0;
+  while I<nDict do
+    select
+      case Dict[I].Class=cDATA & Dict[I].Flag!=0:
+        Dict[I].Value=D;
+
+        word Size=4;
+        if Dict[I].nPtr=0 then
+          Size=Dict[Dict[I].pType].Value;
+        end
+
+        word   K=Dict[I].pIndx; // K=Dict[I].pIndx;
+        while  K<Dict[I].nIndx do
+          Size=Indx[K]*Size;
+          inc  K;
+        end
+
+        D=D+Even(Size);
+
+      case Dict[I].Class=cFUNC & Dict[I].Sub!=sSYS & Dict[I].Flag!=0:
+        Decl("");
+        if Dict[I].Sub!=sMAIN then
+        //Emit(L,@strcat(@strcpy(@Buff,"       ;"),@Dict[I].Name));
+          Emit(Dict[I].Value,@strcat(@strcpy(@Buff,"       ;"),@Dict[I].Name));
+        else
+        /*Emit(L,"       ;begin");
+          S=   L;*/
+          Emit(Dict[I].Value,"       ;begin");
+          S=   Dict[I].Value;
+        end
+
+      /*Dict[I].Value=L;
+        inc  L;*/
+
+        word S1=0;
+
+        word  K=Dict[I].pIndx; // K=Dict[I].pIndx;
+        while K<Dict[I].nIndx do
+          Parm[K].Value=S1+8;
+          if Parm[K].nPtr=0 then
+            S1=S1+Even(Dict[Parm[K].pType].Value);
+          else
+            S1=S1+4;
+          end
+
+          inc  K;
+        end
+
+        Emit(0,"push    EBP");
+        Emit(0,"mov     EBP,  ESP");
+
+      /*word V=Enum(Dict[I].pNode,1,@L);
+        if V>0 then
+          Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(V)));
+        end*/
+
+        if Dict[I].Stack>0 then
+          Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Dict[I].Stack)));
+        end
+
+        if Dict[I].Sub=sMAIN then
+          word  J=0;
+          while J<nDict do
+            if Dict[J].Class=cDATA & Dict[J].pNode<nNODE & Dict[J].Flag!=0 then
+              Code(Dict[J].pNode,0,0,0);
+            end
+
+            inc J;
+          end
+        end
+
+        pParm=nParm;
+        pFunc= I;
+        pSize= S1;
+        pVar = 0;
+
+        word  P =Dict[I].pNode;
+        word  ID;
+        while P<nNODE do
+          Code   (P,0,0,0);
+          ID=Node[P].ID;
+          P =Node[P].pRight;
+        end
+
+        if ID!=iRETURN then
+          Code(pRet,0,0,0);
+        end
+
+        nParm=pParm;
+    end
+
+    inc I;
+  end
+
+  Decl("");
+//Decl(".data");                                     // TASM
+//Decl("section ~".data~" data readable writeable"); // FASM
+
+  select
+    case Target=tPE:
+      Decl("section ~".data~" data readable writeable");
+
+    case Target=tELF:
+    //Decl("section readable writeable");
+      Decl("segment readable writeable");            // FASM 1.66
+
+    default:
+      Stop(@eINTERNAL);
+  end
+
+  strcpy(@Buff,"~r~n@@TEXT  db    ");
+
+  I=0;
+  while I<nDict do
+    if Dict[I].Class=cCONST & Dict[I].nPtr>0 & Dict[I].Flag!=0 then
+      word N   =strlen(@Buff);
+      word Flag=0;
+
+      word  K=Dict[I].pIndx; // K=Dict[I].pIndx;
+      while K<Dict[I].nIndx do
+        if N+6>=nBUFF then
+          Stop(@eINTERNAL);
+        end
+
+      //if Char[K]='~n' | Char[K]='~r' | Char[K]='~t' | Char[K]='~"' | Char[K]='~0' then
+        if Char[K]<' '  | Char[K]='"' then
+          if Flag!=0 then
+            Buff[N]='"';
+            inc  N;
+
+            Flag=0;
+          end
+
+          if K>Dict[I].pIndx then
+            Buff[N]=',';
+            inc  N;
+          else
+            Buff[N]=' ';
+            inc  N;
+          end
+
+          Buff[N]=' ';
+          inc  N;
+
+        /*select
+            case Char[K]=#10: //case Char[K]='~n':
+              Buff[N]='1';
+              inc  N;
+              Buff[N]='0';
+              inc  N;
+
+            case Char[K]=#13: //case Char[K]='~r':
+              Buff[N]='1';
+              inc  N;
+              Buff[N]='3';
+              inc  N;
+
+            case Char[K]=#09: //case Char[K]='~t':
+              Buff[N]='9';
+              inc  N;
+
+            case Char[K]=#34: //case Char[K]='~"':
+              Buff[N]='3';
+              inc  N;
+              Buff[N]='4';
+              inc  N;
+
+            case Char[K]=#00: //case Char[K]='~0':
+              Buff[N]='0';
+              inc  N;
+          end*/
+
+          char @P=@str(word(Char[K]));
+          word  J=0;
+          while P[J]!=#0 do
+            Buff[N]=P[J];
+            inc  N;
+            inc  J;
+          end
+        else
+          if Flag=0 then
+            if K>Dict[I].pIndx then
+              Buff[N]=',';
+              inc  N;
+            end
+
+            Buff[N]=' ';
+            inc  N;
+
+            Buff[N]='"';
+            inc  N;
+
+            Flag=1;
+          end
+
+          Buff[N]=Char[K];
+          inc  N;
+        end
+
+        inc  K;
+      end
+      Buff[N]=#0;
+
+      Decl  (@Buff);
+      strcpy(@Buff,"        db    ");
+    end
+
+    inc I;
+  end
+
+  if D>0 then
+    Decl("");
+  //Decl(@strcat(@strcat(@strcpy(@Buff,"@@DATA  db      "),@str(D))," dup (?)")); // TASM
+    Decl(@strcat(@strcpy(@Buff,"@@DATA  rb      "),@str(D)));                     // FASM
+  end
+
+//Decl("");
+//Emit(0,@strcat(@strcpy(@Buff,"end     @"),@str(S))); // TASM
+
+  select
+    case Target=tPE:
+      Decl("");
+      Decl("section ~".idata~" import data readable writeable");
+      Decl("");
+
+      word L1;
+
+      L1=L;
+      I =0;
+      while I<nDict do
+        if Dict[I].Class=cLIB & Dict[I].Flag!=0 then
+          char Tmp1 [nBUFF];
+          char Tmp2 [nBUFF];
+          Emit(0,@strcat(@strcat(@strcat(@strcpy(@Buff,"dd      0, 0, 0, RVA @"),@strcpy(@Tmp1,@str(L1))),", RVA @"),@strcpy(@Tmp2,@str(Dict[I].Value))));
+          inc  L1;
+        end
+
+        inc I;
+      end
+
+      Emit(0,"dd      0, 0, 0, 0, 0");
+
+    //L1=L+nLib;
+      I =0;
+      while I<nDict do
+        if Dict[I].Class=cLIB & Dict[I].Flag!=0 then
+          Decl("");
+
+          word  J=0;
+          while J<nDict do
+            if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Flag!=0 then
+            //Emit(Dict[J].Value, @strcat(@strcpy(@Buff,"dd      RVA @"),@str(L1)));
+              char Tmp1 [nBUFF];
+              char Tmp2 [nBUFF];
+              Decl(@strcat(@strcat(@strcat(@strcpy(@Buff,"@"),@strcpy(@Tmp1,@str(Dict[J].Value))),"  dd      RVA @"),@strcpy(@Tmp2,@str(L1))));
+              inc  L1;
+            end
+
+            inc J;
+          end
+
+          Emit(0,"dd      0");
+        end
+
+        inc I;
+      end
+
+      Decl("");
+
+      L1=L;
+      I =0;
+      while I<nDict do
+        if Dict[I].Class=cLIB & Dict[I].Flag!=0 then
+          Emit(L1,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@Dict[I].Name),".DLL~", 0"));
+          inc  L1;
+        end
+
+        inc I;
+      end
+
+    //L1=L+nLib;
+      I =0;
+      while I<nDict do
+        if Dict[I].Class=cLIB & Dict[I].Flag!=0 then
+          Decl("");
+
+          word  J=0;
+          while J<nDict do
+            if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Flag!=0 then
+              Emit(L1,"dw      0");
+              Emit(0,  @strcat(@strcat(@strcpy(@Buff,"db     ~""),@Dict[J].Name),"~", 0"));
+              inc  L1;
+            end
+
+            inc J;
+          end
+        end
+
+        inc I;
+      end
+
+      Decl("");
+      Decl("section ~".reloc~" fixups data readable discardable");
+  end
+
+  Decl("");
+  Emit(0,@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
+
+  if nText>0 then
+  //write(hText,@Text,nText);
+    if write(hText,@Text,nText)!=nText then  // 11.02.207
+      Stop(@eWRITEERR);
+    end
+  end
+
+  close(hText);
+
+  puts (@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,"~r"),@Info),"("),@str(nLine)),")~r~n"));
+
+/*strcpy(@Name[pExt],".def");
+
+  hText=create(@Name);
+  nText=0;
+
+  I=0;
+  while I<nDict do
+    if Dict[I].Class=cFUNC & Dict[I].Sub=sSYS & Dict[I].Flag!=0 then
+      word  N=strlen(@strcat(@strcpy(@Buff,"imports "),@Dict[I].Name));
+      while N<nNAME+8 do
+        Buff[N]=' ';
+        inc  N;
+      end
+      Buff[N]=#0;
+
+      Decl(@strcat(@strcat(@strcat(@strcat(@Buff," = "),@Dict[Dict[I].pNode].Name),"."),@Dict[I].Name));
+    end
+
+    inc I;
+  end
+
+  if nText>0 then
+    write(hText,@Text,nText);
+  end
+
+  close(hText);
+
+  puts (@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,"~r"),@Info),"("),@str(nLine)),")~r~n"));*/
+end
+
+
+begin
+//Системно-зависимый код
+
+//Win32
+  char @Command=@GetCommandLine();
+
+  word  I=0;
+  while Command[I]!=#0 & Command[I]!=' ' do
+    inc I;
+  end
+
+  while Command[I] =' ' do
+    inc I;
+  end
+
+  char  Name [nBUFF];
+  word  K=0;
+  while Command[I]!=#0 & Command[I]!=' ' do
+    Name[K]=Command[I];
+    inc  K;
+
+    if   K>=nBUFF then
+    //puts("Слишком длинное имя файла~r~n");
+      puts(@eLONGFILENAME);
+      puts("~r~n");
+      return
+    end
+
+    inc  I;
+  end
+  Name[K]=#0;
+
+  while Command[I] =' ' do
+    inc I;
+  end
+
+  char  Dest [nBUFF];
+  word  M=0;
+  while Command[I]!=#0 & Command[I]!=' ' do
+    Dest[M]=Command[I];
+    inc  M;
+
+    if   M>=nBUFF then
+    //puts("Неизвестный паpаметp~r~n");
+      puts(@eWRONGPARM);
+      puts("~r~n");
+      return
+    end
+
+    inc  I;
+  end
+  Dest[M]=#0;
+
+  if K=0 then
+    puts("Тpанслятоp языка Context. Веpсия 2.1~r~n");
+    puts("(C) Хохлов А.В.  г.Москва  1995-2007~r~n");
+  //puts("Использование: context <файл> [/c|w]~r~n");
+    puts("Использование:   context <src> [tgt]~r~n");
+    puts("Фоpмат  (tgt):  /c  - Win32 console~r~n");
+    puts("                /w  - Win32 gui~r~n");
+    puts("                /l  - Linux~r~n");
+
+    return
+  end
+
+  word pName=0;
+  word pExt =0;
+
+  K=0;
+  while Name[K]!=#0 do
+    select
+      case Name[K]='.':
+        pExt=K;
+
+    //case Name[K]='\':
+      case Name[K]=separator():             // 23.06.2007
+
+        pName=K+1;
+        pExt =0;
+    end
+
+    inc K;
+  end
+
+  Target=tPE;
+  Mode  =mCON;
+
+//Linux
+/*word   nArg;
+
+  inline $8B, $45, $04;                     // mov     EAX,  [EBP+ 4]
+  inline $89, $45, $FC;                     // mov    [nArg], EAX
+
+  char   @Parm="";
+  if     nArg>=2 then
+    inline $8B, $45, $0C;                   // mov     EAX,  [EBP+12]
+    inline $89, $45, $F8;                   // mov    [Parm], EAX
+  end
+
+  char   @Dest="";
+  if     nArg>=3 then
+    inline $8B, $45, $10;                   // mov     EAX,  [EBP+16]
+    inline $89, $45, $F4;                   // mov    [Dest], EAX
+  end
+
+  char  Name [nBUFF];
+
+  word  K=0;
+  while Parm[K]!=#0 do
+    Name[K]=Parm[K];
+    inc  K;
+
+    if   K>=nBUFF then
+    //puts("Слишком длинное имя файла~n");
+      puts(@eLONGFILENAME);
+      puts("~r~n");
+      return
+    end
+  end
+
+  Name[K]=#0;
+
+  if K=0 then
+    puts("Ї╥┴╬╙╠╤╘╧╥ ╤┌┘╦┴ Context. ў┼╥╙╔╤ 2.1~r~n");
+    puts("(C) ш╧╚╠╧╫ с.ў.  ╟.э╧╙╦╫┴  1995-2007~r~n");
+  //puts("щ╙╨╧╠╪┌╧╫┴╬╔┼: context <╞┴╩╠> [/c|w]~r~n");
+    puts("щ╙╨╧╠╪┌╧╫┴╬╔┼:   context <src> [tgt]~r~n");
+    puts("ц╧╥═┴╘  (tgt):  /c  - Win32 console~r~n");
+    puts("                /w  - Win32 gui~r~n");
+    puts("                /l  - Linux~r~n");
+
+    return
+  end
+
+  word pName=0;
+  word pExt =0;
+
+  K=0;
+  while Name[K]!=#0 do
+    select
+      case Name[K]='.':
+        pExt=K;
+
+    //case Name[K]='/':
+      case Name[K]=separator():             // 23.06.2007
+        pName=K+1;
+        pExt =0;
+    end
+
+    inc K;
+  end
+
+  Target=tELF;
+  Mode  =mNONE;*/
+
+//Конец системно-зависимого кода
+
+  if pExt=0 then
+    if K+4>=nBUFF then
+    //puts("Слишком длинное имя файла~r~n");
+      puts(@eLONGFILENAME);
+      puts("~r~n");
+      return
+    end
+
+    strcpy(@Name[K],".ctx");
+
+    pExt=K;
+    K   =K+4;
+  end
+
+  if K-pName>=nINFO then
+  //puts("Слишком длинное имя файла~r~n");
+    puts(@eLONGFILENAME);
+    puts("~r~n");
+    return
+  end
+
+  strcpy(@Info,@Name[pName]);
+
+  select
+    case strcmp(@Dest,"/c")=0:
+    //strcpy(@Dest,"CONSOLE");
+
+      Target=tPE;
+      Mode  =mCON;
+
+    case strcmp(@Dest,"/w")=0:
+    //strcpy(@Dest,"GUI");
+
+      Target=tPE;
+      Mode  =mGUI;
+
+    case strcmp(@Dest,"/l")=0:
+    //strcpy(@Dest,"ELF");
+
+      Target=tELF;
+      Mode  =mNONE;
+
+    default:
+      if strlen(@Dest)>0 then
+      //puts("Неизвестный паpаметp~r~n");
+        puts(@eWRONGPARM);
+        puts("~r~n");
+        return
+      end
+
+    //strcpy(@Dest,"CONSOLE");
+
+    //Target=tPE;
+    //Mode  =mCON;
+  end
+
+  hText=open(@Name);
+//if hText =$FFFFFFFF then
+  if hText>=$80000000 then
+  //puts(@strcat(@strcpy(@Name,@Info),"(0): Невозможно откpыть файл~r~n"));
+    puts(@eNOFILE);
+    puts("~r~n");
+    return
+  end
+
+  strcpy(@Name[pExt],".asm");
+
+  Main  (@Name);
+end

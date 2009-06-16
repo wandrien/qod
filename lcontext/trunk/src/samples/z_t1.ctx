@@ -1,0 +1,57 @@
+$context2
+
+
+begin
+	word a;
+	word b;
+	word c;
+
+/*
+
+	a = b + c;
+
+	word A[3];
+	A[0] = 16;
+	A[1] = 17;
+	A[2] = 18;
+
+*/
+
+	word B[3][3];
+	B[1][0] = 0o10;
+	B[1][1] = 8$10;
+	B[0][0] = 0x10;
+	B[0][1] = 16$10;
+	B[0][2] = 0x11;
+	B[1][2] = 0b10;
+	B[2][0] = 2$10;
+	B[2][0] = 2$101;
+	B[2][1] = 0x80402010;
+	B[2][2] = 0x80_40_20_10;
+
+
+
+
+
+	switch a of
+	case 1:
+		b = 0;
+	case 2:
+		b = 0;
+	case 3:
+		b = 0;
+	case 4:
+		b = 0;
+	case 5:
+		null
+	case 6:
+		null
+	case 7:
+		null
+	case 8:
+		b = 1;
+	default:
+		b = 0;
+	end
+
+end

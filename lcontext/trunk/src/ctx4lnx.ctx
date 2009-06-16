@@ -1,0 +1,23 @@
+$context2
+
+include "sys4lnx.ctxi"
+include "ctx4all.ctxi"
+
+
+begin
+	word _Argc;
+	inline $8B, $45, $04; // mov     EAX,  [EBP+ 4]
+	inline $89, $45, $FC; // mov    [nArg], EAX
+
+	ARG@ _Argv;
+	inline $8D, $45, $08; // mov EAX, [EBP + 8]
+	inline $89, $45, $F8; // mov [_Argv], EAX
+
+	Argc  = _Argc;
+	@Argv = @_Argv;
+
+	@DefaultTarget = "--linux";
+
+	__main();
+
+end

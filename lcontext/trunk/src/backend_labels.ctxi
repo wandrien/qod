@@ -1,0 +1,285 @@
+
+
+/*****************************************************************************/
+
+
+/* Отметка используемых объектов. */
+void Mark(word P)
+	if P >= nNODE then
+		return;
+	end
+
+	select
+		case Node[P].ID = iCALL:
+			if Dict[Node[P].Value].Used = 0 then
+				Dict[Node[P].Value].Used = 1;
+				if Dict[Node[P].Value].Sub = sFUNC then
+					Mark(Dict[Node[P].Value].pNode);
+				end
+			end
+
+		case Node[P].ID = iDATA:
+			select
+				case Node[P].pLeft >= nNODE:
+					if Dict[Node[P].Value].Used = 0 then
+						Dict [Node[P].Value].Used = 1;
+						Mark(Dict[Node[P].Value].pNode);
+					end
+
+				case Node[Node[P].pLeft].ID != iCALL:
+					if Dict[Node[P].Value].Used = 0 then
+						Dict [Node[P].Value].Used = 1;
+						Mark(Dict[Node[P].Value].pNode);
+					end
+			end
+
+		case Node[P].ID = iFUNC:
+			if Dict[Node[P].Value].Used = 0 then
+				Dict [Node[P].Value].Used = 1;
+				if Dict[Node[P].Value].Sub = sFUNC then
+					Mark(Dict[Node[P].Value].pNode);
+				end
+			end
+
+		case Node[P].ID = iSTRING:
+			Dict[Node[P].Value].Used = 1;
+
+	end
+
+	Mark(Node[P].pLeft );
+	Mark(Node[P].pRight);
+end
+
+
+/*****************************************************************************/
+
+
+// Pасстановка меток
+
+word     Enum(word P; word Flag; word @L)
+  if P>=nNODE then
+    return 0;
+  end
+
+  select
+    case Flag!=0:
+      word  S=0;
+      word  M=0;
+      while P<nNODE do
+        select
+          case Node[P].ID=iSELECT:
+            word  P1=Node[P].pLeft;
+            while P1<nNODE do
+              word P2=Node[P1].pLeft;
+
+              Enum(Node[P2].pLeft,0,@L);
+
+              Node[P2].Value=L;
+              inc  L;
+
+              word V=Enum(Node[P2].pRight,1,@L);
+              if M<S+V then
+                M=S+V;
+              end
+
+              Node[P1].Value=L;
+              inc  L;
+
+              P1=Node[P1].pRight;
+            end
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iSWITCH :
+            word  P1=Node[Node[P].pLeft].pRight;
+            while P1<nNODE do
+              Node[P1].Value=L;
+              inc  L;
+
+              word V=Enum(Node[Node[P1].pLeft].pRight,1,@L);
+              if M<S+V then
+                M=S+V;
+              end
+
+              P1=Node[P1].pRight;
+            end
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iWHILE:
+            word P1=Node[P] .pLeft;
+            word P2=Node[P1].pLeft;
+
+            Node[P2].Value=L;
+            inc  L;
+
+          //Enum(Node[P2].pLeft, 0,@L);
+            Enum(Node[P2].pRight,0,@L);
+
+            Node[P1].Value=L;
+            inc  L;
+
+            word V=Enum(Node[P1].pRight,1,@L);
+            if M<S+V then
+              M=S+V;
+            end
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iREPEAT:
+            word P1=Node[P].pLeft;
+
+            Node[P1].Value=L;
+            inc  L;
+
+            word V=Enum(Node[Node[P1].pRight].pLeft,1,@L);
+            if M<S+V then
+              M=S+V;
+            end
+
+            Enum(Node[Node[P1].pRight].pRight,0,@L);
+
+            Node[P].Value=L;
+            inc  L;
+
+          case Node[P].ID=iDEF:
+            word Size=4;
+            if Node[Node[P].pLeft].Value=0 then
+              Size=Dict[Node[P].Value].Value;
+            end
+
+            S=S+DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
+            if M<S then
+              M=S;
+            end
+        end
+
+        P=Node[P].pRight;
+      end
+
+      return M;
+
+    case Node[P].ID!=iASSIGN & Node[P].ID!=iINC & Node[P].ID!=iDEC:
+      Enum(Node[P].pLeft, 0,@L);
+
+      if (iOR<=Node[P].ID & Node[P].ID<=iAND) | (Node[P].ID=iEMPTY) then
+        Node[P].Value=L;
+        inc  L;
+      end
+
+      Enum(Node[P].pRight,0,@L);
+  end
+
+  return 0;
+end
+
+
+/*****************************************************************************/
+
+
+word AssignLabels_Data()
+
+	word D = 0;
+
+	word I = 0;
+	while I < nDict do
+		select
+		case Dict[I].Class = cDATA & Dict[I].Used != 0:
+			Dict[I].Value = D;
+			word Size = GetVarSize(Dict[I].pType, Dict[I].nPtr, Dict[I].pIndx, Dict[I].nIndx);
+			D = D + DefaultStaticAlign(Size);
+		end:select
+
+		inc I;
+	end
+
+
+	return D;
+end
+
+
+/*****************************************************************************/
+
+
+void AssignLabels_Struct()
+
+	word I=0;
+	while I < nDict do
+		select
+			case Dict[I].Class = cTYPE & Dict[I].Sub = sSTRUCT:
+				word D1 = 0;
+
+				word  K = Dict[I].pIndx;
+				while K < Dict[I].nIndx do
+					Parm[K].Value = D1;
+
+					word D2 = 4;
+					if Parm[K].nPtr = 0 then
+						D2 = Dict[Parm[K].pType].Value;
+					end
+
+					word  N = Parm[K].pIndx;
+					while N < Parm[K].nIndx do
+						D2 = Indx[N] * D2;
+						inc N;
+					end
+
+					D1 = D1 + D2;
+
+					inc K;
+				end
+
+				Dict[I].Value = D1;
+		end
+
+		inc I;
+	end
+
+end
+
+
+void AssignLabels_Func(word @L)
+
+  word I=0;
+  while I<nDict do
+    select
+      case Dict[I].Class=cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
+        Dict [I].Value=L;
+        inc   L;
+
+        Dict [I].Stack=Enum(Dict[I].pNode,1,@L);
+    end
+
+    inc I;
+  end
+
+end
+
+
+void AssignLabels_FuncExternal(word @L)
+
+  word I=0;
+  while I<nDict do
+    if Dict[I].Class=cLIB then
+      word  J=0;
+      while J<nDict do
+        if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+          if Dict[I].Used=0 then
+            Dict[I].Value=L;
+            Dict[I].Used =1;
+          end
+
+          Dict [J].Value=L;
+          inc   L;
+        end
+
+        inc J;
+      end
+    end
+
+    inc I;
+  end
+end
