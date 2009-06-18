@@ -1,18 +1,18 @@
 @echo off
 
 
-call :mk ..\bin\context.exe    ctx4win --win32-c out\ context_a.exe
+call :mk ..\bin\lcontext.exe    ctx4win --win32-c out\ lcontext_a.exe
 
-call :mk out\context_a.exe ctx4win       --win32-c out\ context_b.exe
-call :mk out\context_b.exe ctx4win       --win32-c out\ context_c.exe
-call :mk out\context_c.exe ctx4lnx       --linux   out\ context_c
+call :mk out\lcontext_a.exe ctx4win       --win32-c out\ lcontext_b.exe
+call :mk out\lcontext_b.exe ctx4win       --win32-c out\ lcontext_c.exe
+call :mk out\lcontext_c.exe ctx4lnx       --linux   out\ lcontext_c
 
-call :mk out\context_c.exe samples\z_t1  --win32-c out\ z_t1.exe
-call :mk out\context_c.exe samples\z_t2  --win32-w out\ z_t2.exe
-call :mk out\context_c.exe samples\z_t3  --win32-c out\ z_t3.exe
-call :mk out\context_c.exe samples\z_t4  --win32-c out\ z_t4.exe
+call :mk out\lcontext_c.exe samples\z_t1  --win32-c out\ z_t1.exe
+call :mk out\lcontext_c.exe samples\z_t2  --win32-w out\ z_t2.exe
+call :mk out\lcontext_c.exe samples\z_t3  --win32-c out\ z_t3.exe
+call :mk out\lcontext_c.exe samples\z_t4  --win32-c out\ z_t4.exe
 rem out\z_t4.exe > out\z_t4_1.ctx
-rem call :mk out\context_c.exe out\z_t4_1  --win32-c out\ z_t4_1.exe
+rem call :mk out\lcontext_c.exe out\z_t4_1  --win32-c out\ z_t4_1.exe
 
 goto :end
 
