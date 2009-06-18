@@ -1,7 +1,7 @@
 
 include "version.ctxi"
 
-include "strings.ctxi"
+include "include\hosted.ctxi"
 include "sys.ctxi"
 include "ctxmsg.ctxi"
 
@@ -211,6 +211,7 @@ end
 char@ InputFile;
 char@ OutputFile;
 char@ OutputTreeFile;
+char@ OutputIncludeListFile;
 
 char@ DefaultTarget;
 
@@ -238,7 +239,7 @@ void Translate()
 	select
 		case TargetFileFormat = tPE:
 			Dict[Find("ExitProcess")].Used = 1;
-	end
+	end:select
 
 	/* Назначаем метки и смещения. */
 
@@ -297,6 +298,12 @@ void Translate()
 		OpenOutput(@OutputTreeFile);
 		OutputFunctionTrees();
 		EmitInternalsInfo();
+		CloseOutput();
+	end:if
+
+	if @OutputIncludeListFile != NULL & strlen(@OutputIncludeListFile) != 0 then
+		OpenOutput(@OutputIncludeListFile);
+		OutputIncludeList();
 		CloseOutput();
 	end:if
 
@@ -363,6 +370,9 @@ void __main()
 		case strcmp(@arg, "--output-tree" ) = 0:
 			inc i;
 			@OutputTreeFile = @GetArg(i, @eFNAMEEXP);
+		case strcmp(@arg, "--output-include-list" ) = 0:
+			inc i;
+			@OutputIncludeListFile = @GetArg(i, @eFNAMEEXP);
 		case strcmp(@arg, "--file" ) = 0:
 			inc i;
 			@InputFile = @GetArg(i, @eFNAMEEXP);

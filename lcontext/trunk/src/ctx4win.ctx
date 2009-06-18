@@ -82,6 +82,9 @@ end
 
 begin
 
+	@fpath_p_dir_separator = "\";
+	@fpath_p_dir_separators = "/\";
+
 	@Argv = @ArgV;
 	Argc  = 0;
 

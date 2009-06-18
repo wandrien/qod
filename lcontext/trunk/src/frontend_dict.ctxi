@@ -37,7 +37,7 @@ void SetDictName(word D; char@ Name)
 	end
 
 	Dict[D].Name2    = SaveString0(@Name);
-	Dict[D].NameHash = strhash(@Name);
+	Dict[D].NameHash = str_hash(@Name);
 end
 
 /*****************************************************************************/
@@ -75,7 +75,7 @@ end
 	(Кроме объектов класса cFILE.)
 */
 word Find(char @Name)
-	word hash = strhash(@Name);
+	word hash = str_hash(@Name);
 	word P = 0;
 	while P < nDict do
 		if Dict[P].NameHash = hash & strcmp(@GetDictName(P), @Name) = 0 & Dict[P].Class != cFILE then
@@ -98,7 +98,7 @@ end
 	Поиск объекта с классом cFILE в словаре по имени.
 */
 word Find_cFILE(char @Name)
-	word hash = strhash(@Name);
+	word hash = str_hash(@Name);
 	word  P = 0;
 	while P < nDict do
 		if Dict[P].NameHash = hash & strcmp(@GetDictName(P), @Name) = 0 & Dict[P].Class = cFILE then

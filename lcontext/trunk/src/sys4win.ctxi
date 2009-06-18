@@ -29,11 +29,6 @@ BOOL     WriteFile     (HANDLE hFile;
 BOOL     CloseHandle   (HANDLE hObject)                external KERNEL32;
 
 
-char     separator()
-  return '\';
-end
-
-
 word     open(char @Name)
   return CreateFile(@Name,$80000000,0,NULL,3,$80,0);
 end

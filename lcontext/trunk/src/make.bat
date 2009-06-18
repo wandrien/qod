@@ -1,7 +1,7 @@
 @echo off
 
 
-call :mk ..\bin\context.exe    ctx4win --win32-c out\ context_a.exe
+call :mk1 ..\bin\context.exe    ctx4win --win32-c out\ context_a.exe
 
 call :mk out\context_a.exe ctx4win       --win32-c out\ context_b.exe
 call :mk out\context_b.exe ctx4win       --win32-c out\ context_c.exe
@@ -17,10 +17,17 @@ rem call :mk out\context_c.exe out\z_t4_1  --win32-c out\ z_t4_1.exe
 goto :end
 
 
-:mk
-rem echo.
+:mk1
 echo %2 ==^> %4%5
 %1    %2.ctx %3 --output %4.%5.asm --output-tree %4.%5.tree
+if not %ERRORLEVEL%==0 goto err
+fasm  %4.%5.asm %4%5 > nul
+if not %ERRORLEVEL%==0 goto err
+exit /b
+
+:mk
+echo %2 ==^> %4%5
+%1    %2.ctx %3 --output %4.%5.asm --output-tree %4.%5.tree --output-include-list %4.%5.includes
 if not %ERRORLEVEL%==0 goto err
 fasm  %4.%5.asm %4%5 > nul
 if not %ERRORLEVEL%==0 goto err

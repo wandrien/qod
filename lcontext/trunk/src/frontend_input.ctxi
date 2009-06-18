@@ -167,7 +167,14 @@ void IncludeFile(char @FileName)
 	if nFile >= nFILE then
 		Stop(@eNOMEMORY);
 	end
+	
+	char Buff[1024]; /* FIXME: заменить константу на макрос MAX_PATH */
+	strcpy(@Buff, @CurrentFileInfo.Name);
+	Buff[fpath_last_part(@Buff)] = #0;
+	fpath_cat(@Buff, @FileName);
+	@FileName = @Char[SaveString0(@Buff)];
 
+	
 	/* Сохраняем информацию о текущем файле. */
 	File[nFile].hText = hText;
 	File[nFile].nText = nText;

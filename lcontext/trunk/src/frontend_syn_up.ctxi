@@ -433,15 +433,21 @@ word DeclInclude(char @Buff)
 	Buff[P]=#0;
 	Next();
 
+	
+	char FileName[1024]; /* FIXME: заменить константу на макрос MAX_PATH */
+	strcpy(@FileName, @CurrentFileInfo.Name);
+	FileName[fpath_last_part(@FileName)] = #0;
+	fpath_cat(@FileName, @Buff);
+
 	/* Проверка, подключался ли уже указанный файл. */
-	P=Find_cFILE(@Buff);
-	if P<nDict then
+	P = Find_cFILE(@FileName);
+	if P < nDict then
 		return 0;
 	end:if
 
 	/* Заносим имя файла в словарь. */
 	word D = DictAlloc();
-	SetDictName(D, @Buff);
+	SetDictName(D, @FileName);
 	Dict[D].Class = cFILE;
 
 	IncludeFile(@Buff);

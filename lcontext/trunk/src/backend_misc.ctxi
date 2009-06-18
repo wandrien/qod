@@ -309,57 +309,14 @@ void OutputFunctionTrees()
 end
 
 
-
-word _Optimize1(word P)
-
-	if (P >= nNODE) then
-		return P;
-	end
-
-	word L = _Optimize1(Node[P].pLeft );
-	word R = _Optimize1(Node[P].pRight);
-
-	Node[P].pLeft  = L;
-	Node[P].pRight = R;
-
-	word Value = 0;
-
-	select
-		case Node[L].ID = iWORD & Node[R].ID = iWORD:
-			word LValue = Node[L].Value;
-			word RValue = Node[R].Value;
-			select 
-				case Node[P].ID = iSUB:
-					Value = LValue - RValue;
-				case Node[P].ID = iMUL:
-					Value = LValue * RValue;
-				case Node[P].ID = iADD:
-					Value = LValue + RValue;
-				case Node[P].ID = iDIV & RValue != 0:
-					Value = LValue / RValue;
-				default:
-					return P;
-			end
-		default:
-			return P;
-	end:select
-
-	L = P;
-	Node[P].Value = Value;
-
-	return P;
-end
-
-
-void Optimize1()
-
-	word I = 0;
-	while I < nDict do
+void OutputIncludeList()
+	word i = 0;
+	while i < nDict do
 		select
-			case Dict[I].Class = cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
-				Dict[I].pNode = _Optimize1(Dict[I].pNode);
-		end
-		inc I;
+		case Dict[i].Class = cFILE:
+			EmitStringNL(@GetDictName(i));
+		end:select
+		inc i;
 	end
 
 end

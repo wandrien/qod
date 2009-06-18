@@ -1,7 +1,7 @@
 $context2
 
-include "sys4win.ctxi"
-include "strings.ctxi"
+include "..\sys4win.ctxi"
+include "..\include\hosted.ctxi"
 
 
 begin

@@ -1,7 +1,3 @@
-char     separator()
-  return '/';
-end
-
 
 word     open(char @Name)
   inline $B8, $05, $00, $00, $00;           // mov     EAX,   5

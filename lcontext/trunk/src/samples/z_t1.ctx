@@ -54,4 +54,5 @@ begin
 		b = 0;
 	end
 
+	char CH = #0xFF;
 end

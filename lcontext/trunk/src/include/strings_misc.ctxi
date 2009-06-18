@@ -3,15 +3,15 @@
 
 char str2_return_buff[40];
 
-char    @str2(word N; word P)               // 11.02.2007
+char @str2(word Value; word Base)
 	char @Buff = @str2_return_buff;
 	char @Digit="0123456789ABCDEF";
 
 	word   I = 0;
-	while  N > 0 | I = 0 do
-		Buff[I] = Digit[N % P];
+	while  Value > 0 | I = 0 do
+		Buff[I] = Digit[Value % Base];
 		inc  I;
-		N = N / P;
+		Value = Value / Base;
 	end
 
 	Buff[I] = #0;
@@ -32,13 +32,13 @@ end
 
 /*****************************************************************************/
 
-char    @str(word N)
-	return @str2(N,10);
+char @str(word Value)
+	return @str2(Value, 10);
 end
 
 /*****************************************************************************/
 
-word strhash(char @S)
+word str_hash(char @S)
 	word  hash = 71;
 	word  i = 0;
 	while S[i] != #0 do

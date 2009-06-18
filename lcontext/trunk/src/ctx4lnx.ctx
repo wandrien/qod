@@ -5,6 +5,10 @@ include "ctx4all.ctxi"
 
 
 begin
+
+	@fpath_p_dir_separator = "/";
+	@fpath_p_dir_separators = "/";
+
 	word _Argc;
 	inline $8B, $45, $04; // mov     EAX,  [EBP+ 4]
 	inline $89, $45, $FC; // mov    [nArg], EAX

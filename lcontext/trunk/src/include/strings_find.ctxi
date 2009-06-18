@@ -1,0 +1,117 @@
+$comment DOCUMENTATION ********************************************************
+
+word str_skip_chars(char @S; char @Chars);
+Возвращает индекс первого символа строки @S, не равного ни одному символу строки @Chars.
+Если в строке @S нет ни одного такого символа, возвращает индекс завершающего 0-символа.
+
+word str_skip_wspace(char @S);
+Эквивалентно str_skip_chars(@S, " ~t~r~n").
+
+word str_find_chars_from(char @S; char @Chars; word P);
+Возвращает индекс первого символа строки @S, начиная с символа с индексом P, равного одному из символов строки @Chars.
+Если в строке @S нет ни одного такого символа, возвращает индекс завершающего 0-символа.
+
+word str_find_chars(char @S; char @Chars);
+Эквивалентно str_find_chars_from(@S, @Chars, 0).
+
+word str_rfind_chars_from(char @S; char @Chars; word P)
+Возвращает индекс последнего символа строки @S, не далее символа с индексом P, равного одному из символов строки @Chars.
+Если в строке @S нет ни одного такого символа, возвращает значение INDEX_INVALID.
+
+word str_rfind_chars(char @S; char @Chars);
+Эквивалентно str_rfind_chars_from(@S, @Chars, strlen(@S)).
+
+word str_has_char(char @S; char Char);
+Возвращает ненулевое значение, если в строке @S содержится символ Char и ноль в противном случае.
+
+***************************************************************** DOCUMENTATION
+
+word str_skip_chars(char @S; char @Chars)
+	word i = 0;
+	while S[i] != #0 do
+		word j = 0;
+		word found = 0;
+		while Chars[j] != #0 do
+			if S[i] = Chars[j] then
+				found = 1;
+				exit;
+			end:if
+			inc j;
+		end:while
+		if found = 0 then
+			exit;
+		end
+		inc i;
+	end:while
+	return i;
+end
+
+/*****************************************************************************/
+
+word str_skip_wspace(char @S)
+	return str_skip_chars(@S, " ~t~r~n");
+end
+
+/*****************************************************************************/
+
+word str_find_chars_from(char @S; char @Chars; word P)
+	word i = P;
+	while S[i] != #0 do
+		word j = 0;
+		while Chars[j] != #0 do
+			if S[i] = Chars[j] then
+				return i;
+			end:if
+			inc j;
+		end:while
+		inc i;
+	end:while
+	return i;
+end
+
+/*****************************************************************************/
+
+word str_find_chars(char @S; char @Chars)
+	return str_find_chars_from(@S, @Chars, 0);
+end
+
+/*****************************************************************************/
+
+word str_rfind_chars_from(char @S; char @Chars; word P)
+	word i = P;
+	do
+		word j = 0;
+		while Chars[j] != #0 do
+			if S[i] = Chars[j] then
+				return i;
+			end:if
+			inc j;
+		end:while
+		if i = 0 then
+			return INDEX_INVALID;
+		end:if
+		dec i;
+	end:do
+	return i;
+end
+
+/*****************************************************************************/
+
+word str_rfind_chars(char @S; char @Chars)
+	return str_rfind_chars_from(@S, @Chars, strlen(@S));
+end
+
+/*****************************************************************************/
+
+word str_has_char(char @S; char Char)
+	word i = 0;
+	while S[i] != #0 do
+		if S[i] = Char then
+			return 1;
+		end:if
+		inc i;
+	end:while
+	return 0;
+end
+
+/*****************************************************************************/
