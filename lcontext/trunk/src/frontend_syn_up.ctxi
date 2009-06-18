@@ -433,11 +433,7 @@ word DeclInclude(char @Buff)
 	Buff[P]=#0;
 	Next();
 
-	
-	char FileName[1024]; /* FIXME: заменить константу на макрос MAX_PATH */
-	strcpy(@FileName, @CurrentFileInfo.Name);
-	FileName[fpath_last_part(@FileName)] = #0;
-	fpath_cat(@FileName, @Buff);
+	char@ FileName = @ResolveFileName(@Buff);
 
 	/* Проверка, подключался ли уже указанный файл. */
 	P = Find_cFILE(@FileName);
@@ -450,7 +446,7 @@ word DeclInclude(char @Buff)
 	SetDictName(D, @FileName);
 	Dict[D].Class = cFILE;
 
-	IncludeFile(@Buff);
+	IncludeFile(@FileName);
 
 	return 0;
 end

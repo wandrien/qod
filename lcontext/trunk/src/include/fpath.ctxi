@@ -17,6 +17,10 @@ include "strings.ctxi"
 
 /*****************************************************************************/
 
+define MAX_FPATH 1024
+
+/*****************************************************************************/
+
 char@ fpath_p_dir_separator;  /* Основной используемый символ-разделитель элементов файлового пути (в виде 0-терминированной строки для удобства). */
 char@ fpath_p_dir_separators; /* Все распознаваемые нами символы-разделители. */
 
@@ -116,6 +120,27 @@ char @fpath_cat(char @Dst, @Src)
 	end:while
 	
 	strcat(@Dst, @Src);
+	return @Dst;
+end
+
+/*****************************************************************************/
+
+char @fpathn_cat(char @Dst, @Src; word Size)
+
+	/* Присобачиваем разделитель, если его еще нет в конце строки @Dst. */
+	word L = strlen(@Dst);
+	if L > 1 then
+		if str_has_char(@fpath_p_dir_separators, Dst[L - 1]) = 0 then
+			strn_cat(@Dst, @fpath_p_dir_separator, Size);
+		end:if
+	end:if
+
+	/* Пропускаем лишние разделители в начале строки @Src. */
+	while str_has_char(@fpath_p_dir_separators, Src[0]) != 0 do
+		@Src = @Src[1];
+	end:while
+	
+	strn_cat(@Dst, @Src, Size);
 	return @Dst;
 end
 

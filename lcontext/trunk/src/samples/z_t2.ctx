@@ -1,7 +1,7 @@
 $context2
 
-include "..\windows.ctxi"
-include "..\include\hosted.ctxi"
+include "../windows.ctxi"
+include "../include/hosted.ctxi"
 
 
 define  @Class "Hello"

@@ -41,6 +41,32 @@ end
 
 /*****************************************************************************/
 
+char@ ResolveFileName(char@ Buff)
+	char FileName[MAX_FPATH];
+	
+	strn_cpy(@FileName, @CurrentFileInfo.Name, MAX_FPATH);
+	FileName[fpath_last_part(@FileName)] = #0;
+	
+	char @S = @Buff;
+	do
+		word Pos = str_find_chars(@S, "/\");
+		if Pos != 0 then
+			char Fragment[MAX_FPATH];
+			strn_cpy(@Fragment, @S, MAX_FPATH);
+			Fragment[Pos] = #0;
+			fpathn_cat(@FileName, @Fragment, MAX_FPATH);
+			if S[Pos] = #0 then
+				exit;
+			end:if
+		end:if
+		@S = @S[Pos + 1];
+	end:do
+	
+	return @Char[SaveString0(@FileName)];
+end
+
+/*****************************************************************************/
+
 void function __Statements(word @P; char @Buff; char @End1; char @End2; char @End3)
 __Statements @_Statements;
 
