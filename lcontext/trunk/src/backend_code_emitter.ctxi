@@ -1175,49 +1175,51 @@ word Code(word P; word F; word T; word M)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-    case iRETURN:
-      if Node[P].pLeft<nNODE then
-      //fEAX=0;
-      //Code(Node[P].pLeft,0,0,0);
+	case iRETURN:
+    
+		if Node[P].pLeft<nNODE then
+			fEAX=0;
+			word pType=Code(Node[P].pLeft,0,0,0);
+			word  Size=4;
+			if pType<nDICT then
+				Size=Dict[pType].Value;
+			end:if
 
-      //10.12.2005
-        fEAX=0;
-        word pType=Code(Node[P].pLeft,0,0,0);
-        word  Size=4;
-        if pType<nDICT then
-          Size=Dict[pType].Value;
-        end
+			if Size!=1 & Size!=4 then
+				StopInternal();
+			end:if
+		end:if
 
-        if Size!=1 & Size!=4 then
-          StopInternal();
-        end
-      end
+		if Dict[pFunc].Sub = sMAIN then
+			select
+			case TargetFileFormat = tPE:
+				Emit(0,"xor     EAX,  EAX");
+				Emit(0,"push    EAX");
+				Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
 
-      Emit(0,"mov     ESP,  EBP");
-      Emit(0,"pop     EBP");
+			case TargetFileFormat = tELF:
+				Emit(0,"mov     EAX,  1");
+				Emit(0,"xor     EBX,  EBX");
+				Emit(0,"int     80H");
 
-      if Dict[pFunc].Sub=sMAIN then
-      //Emit(0,"xor     EAX,  EAX");
-      //Emit(0,"push    EAX");
-      //Emit(0,"call    ExitProcess");                                                                  // TASM
-      //Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]")); // FASM
-        select
-          case TargetFileFormat = tPE:
-            Emit(0,"xor     EAX,  EAX");
-            Emit(0,"push    EAX");
-            Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
+			default:
+				StopInternal();
+			end:select
+		else
+		
+			if CompactFunctionEnterLeave != 0 then
+				Emit(0,"leave");
+			else
+				Emit(0,"mov     ESP,  EBP");
+				Emit(0,"pop     EBP");
+			end:if
 
-          case TargetFileFormat = tELF:
-            Emit(0,"mov     EAX,  1");
-            Emit(0,"xor     EBX,  EBX");
-            Emit(0,"int     80H");
-
-          default:
-            StopInternal();
-        end
-      else
-        Emit(0,@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
-      end
+			if pSize > 0 then
+				Emit(0,@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
+			else
+				Emit(0,"ret");
+			end:if
+		end:if
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1478,12 +1480,16 @@ word EmitFunctions(char @Buff)
 
 				PHO_InvalidateRegs();
 
-				Emit(0,"push    EBP");
-				Emit(0,"mov     EBP,  ESP");
+				if CompactFunctionEnterLeave != 0 & Dict[I].Stack > 0 then
+					Emit(0,@strcat(@strcat(@strcpy(@Buff,"enter   "),@str(Dict[I].Stack)), ", 0"));
+				else
+					Emit(0,"push    EBP");
+					Emit(0,"mov     EBP,  ESP");
 
-				if Dict[I].Stack > 0 then
-					Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Dict[I].Stack)));
-				end
+					if Dict[I].Stack > 0 then
+						Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Dict[I].Stack)));
+					end:if
+				end:if
 
 				if Dict[I].Sub = sMAIN then
 					word  J = 0;
@@ -1496,11 +1502,11 @@ word EmitFunctions(char @Buff)
 							 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) = 0 then
 								Code(Dict[J].pNode, 0, 0, 0);
 							end:if
-						end
+						end:if
 
 						inc J;
-					end
-				end
+					end:while
+				end:if
 
 				pParm =nParm;
 				pFunc = I;
