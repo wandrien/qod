@@ -1,6 +1,12 @@
+include "include/freestanding.ctxi"
+
 synonym  HANDLE  word
 synonym  DWORD   word
 synonym  BOOL    word
+
+define FILE_SHARE_DELETE 0x00000004	
+define FILE_SHARE_READ   0x00000001	
+define FILE_SHARE_WRITE  0x00000002
 
 char    @GetCommandLine()                              external KERNEL32.GetCommandLineA;
 
@@ -30,42 +36,35 @@ BOOL     CloseHandle   (HANDLE hObject)                external KERNEL32;
 
 
 word     open(char @Name)
-  return CreateFile(@Name,$80000000,0,NULL,3,$80,0);
+	return CreateFile(@Name,$80000000,FILE_SHARE_READ,NULL,3,$80,0);
 end
 
 
 word     create(char @Name)
-  return CreateFile(@Name,$40000000,0,NULL,2,$80,0);
+	return CreateFile(@Name,$40000000,0,NULL,2,$80,0);
 end
 
 
 word     read(word F; void @Buff; word N)
-  ReadFile(F,@Buff,N,@N,NULL);
-  return N;
+	ReadFile(F,@Buff,N,@N,NULL);
+	return N;
 end
 
 
 word     write(word F; void @Buff; word N)
-  WriteFile(F,@Buff,N,@N,NULL);
-  return N;
+	WriteFile(F,@Buff,N,@N,NULL);
+	return N;
 end
 
 
 void     close(word F)
-  CloseHandle(F);
+	CloseHandle(F);
 end
 
 
-void     puts(char @St)
-//word   N;
-//WriteFile(GetStdHandle($FFFFFFF5),@St,strlen(@St),@N,NULL);
-
-  word   N=0;
-  while  St[N]!=#0 do
-    inc  N;
-  end
-
-  WriteFile(GetStdHandle($FFFFFFF5),@St,N,@N,NULL);
+void     puts(char @S)
+	word N;
+	WriteFile(GetStdHandle($FFFFFFF5),@S,strlen(@S),@N,NULL);
 end
 
 

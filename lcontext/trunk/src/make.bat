@@ -12,7 +12,7 @@ call :mk out\lcontext_c.exe samples\z_t2  --win32-w out\ z_t2.exe
 call :mk out\lcontext_c.exe samples\z_t3  --win32-c out\ z_t3.exe
 call :mk out\lcontext_c.exe samples\z_t4  --win32-c out\ z_t4.exe
 rem out\z_t4.exe > out\z_t4_1.ctx
-rem call :mk out\lcontext_c.exe out\z_t4_1  --win32-c out\ z_t4_1.exe
+rem call :mk out\lcontext_c.exe out\z_t4_1    --win32-c out\ z_t4_1.exe
 
 goto :end
 
