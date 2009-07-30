@@ -628,6 +628,14 @@ word Ctrl(char @Buff)
 
 		case strcmp(@Buff,"null")=0:
 			Node[P1].ID   =iEMPTY;
+			
+			if c_style_semicolons != 0 then
+				Scan(@Buff);
+				if strcmp(@Buff,";")!=0 then
+					//Stop(@eSEMICOLONEXP);
+					SkipFinalScan = 1;
+				end:if
+			end:if
 
 		default:
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
