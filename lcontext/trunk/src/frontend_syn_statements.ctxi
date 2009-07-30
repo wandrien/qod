@@ -5,6 +5,18 @@
 
 /*****************************************************************************/
 
+void MatchCStyleSemicolon(char @Buff)
+	if c_style_semicolons != 0 then
+		Scan(@Buff);
+		if strcmp(@Buff,";")!=0 then
+			Stop(@eSEMICOLONEXP);
+		end
+	end:if
+end
+
+
+/*****************************************************************************/
+
 word EndOf(char @Buff, @A1, @A2)
 
 	word SkipScan = 0;
@@ -367,13 +379,7 @@ void Statement_LOOP(char @Buff; word @P1; word @SkipFinalScan)
 			StopInternal();
 	end
 
-	if c_style_semicolons != 0 then
-		Scan(@Buff);
-		if strcmp(@Buff,";")!=0 then
-			Stop(@eSEMICOLONEXP);
-		end
-	end:if
-
+	MatchCStyleSemicolon(@Buff);
 end
 
 /*****************************************************************************/
@@ -387,13 +393,7 @@ void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].ID   =iEXIT;
 	Node[P1].Value=pLoop;
 
-	if c_style_semicolons != 0 then
-		Scan(@Buff);
-		if strcmp(@Buff,";")!=0 then
-			Stop(@eSEMICOLONEXP);
-		end
-	end:if
-
+	MatchCStyleSemicolon(@Buff);
 end
 
 /*****************************************************************************/
@@ -628,13 +628,7 @@ word Ctrl(char @Buff)
 
 		case strcmp(@Buff,"null")=0:
 			Node[P1].ID   =iEMPTY;
-			
-			if c_style_semicolons != 0 then
-				Scan(@Buff);
-				if strcmp(@Buff,";")!=0 then
-					Stop(@eSEMICOLONEXP);
-				end:if
-			end:if
+			MatchCStyleSemicolon(@Buff);
 
 		default:
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
