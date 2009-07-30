@@ -548,7 +548,7 @@ word Code1(word P; word F; word T; word M)
 					Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
 				//TODO Пpовеpить!
 				case ID=iCALL:
-					null
+					null;
 				default:
 					StopInternal();
 				end:select
@@ -636,13 +636,13 @@ word Code(word P; word F; word T; word M)
 		word pType = Code(Node[Node[P].pLeft].pLeft, 0, 0, 0);
 		select
 		case Node[P].Value=st_char & pType=st_byte:
-			null
+			null;
 		case Node[P].Value=st_char & pType=st_word:
-			null
+			null;
 		case Node[P].Value=st_char & pType=st_int:
-			null
+			null;
 		case Node[P].Value=st_byte & pType=st_char:
-			null
+			null;
 		case Node[P].Value=st_word & pType=st_char:
 			Emit(0, @CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case Node[P].Value=st_word & pType=st_byte:
@@ -652,7 +652,7 @@ word Code(word P; word F; word T; word M)
 		case Node[P].Value=st_int & pType=st_byte:
 			Emit(0, @CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case Node[P].Value=st_int & pType=st_word:
-			null
+			null;
 		default:
 			StopInternal();
 		end
@@ -1430,7 +1430,7 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iEMPTY:
-		null
+		null;
 
 	default:
 		StopInternal();

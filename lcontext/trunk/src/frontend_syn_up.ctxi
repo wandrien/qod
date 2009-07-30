@@ -162,7 +162,7 @@ void DeclFunc1(char @Buff; word a)
 		case strcmp(@Buff,"external")=0: /* Внешняя функция. */
 			select
 				case TargetFileFormat = tPE:
-						null
+						null;
 				default:
 					Stop(@eNOTALLOWED);
 			end

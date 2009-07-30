@@ -43,11 +43,11 @@ begin
 	case 4:
 		b = 0;
 	case 5:
-		null
+		null;
 	case 6:
-		null
+		null;
 	case 7:
-		null
+		null;
 	case 8:
 		b = 1;
 	default:

@@ -632,8 +632,7 @@ word Ctrl(char @Buff)
 			if c_style_semicolons != 0 then
 				Scan(@Buff);
 				if strcmp(@Buff,";")!=0 then
-					//Stop(@eSEMICOLONEXP);
-					SkipFinalScan = 1;
+					Stop(@eSEMICOLONEXP);
 				end:if
 			end:if
 
