@@ -1,4 +1,4 @@
-define @eWRONGPARM       "Неизвестный паpаметp"                        // Wrong parameter
+define @eWRONGPARM       "Неизвестный паpаметp"                        // Wrong зфкфьуеук
 define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
 define @eNOFILE          "Невозможно откpыть файл"                     // Can't open file
 define @eINCLUDE         "Некоppектная вставка файла"                  // Incorrect file include
@@ -42,6 +42,7 @@ define @eINTERNAL        "Внутpенняя ошибка"                           // Intern
 define @eWRITEERR        "Ошибка записи"                               // Write error
 define @eFNAMEEXP        "Пропушено имя файла"                         // File name expected
 define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote expected
+define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param expected
 define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
 
@@ -69,4 +70,14 @@ define @msgUSAGE
 "~r~n"
 "--output-include-list <filename>~r~n"
 "Если указана эта опция, в файл <filename> будет записан список всех исходных файлов, которые подключались в ходе компиляции.~r~n"
+"~r~n"
+"--show-parse-progress~r~n"
+"Если указана эта опция, по мере синтаксического разбора файла в консоль будет выводиться номер текущей анализируемой строки.~r~n"
+"~r~n"
+"--optimize <mode>~r~n"
+"Если указана эта опция, будет использован соответствующий режим оптимизации:~r~n"
+"  speed       - оптимизация по скорости выполнения~r~n"
+"  size        - оптимизация по размеру~r~n"
+"  none        - не проводить оптимизацию~r~n"
+"По умолчанию используется режим speed.~r~n"
 "~r~n"

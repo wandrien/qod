@@ -353,9 +353,29 @@ end
 
 /*****************************************************************************/
 
+void SetupOptimization(char@ Mode)
+	select
+	case str_eq(@Mode, "size") != 0:
+		RODataMergeMode = 2;
+		PHOptimization  = 1;
+		CompactFunctionEnterLeave = 1;
+	case str_eq(@Mode, "speed") != 0:
+		RODataMergeMode = 2;
+		PHOptimization  = 1;
+		CompactFunctionEnterLeave = 1;
+	default:
+		RODataMergeMode = 0;
+		PHOptimization  = 0;
+		CompactFunctionEnterLeave = 0;
+	end:select
+end
+
+/*****************************************************************************/
+
 void __main()
 
 	SetupTarget(@DefaultTarget);
+	SetupOptimization("speed");
 
 	word i = 1;
 	while i < Argc do
@@ -379,6 +399,10 @@ void __main()
 			@OutputIncludeListFile = @GetArgNext(@i, @eFNAMEEXP);
 		case strcmp(@arg, "--file" ) = 0:
 			@InputFile = @GetArgNext(@i, @eFNAMEEXP);
+		case strcmp(@arg, "--show-parse-progress" ) = 0:
+			show_parse_progress = 1;
+		case strcmp(@arg, "--optimize" ) = 0:
+			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
 		default:
 			@InputFile = @GetArg(i, @eFNAMEEXP);
 		end:select
