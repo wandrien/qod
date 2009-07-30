@@ -36,73 +36,73 @@ end
 
 void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 
-      Node [P1].ID=iSELECT;
+	Node [P1].ID=iSELECT;
 
-      char @End1="if";
-      char @Case="";
-      char @Then="then";
-      char @Else="else";
-      if strcmp(@Buff,"select")=0 then
-        @End1="select";
-        @Case="case";
-        @Then=":";
-        @Else="default";
+	char @End1="if";
+	char @Case="";
+	char @Then="then";
+	char @Else="else";
+	if strcmp(@Buff,"select")=0 then
+		@End1="select";
+		@Case="case";
+		@Then=":";
+		@Else="default";
 
-        if strcmp(@Scan(@Buff),"case")!=0 then
-          Stop(@eCASEEXP);
-        end
-      else
-        strcpy(@Buff,@Case);
-      end
+		if strcmp(@Scan(@Buff),"case")!=0 then
+			Stop(@eCASEEXP);
+		end:if
+	else
+		strcpy(@Buff,@Case);
+	end:if
 
-      word @P2=@Node[P1].pLeft;
-      while strcmp(@Buff,"end")!=0 do
-        word  P3=Peek();
-        word  P4=Peek();
-        Node [P3]. ID  =iEMPTY;
-        Node [P3].pLeft= P4;
+	word @P2=@Node[P1].pLeft;
+	while strcmp(@Buff,"end")!=0 do
+		word  P3=Peek();
+		word  P4=Peek();
+		Node [P3]. ID  =iEMPTY;
+		Node [P3].pLeft= P4;
 
-        Node [P4]. ID  =iEMPTY;
+		Node [P4]. ID  =iEMPTY;
 
-        if strcmp(@Buff,@Case)=0 then
-          word pType, nPtr;
-          Node [P4].pLeft= Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		if strcmp(@Buff,@Case)=0 then
+			word pType, nPtr;
+			Node [P4].pLeft= Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
-          if strcmp(@Buff,@Then)!=0 then
-            Stop(@eTHENEXP);
-          end
+			if strcmp(@Buff,@Then)!=0 then
+				Stop(@eTHENEXP);
+			end:if
 
-          if pType<nDICT then
-            Stop(@eTYPE);
-          end
-        else
-          if strcmp(@Else,"default")=0 then
-            if strcmp(@Scan(@Buff),":")!=0 then
-              Stop(@eCOLONEXP);
-            end
-          end
+			if pType<nDICT then
+				Stop(@eTYPE);
+			end:if
+		else
+			if strcmp(@Else,"default")=0 then
+				if strcmp(@Scan(@Buff),":")!=0 then
+					Stop(@eCOLONEXP);
+				end:if
+			end:if
 
-          @Case="";
-          @Else="";
-        end
+			@Case="";
+			@Else="";
+		end:if
 
-        word @P5=@Node[P4].pRight;
+		word @P5=@Node[P4].pRight;
 
-        word nParm1=nParm;
-        word nIndx1=nIndx;
-        word  Flag =    0;
+		word nParm1=nParm;
+		word nIndx1=nIndx;
+		word  Flag =    0;
 
-        Scan(@Buff);
-        _Statements(@P5, @Buff, @Case, @Else, "end");
+		Scan(@Buff);
+		_Statements(@P5, @Buff, @Case, @Else, "end");
 
-        nIndx=nIndx1;
-        nParm=nParm1;
+		nIndx=nIndx1;
+		nParm=nParm1;
 
-        P2 = P3;
-        @P2=@Node[P3].pRight;
-      end
+		P2 = P3;
+		@P2=@Node[P3].pRight;
+	end:while
 
-      SkipFinalScan = EndOf(@Buff, @End1, NULL);
+	SkipFinalScan = EndOf(@Buff, @End1, NULL);
 
 end
 
@@ -219,7 +219,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 		P3 = P4;
 		@P3=@Node[P4].pRight;
-      end:while
+	end:while
 
 	if strcmp(@Buff,"default") = 0 then
 		if strcmp(@Scan(@Buff),":") != 0 then
@@ -250,7 +250,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		P3 = P4;
 	end:if
 
-      SkipFinalScan = EndOf(@Buff, "switch", NULL);
+	SkipFinalScan = EndOf(@Buff, "switch", NULL);
 
 end
 
@@ -258,93 +258,92 @@ end
 
 void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
-      word  P2=Peek();
-      word  P3=Peek();
-      Node [P1].ID    =iWHILE;
-      Node [P1].pLeft = P2;
+	word  P2=Peek();
+	word  P3=Peek();
+	Node [P1].ID    =iWHILE;
+	Node [P1].pLeft = P2;
 
-      Node [P2].ID    =iEMPTY;
-      Node [P2].pLeft = P3;
+	Node [P2].ID    =iEMPTY;
+	Node [P2].pLeft = P3;
 
-      Node [P3].ID    =iEMPTY;
+	Node [P3].ID    =iEMPTY;
 
 	char @End2 = NULL;
 
-      if strcmp(@Buff,"while")=0 then
-        @End2 = "while";
-        word pType, nPtr;
-      //Node[P3].pLeft =Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
-        Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	if strcmp(@Buff,"while")=0 then
+		@End2 = "while";
+		word pType, nPtr;
+		//Node[P3].pLeft =Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
-        if strcmp(@Buff,"do")!=0 then
-          Stop(@eDOEXP);
-        end
+		if strcmp(@Buff,"do")!=0 then
+			Stop(@eDOEXP);
+		end
 
-        if pType<nDICT then
-          Stop(@eTYPE);
-        end
-      end
+		if pType<nDICT then
+			Stop(@eTYPE);
+		end
+	end:if
 
-      word @P4=@Node[P2].pRight;
+	word @P4=@Node[P2].pRight;
 
-      word nParm1=nParm;
-      word nIndx1=nIndx;
-      word pLoop1=pLoop;
-      word  Flag =    0;
+	word nParm1=nParm;
+	word nIndx1=nIndx;
+	word pLoop1=pLoop;
+	word  Flag =    0;
 
-      pLoop=P1;
+	pLoop=P1;
 
-      Scan(@Buff);
+	Scan(@Buff);
 	_Statements(@P4, @Buff, "end", NULL, NULL);
 
 	SkipFinalScan = EndOf(@Buff, "do", @End2);
 
-      pLoop=pLoop1;
-      nIndx=nIndx1;
-      nParm=nParm1;
-
+	pLoop=pLoop1;
+	nIndx=nIndx1;
+	nParm=nParm1;
 
 end
 
 /*****************************************************************************/
 
 void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
-      word  P2=Peek();
-      word  P3=Peek();
-      Node [P1].ID    =iREPEAT;
-      Node [P1].pLeft = P2;
+	word P2=Peek();
+	word P3=Peek();
+	Node[P1].ID    =iREPEAT;
+	Node[P1].pLeft = P2;
 
-      Node [P2].ID    =iEMPTY;
-      Node [P2].pRight= P3;
+	Node[P2].ID    =iEMPTY;
+	Node[P2].pRight= P3;
 
-      Node [P3].ID    =iEMPTY;
+	Node[P3].ID    =iEMPTY;
 
-      word @P4   =@Node[P3].pLeft;
+	word @P4   =@Node[P3].pLeft;
 
-      word nParm1=nParm;
-      word nIndx1=nIndx;
-      word pLoop1=pLoop;
-      word  Flag =    0;
+	word nParm1=nParm;
+	word nIndx1=nIndx;
+	word pLoop1=pLoop;
+	word  Flag =    0;
 
-      pLoop=P1;
+	pLoop=P1;
 
-      Scan(@Buff);
+	Scan(@Buff);
 	_Statements(@P4, @Buff, "until", NULL, NULL);
 
-      word pType, nPtr;
-      Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	word pType, nPtr;
+	Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
-      if strcmp(@Buff,";")!=0 then
-        Stop(@eSEMICOLONEXP);
-      end
+	if strcmp(@Buff,";")!=0 then
+		Stop(@eSEMICOLONEXP);
+	end
 
-      if pType<nDICT then
-        Stop(@eTYPE);
-      end
+	if pType<nDICT then
+		Stop(@eTYPE);
+	end
 
-      pLoop=pLoop1;
-      nIndx=nIndx1;
-      nParm=nParm1;
+	pLoop=pLoop1;
+	nIndx=nIndx1;
+	nParm=nParm1;
 end
 
 /*****************************************************************************/
@@ -401,22 +400,22 @@ end
 
 void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 
-      if strcmp(@Buff,"inc")=0 then
-        Node[P1].ID =iINC;
-      else
-        Node[P1].ID =iDEC;
-      end
+	if strcmp(@Buff,"inc")=0 then
+		Node[P1].ID =iINC;
+	else
+		Node[P1].ID =iDEC;
+	end:if
 
-      word pType, nPtr;
-      Node[P1].pLeft= Expr(pINC,@pType,@nPtr,@Scan(@Buff));
+	word pType, nPtr;
+	Node[P1].pLeft= Expr(pINC,@pType,@nPtr,@Scan(@Buff));
 
-      if strcmp(@Buff,";")!=0 then
-        Stop(@eSEMICOLONEXP);
-      end
+	if strcmp(@Buff,";")!=0 then
+		Stop(@eSEMICOLONEXP);
+	end
 
-      if (pType!=st_byte & pType!=st_word & pType!=st_int) | nPtr!=0 then
-        Stop(@eTYPE);
-      end
+	if (pType!=st_byte & pType!=st_word & pType!=st_int) | nPtr!=0 then
+		Stop(@eTYPE);
+	end
 
 end
 
@@ -453,23 +452,23 @@ end
 
 void Statement_INLINE(char @Buff; word @P1; word @SkipFinalScan)
 
-      word Code=val(@Scan(@Buff));
-      if   Code>255 then
-        Stop(@eOVERFLOW);
-      end
+	word Code=val(@Scan(@Buff));
+	if Code>255 then
+		Stop(@eOVERFLOW);
+	end
 
-      Node[P1].ID   =iINLINE;
-      Node[P1].Value= Code;
+	Node[P1].ID   =iINLINE;
+	Node[P1].Value= Code;
 
-      if strcmp(@Scan(@Buff),",")=0 then
-        strcpy (@Buff,"inline");
-        SkipFinalScan = 1;
-        return;
-      end
+	if strcmp(@Scan(@Buff),",")=0 then
+		strcpy (@Buff,"inline");
+		SkipFinalScan = 1;
+		return;
+	end
 
-      if strcmp(@Buff,";")!=0 then
-        Stop(@eSEMICOLONEXP);
-      end
+	if strcmp(@Buff,";")!=0 then
+		Stop(@eSEMICOLONEXP);
+	end
 
 end
 
@@ -477,104 +476,104 @@ end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
-      word pType1, nPtr1;
-      word P2=Expr(pLVALUE,@pType1,@nPtr1,@Buff);
-      if P2<nNODE then
-        word P3=Peek();
-        Node[P1].ID    =iASSIGN;
-        Node[P1].pLeft = P3;
+	word pType1, nPtr1;
+	word P2=Expr(pLVALUE,@pType1,@nPtr1,@Buff);
+	if P2<nNODE then
+		word P3=Peek();
+		Node[P1].ID    =iASSIGN;
+		Node[P1].pLeft = P3;
 
-        Node[P3].ID    =iEMPTY;
-        Node[P3].pLeft = P2;
+		Node[P3].ID    =iEMPTY;
+		Node[P3].pLeft = P2;
 
-        if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-          word pType2, nPtr2;
-          Node[P3].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
-          Test(pType1,nPtr1,pType2,nPtr2,@Node[P3].pRight);
-        end
-      else
-        word pType=Find(@Buff);
-        if pType>=nDict | Dict[pType].Class!=cTYPE then
-          Stop(@eUNDEFINED);
-        end:if
+		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+			word pType2, nPtr2;
+			Node[P3].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			Test(pType1,nPtr1,pType2,nPtr2,@Node[P3].pRight);
+		end:if
+	else
+		word pType=Find(@Buff);
+		if pType>=nDict | Dict[pType].Class!=cTYPE then
+			Stop(@eUNDEFINED);
+		end:if
 
 //do
 
-        word  nPtr=ReadPtrs(@Scan(@Buff));
-        if pType=st_void & nPtr<1 then
-          Stop(@eNOVOID);
-        end:if
+		word  nPtr=ReadPtrs(@Scan(@Buff));
+		if pType=st_void & nPtr<1 then
+			Stop(@eNOVOID);
+		end:if
 
-        if Dict[pType].Sub=sHEADER & nPtr<1 then
-          Stop(@eNOVAL);
-        end:if
+		if Dict[pType].Sub=sHEADER & nPtr<1 then
+			Stop(@eNOVAL);
+		end:if
 
-        word I=pParm;
-        while I<nParm do
-          if strcmp(@Parm[I].Name,@Buff)=0 then
-            Stop(@eDUPLICATE);
-          end:if
+		word I=pParm;
+		while I<nParm do
+			if strcmp(@Parm[I].Name,@Buff)=0 then
+				Stop(@eDUPLICATE);
+			end:if
 
-          inc I;
-        end:while
+			inc I;
+		end:while
 
-        if nParm>=nPARM then
-          Stop(@eNOMEMORY);
-        end:if
+		if nParm>=nPARM then
+			Stop(@eNOMEMORY);
+		end:if
 
-        Parm[nParm].pType=pType;               Copy(@Parm[nParm].Name,@Buff,0);
-        Parm[nParm].nPtr =nPtr;
-        Parm[nParm].pIndx=nIndx;
-        Parm[nParm].nIndx= Tabl(@Scan(@Buff));
+		Parm[nParm].pType=pType;               Copy(@Parm[nParm].Name,@Buff,0);
+		Parm[nParm].nPtr =nPtr;
+		Parm[nParm].pIndx=nIndx;
+		Parm[nParm].nIndx= Tabl(@Scan(@Buff));
 
-        word  N=1;
-        word  K=Parm[nParm].pIndx;
-        while K<Parm[nParm].nIndx do
-          N = Indx[K]*N;
-          inc K;
-        end:while
+		word  N=1;
+		word  K=Parm[nParm].pIndx;
+		while K<Parm[nParm].nIndx do
+			N = Indx[K]*N;
+			inc K;
+		end:while
 
-        word P3=Peek();
-        Node[P1].ID   =iDEF;
-        Node[P1].Value=pType;
-        Node[P1].pLeft =P3;
+		word P3=Peek();
+		Node[P1].ID   =iDEF;
+		Node[P1].Value=pType;
+		Node[P1].pLeft =P3;
 
-        word P4=Peek();
-        Node[P3].ID    =iEMPTY;
-        Node[P3].Value =nPtr;
-        Node[P3].pLeft = P4;
+		word P4=Peek();
+		Node[P3].ID    =iEMPTY;
+		Node[P3].Value =nPtr;
+		Node[P3].pLeft = P4;
 
-        Node[P4].ID    =iEMPTY;
-        Node[P4].Value = N;
+		Node[P4].ID    =iEMPTY;
+		Node[P4].Value = N;
 
-        if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-          if Parm[nParm].pIndx<Parm[nParm].nIndx then
-            Stop(@eNOTAVAIL);
-          end:if
+		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+			if Parm[nParm].pIndx<Parm[nParm].nIndx then
+				Stop(@eNOTAVAIL);
+			end:if
 
-          word P5=Peek();
-          Node[P4].ID    =iASSIGN;
-          Node[P4].pLeft = P5;
+			word P5=Peek();
+			Node[P4].ID    =iASSIGN;
+			Node[P4].pLeft = P5;
 
-          word pType2, nPtr2;
-          word P6=Peek();
-          Node[P5].ID    =iEMPTY;
-          Node[P5].pLeft = P6;
-          Node[P5].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			word pType2, nPtr2;
+			word P6=Peek();
+			Node[P5].ID    =iEMPTY;
+			Node[P5].pLeft = P6;
+			Node[P5].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
 
-          Node[P6].ID    =iLOCAL;
-          Node[P6].Value =nParm-pParm;
+			Node[P6].ID    =iLOCAL;
+			Node[P6].Value =nParm-pParm;
 
-          Test(pType,nPtr,pType2,nPtr2,@Node[P5].pRight);
-        end:if
+			Test(pType,nPtr,pType2,nPtr2,@Node[P5].pRight);
+		end:if
 
-        inc nParm;
+		inc nParm;
 ///*
-        if strcmp(@Buff,",")=0 then
-          strcpy(@Buff,@GetDictName(pType));
-          SkipFinalScan = 1;
-          return;
-        end:if
+		if strcmp(@Buff,",")=0 then
+			strcpy(@Buff,@GetDictName(pType));
+			SkipFinalScan = 1;
+			return;
+		end:if
 //*/
 
 //        if strcmp(@Buff,",") != 0 then
@@ -583,11 +582,11 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 //end:do
 
 
-      end:if
+	end:if
 
-      if strcmp(@Buff,";")!=0 then
-        Stop(@eSEMICOLONEXP);
-      end:if
+	if strcmp(@Buff,";")!=0 then
+		Stop(@eSEMICOLONEXP);
+	end:if
 
 end
 
