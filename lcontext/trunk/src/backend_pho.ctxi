@@ -164,8 +164,21 @@ char@ PHO_Optimize(char @Inst)
 		return @Inst;
 	end:if
 
-	/* Для инструкции push ничего не делаем. */
-	if str_has_prefix(@Inst, "push") != 0 then
+	/* Инструкции, не изменяющие сожержимое регистров. */
+	if str_has_prefix(@Inst, "push") != 0
+ 	 | str_has_prefix(@Inst, "jl"  ) != 0 
+ 	 | str_has_prefix(@Inst, "jle" ) != 0 
+ 	 | str_has_prefix(@Inst, "je"  ) != 0 
+ 	 | str_has_prefix(@Inst, "jne" ) != 0 
+ 	 | str_has_prefix(@Inst, "jnz" ) != 0 
+ 	 | str_has_prefix(@Inst, "jge" ) != 0 
+ 	 | str_has_prefix(@Inst, "jg"  ) != 0 
+ 	 | str_has_prefix(@Inst, "jb"  ) != 0 
+ 	 | str_has_prefix(@Inst, "jbe" ) != 0 
+ 	 | str_has_prefix(@Inst, "jae" ) != 0 
+ 	 | str_has_prefix(@Inst, "ja"  ) != 0 
+ 	 | str_has_prefix(@Inst, "jz"  ) != 0 
+ 	 | str_has_prefix(@Inst, "cmp" ) != 0 then
 		return @Inst;
 	end:if
 
@@ -179,11 +192,14 @@ char@ PHO_Optimize(char @Inst)
 		PHO_InvalidateRegs();
 		return @Inst;
 	end:if
-//Dbg(@Inst);
-	char@ s = @Inst[3];                  /* Пропуск инструкции. */
-	@s = @s[str_skip_chars(@s, " ~t")];  /* Пропуск пробелов. */
 
-	/* Если регистр не распознан, ничего не делаем, т.к. значение регистров отслеживаемых не меняется. */
+
+	char@ s = @Inst;
+	
+	@s = @s[str_find_chars(@s, " ~t")]; /* Пропуск названия инструкции. */
+	@s = @s[str_skip_chars(@s, " ~t")]; /* Пропуск пробелов. */
+
+	/* Если регистр не распознан, ничего не делаем, т.к. значение отслеживаемых регистров не меняется. */
 	word Reg1;
 	word Mask1;
 	if PHO_DecodeReg(@s, @Reg1, @Mask1) = 0 then
@@ -195,7 +211,6 @@ char@ PHO_Optimize(char @Inst)
 
 	/* Если нет запятой, неизвестная или неверно сформированная команда. */
 	if s[0] != ',' then
-//Dbg(@s);
 		StopInternal();
 	end:if
 
