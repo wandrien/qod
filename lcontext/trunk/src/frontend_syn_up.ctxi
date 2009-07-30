@@ -151,7 +151,6 @@ void DeclFunc1(char @Buff; word a)
 	Dict[pFunc].Class = cFUNC;
 	Dict[pFunc].Sub   = sFUNC;
 	FuncArgs(@Buff, pFunc);
-	//inc  nDict;
 
 	Scan(@Buff);
 
@@ -162,7 +161,7 @@ void DeclFunc1(char @Buff; word a)
 		case strcmp(@Buff,"external")=0: /* Внешняя функция. */
 			select
 				case TargetFileFormat = tPE:
-						null;
+					null;
 				default:
 					Stop(@eNOTALLOWED);
 			end
@@ -182,7 +181,7 @@ void DeclFunc1(char @Buff; word a)
 
 			/*
 				Если для функции в библиотеке указано имя, отличное от объявленного имени функции,
-				объявдленное имя делаем алиасом для библиотечного имени.
+				объявленное имя делаем алиасом для библиотечного имени.
 				FIXME: Переделать! Бибиотечное имя не должно присутствовать в пространстве имён модуля.
 			*/
 			if strcmp(@Scan(@Buff),".")=0 then
