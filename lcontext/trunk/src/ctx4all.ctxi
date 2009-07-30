@@ -328,6 +328,13 @@ end
 
 /*****************************************************************************/
 
+char@ GetArgNext(word@ I; char@ ErrMsg)
+	inc I;
+	return @GetArg(I, @ErrMsg);
+end
+
+/*****************************************************************************/
+
 void SetupTarget(char@ Target)
 	select
 	case strcmp(@Target, "--linux"  ) = 0:
@@ -365,17 +372,13 @@ void __main()
 		   | strcmp(@arg, "--win32-w") = 0:
 			SetupTarget(@arg);
 		case strcmp(@arg, "--output" ) = 0:
-			inc i;
-			@OutputFile = @GetArg(i, @eFNAMEEXP);
+			@OutputFile = @GetArgNext(@i, @eFNAMEEXP);
 		case strcmp(@arg, "--output-tree" ) = 0:
-			inc i;
-			@OutputTreeFile = @GetArg(i, @eFNAMEEXP);
+			@OutputTreeFile = @GetArgNext(@i, @eFNAMEEXP);
 		case strcmp(@arg, "--output-include-list" ) = 0:
-			inc i;
-			@OutputIncludeListFile = @GetArg(i, @eFNAMEEXP);
+			@OutputIncludeListFile = @GetArgNext(@i, @eFNAMEEXP);
 		case strcmp(@arg, "--file" ) = 0:
-			inc i;
-			@InputFile = @GetArg(i, @eFNAMEEXP);
+			@InputFile = @GetArgNext(@i, @eFNAMEEXP);
 		default:
 			@InputFile = @GetArg(i, @eFNAMEEXP);
 		end:select
