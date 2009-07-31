@@ -1,0 +1,447 @@
+
+/*****************************************************************************/
+
+word Code_OR(word P; word F; word T; word M; char @Buff)
+	word L = Node[P].Value;
+	if T=0 then
+		_Code(Node[P].pLeft ,  0, M, L);
+		Emit(L,"");
+		_Code(Node[P].pRight, F, 0, M);
+	else
+		_Code(Node[P].pLeft , 0, T, L);
+		Emit(L,"");
+		_Code(Node[P].pRight, 0, T, M);
+	end
+end
+
+/*****************************************************************************/
+
+word Code_XOR(word P; word F; word T; word M; char @Buff)
+	word L1=Node[Node[P].pLeft] .Value;
+	word L2=Node[P].Value;
+	if T=0 then
+		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+		Emit(L1,"");
+		_Code(Node[Node[P].pLeft] .pRight,M, 0,F);
+		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(F)));
+		Emit(L2,"");
+		_Code(Node[P].pRight,             F, 0,M);
+	else
+		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+		Emit(L1,"");
+		_Code(Node[Node[P].pLeft] .pRight,T, 0,M);
+		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+		Emit(L2,"");
+		_Code(Node[P].pRight,             M, 0,T);
+	end
+end
+
+/*****************************************************************************/
+
+word Code_EQV(word P; word F; word T; word M; char @Buff)
+	word L1=Node[Node[P].pLeft] .Value;
+	word L2=Node[P].Value;
+	if T=0 then
+		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+		Emit(L1,"");
+		_Code(Node[Node[P].pLeft] .pRight,F, 0,M);
+		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+		Emit(L2,"");
+		_Code(Node[P].pRight,             0, F,M);
+	else
+		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
+		Emit(L1,"");
+		_Code(Node[Node[P].pLeft] .pRight,0, T,M);
+		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+		Emit(L2,"");
+		_Code(Node[P].pRight,             T, 0,M);
+	end
+end
+
+/*****************************************************************************/
+
+word Code_AND(word P; word F; word T; word M; char @Buff)
+	word L = Node[P].Value;
+	if T=0 then
+		_Code(Node[P].pLeft , F, 0, L);
+		Emit(L,"");
+		_Code(Node[P].pRight, F, 0, M);
+	else
+		_Code(Node[P].pLeft , M, 0, L);
+		Emit(L,"");
+		_Code(Node[P].pRight, 0, T, M);
+	end
+end
+
+/*****************************************************************************/
+
+word Code_PUSH(word P; word F; word T; word M; char @Buff)
+
+	if Node[P].pRight<nNODE then
+		_Code(Node[P].pRight,0,0,0);
+	end
+
+	/* Оптимизация прямой загрузки значения из пременной. */
+
+	word P1 = Node[P].pLeft;
+
+	if Node[P1].ID=iDATA
+	 | Node[P1].ID=iPARM
+	 | Node[P1].ID=iLOCAL then
+
+		if Node[P1].pLeft < nNODE & Node[Node[P1].pLeft].ID=iLOAD then
+
+			word pIndx;
+			word nIndx;
+			word pType;
+			word nPtr;
+			word  Ofs;
+			word ID=ExtractDataInfo(P1, @pType, @nPtr, @pIndx, @nIndx, @Ofs);
+
+			/* FIXME: проверка pIndx >= nIndx не работает для локальных переменных, поскольку компилятор не сохраняет эту информацию >< */
+//			if pIndx >= nIndx & SizeOfType(pType, nPtr) = 4 then
+			if 1 >= 1 & SizeOfType(pType, nPtr) = 4 then
+				strcpy(@Buff, "push    dword ");
+				Emit(0, @CodeDataIX_offset(@Buff, ID, 0, Ofs));
+				return nDICT;
+			end:if
+		end:if
+	end:if
+
+
+	/* Оптимизация прямой загрузки указателя на строку. */
+	if Node[P1].ID=iSTRING then
+
+		if Node[P1].pLeft != nNODE
+		 & Node[Node[P1].pLeft].ID=iLPTR then
+
+			word pIndx;
+			word nIndx;
+			word pType;
+			word nPtr;
+			word  Ofs;
+			word ID=ExtractDataInfo(P1, @pType, @nPtr, @pIndx, @nIndx, @Ofs);
+
+			strcpy(@Buff, "push    ");
+			Emit(0,@strcat(@strcat(@strcat(@Buff,"dword @@TEXT+"),@str(Ofs)),""));
+
+			return nDICT;
+		end:if
+	end:if
+
+
+	/* Оптимизация прямой загрузки числа из регистра. */
+	select
+	case Node[P1].ID=iNULL:
+		word RegC = PHO_FindRegWithConst(0);
+		if RegC != PHO_REG_INVALID then
+			strcpy(@Buff, "push    ");
+			strcat(@Buff, @PHO_EncodeReg(RegC, 0xFFFF_FFFF));
+			Emit(0, @Buff);
+			return nDICT;
+		end:if
+	case Node[P1].ID=iWORD | Node[P1].ID=iINT:
+		word RegC = PHO_FindRegWithConst(Node[P1].Value);
+		if RegC != PHO_REG_INVALID then
+			strcpy(@Buff, "push    ");
+			strcat(@Buff, @PHO_EncodeReg(RegC, 0xFFFF_FFFF));
+			Emit(0, @Buff);
+			return nDICT;
+		end:if
+	end:select
+
+	/* Оптимизация прямой загрузки числа. */
+	if (Node[P1].ID=iWORD | Node[P1].ID=iINT) & Node[P1].Value != 0 then
+
+		strcpy(@Buff, "push    dword ");
+		strcat(@Buff, @str(Node[Node[P].pLeft].Value));
+		Emit(0, @Buff);
+
+		return nDICT;
+	end:if
+
+	/* Все остальные варианты... */
+
+	fEAX=0;
+	word pType = _Code(Node[P].pLeft,0,0,0);
+
+	word Size = PointerSize;
+	if pType<nDICT then
+		Size=Dict[pType].Value;
+	end
+
+	select
+	case Size=1:
+		Emit(0,"push    EAX");
+	case Size=4:
+		Emit(0,"push    EAX");
+	default:
+		Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(DefaultInStackAlign(Size))));
+		Emit(0,"mov     ESI,  EAX");
+		Emit(0,"mov     EDI,  ESP");
+		Emit(0,"cld");
+		Emit(0,@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+		Emit(0,"rep     movsb");
+	end:select
+end
+
+/*****************************************************************************/
+
+word Code_RETURN(word P; word F; word T; word M; char @Buff)
+
+	if Node[P].pLeft<nNODE then
+		fEAX=0;
+		word pType=_Code(Node[P].pLeft,0,0,0);
+		word  Size=4;
+		if pType<nDICT then
+			Size=Dict[pType].Value;
+		end:if
+
+		if Size!=1 & Size!=4 then
+			StopInternal();
+		end:if
+	end:if
+
+	if Dict[pFunc].Sub = sMAIN then
+		select
+		case TargetFileFormat = tPE:
+			Emit(0,"xor     EAX,  EAX");
+			Emit(0,"push    EAX");
+			Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
+		case TargetFileFormat = tELF:
+			Emit(0,"mov     EAX,  1");
+			Emit(0,"xor     EBX,  EBX");
+			Emit(0,"int     80H");
+		default:
+			StopInternal();
+		end:select
+	else
+		if CompactFunctionEnterLeave != 0 then
+			Emit(0,"leave");
+		else
+			Emit(0,"mov     ESP,  EBP");
+			Emit(0,"pop     EBP");
+		end:if
+
+		if pSize > 0 then
+			Emit(0,@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
+		else
+			Emit(0,"ret");
+		end:if
+	end:if
+
+end
+
+/*****************************************************************************/
+
+word Code_SELECT(word P; word F; word T; word M; char @Buff)
+
+	word E=Node[P].Value;
+
+	P=Node[P].pLeft;
+	while P<nNODE do
+		if Node[Node[P].pLeft].pLeft<nNODE then
+			F=Node[P].Value;
+			T=Node[Node[P].pLeft].Value;
+			_Code(Node[Node[P].pLeft].pLeft,F,0,T);
+			Emit(T,"");
+		end
+
+		word nParm1=nParm;
+		word pVar1 =pVar;
+
+		word  P1=Node[Node[P].pLeft].pRight;
+		while P1<nNODE do
+			_Code(P1,0,0,0);
+			P1=Node[P1].pRight;
+		end:while
+
+		pVar =pVar1;
+		nParm=nParm1;
+
+		if Node[P].pRight<nNODE then
+			Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
+		end
+
+		if Node[Node[P].pLeft].pLeft<nNODE then
+			Emit(F,"");
+		end
+
+		P=Node[P].pRight;
+	end:while
+
+	Emit(E,"");
+end
+
+/*****************************************************************************/
+
+word Code_SWITCH(word P; word F; word T; word M; char @Buff)
+
+	word L_End = Node[P].Value;
+	word L_Default = L_End;
+
+	fEAX = 0;
+	word pType = _Code(Node[Node[P].pLeft].pLeft,0,0,0);
+	if pType = st_byte then
+		Emit(0,"and     EAX,  0FFH");
+	end:if
+
+	word offset = 0;
+
+	word  P1 = Node[Node[P].pLeft].pRight;
+	while P1 < nNODE do
+		word  P2 = Node[Node[P1].pLeft].pLeft;
+		if    P2 = nNODE then
+			L_Default = Node[P1].Value;
+		end:if
+
+		while P2 != nNODE do
+			word value = Node[P2].Value - offset;
+
+			char@ Reg = "EAX";
+			if pType = st_char then
+				value = value & $FF;
+				@Reg = "AL";
+			end:if
+
+			switch value of
+			case 1:
+				strcpy(@Buff, "dec    ");
+				strcat(@Buff, @Reg);
+			case 2:
+				strcpy(@Buff, "dec    ");
+				strcat(@Buff, @Reg);
+				Emit(0, @Buff);
+			default:
+				strcpy(@Buff, "sub    ");
+				strcat(@Buff, @Reg);
+				strcat(@Buff, ", 0x");
+				strcat(@Buff, @str2(value, 16));
+			end:switch
+			Emit(0, @Buff);
+
+			offset = offset + value;
+
+			Emit(0,@strcat(@strcpy  (@Buff,"je      @"),@str(Node[P1].Value)));
+
+			P2=Node[P2].pLeft;
+		end:while
+
+		P1=Node[P1].pRight;
+	end:while
+
+	Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(L_Default)));
+
+	word  P2= Node[Node[P].pLeft].pRight;
+	while P2<nNODE do
+		Emit(Node[P2].Value,"");
+
+		word nParm1=nParm;
+		word pVar1 =pVar;
+
+		word  P3=Node[Node[P2].pLeft].pRight;
+		while P3<nNODE do
+			_Code(P3,0,0,0);
+			P3=Node[P3].pRight;
+		end
+
+		pVar =pVar1;
+		nParm=nParm1;
+
+		Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(L_End)));
+
+		P2=Node[P2].pRight;
+	end:while
+
+	Emit(L_End,"");
+
+end
+
+/*****************************************************************************/
+
+word Code_WHILE(word P; word F; word T; word M; char @Buff)
+
+	/*
+		       iWHILE
+		      /      \ <-- F
+		    BODY      ...
+	         /    \ <-T
+	      HEAD     ...
+	     L -> \...
+	*/
+
+	F = Node[P].Value;
+	P = Node[P].pLeft;
+	T = Node[P].Value;
+
+	word HEAD = Node[P].pLeft;
+	word L = Node[HEAD].Value;
+	Emit(L, "");
+	if Node[HEAD].pRight < nNODE then
+		_Code(Node[HEAD].pRight, F, 0, T);
+		Emit(T, "");
+	end
+
+	word nParm1 = nParm;
+	word pVar1  = pVar;
+
+	P = Node[P].pRight;
+	while P < nNODE do
+		_Code(P, 0, 0, 0);
+		P = Node[P].pRight;
+	end
+
+	pVar =pVar1;
+	nParm=nParm1;
+
+	Emit(0, @strcat(@strcpy(@Buff, "jmp     @"), @str(L)));
+	Emit(F, "");
+
+end
+
+/*****************************************************************************/
+
+word Code_REPEAT(word P; word F; word T; word M; char @Buff)
+
+	/*
+		       iREPEAT
+		      /       \ <-- T
+		    BODY       ...
+	         |    \
+	         |   TAIL
+	    F ---+> /    \
+	         ...      ...
+	*/
+
+	T = Node[P].Value;
+	P = Node[P].pLeft;
+	F = Node[P].Value;
+	P = Node[P].pRight;
+
+	Emit(F, "");
+
+	word nParm1 = nParm;
+	word pVar1  = pVar;
+
+	word  P1 = Node[P].pLeft;
+	while P1 < nNODE do
+		_Code(P1, 0, 0, 0);
+		P1 = Node[P1].pRight;
+	end
+
+	_Code(Node[P].pRight, F, 0, T);
+
+	pVar  = pVar1;
+	nParm = nParm1;
+
+	Emit(T, "");
+
+end
+
+/*****************************************************************************/
+
+word Code_LOOP_EXIT(word P; word F; word T; word M; char @Buff)
+	Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(Node[Node[P].Value].Value)));
+end
+
+/*****************************************************************************/
