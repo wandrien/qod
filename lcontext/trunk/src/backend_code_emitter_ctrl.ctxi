@@ -247,17 +247,7 @@ word Code_SELECT(word P; word F; word T; word M; char @Buff)
 			Emit(T,"");
 		end
 
-		word nParm1=nParm;
-		word pVar1 =pVar;
-
-		word  P1=Node[Node[P].pLeft].pRight;
-		while P1<nNODE do
-			_Code(P1,0,0,0);
-			P1=Node[P1].pRight;
-		end:while
-
-		pVar =pVar1;
-		nParm=nParm1;
+		Code_Block(Node[Node[P].pLeft].pRight);
 
 		if Node[P].pRight<nNODE then
 			Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
@@ -336,17 +326,7 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 	while P2<nNODE do
 		Emit(Node[P2].Value,"");
 
-		word nParm1=nParm;
-		word pVar1 =pVar;
-
-		word  P3=Node[Node[P2].pLeft].pRight;
-		while P3<nNODE do
-			_Code(P3,0,0,0);
-			P3=Node[P3].pRight;
-		end
-
-		pVar =pVar1;
-		nParm=nParm1;
+		Code_Block(Node[Node[P2].pLeft].pRight);
 
 		Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(L_End)));
 
@@ -374,6 +354,9 @@ word Code_WHILE(word P; word F; word T; word M; char @Buff)
 	P = Node[P].pLeft;
 	T = Node[P].Value;
 
+	CODEBLOCK CB;
+	Code_BeginBlock(@CB);
+
 	word HEAD = Node[P].pLeft;
 	word L = Node[HEAD].Value;
 	Emit(L, "");
@@ -382,21 +365,12 @@ word Code_WHILE(word P; word F; word T; word M; char @Buff)
 		Emit(T, "");
 	end
 
-	word nParm1 = nParm;
-	word pVar1  = pVar;
-
-	P = Node[P].pRight;
-	while P < nNODE do
-		_Code(P, 0, 0, 0);
-		P = Node[P].pRight;
-	end
-
-	pVar =pVar1;
-	nParm=nParm1;
+	Code_List(Node[P].pRight);
 
 	Emit(0, @strcat(@strcpy(@Buff, "jmp     @"), @str(L)));
 	Emit(F, "");
 
+	Code_EndBlock(@CB);
 end
 
 /*****************************************************************************/
@@ -404,9 +378,9 @@ end
 word Code_REPEAT(word P; word F; word T; word M; char @Buff)
 
 	/*
-		       iREPEAT
-		      /       \ <-- T
-		    BODY       ...
+	             iREPEAT
+	            /       \ <-- T
+	          BODY       ...
 	         |    \
 	         |   TAIL
 	    F ---+> /    \
@@ -418,24 +392,18 @@ word Code_REPEAT(word P; word F; word T; word M; char @Buff)
 	F = Node[P].Value;
 	P = Node[P].pRight;
 
+	CODEBLOCK CB;
+	Code_BeginBlock(@CB);
+
 	Emit(F, "");
 
-	word nParm1 = nParm;
-	word pVar1  = pVar;
-
-	word  P1 = Node[P].pLeft;
-	while P1 < nNODE do
-		_Code(P1, 0, 0, 0);
-		P1 = Node[P1].pRight;
-	end
+	Code_List(Node[P].pLeft);
 
 	_Code(Node[P].pRight, F, 0, T);
 
-	pVar  = pVar1;
-	nParm = nParm1;
-
 	Emit(T, "");
 
+	Code_EndBlock(@CB);
 end
 
 /*****************************************************************************/

@@ -16,6 +16,39 @@ __Code @_Code;
 
 /*****************************************************************************/
 
+struct CODEBLOCK
+	word Saved_nParm;
+	word Saved_pVar;
+end
+
+void Code_BeginBlock(CODEBLOCK@ CB)
+	CB.Saved_nParm = nParm;
+	CB.Saved_pVar  = pVar;
+end
+
+void Code_EndBlock(CODEBLOCK@ CB)
+	nParm = CB.Saved_nParm;
+	pVar  = CB.Saved_pVar;
+end
+
+/*****************************************************************************/
+
+word Code_List(word P)
+	while P < nNODE do
+		_Code(P,0,0,0);
+		P = Node[P].pRight;
+	end
+end
+
+word Code_Block(word P)
+	CODEBLOCK CB;
+	Code_BeginBlock(@CB);
+	Code_List(P);
+	Code_EndBlock(@CB);
+end
+
+/*****************************************************************************/
+
 include "backend_code_emitter_ctrl.ctxi"
 
 /*****************************************************************************/
@@ -1108,13 +1141,13 @@ word EmitFunctions(char @Buff)
 				word  P = Dict[I].pNode;
 				word  ID;
 				while P < nNODE do
-					Code(P, 0, 0, 0);
+					_Code(P, 0, 0, 0);
 					ID = Node[P].ID;
 					P  = Node[P].pRight;
 				end
 
 				if ID!=iRETURN then
-					Code(pRet, 0, 0, 0);
+					_Code(pRet, 0, 0, 0);
 				end
 
 				nParm=pParm;
