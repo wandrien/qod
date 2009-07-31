@@ -118,6 +118,37 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 
 end
 
+/*****************************************************************************/
+
+void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
+
+	Node[P1].ID=iSELECT;
+
+	word P3=Peek();
+	word P4=Peek();
+	Node[P1].pLeft= P3;
+	Node[P3].ID   =iEMPTY;
+	Node[P3].pLeft= P4;
+	Node[P4].ID   =iEMPTY;
+
+	word pType, nPtr;
+	Node[P4].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+
+	if pType<nDICT then
+		Stop(@eTYPE);
+	end:if
+
+	if strcmp(@Buff,":")!=0 then
+		Stop(@eTHENEXP);
+	end:if
+
+	Scan(@Buff);
+
+	Node[P4].pRight = _Ctrl(@Buff);
+
+	SkipFinalScan = 1;
+end
+
 
 /*****************************************************************************/
 
@@ -604,6 +635,9 @@ word Ctrl(char @Buff)
 
 		case strcmp(@Buff,"while")=0 | strcmp(@Buff,"do")=0:
 			Statement_DO(@Buff, @P1, @SkipFinalScan);
+
+		case strcmp(@Buff,"when")=0:
+			Statement_WHEN(@Buff, @P1, @SkipFinalScan);
 
 		case strcmp(@Buff,"switch")=0:
 			Statement_SWITCH(@Buff, @P1, @SkipFinalScan);

@@ -113,6 +113,7 @@ void InitFrontEnd()
 	pFile = 0;
 
 	@_Statements = @Statements;
+	@_Ctrl       = @Ctrl;
 	@_Expr       = @Expr;
 
 	strcpy(@Text,"");
@@ -196,6 +197,7 @@ void InitFrontEnd()
 	Word("end");
 	Word("switch");
 	Word("of");
+	Word("when");
 
 	st_void = Base("void", 0);
 	st_char = Base("char", 1);

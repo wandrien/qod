@@ -1,0 +1,16 @@
+$context2
+
+include "../sys4win.ctxi"
+include "../include/hosted.ctxi"
+
+
+begin
+	word i = 0;
+	do
+		when (i & 1) = 1:
+			puts(@str(i));
+		when i >= 10:
+			exit;
+		inc i;
+	end:do
+end

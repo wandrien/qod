@@ -72,6 +72,11 @@ __Statements @_Statements;
 
 /*****************************************************************************/
 
+word function __Ctrl(char @Buff)
+__Ctrl @_Ctrl;
+
+/*****************************************************************************/
+
 word function __Expr(word Prty; word @pType, @nPtr; char @Buff)
 __Expr @_Expr;
 

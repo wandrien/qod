@@ -15,6 +15,7 @@ call :mk out\lcontext_c.exe samples\z_t3  --win32-c out\ z_t3.exe
 call :mk out\lcontext_c.exe samples\z_t4  --win32-c out\ z_t4.exe
 rem out\z_t4.exe > out\z_t4_1.ctx
 rem call :mk out\lcontext_c.exe out\z_t4_1    --win32-c out\ z_t4_1.exe --show-parse-progress
+call :mk out\lcontext_c.exe samples\z_t5  --win32-c out\ z_t5.exe
 
 goto :end
 
