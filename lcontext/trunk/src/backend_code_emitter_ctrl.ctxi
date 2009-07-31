@@ -81,7 +81,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		_Code(Node[P].pRight,0,0,0);
 	end
 
-	/* Оптимизация прямой загрузки значения из пременной. */
+	/* Оптимизация прямой загрузки значения из переменной. */
 
 	word P1 = Node[P].pLeft;
 
