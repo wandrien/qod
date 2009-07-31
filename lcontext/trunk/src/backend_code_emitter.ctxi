@@ -104,7 +104,7 @@ word Code1(word P; word F; word T; word M)
 					StopInternal();
 				end:select
 
-				Emit(0,@CodeDataIX_offset(@Buff, ID, IX, Ofs));
+				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
 
 			case ID!=iCALL:
 				word Size = SizeOfType(pType, nPtr);
@@ -124,46 +124,46 @@ word Code1(word P; word F; word T; word M)
 				case fEAX!=0:
 					select
 					case Size=1:
-						Emit(0,@strcat(@Buff,", AL"));
+						Emit(@strcat(@Buff,", AL"));
 					case Size=4:
-						Emit(0,@strcat(@Buff,", EAX"));
+						Emit(@strcat(@Buff,", EAX"));
 
 					default:
-						Emit(0,"mov     ESI,  EAX");
-						Emit(0,@Buff);
+						Emit("mov     ESI,  EAX");
+						Emit(@Buff);
 					end:select
 
 				case IX=1:
 					select
 					case Size=1:
-						Emit(0,"pop     EBX");
-						Emit(0,@strcat(@Buff,", BL"));
+						Emit("pop     EBX");
+						Emit(@strcat(@Buff,", BL"));
 					case Size=4:
-						Emit(0,"pop     EBX");
-						Emit(0,@strcat(@Buff,", EBX"));
+						Emit("pop     EBX");
+						Emit(@strcat(@Buff,", EBX"));
 					default:
-						Emit(0,"pop     ESI");
-						Emit(0,@Buff);
+						Emit("pop     ESI");
+						Emit(@Buff);
 					end:select
 
 				case IX=2:
 					select
 					case Size=1:
-						Emit(0,"pop     EAX");
-						Emit(0,@strcat(@Buff,", AL"));
+						Emit("pop     EAX");
+						Emit(@strcat(@Buff,", AL"));
 					case Size=4:
-						Emit(0,"pop     EAX");
-						Emit(0,@strcat(@Buff,", EAX"));
+						Emit("pop     EAX");
+						Emit(@strcat(@Buff,", EAX"));
 					default:
-						Emit(0,"pop     ESI");
-						Emit(0,@Buff);
+						Emit("pop     ESI");
+						Emit(@Buff);
 					end:select
 				end:select
 
 				if Size!=1 & Size!=4 then
-					Emit(0,"cld");
-					Emit(0,@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
-					Emit(0,"rep     movsb");
+					Emit("cld");
+					Emit(@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+					Emit("rep     movsb");
 				end:if
 			end:select
 
@@ -205,24 +205,24 @@ word Code1(word P; word F; word T; word M)
 
 				select
 				case ID=iDATA:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
 				case ID=iPARM:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
 				case ID=iLOCAL:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
 				case ID=iREF:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
 				default:
 					StopInternal();
 				end:select
 			else
 				select
 				case ID=iDATA:
-					Emit(0,@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]"));
 				case ID=iPARM:
-					Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
 				case ID=iLOCAL:
-					Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
 				case ID!=iCALL:
 					StopInternal();
 				end:select
@@ -242,28 +242,28 @@ word Code1(word P; word F; word T; word M)
 			if IX!=0 then
 				select
 				case ID=iDATA:
-					Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  @@DATA+"),@str(Ofs)));
+					Emit(@strcat(@strcpy(@Buff,"add     EAX,  @@DATA+"),@str(Ofs)));
 				case ID=iPARM:
-					Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX+"),@str(Ofs)),"]"));
 				case ID=iLOCAL:
-					Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX-"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX-"),@str(Ofs)),"]"));
 				case ID=iSTRING:
-					Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  @@TEXT+"),@str(Ofs)));
+					Emit(@strcat(@strcpy(@Buff,"add     EAX,  @@TEXT+"),@str(Ofs)));
 				case ID=iREF & Ofs!=0:
-					Emit(0,@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
+					Emit(@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
 					StopInternal();
 				end:select
 			else
 				select
 				case ID=iDATA:
-					Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  @@DATA+"),@str(Ofs)));
+					Emit(@strcat(@strcpy(@Buff,"mov     EAX,  @@DATA+"),@str(Ofs)));
 				case ID=iPARM:
-					Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+"),@str(Ofs)),"]"));
 				case ID=iLOCAL:
-					Emit(0,@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP-"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP-"),@str(Ofs)),"]"));
 				case ID=iSTRING:
-					Emit(0,@strcat(@strcpy(@Buff,"mov     EAX,  @@TEXT+"),@str(Ofs)));
+					Emit(@strcat(@strcpy(@Buff,"mov     EAX,  @@TEXT+"),@str(Ofs)));
 				case ID!=iCALL:
 					StopInternal();
 				end:select
@@ -273,7 +273,7 @@ word Code1(word P; word F; word T; word M)
 
 		case Node[P1].ID=iCALL:
 			if fEAX!=0 then
-				Emit(0,"push    EAX");
+				Emit("push    EAX");
 				fEAX=0;
 			end:if
 
@@ -282,9 +282,9 @@ word Code1(word P; word F; word T; word M)
 			end:if
 
 			if Dict[Node[P1].Value].Sub=sSYS then
-				Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Value)),"]"));
+				Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Value)),"]"));
 			else
-				Emit(0,@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Value)));
+				Emit(@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Value)));
 			end:if
 
 			ID =iCALL;
@@ -292,7 +292,7 @@ word Code1(word P; word F; word T; word M)
 
 		case Node[P1].ID=iCALL2:
 			if fEAX!=0 then
-				Emit(0,"push    EAX");
+				Emit("push    EAX");
 				fEAX=0;
 			end:if
 
@@ -304,7 +304,7 @@ word Code1(word P; word F; word T; word M)
 
 			_Code(Node[P2].pLeft,0,0,0);
 
-			Emit(0,"call    EAX");
+			Emit("call    EAX");
 
 			pType=Dict[Node[P1].Value].pType;
 			nPtr =Dict[Node[P1].Value].nPtr;
@@ -339,14 +339,14 @@ word Code1(word P; word F; word T; word M)
 							fIX=0;
 						end:if
 
-						Emit(0,"push    EAX");
-						Emit(0,"push    EBX");
+						Emit("push    EAX");
+						Emit("push    EBX");
 
 						_Code(Node[P1].pLeft,0,0,0);
 
-						Emit(0,"pop     EBX");
-						Emit(0,@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
-						Emit(0,"add     EAX,  EBX");
+						Emit("pop     EBX");
+						Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
+						Emit("add     EAX,  EBX");
 
 						IX1=1;
 
@@ -360,13 +360,13 @@ word Code1(word P; word F; word T; word M)
 						_Code(Node[P1].pLeft,0,0,0);
 
 						if fEAX=0 then
-							Emit(0,"pop     EBX");
-							Emit(0,@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
+							Emit("pop     EBX");
+							Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
 						else
-							Emit(0,@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(N*Node[P1].Value)));
+							Emit(@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(N*Node[P1].Value)));
 						end:if
 
-						Emit(0,"add     EAX,  EBX");
+						Emit("add     EAX,  EBX");
 
 						fEAX=0;
 
@@ -375,8 +375,8 @@ word Code1(word P; word F; word T; word M)
 							StopInternal();
 						end:if
 
-						Emit(0,"push    EAX");
-						Emit(0,"push    EBX");
+						Emit("push    EAX");
+						Emit("push    EBX");
 
 						fEAX=0;
 						fIX =0;
@@ -444,30 +444,30 @@ word Code1(word P; word F; word T; word M)
 				select
 				case Size=2:
 					if IX1=1 then
-						Emit(0,"add     EAX, EAX");
+						Emit("add     EAX, EAX");
 					else
-						Emit(0,"add     EBX, EBX");
+						Emit("add     EBX, EBX");
 					end:if
 
 				case Size=4:
 					if IX1=1 then
-						Emit(0,"shl     EAX,  2");
+						Emit("shl     EAX,  2");
 					else
-						Emit(0,"shl     EBX,  2");
+						Emit("shl     EBX,  2");
 					end:if
 
 				case Size=8:
 					if IX1=1 then
-						Emit(0,"shl     EAX,  3");
+						Emit("shl     EAX,  3");
 					else
-						Emit(0,"shl     EBX,  3");
+						Emit("shl     EBX,  3");
 					end:if
 
 				case Size>1:
 					if IX1=1 then
-						Emit(0,@strcat(@strcpy(@Buff,"imul    EAX, "),@str(Size)));
+						Emit(@strcat(@strcpy(@Buff,"imul    EAX, "),@str(Size)));
 					else
-						Emit(0,@strcat(@strcpy(@Buff,"imul    EBX, "),@str(Size)));
+						Emit(@strcat(@strcpy(@Buff,"imul    EBX, "),@str(Size)));
 					end:if
 				end:select
 
@@ -478,15 +478,15 @@ word Code1(word P; word F; word T; word M)
 							StopInternal();
 						end:if
 
-						Emit(0,"add     EAX,  EBX");
+						Emit("add     EAX,  EBX");
 
 					case IX1=1:
 						if fIX!=0 then
 							Stop(@eINTERNAL);
 						end
 
-						Emit(0,"pop     EBX");
-						Emit(0,"add     EAX,  EBX");
+						Emit("pop     EBX");
+						Emit("add     EAX,  EBX");
 
 						IX=1;
 
@@ -511,10 +511,10 @@ word Code1(word P; word F; word T; word M)
 				select
 				case IX=2:
 					if fEAX!=0 then
-						Emit(0,"push    EAX");
+						Emit("push    EAX");
 					end:if
 
-					Emit(0,"xchg    EAX,  EBX");
+					Emit("xchg    EAX,  EBX");
 					IX  =1;
 					fEAX=1;
 
@@ -526,13 +526,13 @@ word Code1(word P; word F; word T; word M)
 				if fEAX=0 then
 					select
 					case Size=4:
-						Emit(0,"shl     EAX,  2");
+						Emit("shl     EAX,  2");
 					case Size>1:
-						Emit(0,@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Size)));
+						Emit(@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Size)));
 					end:select
 
 					if IX!=0 then
-						Emit(0,"pop     EBX");
+						Emit("pop     EBX");
 						IX=2;
 					end:if
 
@@ -540,9 +540,9 @@ word Code1(word P; word F; word T; word M)
 				else
 					select
 					case Size=4:
-						Emit(0,"shl     EBX,  2");
+						Emit("shl     EBX,  2");
 					case Size>1:
-						Emit(0,@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(Size)));
+						Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(Size)));
 					end:select
 
 					strcpy(@Buff,"add     EBX,  dword ");     // FASM
@@ -565,24 +565,24 @@ word Code1(word P; word F; word T; word M)
 
 				select
 				case ID=iDATA:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
 				case ID=iPARM:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
 				case ID=iLOCAL:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
 				case ID=iREF:
-					Emit(0,@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
 				default:
 					StopInternal();
 				end:select
 			else
 				select
 				case ID=iDATA:
-					Emit(0,@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]")); // FASM
+					Emit(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]")); // FASM
 				case ID=iPARM:
-					Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
 				case ID=iLOCAL:
-					Emit(0,@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
+					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
 				//TODO Пpовеpить!
 				case ID=iCALL:
 					null;
@@ -639,27 +639,27 @@ word Code(word P; word F; word T; word M)
 	switch Node[P].ID of
 	case iNULL:
 		CodeLoadConstant(@Buff, fEAX, 4, 0);
-		Emit(0, @Buff);
+		Emit(@Buff);
 		return nDICT;
 
 	case iCHAR:
 		CodeLoadConstant(@Buff, fEAX, 1, Node[P].Value);
-		Emit(0, @Buff);
+		Emit(@Buff);
 		return st_char;
 
 	case iWORD:
 		CodeLoadConstant(@Buff, fEAX, 4, Node[P].Value);
-		Emit(0, @Buff);
+		Emit(@Buff);
 		return st_word;
 
 	case iINT:
 		CodeLoadConstant(@Buff, fEAX, 4, Node[P].Value);
-		Emit(0, @Buff);
+		Emit(@Buff);
 		return st_int;
 
 	case iFUNC:
 		CodeLoadLabel(@Buff, fEAX, Node[P].Value);
-		Emit(0, @Buff);
+		Emit(@Buff);
 		return nDICT;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -681,13 +681,13 @@ word Code(word P; word F; word T; word M)
 		case Node[P].Value=st_byte & pType=st_char:
 			null;
 		case Node[P].Value=st_word & pType=st_char:
-			Emit(0, @CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case Node[P].Value=st_word & pType=st_byte:
-			Emit(0, @CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case Node[P].Value=st_int & pType=st_char:
-			Emit(0, @CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case Node[P].Value=st_int & pType=st_byte:
-			Emit(0, @CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case Node[P].Value=st_int & pType=st_word:
 			null;
 		default:
@@ -700,7 +700,7 @@ word Code(word P; word F; word T; word M)
 	case iNOT:
 		word pType = Code(Node[P].pLeft, 0, 0, 0);
 		word  Size = Dict[pType].Value;
-		Emit(0, @CodeCmdReg(@Buff, "not", fEAX, Size));
+		Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
 
 		return pType;
 
@@ -709,13 +709,13 @@ word Code(word P; word F; word T; word M)
 	case iNEG:
 		if Node[Node[P].pLeft].ID=iWORD then
 			CodeLoadConstant(@Buff, fEAX, 4, -Node[Node[P].pLeft].Value);
-			Emit(0, @Buff);
+			Emit(@Buff);
 			return st_int;
 		end
 
 		Code(Node[P].pLeft,0,0,0);
 
-		Emit(0, @CodeCmdReg(@Buff, "neg", fEAX, 4));
+		Emit(@CodeCmdReg(@Buff, "neg", fEAX, 4));
 
 		return st_int;
 
@@ -728,7 +728,7 @@ word Code(word P; word F; word T; word M)
       end
 
       if fEAX!=0 then
-        Emit(0,"push    EAX");
+        Emit("push    EAX");
         fEAX=0;
       end
 
@@ -756,7 +756,7 @@ word Code(word P; word F; word T; word M)
           fEAX =1;
           Code(Node[P].pRight,0,0,0);
           if fEAX=0 then
-            Emit(0,"pop     EBX");
+            Emit("pop     EBX");
             fSwap=1;
           end
       end
@@ -778,7 +778,7 @@ word Code(word P; word F; word T; word M)
               ID=iLT;
 
             case ID=iSUB | ID=iDIV | ID=iMOD:
-              Emit(0,"xchg    EAX,  EBX");
+              Emit("xchg    EAX,  EBX");
           end
 
         case fSwap=2:
@@ -802,19 +802,19 @@ word Code(word P; word F; word T; word M)
             case Size=1:
               select
                 case fSwap=2:
-                  Emit(0,@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
+                  Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
 
                 default:
-                  Emit(0,"cmp     AL,   BL");
+                  Emit("cmp     AL,   BL");
               end
 
             case Size=4:
               select
                 case fSwap=2:
-                  Emit(0,@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
+                  Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
 
                 default:
-                  Emit(0,"cmp     EAX,  EBX");
+                  Emit("cmp     EAX,  EBX");
               end
 
             default:
@@ -891,7 +891,7 @@ word Code(word P; word F; word T; word M)
                   StopInternal();
               end
           end
-          Emit(0,@strcat(@strcat(@strcpy(@Buff, @Cmd),"     @"),@str(T)));
+          Emit(@strcat(@strcat(@strcpy(@Buff, @Cmd),"     @"),@str(T)));
 
           return nDICT;
 
@@ -913,13 +913,13 @@ word Code(word P; word F; word T; word M)
         case ID=iMUL:
           select
             case pType=st_byte:
-              Emit(0,"mul     BL");
+              Emit("mul     BL");
 
             case pType=st_word:
-              Emit(0,"mul     EBX");
+              Emit("mul     EBX");
 
             case pType=st_int:
-              Emit(0,"imul    EBX");
+              Emit("imul    EBX");
 
             default:
               StopInternal();
@@ -930,16 +930,16 @@ word Code(word P; word F; word T; word M)
         case ID=iDIV:
           select
             case pType=st_byte:
-              Emit(0,"xor     AH,   AH");
-              Emit(0,"div     BL");
+              Emit("xor     AH,   AH");
+              Emit("div     BL");
 
             case pType=st_word:
-              Emit(0,"xor     EDX,  EDX");
-              Emit(0,"div     EBX");
+              Emit("xor     EDX,  EDX");
+              Emit("div     EBX");
 
             case pType=st_int:
-              Emit(0,"xor     EDX,  EDX");
-              Emit(0,"idiv    EBX");
+              Emit("xor     EDX,  EDX");
+              Emit("idiv    EBX");
 
             default:
               StopInternal();
@@ -950,14 +950,14 @@ word Code(word P; word F; word T; word M)
         case ID=iMOD:
           select
             case pType=st_byte:
-              Emit(0,"xor     AH,   AH");
-              Emit(0,"div     BL");
-              Emit(0,"xchg    AL,   AH");
+              Emit("xor     AH,   AH");
+              Emit("div     BL");
+              Emit("xchg    AL,   AH");
 
             case pType=st_word:
-              Emit(0,"xor     EDX,  EDX");
-              Emit(0,"div     EBX");
-              Emit(0,"xchg    EAX,  EDX");
+              Emit("xor     EDX,  EDX");
+              Emit("div     EBX");
+              Emit("xchg    EAX,  EDX");
 
             default:
               StopInternal();
@@ -973,19 +973,19 @@ word Code(word P; word F; word T; word M)
         case Size=1:
           select
             case fSwap=2:
-              Emit(0,@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
+              Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
 
             default:
-              Emit(0,@strcat(@Buff,"AL,   BL"));
+              Emit(@strcat(@Buff,"AL,   BL"));
           end
 
         case Size=4:
           select
             case fSwap=2:
-              Emit(0,@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
+              Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
 
             default:
-              Emit(0,@strcat(@Buff,"EAX,  EBX"));
+              Emit(@strcat(@Buff,"EAX,  EBX"));
           end
 
         default:
@@ -1028,7 +1028,7 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iINLINE:
-		Emit(0,@strcat(@strcpy(@Buff,"db      0x"),@str2(Node[P].Value,16)));
+		Emit(@strcat(@strcpy(@Buff,"db      0x"),@str2(Node[P].Value,16)));
 
 ///////////////////////////////////////////////////////////////////////////////
 	case iOR:
@@ -1087,7 +1087,7 @@ word EmitFunctions(char @Buff)
 					strcat(@Buff, "begin");
 					S = Dict[I].Value;
 				end:if
-				Emit(Dict[I].Value, @Buff);
+				EmitL(Dict[I].Value, @Buff);
 
 				word S1 = 0;
 
@@ -1106,13 +1106,13 @@ word EmitFunctions(char @Buff)
 				PHO_InvalidateRegs();
 
 				if CompactFunctionEnterLeave != 0 & Dict[I].Stack > 0 then
-					Emit(0,@strcat(@strcat(@strcpy(@Buff,"enter   "),@str(Dict[I].Stack)), ", 0"));
+					Emit(@strcat(@strcat(@strcpy(@Buff,"enter   "),@str(Dict[I].Stack)), ", 0"));
 				else
-					Emit(0,"push    EBP");
-					Emit(0,"mov     EBP,  ESP");
+					Emit("push    EBP");
+					Emit("mov     EBP,  ESP");
 
 					if Dict[I].Stack > 0 then
-						Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Dict[I].Stack)));
+						Emit(@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Dict[I].Stack)));
 					end:if
 				end:if
 

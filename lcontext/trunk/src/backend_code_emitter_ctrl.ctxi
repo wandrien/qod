@@ -5,11 +5,11 @@ word Code_OR(word P; word F; word T; word M; char @Buff)
 	word L = Node[P].Value;
 	if T=0 then
 		_Code(Node[P].pLeft ,  0, M, L);
-		Emit(L,"");
+		EmitLabel(L);
 		_Code(Node[P].pRight, F, 0, M);
 	else
 		_Code(Node[P].pLeft , 0, T, L);
-		Emit(L,"");
+		EmitLabel(L);
 		_Code(Node[P].pRight, 0, T, M);
 	end
 end
@@ -21,17 +21,17 @@ word Code_XOR(word P; word F; word T; word M; char @Buff)
 	word L2=Node[P].Value;
 	if T=0 then
 		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		Emit(L1,"");
+		EmitLabel(L1);
 		_Code(Node[Node[P].pLeft] .pRight,M, 0,F);
-		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(F)));
-		Emit(L2,"");
+		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(F)));
+		EmitLabel(L2);
 		_Code(Node[P].pRight,             F, 0,M);
 	else
 		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		Emit(L1,"");
+		EmitLabel(L1);
 		_Code(Node[Node[P].pLeft] .pRight,T, 0,M);
-		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
-		Emit(L2,"");
+		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+		EmitLabel(L2);
 		_Code(Node[P].pRight,             M, 0,T);
 	end
 end
@@ -43,17 +43,17 @@ word Code_EQV(word P; word F; word T; word M; char @Buff)
 	word L2=Node[P].Value;
 	if T=0 then
 		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		Emit(L1,"");
+		EmitLabel(L1);
 		_Code(Node[Node[P].pLeft] .pRight,F, 0,M);
-		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
-		Emit(L2,"");
+		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+		EmitLabel(L2);
 		_Code(Node[P].pRight,             0, F,M);
 	else
 		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		Emit(L1,"");
+		EmitLabel(L1);
 		_Code(Node[Node[P].pLeft] .pRight,0, T,M);
-		Emit(0 ,@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
-		Emit(L2,"");
+		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
+		EmitLabel(L2);
 		_Code(Node[P].pRight,             T, 0,M);
 	end
 end
@@ -64,11 +64,11 @@ word Code_AND(word P; word F; word T; word M; char @Buff)
 	word L = Node[P].Value;
 	if T=0 then
 		_Code(Node[P].pLeft , F, 0, L);
-		Emit(L,"");
+		EmitLabel(L);
 		_Code(Node[P].pRight, F, 0, M);
 	else
 		_Code(Node[P].pLeft , M, 0, L);
-		Emit(L,"");
+		EmitLabel(L);
 		_Code(Node[P].pRight, 0, T, M);
 	end
 end
@@ -102,7 +102,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 //			if pIndx >= nIndx & SizeOfType(pType, nPtr) = 4 then
 			if 1 >= 1 & SizeOfType(pType, nPtr) = 4 then
 				strcpy(@Buff, "push    dword ");
-				Emit(0, @CodeDataIX_offset(@Buff, ID, 0, Ofs));
+				Emit(@CodeDataIX_offset(@Buff, ID, 0, Ofs));
 				return nDICT;
 			end:if
 		end:if
@@ -123,7 +123,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 			word ID=ExtractDataInfo(P1, @pType, @nPtr, @pIndx, @nIndx, @Ofs);
 
 			strcpy(@Buff, "push    ");
-			Emit(0,@strcat(@strcat(@strcat(@Buff,"dword @@TEXT+"),@str(Ofs)),""));
+			Emit(@strcat(@strcat(@strcat(@Buff,"dword @@TEXT+"),@str(Ofs)),""));
 
 			return nDICT;
 		end:if
@@ -137,7 +137,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		if RegC != PHO_REG_INVALID then
 			strcpy(@Buff, "push    ");
 			strcat(@Buff, @PHO_EncodeReg(RegC, 0xFFFF_FFFF));
-			Emit(0, @Buff);
+			Emit(@Buff);
 			return nDICT;
 		end:if
 	case Node[P1].ID=iWORD | Node[P1].ID=iINT:
@@ -145,7 +145,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		if RegC != PHO_REG_INVALID then
 			strcpy(@Buff, "push    ");
 			strcat(@Buff, @PHO_EncodeReg(RegC, 0xFFFF_FFFF));
-			Emit(0, @Buff);
+			Emit(@Buff);
 			return nDICT;
 		end:if
 	end:select
@@ -155,7 +155,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 
 		strcpy(@Buff, "push    dword ");
 		strcat(@Buff, @str(Node[Node[P].pLeft].Value));
-		Emit(0, @Buff);
+		Emit(@Buff);
 
 		return nDICT;
 	end:if
@@ -172,16 +172,16 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 
 	select
 	case Size=1:
-		Emit(0,"push    EAX");
+		Emit("push    EAX");
 	case Size=4:
-		Emit(0,"push    EAX");
+		Emit("push    EAX");
 	default:
-		Emit(0,@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(DefaultInStackAlign(Size))));
-		Emit(0,"mov     ESI,  EAX");
-		Emit(0,"mov     EDI,  ESP");
-		Emit(0,"cld");
-		Emit(0,@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
-		Emit(0,"rep     movsb");
+		Emit(@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(DefaultInStackAlign(Size))));
+		Emit("mov     ESI,  EAX");
+		Emit("mov     EDI,  ESP");
+		Emit("cld");
+		Emit(@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+		Emit("rep     movsb");
 	end:select
 end
 
@@ -205,28 +205,28 @@ word Code_RETURN(word P; word F; word T; word M; char @Buff)
 	if Dict[pFunc].Sub = sMAIN then
 		select
 		case TargetFileFormat = tPE:
-			Emit(0,"xor     EAX,  EAX");
-			Emit(0,"push    EAX");
-			Emit(0,@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
+			Emit("xor     EAX,  EAX");
+			Emit("push    EAX");
+			Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
 		case TargetFileFormat = tELF:
-			Emit(0,"mov     EAX,  1");
-			Emit(0,"xor     EBX,  EBX");
-			Emit(0,"int     80H");
+			Emit("mov     EAX,  1");
+			Emit("xor     EBX,  EBX");
+			Emit("int     80H");
 		default:
 			StopInternal();
 		end:select
 	else
 		if CompactFunctionEnterLeave != 0 then
-			Emit(0,"leave");
+			Emit("leave");
 		else
-			Emit(0,"mov     ESP,  EBP");
-			Emit(0,"pop     EBP");
+			Emit("mov     ESP,  EBP");
+			Emit("pop     EBP");
 		end:if
 
 		if pSize > 0 then
-			Emit(0,@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
+			Emit(@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
 		else
-			Emit(0,"ret");
+			Emit("ret");
 		end:if
 	end:if
 
@@ -244,23 +244,23 @@ word Code_SELECT(word P; word F; word T; word M; char @Buff)
 			F=Node[P].Value;
 			T=Node[Node[P].pLeft].Value;
 			_Code(Node[Node[P].pLeft].pLeft,F,0,T);
-			Emit(T,"");
+			EmitLabel(T);
 		end
 
 		Code_Block(Node[Node[P].pLeft].pRight);
 
 		if Node[P].pRight<nNODE then
-			Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
+			Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
 		end
 
 		if Node[Node[P].pLeft].pLeft<nNODE then
-			Emit(F,"");
+			EmitLabel(F);
 		end
 
 		P=Node[P].pRight;
 	end:while
 
-	Emit(E,"");
+	EmitLabel(E);
 end
 
 /*****************************************************************************/
@@ -273,7 +273,7 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 	fEAX = 0;
 	word pType = _Code(Node[Node[P].pLeft].pLeft,0,0,0);
 	if pType = st_byte then
-		Emit(0,"and     EAX,  0FFH");
+		Emit("and     EAX,  0FFH");
 	end:if
 
 	word offset = 0;
@@ -301,18 +301,18 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 			case 2:
 				strcpy(@Buff, "dec    ");
 				strcat(@Buff, @Reg);
-				Emit(0, @Buff);
+				Emit(@Buff);
 			default:
 				strcpy(@Buff, "sub    ");
 				strcat(@Buff, @Reg);
 				strcat(@Buff, ", 0x");
 				strcat(@Buff, @str2(value, 16));
 			end:switch
-			Emit(0, @Buff);
+			Emit(@Buff);
 
 			offset = offset + value;
 
-			Emit(0,@strcat(@strcpy  (@Buff,"je      @"),@str(Node[P1].Value)));
+			Emit(@strcat(@strcpy  (@Buff,"je      @"),@str(Node[P1].Value)));
 
 			P2=Node[P2].pLeft;
 		end:while
@@ -320,20 +320,20 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 		P1=Node[P1].pRight;
 	end:while
 
-	Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(L_Default)));
+	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(L_Default)));
 
 	word  P2= Node[Node[P].pLeft].pRight;
 	while P2<nNODE do
-		Emit(Node[P2].Value,"");
+		EmitLabel(Node[P2].Value);
 
 		Code_Block(Node[Node[P2].pLeft].pRight);
 
-		Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(L_End)));
+		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(L_End)));
 
 		P2=Node[P2].pRight;
 	end:while
 
-	Emit(L_End,"");
+	EmitLabel(L_End);
 
 end
 
@@ -359,16 +359,16 @@ word Code_WHILE(word P; word F; word T; word M; char @Buff)
 
 	word HEAD = Node[P].pLeft;
 	word L = Node[HEAD].Value;
-	Emit(L, "");
+	EmitLabel(L);
 	if Node[HEAD].pRight < nNODE then
 		_Code(Node[HEAD].pRight, F, 0, T);
-		Emit(T, "");
+		EmitLabel(T);
 	end
 
 	Code_List(Node[P].pRight);
 
-	Emit(0, @strcat(@strcpy(@Buff, "jmp     @"), @str(L)));
-	Emit(F, "");
+	Emit(@strcat(@strcpy(@Buff, "jmp     @"), @str(L)));
+	EmitLabel(F);
 
 	Code_EndBlock(@CB);
 end
@@ -395,13 +395,13 @@ word Code_REPEAT(word P; word F; word T; word M; char @Buff)
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
 
-	Emit(F, "");
+	EmitLabel(F);
 
 	Code_List(Node[P].pLeft);
 
 	_Code(Node[P].pRight, F, 0, T);
 
-	Emit(T, "");
+	EmitLabel(T);
 
 	Code_EndBlock(@CB);
 end
@@ -409,7 +409,7 @@ end
 /*****************************************************************************/
 
 word Code_LOOP_EXIT(word P; word F; word T; word M; char @Buff)
-	Emit(0,@strcat(@strcpy(@Buff,"jmp     @"),@str(Node[Node[P].Value].Value)));
+	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(Node[Node[P].Value].Value)));
 end
 
 /*****************************************************************************/

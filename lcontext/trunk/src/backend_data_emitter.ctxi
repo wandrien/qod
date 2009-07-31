@@ -197,7 +197,7 @@ void EmitROData()
 	rodata_size = 0;
 
 
-	Emit(0, "~r~n@@TEXT:");
+	Emit("~r~n@@TEXT:");
 	EmitByteReset();
 
 	repeat
@@ -260,7 +260,7 @@ void EmitSection_Data_Strings(char @Buff)
 
 	EmitStringNL("");
 
-	Emit(0, "~r~n@@TEXT:");
+	Emit("~r~n@@TEXT:");
 
 	word data_len = 0;
 	word I = 0;
@@ -336,7 +336,7 @@ void EmitPEImport(char @Buff; word L)
 			strcat(@Buff, @str(L1));
 			strcat(@Buff, ", RVA @");
 			strcat(@Buff, @str(Dict[I].Value));
-			Emit(0, @Buff);
+			Emit(@Buff);
 
 			inc  L1;
 		end:if
@@ -344,7 +344,7 @@ void EmitPEImport(char @Buff; word L)
 		inc I;
 	end:while
 
-	Emit(0,"dd      0, 0, 0, 0, 0");
+	Emit("dd      0, 0, 0, 0, 0");
 
 
 
@@ -369,7 +369,7 @@ void EmitPEImport(char @Buff; word L)
 				inc J;
 			end:while
 
-			Emit(0,"dd      0");
+			Emit("dd      0");
 		end:if
 
 		inc I;
@@ -384,7 +384,7 @@ void EmitPEImport(char @Buff; word L)
 	I =0;
 	while I<nDict do
 		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
-			Emit(L1,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(I)),".DLL~", 0"));
+			EmitL(L1,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(I)),".DLL~", 0"));
 			inc  L1;
 		end:if
 
@@ -402,8 +402,8 @@ void EmitPEImport(char @Buff; word L)
 			word  J=0;
 			while J<nDict do
 				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
-					Emit(L1,"dw      0");
-					Emit(0,  @strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(J)),"~", 0"));
+					EmitL(L1,"dw      0");
+					Emit(@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(J)),"~", 0"));
 					inc  L1;
 				end:if
 

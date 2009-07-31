@@ -283,7 +283,7 @@ void Translate()
 	end:select
 
 	EmitNL();
-	Emit(0,@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
+	Emit(@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
 
 	word OutputTreeFile_Done = 0;
 	if @OutputTreeFile != NULL & strcmp(@OutputFile, @OutputTreeFile) = 0 then
