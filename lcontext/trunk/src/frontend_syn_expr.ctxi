@@ -295,12 +295,10 @@ end
 
 /*****************************************************************************/
 
-// Анализатоp выpажений
-
-word    pFunc;
-word    pParm;
-word    pIndx;
-word    pLoop;
+word pFunc;
+word pParm;
+word pIndx;
+word pLoop;
 
 /*****************************************************************************/
 
@@ -689,7 +687,6 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	end:while
 
 	P2  =P4;
-//	Flag=1;
 
 	return P1;
 

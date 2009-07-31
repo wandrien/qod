@@ -172,31 +172,28 @@ void DeclFunc1(char @Buff; word a)
 
 				pLib = DictAlloc();
 
-				//Copy(@Dict[pLib].Name1, @Buff, nDict);
 				SetDictName(pLib, @Buff);
 				Dict[pLib].Class = cLIB;
 
-			end // of if
+			end:if
 
 
 			/*
 				Если для функции в библиотеке указано имя, отличное от объявленного имени функции,
 				объявленное имя делаем алиасом для библиотечного имени.
-				FIXME: Переделать! Бибиотечное имя не должно присутствовать в пространстве имён модуля.
+				FIXME: Переделать! Библиотечное имя не должно присутствовать в пространстве имён модуля.
 			*/
 			if strcmp(@Scan(@Buff),".")=0 then
 				if Find(@Scan(@Buff)) < nDict then
 					Stop(@eDUPLICATE);
-				end // of if
+				end:if
 
 				word pAlias = DictAlloc();
 
-				//strcpy(@Dict[pAlias].Name1, @Dict[pFunc].Name1);
 				SetDictName(pAlias, @GetDictName(pFunc));
 				Dict[pAlias].Class = cNAME;
 				Dict[pAlias].pType = pFunc;
 
-				//Copy(@Dict[pFunc].Name1, @Buff, nDict);
 				SetDictName(pFunc, @Buff);
 				Scan(@Buff);
 
@@ -216,7 +213,7 @@ void DeclFunc1(char @Buff; word a)
 			nIndx=pIndx;
 			nParm=pParm;
 
-	end // of select
+	end:select
 
 end
 

@@ -24,7 +24,6 @@ void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
               case ID=iADD | ID=iSUB:
                 if Node[Node[P2].pRight].ID=iINT then
                   Node[Node[P2].pRight].ID   =iWORD;
-//                  Node[Node[P2].pRight].Value=$FFFFFFFF-Node[Node[P2].pRight].Value+1;
                   Node[Node[P2].pRight].Value=-Node[Node[P2].pRight].Value;
 
                   if ID=iADD then
@@ -79,17 +78,17 @@ void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
                       Stop(@eCALCERR);
                     end
 
-                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                    Node[P2].Value=-Node[P2].Value;
                   else
                     Node[P2].ID   =iWORD;
                     Node[P2].Value= Node[Node[P2].pLeft].Value-Node[Node[P2].pRight].Value;
                   end
                 else
-                  Node[Node[P2].pLeft].Value=$FFFFFFFF-Node[Node[P2].pLeft].Value+1;
+                  Node[Node[P2].pLeft].Value=-Node[Node[P2].pLeft].Value;
                   Node[P2].Value=Node[Node[P2].pLeft].Value+Node[Node[P2].pRight].Value;
 
                   Node[P2].ID   =iINT;
-                  Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                  Node[P2].Value=-Node[P2].Value;
                 end
 
               case ID=iMUL:
@@ -112,7 +111,6 @@ void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
                       Stop(@eCALCERR);
                     end
 
-//                    Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
                     Node[P2].Value=-Node[P2].Value;
                   end
                 else
