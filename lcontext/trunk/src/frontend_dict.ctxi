@@ -23,18 +23,16 @@ word st_int;
 	TODO: при нехватке памяти, перераспределять динамически.
 */
 void DictMemCheck()
-	if nDict >= nDICT then
+	when nDict >= nDICT:
 		Stop(@eNOMEMORY);
-	end
 end
 
 /*****************************************************************************/
 
 void SetDictName(word D; char@ Name)
 
-	if D >= nDict then
+	when D >= nDict:
 		StopInternal();
-	end
 
 	Dict[D].Name2    = SaveString0(@Name);
 	Dict[D].NameHash = str_hash(@Name);
@@ -44,9 +42,8 @@ end
 
 char @GetDictName(word D)
 
-	if D >= nDict then
+	when D >= nDict:
 		StopInternal();
-	end
 
 	return @Char[Dict[D].Name2];
 end
@@ -117,16 +114,15 @@ void A_Name(char @Name)
 	word P = 0;
 
 	while P < pKeyWords & Dict[P].Class = cWORD do
-		if strcmp(@GetDictName(P), @Name) = 0 then
+		when strcmp(@GetDictName(P), @Name) = 0:
 			Stop(@eEXPECTED);
-		end
 
 		inc P;
 	end
 
-	if isalpha(Name) = 0 then
+	when isalpha(Name) = 0:
 		Stop(@eEXPECTED);
-	end
+
 end
 
 /*****************************************************************************/

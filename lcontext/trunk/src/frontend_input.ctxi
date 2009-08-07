@@ -53,9 +53,8 @@ void PopCurrentFile()
 
 	close(hText);
 
-	if nFile < 1 then
+	when nFile < 1:
 		StopInternal();
-	end
 
 	ShowParseProgress(1);
 	close(hText);
@@ -88,9 +87,8 @@ char Read()
 
 	while pText >= nText do
 
-		if pText > nText then
+		when pText > nText:
 			StopInternal();
-		end:if
 
 		if Flag = 0 then
 			nText = pFile + read(hText, @Text[pFile], nTEXT);
@@ -129,15 +127,13 @@ end
 	это свидетельствует об ошибке в парсере, и программа завершится с eINTERNAL.
 */
 void Next()
-	if AlreadyOnNext != 0 then
+	when AlreadyOnNext != 0:
 		StopInternal();
-	end
 
 	AlreadyOnNext = 1;
 
-	if BeforeFirstFile = 0 then
+	when BeforeFirstFile = 0:
 		inc CurrentFileInfo.Col;
-	end:if
 
 	inc pText;
 
@@ -148,9 +144,8 @@ end
 void OpenInputFile(char @FileName)
 
 	word hFile=open(@FileName);
-	if is_handle_valid(hFile) = 0 then
+	when is_handle_valid(hFile) = 0:
 		Stop(@eNOFILE);
-	end
 
 	hText = hFile;
 
@@ -164,10 +159,9 @@ end
 void IncludeFile(char @FileName)
 	ShowParseProgress(1);
 
-	if nFile >= nFILE then
+	when nFile >= nFILE:
 		Stop(@eNOMEMORY);
-	end:if
-	
+
 	/* Сохраняем информацию о текущем файле. */
 	File[nFile].hText = hText;
 	File[nFile].nText = nText;
