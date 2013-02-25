@@ -1172,7 +1172,7 @@ word EmitSection_Code(char @Buff)
 			EmitStringNL("section ~".code~" code readable executable");
 
 		case TargetFileFormat = tELF:
-			EmitStringNL("section readable executable");
+			EmitStringNL("segment readable executable");
 
 		default:
 			StopInternal();

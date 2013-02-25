@@ -301,7 +301,7 @@ void EmitSection_Data(char @Buff; word D)
 			EmitStringNL("section ~".data~" data readable writeable");
 
 		case TargetFileFormat = tELF:
-			EmitStringNL("section readable writeable");
+			EmitStringNL("segment readable writeable");
 
 		default:
 			StopInternal();
