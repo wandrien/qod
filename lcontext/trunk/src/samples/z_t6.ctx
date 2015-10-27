@@ -1,0 +1,13 @@
+$context2
+
+begin
+	word a = 0;
+	word b = 1;
+	word c = 2;
+
+	word d = (a + b) * c;
+
+	word e = -1;
+	d = d + e;
+end
+
