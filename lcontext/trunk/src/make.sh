@@ -7,6 +7,7 @@ mk()
     fasm  $4.$5.asm $4$5
 }
 
+iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 
 mk ../bin/lcontext_c ctx4lnx    --linux out/ lcontext_a
 

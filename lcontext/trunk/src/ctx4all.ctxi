@@ -3,7 +3,6 @@ include "version.ctxi"
 
 include "include/hosted.ctxi"
 include "sys.ctxi"
-include "ctxmsg.ctxi"
 
 include "frontend_config.ctxi"
 include "frontend_htl.ctxi"

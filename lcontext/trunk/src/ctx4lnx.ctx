@@ -1,6 +1,7 @@
 $context2
 
 include "sys4lnx.ctxi"
+include "messages_utf8.ctxi"
 include "ctx4all.ctxi"
 
 
