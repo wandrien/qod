@@ -1,9 +1,11 @@
+#/bin/sh
+
 set -e
 set -x
 
 mk()
 {
-    $1 $2.ctx $3 --output $4.$5.asm --output-tree $4.$5.tree --output-include-list $4.$5.includes $6 $7
+    $1 $2.ctx $3 --output $4.$5.asm --output-tree $4.$5.tree --output-include-list $4.$5.includes $6 $7 && \
     fasm  $4.$5.asm $4$5
 }
 
@@ -25,3 +27,37 @@ mk out/lcontext_c samples/z_t3  --win32-c out/ z_t3.exe
 mk out/lcontext_c samples/z_t4  --win32-c out/ z_t4.exe
 mk out/lcontext_c samples/z_t5  --win32-c out/ z_t5.exe
 mk out/lcontext_c samples/z_t6  --win32-c out/ z_t6.exe
+
+mkdir -p tests/out
+
+failed ()
+{
+	echo " => failed $*"
+	exit 1;
+}
+
+passed ()
+{
+	echo " => passed $*"
+}
+
+
+do_test ()
+{
+	if [ "x$1" = "xcompilation_should_fail" ] ; then
+		if (mk out/lcontext_c tests/"$2"  --linux tests/out/ "$2" 1> tests/out/"$2".stdout 2> tests/out/"$2".stderr) ; then
+			failed "$2"
+		fi
+		if (cat tests/out/"$2".stdout tests/out/"$2".stderr | grep -q "$3") ; then
+			passed "$2"
+		else
+			failed "$2"
+		fi
+	fi
+}
+
+set +x
+
+do_test compilation_should_fail div_0 'Попытка деления на ноль'
+
+

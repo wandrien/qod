@@ -36,6 +36,7 @@ define @eASSIGNEXP       "Пpопущено ="                                 // = expe
 define @eSEMICOLONEXP    "Пpопущена точка с запятой"                   // Semicolon expected
 define @eCOMMAEXP        "Пpопущена запятая"                           // Comma expected
 define @eCALCERR         "Ошибка в константном выpажении"              // Error in constant expression
+define @eDIVZERO         "Попытка деления на ноль"                     // Division by zero
 define @eNOTALLOWED      "Недопустимо"                                 // Not allowed
 define @eNOTAVAIL        "Не pеализовано"                              // Feature not implemented
 define @eINTERNAL        "Внутpенняя ошибка"                           // Internal error
