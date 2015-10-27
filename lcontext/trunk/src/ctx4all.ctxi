@@ -154,7 +154,7 @@ void InitFrontEnd()
 	CurrentFileInfo.Line = 1;
 	CurrentFileInfo.Col  = 1;
 	@CurrentFileInfo.Name = NULL;
-	BeforeFirstFile = 0;
+	BeforeFirstFile = 1;
 
 	pLoop = nNODE;
 
