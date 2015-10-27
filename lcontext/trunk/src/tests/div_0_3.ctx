@@ -1,0 +1,6 @@
+$context2
+
+begin
+	word a = 1;
+	word b = a / (-0);
+end
