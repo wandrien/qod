@@ -15,29 +15,32 @@ word val2(char @Str; word Base)
 		Stop(@eINVALIDBASE);
 	end
 
-	char @D = "0123456789ABCDEF";
-
 	word i = 0;
 
 	word Value = 0;
 	while Str[i] != #0 do
 
-		if Str[i] = '_' then
+		while Str[i] = '_' do
 			inc i;
-			loop;
-		end:if
+		end
 
-		word  S=0;
-		while D[S] != Str[i] do
-			inc S;
-			if  S >= Base then
-				Stop(@eWRONGCHAR);
-			end:if
-		end:while
+		word Digit;
+		word ch = word(Str[i]);
+
+		select
+		case ch >= word('0') & ch <= word('9'):
+			Digit = ch - word('0');
+		case ch >= word('A') & ch <= word('F'):
+			Digit = ch - word('A') + 10;
+		case ch >= word('a') & ch <= word('f'):
+			Digit = ch - word('a') + 10;
+		default:
+			Stop(@eWRONGCHAR);
+		end:select
 
 		/* TODO: детектить переполнение. */
 
-		Value = Value * Base + S;
+		Value = Value * Base + Digit;
 
 		inc i;
 	end:while
@@ -49,8 +52,6 @@ end
 
 /* Парсинг строки в число. */
 word val(char @Buff)
-	char @D = "0123456789ABCDEF";
-
 	word  Base;
 	word  P;
 
