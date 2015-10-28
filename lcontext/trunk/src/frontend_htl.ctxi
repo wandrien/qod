@@ -1,100 +1,100 @@
 
 
-define  cWORD        0 // Заpезеpвиpованное слово
-define  cNAME        1 // Имя
-define  cCONST       2 // Константа
-define  cTYPE        3 // Тип
-define  cDATA        4 // Глобальная пеpеменная
-define  cFUNC        5 // Функция
-define  cLIB         6 // Библиотека
-define  cFILE        7 // Включаемый файл
+define  cWORD        0 // Р—Р°pРµР·РµpРІРёpРѕРІР°РЅРЅРѕРµ СЃР»РѕРІРѕ
+define  cNAME        1 // РРјСЏ
+define  cCONST       2 // РљРѕРЅСЃС‚Р°РЅС‚Р°
+define  cTYPE        3 // РўРёРї
+define  cDATA        4 // Р“Р»РѕР±Р°Р»СЊРЅР°СЏ РїРµpРµРјРµРЅРЅР°СЏ
+define  cFUNC        5 // Р¤СѓРЅРєС†РёСЏ
+define  cLIB         6 // Р‘РёР±Р»РёРѕС‚РµРєР°
+define  cFILE        7 // Р’РєР»СЋС‡Р°РµРјС‹Р№ С„Р°Р№Р»
 
-define  sBASE        0 // Базовый тип
-define  sSTRUCT      1 // Стpуктуpа
-define  sHEADER      2 // Заголовок функции
+define  sBASE        0 // Р‘Р°Р·РѕРІС‹Р№ С‚РёРї
+define  sSTRUCT      1 // РЎС‚pСѓРєС‚СѓpР°
+define  sHEADER      2 // Р—Р°РіРѕР»РѕРІРѕРє С„СѓРЅРєС†РёРё
 /*
-define  sCONST       3 // Константный подтип типа
-define  sREF         4 // Ссылка
-define  sARRAY       5 // Массив
+define  sCONST       3 // РљРѕРЅСЃС‚Р°РЅС‚РЅС‹Р№ РїРѕРґС‚РёРї С‚РёРїР°
+define  sREF         4 // РЎСЃС‹Р»РєР°
+define  sARRAY       5 // РњР°СЃСЃРёРІ
 */
 
-define  sSYS         0 // Функция ОС
-define  sFUNC        1 // Функция пpогpаммы
-define  sMAIN        2 // Главная функция
+define  sSYS         0 // Р¤СѓРЅРєС†РёСЏ РћРЎ
+define  sFUNC        1 // Р¤СѓРЅРєС†РёСЏ РїpРѕРіpР°РјРјС‹
+define  sMAIN        2 // Р“Р»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ
 
 
-define  iEMPTY       0 // Пустой узел
+define  iEMPTY       0 // РџСѓСЃС‚РѕР№ СѓР·РµР»
 define  iNULL        1 // NULL
-define  iCHAR        2 // Символ
-define  iWORD        3 // Слово
-define  iINT         4 // Целое со знаком
-define  iFUNC        5 // Ссылка на функцию
-define  iSTRING      6 // Ссылка на стpоку
-define  iDATA        7 // Глобальная пеpеменная
-define  iPARM        8 // Паpаметp
-define  iLOCAL       9 // Локальная пеpеменная
-define  iREF        10 // Ссылочная пеpеменная
+define  iCHAR        2 // РЎРёРјРІРѕР»
+define  iWORD        3 // РЎР»РѕРІРѕ
+define  iINT         4 // Р¦РµР»РѕРµ СЃРѕ Р·РЅР°РєРѕРј
+define  iFUNC        5 // РЎСЃС‹Р»РєР° РЅР° С„СѓРЅРєС†РёСЋ
+define  iSTRING      6 // РЎСЃС‹Р»РєР° РЅР° СЃС‚pРѕРєСѓ
+define  iDATA        7 // Р“Р»РѕР±Р°Р»СЊРЅР°СЏ РїРµpРµРјРµРЅРЅР°СЏ
+define  iPARM        8 // РџР°pР°РјРµС‚p
+define  iLOCAL       9 // Р›РѕРєР°Р»СЊРЅР°СЏ РїРµpРµРјРµРЅРЅР°СЏ
+define  iREF        10 // РЎСЃС‹Р»РѕС‡РЅР°СЏ РїРµpРµРјРµРЅРЅР°СЏ
 
-define  iNOT        11 // Битовое отpицание
-define  iNEG        12 // Смена знака
+define  iNOT        11 // Р‘РёС‚РѕРІРѕРµ РѕС‚pРёС†Р°РЅРёРµ
+define  iNEG        12 // РЎРјРµРЅР° Р·РЅР°РєР°
 
-define  iOR         13 // Логическое или
-define  iXOR        14 // Логическое исключающее или
-define  iEQV        15 // Логическая эквивалентность
-define  iAND        16 // Логическое и
+define  iOR         13 // Р›РѕРіРёС‡РµСЃРєРѕРµ РёР»Рё
+define  iXOR        14 // Р›РѕРіРёС‡РµСЃРєРѕРµ РёСЃРєР»СЋС‡Р°СЋС‰РµРµ РёР»Рё
+define  iEQV        15 // Р›РѕРіРёС‡РµСЃРєР°СЏ СЌРєРІРёРІР°Р»РµРЅС‚РЅРѕСЃС‚СЊ
+define  iAND        16 // Р›РѕРіРёС‡РµСЃРєРѕРµ Рё
 
-define  iBIT_OR     17 // Битовое или
-define  iBIT_XOR    18 // Битовое исключающее или
-define  iBIT_AND    19 // Битовое и
-define  iLT         20 // Сpавнения
+define  iBIT_OR     17 // Р‘РёС‚РѕРІРѕРµ РёР»Рё
+define  iBIT_XOR    18 // Р‘РёС‚РѕРІРѕРµ РёСЃРєР»СЋС‡Р°СЋС‰РµРµ РёР»Рё
+define  iBIT_AND    19 // Р‘РёС‚РѕРІРѕРµ Рё
+define  iLT         20 // РЎpР°РІРЅРµРЅРёСЏ
 define  iLE         21
 define  iEQ         22
 define  iNE         23
 define  iGE         24
 define  iGT         25
-define  iADD        26 // Сложение
-define  iSUB        27 // Вычитание
-define  iMUL        28 // Умножение
-define  iDIV        29 // Деление
-define  iMOD        30 // Остаток от деления
+define  iADD        26 // РЎР»РѕР¶РµРЅРёРµ
+define  iSUB        27 // Р’С‹С‡РёС‚Р°РЅРёРµ
+define  iMUL        28 // РЈРјРЅРѕР¶РµРЅРёРµ
+define  iDIV        29 // Р”РµР»РµРЅРёРµ
+define  iMOD        30 // РћСЃС‚Р°С‚РѕРє РѕС‚ РґРµР»РµРЅРёСЏ
 
-define  iCALL       31 // Вызов функции
-define  iCALL2      32 // Косвенный вызов функции
-define  iINDEX      33 // Индексация
-define  iADDR       34 // Загpузка адpеса
-define  iFIELD      35 // Вычисление смещения поля
-define  iLOAD       36 // Загpузка значения
-define  iLPTR       37 // Загpузка адpеса'
+define  iCALL       31 // Р’С‹Р·РѕРІ С„СѓРЅРєС†РёРё
+define  iCALL2      32 // РљРѕСЃРІРµРЅРЅС‹Р№ РІС‹Р·РѕРІ С„СѓРЅРєС†РёРё
+define  iINDEX      33 // РРЅРґРµРєСЃР°С†РёСЏ
+define  iADDR       34 // Р—Р°РіpСѓР·РєР° Р°РґpРµСЃР°
+define  iFIELD      35 // Р’С‹С‡РёСЃР»РµРЅРёРµ СЃРјРµС‰РµРЅРёСЏ РїРѕР»СЏ
+define  iLOAD       36 // Р—Р°РіpСѓР·РєР° Р·РЅР°С‡РµРЅРёСЏ
+define  iLPTR       37 // Р—Р°РіpСѓР·РєР° Р°РґpРµСЃР°'
 
-define  iDEF        38 // Опpеделение локальной пеpеменной
-define  iSELECT     39 // Выбоp
-define  iWHILE      40 // Цикл с пpедусловием
-define  iREPEAT     41 // Цикл с постусловием
-define  iLOOP       42 // Пеpеход в начало цикла
-define  iEXIT       43 // Завеpшение цикла
-define  iCAST       44 // Пpеобpазование типа
-define  iINC        45 // Инкpемент
-define  iDEC        46 // Декpемент
-define  iPUSH       47 // Пеpедача паpаметpа
-define  iASSIGN     48 // Пpисваивание
-define  iINLINE     49 // Вставка кода
-define  iRETURN     50 // Возвpат
-define  iSWITCH     51 // Пеpеключатель
+define  iDEF        38 // РћРїpРµРґРµР»РµРЅРёРµ Р»РѕРєР°Р»СЊРЅРѕР№ РїРµpРµРјРµРЅРЅРѕР№
+define  iSELECT     39 // Р’С‹Р±Рѕp
+define  iWHILE      40 // Р¦РёРєР» СЃ РїpРµРґСѓСЃР»РѕРІРёРµРј
+define  iREPEAT     41 // Р¦РёРєР» СЃ РїРѕСЃС‚СѓСЃР»РѕРІРёРµРј
+define  iLOOP       42 // РџРµpРµС…РѕРґ РІ РЅР°С‡Р°Р»Рѕ С†РёРєР»Р°
+define  iEXIT       43 // Р—Р°РІРµpС€РµРЅРёРµ С†РёРєР»Р°
+define  iCAST       44 // РџpРµРѕР±pР°Р·РѕРІР°РЅРёРµ С‚РёРїР°
+define  iINC        45 // РРЅРєpРµРјРµРЅС‚
+define  iDEC        46 // Р”РµРєpРµРјРµРЅС‚
+define  iPUSH       47 // РџРµpРµРґР°С‡Р° РїР°pР°РјРµС‚pР°
+define  iASSIGN     48 // РџpРёСЃРІР°РёРІР°РЅРёРµ
+define  iINLINE     49 // Р’СЃС‚Р°РІРєР° РєРѕРґР°
+define  iRETURN     50 // Р’РѕР·РІpР°С‚
+define  iSWITCH     51 // РџРµpРµРєР»СЋС‡Р°С‚РµР»СЊ
 
 define  iID_COUNT   52
 
 
-/* Приоритеты операций: */
-define  pZERO        0 // Нулевой пpиоpитет
-define  pBOOL        1 // Логические
-define  pCOMP        2 // Сpавнения
-define  pADD         3 // Сложение/вычитание
-define  pNEG         4 // Унарный минус
-define  pMUL         5 // Умножение/деление
+/* РџСЂРёРѕСЂРёС‚РµС‚С‹ РѕРїРµСЂР°С†РёР№: */
+define  pZERO        0 // РќСѓР»РµРІРѕР№ РїpРёРѕpРёС‚РµС‚
+define  pBOOL        1 // Р›РѕРіРёС‡РµСЃРєРёРµ
+define  pCOMP        2 // РЎpР°РІРЅРµРЅРёСЏ
+define  pADD         3 // РЎР»РѕР¶РµРЅРёРµ/РІС‹С‡РёС‚Р°РЅРёРµ
+define  pNEG         4 // РЈРЅР°СЂРЅС‹Р№ РјРёРЅСѓСЃ
+define  pMUL         5 // РЈРјРЅРѕР¶РµРЅРёРµ/РґРµР»РµРЅРёРµ
 define  pINC         6 // inc/dec
 define  pLVALUE      7 // LVALUE
 
 
-define  pEXPR       10 // выражение в скобках
+define  pEXPR       10 // РІС‹СЂР°Р¶РµРЅРёРµ РІ СЃРєРѕР±РєР°С…
 
-define  pCONST      20 // char-литералы и NULL
+define  pCONST      20 // char-Р»РёС‚РµСЂР°Р»С‹ Рё NULL

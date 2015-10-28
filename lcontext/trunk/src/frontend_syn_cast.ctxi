@@ -21,7 +21,7 @@ end
 
 void Cast(word pType1, pType2; word @P)
 
-	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
+	/* FIXME: Р­С‚Р° РІРµС‚РєР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ С‡Р°СЃС‚СЊСЋ РїРѕРґСЃРёСЃС‚РµРјС‹ CTE. */
 	if pType1=st_int & Node[P].ID=iWORD then
 		Node[P].ID=iINT;
 		return;

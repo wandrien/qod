@@ -1,6 +1,6 @@
 
 /*
-	Процедуры синтаксического анализа вехнего уровня грамматики.
+	РџСЂРѕС†РµРґСѓСЂС‹ СЃРёРЅС‚Р°РєСЃРёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р° РІРµС…РЅРµРіРѕ СѓСЂРѕРІРЅСЏ РіСЂР°РјРјР°С‚РёРєРё.
 */
 
 /*****************************************************************************/
@@ -155,10 +155,10 @@ void DeclFunc1(char @Buff; word a)
 	Scan(@Buff);
 
 	select
-		case strcmp(@Buff,";")=0: /* Прототип. */
+		case strcmp(@Buff,";")=0: /* РџСЂРѕС‚РѕС‚РёРї. */
 			Stop(@eNOTAVAIL);
 
-		case strcmp(@Buff,"external")=0: /* Внешняя функция. */
+		case strcmp(@Buff,"external")=0: /* Р’РЅРµС€РЅСЏСЏ С„СѓРЅРєС†РёСЏ. */
 			select
 				case TargetFileFormat = tPE:
 					null;
@@ -166,7 +166,7 @@ void DeclFunc1(char @Buff; word a)
 					Stop(@eNOTALLOWED);
 			end
 
-			/* Читаем имя библиотеки. Добавляем библиотеку в словарь, если она туда еще не занесена. */
+			/* Р§РёС‚Р°РµРј РёРјСЏ Р±РёР±Р»РёРѕС‚РµРєРё. Р”РѕР±Р°РІР»СЏРµРј Р±РёР±Р»РёРѕС‚РµРєСѓ РІ СЃР»РѕРІР°СЂСЊ, РµСЃР»Рё РѕРЅР° С‚СѓРґР° РµС‰Рµ РЅРµ Р·Р°РЅРµСЃРµРЅР°. */
 			word pLib = Find(@Scan(@Buff));
 			if   pLib >= nDict then
 
@@ -179,9 +179,9 @@ void DeclFunc1(char @Buff; word a)
 
 
 			/*
-				Если для функции в библиотеке указано имя, отличное от объявленного имени функции,
-				объявленное имя делаем алиасом для библиотечного имени.
-				FIXME: Переделать! Библиотечное имя не должно присутствовать в пространстве имён модуля.
+				Р•СЃР»Рё РґР»СЏ С„СѓРЅРєС†РёРё РІ Р±РёР±Р»РёРѕС‚РµРєРµ СѓРєР°Р·Р°РЅРѕ РёРјСЏ, РѕС‚Р»РёС‡РЅРѕРµ РѕС‚ РѕР±СЉСЏРІР»РµРЅРЅРѕРіРѕ РёРјРµРЅРё С„СѓРЅРєС†РёРё,
+				РѕР±СЉСЏРІР»РµРЅРЅРѕРµ РёРјСЏ РґРµР»Р°РµРј Р°Р»РёР°СЃРѕРј РґР»СЏ Р±РёР±Р»РёРѕС‚РµС‡РЅРѕРіРѕ РёРјРµРЅРё.
+				FIXME: РџРµСЂРµРґРµР»Р°С‚СЊ! Р‘РёР±Р»РёРѕС‚РµС‡РЅРѕРµ РёРјСЏ РЅРµ РґРѕР»Р¶РЅРѕ РїСЂРёСЃСѓС‚СЃС‚РІРѕРІР°С‚СЊ РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РёРјС‘РЅ РјРѕРґСѓР»СЏ.
 			*/
 			if strcmp(@Scan(@Buff),".")=0 then
 				if Find(@Scan(@Buff)) < nDict then
@@ -206,7 +206,7 @@ void DeclFunc1(char @Buff; word a)
 				Stop(@eSEMICOLONEXP);
 			end:if
 
-		default: /* Тело функции. */
+		default: /* РўРµР»Рѕ С„СѓРЅРєС†РёРё. */
 			pParm=nParm;
 			pIndx=nIndx;
 			Statements(@Dict[pFunc].pNode, @Buff, "end", NULL, NULL);
@@ -257,7 +257,7 @@ void DeclVarFunc(char @Buff)
 		Stop(@eTYPEEXP);
 	end
 
-	/* Функтор-тип. */
+	/* Р¤СѓРЅРєС‚РѕСЂ-С‚РёРї. */
 	if strcmp(@Scan(@Buff),"function")=0 then
 		DeclVarFuncType(@Buff, pType);
 		return;
@@ -281,7 +281,7 @@ void DeclVarFunc(char @Buff)
 
 		Scan(@Buff);
 
-		/* Функция. */
+		/* Р¤СѓРЅРєС†РёСЏ. */
 		if strcmp(@Buff,"(")=0 then
 			if First = 0 then
 				Stop(@eNOFUNCTION);
@@ -404,7 +404,7 @@ end
 
 word DeclInclude(char @Buff)
 
-	/* Читаем имя файла. */
+	/* Р§РёС‚Р°РµРј РёРјСЏ С„Р°Р№Р»Р°. */
 
 	if strcmp(@Scan(@Buff),"~"")!=0 then
 		Stop(@eQUOTEXP);
@@ -431,13 +431,13 @@ word DeclInclude(char @Buff)
 
 	char@ FileName = @ResolveFileName(@Buff);
 
-	/* Проверка, подключался ли уже указанный файл. */
+	/* РџСЂРѕРІРµСЂРєР°, РїРѕРґРєР»СЋС‡Р°Р»СЃСЏ Р»Рё СѓР¶Рµ СѓРєР°Р·Р°РЅРЅС‹Р№ С„Р°Р№Р». */
 	P = Find_cFILE(@FileName);
 	if P < nDict then
 		return 0;
 	end:if
 
-	/* Заносим имя файла в словарь. */
+	/* Р—Р°РЅРѕСЃРёРј РёРјСЏ С„Р°Р№Р»Р° РІ СЃР»РѕРІР°СЂСЊ. */
 	word D = DictAlloc();
 	SetDictName(D, @FileName);
 	Dict[D].Class = cFILE;
@@ -456,16 +456,16 @@ void Parse(char @Buff)
 	do
 		word R = 0;
 		select
-		case strcmp(@Buff,"begin")=0:         // Главная функция
+		case strcmp(@Buff,"begin")=0:         // Р“Р»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ
 			DeclMainFunc(@Buff);
 			exit;
-		case strcmp(@Buff,"include")=0:       // Включаемый файл
+		case strcmp(@Buff,"include")=0:       // Р’РєР»СЋС‡Р°РµРјС‹Р№ С„Р°Р№Р»
 			R = DeclInclude(@Buff);
-		case strcmp(@Buff,"define")=0:        // Константа
+		case strcmp(@Buff,"define")=0:        // РљРѕРЅСЃС‚Р°РЅС‚Р°
 			R = DeclDefine(@Buff);
-		case strcmp(@Buff,"struct")=0:        // Стpуктуpа
+		case strcmp(@Buff,"struct")=0:        // РЎС‚pСѓРєС‚СѓpР°
 			DeclStruct(@Buff);
-		case strcmp(@Buff,"synonym")=0:       // Синоним
+		case strcmp(@Buff,"synonym")=0:       // РЎРёРЅРѕРЅРёРј
 			DeclSynonym(@Buff);
 		case strcmp(@Buff,"$context2")=0:
 			c_style_semicolons = 1;
@@ -473,7 +473,7 @@ void Parse(char @Buff)
 		case strcmp(@Buff,"$context")=0:
 			c_style_semicolons = 0;
 			ROStrings = 0;
-		default:                              // Пеpеменная, функция, ...
+		default:                              // РџРµpРµРјРµРЅРЅР°СЏ, С„СѓРЅРєС†РёСЏ, ...
 			DeclVarFunc(@Buff);
 		end:select
 

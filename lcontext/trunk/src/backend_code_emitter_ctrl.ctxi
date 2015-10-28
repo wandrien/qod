@@ -81,7 +81,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		_Code(Node[P].pRight,0,0,0);
 	end
 
-	/* Оптимизация прямой загрузки значения из переменной. */
+	/* РћРїС‚РёРјРёР·Р°С†РёСЏ РїСЂСЏРјРѕР№ Р·Р°РіСЂСѓР·РєРё Р·РЅР°С‡РµРЅРёСЏ РёР· РїРµСЂРµРјРµРЅРЅРѕР№. */
 
 	word P1 = Node[P].pLeft;
 
@@ -98,7 +98,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 			word  Ofs;
 			word ID=ExtractDataInfo(P1, @pType, @nPtr, @pIndx, @nIndx, @Ofs);
 
-			/* FIXME: проверка pIndx >= nIndx не работает для локальных переменных, поскольку компилятор не сохраняет эту информацию >< */
+			/* FIXME: РїСЂРѕРІРµСЂРєР° pIndx >= nIndx РЅРµ СЂР°Р±РѕС‚Р°РµС‚ РґР»СЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С…, РїРѕСЃРєРѕР»СЊРєСѓ РєРѕРјРїРёР»СЏС‚РѕСЂ РЅРµ СЃРѕС…СЂР°РЅСЏРµС‚ СЌС‚Сѓ РёРЅС„РѕСЂРјР°С†РёСЋ >< */
 //			if pIndx >= nIndx & SizeOfType(pType, nPtr) = 4 then
 			if 1 >= 1 & SizeOfType(pType, nPtr) = 4 then
 				strcpy(@Buff, "push    dword ");
@@ -109,7 +109,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 	end:if
 
 
-	/* Оптимизация прямой загрузки указателя на строку. */
+	/* РћРїС‚РёРјРёР·Р°С†РёСЏ РїСЂСЏРјРѕР№ Р·Р°РіСЂСѓР·РєРё СѓРєР°Р·Р°С‚РµР»СЏ РЅР° СЃС‚СЂРѕРєСѓ. */
 	if Node[P1].ID=iSTRING then
 
 		if Node[P1].pLeft != nNODE
@@ -130,7 +130,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 	end:if
 
 
-	/* Оптимизация прямой загрузки числа из регистра. */
+	/* РћРїС‚РёРјРёР·Р°С†РёСЏ РїСЂСЏРјРѕР№ Р·Р°РіСЂСѓР·РєРё С‡РёСЃР»Р° РёР· СЂРµРіРёСЃС‚СЂР°. */
 	select
 	case Node[P1].ID=iNULL:
 		word RegC = PHO_FindRegWithConst(0);
@@ -150,7 +150,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		end:if
 	end:select
 
-	/* Оптимизация прямой загрузки числа. */
+	/* РћРїС‚РёРјРёР·Р°С†РёСЏ РїСЂСЏРјРѕР№ Р·Р°РіСЂСѓР·РєРё С‡РёСЃР»Р°. */
 	if (Node[P1].ID=iWORD | Node[P1].ID=iINT) & Node[P1].Value != 0 then
 
 		strcpy(@Buff, "push    dword ");
@@ -160,7 +160,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		return nDICT;
 	end:if
 
-	/* Все остальные варианты... */
+	/* Р’СЃРµ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РІР°СЂРёР°РЅС‚С‹... */
 
 	fEAX=0;
 	word pType = _Code(Node[P].pLeft,0,0,0);

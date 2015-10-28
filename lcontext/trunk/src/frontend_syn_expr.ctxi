@@ -1,11 +1,11 @@
 
 /*
-	Анализатор выражений.
+	РђРЅР°Р»РёР·Р°С‚РѕСЂ РІС‹СЂР°Р¶РµРЅРёР№.
 */
 
 /*****************************************************************************/
 
-/* Парсинг строки в целое число по указанному основанию. */
+/* РџР°СЂСЃРёРЅРі СЃС‚СЂРѕРєРё РІ С†РµР»РѕРµ С‡РёСЃР»Рѕ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РѕСЃРЅРѕРІР°РЅРёСЋ. */
 word val2(char @Str; word Base)
 	if Str[0] = #0 then
 		Stop(@eMALFORMEDINT);
@@ -35,7 +35,7 @@ word val2(char @Str; word Base)
 			end:if
 		end:while
 
-		/* TODO: детектить переполнение. */
+		/* TODO: РґРµС‚РµРєС‚РёС‚СЊ РїРµСЂРµРїРѕР»РЅРµРЅРёРµ. */
 
 		Value = Value * Base + S;
 
@@ -47,7 +47,7 @@ end
 
 /*****************************************************************************/
 
-/* Парсинг строки в число. */
+/* РџР°СЂСЃРёРЅРі СЃС‚СЂРѕРєРё РІ С‡РёСЃР»Рѕ. */
 word val(char @Buff)
 	char @D = "0123456789ABCDEF";
 
@@ -56,7 +56,7 @@ word val(char @Buff)
 
 	word k = str_find_chars(@Buff, "$");
 	select
-	/* Префиксы 0x, 0o, 0b. */
+	/* РџСЂРµС„РёРєСЃС‹ 0x, 0o, 0b. */
 	case str_has_prefix(@Buff, "0x") != 0 :
 		Base = 16;
 		P    = 2;
@@ -66,15 +66,15 @@ word val(char @Buff)
 	case str_has_prefix(@Buff, "0b") != 0 :
 		Base = 2;
 		P    = 2;
-	/* Символ $ не найден - десятичное. */
+	/* РЎРёРјРІРѕР» $ РЅРµ РЅР°Р№РґРµРЅ - РґРµСЃСЏС‚РёС‡РЅРѕРµ. */
 	case Buff[k] = #0:
 		Base = 10;
 		P    = 0;
-	/* Символ $ в начале строки - шестнадцатиричное. NOTE: Возможно в будущем будет deprecated. */
+	/* РЎРёРјРІРѕР» $ РІ РЅР°С‡Р°Р»Рµ СЃС‚СЂРѕРєРё - С€РµСЃС‚РЅР°РґС†Р°С‚РёСЂРёС‡РЅРѕРµ. NOTE: Р’РѕР·РјРѕР¶РЅРѕ РІ Р±СѓРґСѓС‰РµРј Р±СѓРґРµС‚ deprecated. */
 	case k = 0:
 		Base = 16;
 		P    = 1;
-	/* Символ $ в середине строки - слева от него основание, справа - само число. */
+	/* РЎРёРјРІРѕР» $ РІ СЃРµСЂРµРґРёРЅРµ СЃС‚СЂРѕРєРё - СЃР»РµРІР° РѕС‚ РЅРµРіРѕ РѕСЃРЅРѕРІР°РЅРёРµ, СЃРїСЂР°РІР° - СЃР°РјРѕ С‡РёСЃР»Рѕ. */
 	default:
 		Buff[k] = #0;
 		Base = val2(@Buff, 10);
@@ -115,7 +115,7 @@ end
 
 /*****************************************************************************/
 
-/* Читает строковой литерал и создаёт синтаксический узел для него. */
+/* Р§РёС‚Р°РµС‚ СЃС‚СЂРѕРєРѕРІРѕР№ Р»РёС‚РµСЂР°Р» Рё СЃРѕР·РґР°С‘С‚ СЃРёРЅС‚Р°РєСЃРёС‡РµСЃРєРёР№ СѓР·РµР» РґР»СЏ РЅРµРіРѕ. */
 
 word StringNode()
 	word D = DictAlloc();
@@ -132,7 +132,7 @@ end
 
 /*****************************************************************************/
 
-/* Парсит последовательность операций разыменования указателя, возвращает количество операций. */
+/* РџР°СЂСЃРёС‚ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РѕРїРµСЂР°С†РёР№ СЂР°Р·С‹РјРµРЅРѕРІР°РЅРёСЏ СѓРєР°Р·Р°С‚РµР»СЏ, РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РѕРїРµСЂР°С†РёР№. */
 
 word ReadPtrs(char @Buff)
 	word nPtr=0;
@@ -215,9 +215,9 @@ include "frontend_syn_cast.ctxi"
 /*****************************************************************************/
 
 /*
-	Вычисление логического НЕ преобразованием исходной форумулы.
+	Р’С‹С‡РёСЃР»РµРЅРёРµ Р»РѕРіРёС‡РµСЃРєРѕРіРѕ РќР• РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµРј РёСЃС…РѕРґРЅРѕР№ С„РѕСЂСѓРјСѓР»С‹.
 
-	FIXME: Эта функция должна быть частью подсистемы CTE.
+	FIXME: Р­С‚Р° С„СѓРЅРєС†РёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ С‡Р°СЃС‚СЊСЋ РїРѕРґСЃРёСЃС‚РµРјС‹ CTE.
 */
 
 void Not(word P)
@@ -308,7 +308,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	word Call=0;
 	word P1;
 
-	if isdigit(Buff)!=0 then /* Число. */
+	if isdigit(Buff)!=0 then /* Р§РёСЃР»Рѕ. */
 		P1=Peek();
 		Node[P1].ID    = iWORD;
 		Node[P1].Value = val (@Buff);
@@ -324,7 +324,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	word pIndx=0;
 	word nIndx=0;
 
-	if Flag=0 then /* Это строка? */
+	if Flag=0 then /* Р­С‚Рѕ СЃС‚СЂРѕРєР°? */
 		if strcmp(@Buff,"~"")=0 then
 			if nPtr>0 then
 				Stop(@eSTRING);
@@ -337,7 +337,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		end:if
 	end:if
 
-	if Flag=0 then /* Это локальная переменная? */
+	if Flag=0 then /* Р­С‚Рѕ Р»РѕРєР°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ? */
 		word  I=pParm;
 		while I<nParm do
 			if strcmp(@Parm[I].Name,@Buff)=0 then
@@ -357,7 +357,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		end:while
 	end:if
 
-	if Flag=0 then /* Это параметр функции? */
+	if Flag=0 then /* Р­С‚Рѕ РїР°СЂР°РјРµС‚СЂ С„СѓРЅРєС†РёРё? */
 		word I=Dict[pFunc].pIndx;
 		while I<Dict[pFunc].nIndx do
 			if strcmp(@Parm[I].Name,@Buff)=0 then
@@ -375,14 +375,14 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		end:while
 	end:if
 
-	if Flag=0 then /* Значит это глобальное имя. */
+	if Flag=0 then /* Р—РЅР°С‡РёС‚ СЌС‚Рѕ РіР»РѕР±Р°Р»СЊРЅРѕРµ РёРјСЏ. */
 		word I=Find(@Buff);
 		if I>=nDict then
 			Stop(@eUNDEFINED);
 		end:if
 
 		select
-		case Dict[I].Class=cCONST: /* Константа? */
+		case Dict[I].Class=cCONST: /* РљРѕРЅСЃС‚Р°РЅС‚Р°? */
 			P1=Peek();
 			select
 			case Dict[I].pType=st_word:
@@ -404,7 +404,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 			pType          = Dict[I].pType;
 
-		case Dict[I].Class=cDATA | Dict[I].Class=cFUNC: /* Глобальная переменная/функция? */
+		case Dict[I].Class=cDATA | Dict[I].Class=cFUNC: /* Р“Р»РѕР±Р°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ/С„СѓРЅРєС†РёСЏ? */
 			P1=Peek();
 			Node[P1].ID    =iDATA;
 			Node[P1].Value = I;
@@ -439,7 +439,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 				nIndx            = Dict[I].nIndx;
 			end:if
 
-		case Dict[I].Class=cTYPE: /* Тип данных? */
+		case Dict[I].Class=cTYPE: /* РўРёРї РґР°РЅРЅС‹С…? */
 			if Prty<pLVALUE then
 				if strcmp(@Scan(@Buff),"(")!=0 then
 					Stop(@eBRACKETEXP);
@@ -477,10 +477,10 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 
 	/*
-		В этом месте имеем следующие поля:
-		P1 - (логически) дочерний узел
-		pType, nPtr1, pIndx, nIndx - тип дочернего узла: собственно тип, количество уровней @-косвенности, диапазоны размерностей массива.
-		nPtr - количество операций @ перед узлом.
+		Р’ СЌС‚РѕРј РјРµСЃС‚Рµ РёРјРµРµРј СЃР»РµРґСѓСЋС‰РёРµ РїРѕР»СЏ:
+		P1 - (Р»РѕРіРёС‡РµСЃРєРё) РґРѕС‡РµСЂРЅРёР№ СѓР·РµР»
+		pType, nPtr1, pIndx, nIndx - С‚РёРї РґРѕС‡РµСЂРЅРµРіРѕ СѓР·Р»Р°: СЃРѕР±СЃС‚РІРµРЅРЅРѕ С‚РёРї, РєРѕР»РёС‡РµСЃС‚РІРѕ СѓСЂРѕРІРЅРµР№ @-РєРѕСЃРІРµРЅРЅРѕСЃС‚Рё, РґРёР°РїР°Р·РѕРЅС‹ СЂР°Р·РјРµСЂРЅРѕСЃС‚РµР№ РјР°СЃСЃРёРІР°.
+		nPtr - РєРѕР»РёС‡РµСЃС‚РІРѕ РѕРїРµСЂР°С†РёР№ @ РїРµСЂРµРґ СѓР·Р»РѕРј.
 	*/
 
 	word @P2=@Node[P1].pLeft;
@@ -491,7 +491,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	do
 		Scan(@Buff);
 		word pIndx1=pIndx;
-		while pIndx<nIndx do /* Индексация массива. */
+		while pIndx<nIndx do /* РРЅРґРµРєСЃР°С†РёСЏ РјР°СЃСЃРёРІР°. */
 			if strcmp(@Buff,"[")!=0 then
 				if pIndx!=pIndx1 | strcmp(@Buff,".")=0 then
 					Stop(@eBRACKETEXP);
@@ -519,7 +519,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			inc  pIndx;
 		end:while
 
-		while strcmp(@Buff,"[")=0 do /* Индексация указателя. */
+		while strcmp(@Buff,"[")=0 do /* РРЅРґРµРєСЃР°С†РёСЏ СѓРєР°Р·Р°С‚РµР»СЏ. */
 			if nPtr1<1 then
 				Stop(@eNOADDR);
 			end:if
@@ -545,7 +545,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		end:while
 
 		select
-		case strcmp(@Buff,"(")=0: /* Вызов функтора. */
+		case strcmp(@Buff,"(")=0: /* Р’С‹Р·РѕРІ С„СѓРЅРєС‚РѕСЂР°. */
 			if Dict[pType].Sub!=sHEADER then
 				Stop(@eHEADEREXP);
 			end
@@ -594,7 +594,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			P1 = P4;
 			@P2=@Node[P5].pRight;
 
-		case strcmp(@Buff,".")=0: /* Обращение к полю структуры. */
+		case strcmp(@Buff,".")=0: /* РћР±СЂР°С‰РµРЅРёРµ Рє РїРѕР»СЋ СЃС‚СЂСѓРєС‚СѓСЂС‹. */
 			if Dict[pType].Sub!=sSTRUCT then
 				Stop(@eSTRUCTEXP);
 			end:if
@@ -697,7 +697,7 @@ end
 void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @Buff)
 
 	if nPtr=0 & nPtr2=0 then
-		if pType2!=pType then /* Преобразование целочисленных типов к одному типу. */
+		if pType2!=pType then /* РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ С†РµР»РѕС‡РёСЃР»РµРЅРЅС‹С… С‚РёРїРѕРІ Рє РѕРґРЅРѕРјСѓ С‚РёРїСѓ. */
 			select
 			case pType=st_byte & pType2=st_word:
 				Cast(pType2,pType,@Node[P2].pLeft);
@@ -725,14 +725,14 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 			end:select
 		end:if
 	else
-		/* Если один из типов указатель, 1) а второй - нет; или 2) справа не NULL... */
+		/* Р•СЃР»Рё РѕРґРёРЅ РёР· С‚РёРїРѕРІ СѓРєР°Р·Р°С‚РµР»СЊ, 1) Р° РІС‚РѕСЂРѕР№ - РЅРµС‚; РёР»Рё 2) СЃРїСЂР°РІР° РЅРµ NULL... */
 		if nPtr=0 | Node[Node[P2].pRight].ID!=iNULL then
 			Stop(@eTYPE);
 		end:if
 	end:if
 
 	select
-	case nPtr>0: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
+	case nPtr>0: /* РњРµР¶РґСѓ СѓРєР°Р·Р°С‚РµР»СЏРјРё РІРѕР·РјРѕР¶РЅС‹ С‚РѕР»СЊРєРѕ РѕРїРµСЂР°С†РёРё СЃСЂР°РІРЅРµРЅРёСЏ РЅР° СЂР°РІРµРЅСЃС‚РІРѕ Рё РЅРµСЂР°РІРµРЅСЃС‚РІРѕ. */
 		if ID!=iEQ & ID!=iNE then
 			Stop(@eTYPE);
 		end
@@ -740,7 +740,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 		pType = nDICT;
 		nPtr  = 0;
 
-	case ID=iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями (тип "отсутствие типа"). */
+	case ID=iOR: /* РѕРїРµСЂР°С†РёСЏ РР›Р РІРѕР·РјРѕР¶РЅР° Р»РёР±Рѕ РјРµР¶РґСѓ Р±РµР·Р·РЅР°РєРѕРІС‹РјРё С†РµР»С‹РјРё, Р»РёР±Рѕ РјРµР¶РґСѓ Р±СѓР»РµРІС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё (С‚РёРї "РѕС‚СЃСѓС‚СЃС‚РІРёРµ С‚РёРїР°"). */
 		select
 		case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_OR;
@@ -748,7 +748,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 			Stop(@eTYPE);
 		end
 
-	case ID=iXOR: /* Аналогично предыдущему. */
+	case ID=iXOR: /* РђРЅР°Р»РѕРіРёС‡РЅРѕ РїСЂРµРґС‹РґСѓС‰РµРјСѓ. */
 		select
 		case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_XOR;
@@ -759,12 +759,12 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 			Node[P3].pRight= Node[P2].pRight;
 
 			Node[P2].pLeft = P3;
-			Node[P2].pRight= Dup(Node[P2].pRight); /* FIXME: исправить этот бред тут и кодогенераторе... */
+			Node[P2].pRight= Dup(Node[P2].pRight); /* FIXME: РёСЃРїСЂР°РІРёС‚СЊ СЌС‚РѕС‚ Р±СЂРµРґ С‚СѓС‚ Рё РєРѕРґРѕРіРµРЅРµСЂР°С‚РѕСЂРµ... */
 		default:
 			Stop(@eTYPE);
 		end
 
-	case ID=iAND: /* Аналогично предыдущему. */
+	case ID=iAND: /* РђРЅР°Р»РѕРіРёС‡РЅРѕ РїСЂРµРґС‹РґСѓС‰РµРјСѓ. */
 		select
 			case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_AND;
@@ -772,7 +772,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 			Stop(@eTYPE);
 		end
 
-	case iLT<=ID & ID<=iGT: /* Сравнения возможны только между целыми и символами (case с указателями был выше) */
+	case iLT<=ID & ID<=iGT: /* РЎСЂР°РІРЅРµРЅРёСЏ РІРѕР·РјРѕР¶РЅС‹ С‚РѕР»СЊРєРѕ РјРµР¶РґСѓ С†РµР»С‹РјРё Рё СЃРёРјРІРѕР»Р°РјРё (case СЃ СѓРєР°Р·Р°С‚РµР»СЏРјРё Р±С‹Р» РІС‹С€Рµ) */
 		if pType!=st_char & pType!=st_byte & pType!=st_word & pType!=st_int then
 			Stop(@eTYPE);
 		end
@@ -780,7 +780,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 		pType=nDICT;
 
 	case iADD<=ID & ID<=iDIV:
-		if pType!=st_byte & pType!=st_word & pType!=st_int then /* Арифметические операции только с целыми. */
+		if pType!=st_byte & pType!=st_word & pType!=st_int then /* РђСЂРёС„РјРµС‚РёС‡РµСЃРєРёРµ РѕРїРµСЂР°С†РёРё С‚РѕР»СЊРєРѕ СЃ С†РµР»С‹РјРё. */
 			Stop(@eTYPE);
 		end
 
@@ -866,7 +866,7 @@ word ExprLitChar(word P_; word O; word @pType, @nPtr; char @Buff)
 	word P1=Peek();
 
 	select
-	case strcmp(@Buff,"#")=0: /* Символ в #-виде. */
+	case strcmp(@Buff,"#")=0: /* РЎРёРјРІРѕР» РІ #-РІРёРґРµ. */
 		word N=val(@Scan(@Buff));
 		if   N>255 then
 			Stop(@eOVERFLOW);
@@ -877,7 +877,7 @@ word ExprLitChar(word P_; word O; word @pType, @nPtr; char @Buff)
 		pType          = st_char;
 		nPtr           = 0;
 
-	case strcmp(@Buff,"'")=0: /* Символ. */
+	case strcmp(@Buff,"'")=0: /* РЎРёРјРІРѕР». */
 		Node[P1].ID    =iCHAR;
 		Node[P1].Value = word(ScanChar());
 		pType          = st_char;
