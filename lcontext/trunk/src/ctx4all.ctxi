@@ -244,13 +244,11 @@ void Translate()
 
 	/* Назначаем метки и смещения. */
 
-	word L=10000;
-
 	AssignLabels_Struct();
 	word D = AssignLabels_Data();
 
-	AssignLabels_Func(@L);
-	AssignLabels_FuncExternal(@L);
+	AssignLabels_Func();
+	AssignLabels_FuncExternal();
 
 	AssignStringOffsets();
 
@@ -280,7 +278,7 @@ void Translate()
 
 	select
 	case TargetFileFormat = tPE:
-		EmitPEImport(@Buff, L);
+		EmitPEImport(@Buff);
 	end:select
 
 	EmitNL();

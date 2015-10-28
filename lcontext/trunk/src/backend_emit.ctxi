@@ -81,9 +81,9 @@ end
 /*****************************************************************************/
 
 /* Если L не равно 0, выводит метку L. Следом выводит строку Inst. */
-void EmitL(word L; char @Inst)
+void EmitLine(word Label; char @Inst)
 
-	if L != 0 then
+	if Label != 0 then
 		PHO_InvalidateRegs();
 	else
 		@Inst = @PHO_Optimize(@Inst);
@@ -93,10 +93,10 @@ void EmitL(word L; char @Inst)
 	end:if
 
 
-	if L != 0 then
+	if Label != 0 then
 		EmitChar('@');
 
-		char @P = @str(L);
+		char @P = @str(Label);
 		word I = 0;
 		while P[I] != #0 do
 			EmitChar(P[I]);
@@ -118,14 +118,15 @@ end
 
 /*****************************************************************************/
 
-void EmitLabel(word L)
-	EmitL(L, "");
+void EmitLabel(word Label)
+	when Label = 0: Stop(@eINTERNAL);
+	EmitLine(Label, "");
 end
 
 /*****************************************************************************/
 
 void Emit(char @Inst)
-	EmitL(0, @Inst);
+	EmitLine(0, @Inst);
 end
 
 /*****************************************************************************/

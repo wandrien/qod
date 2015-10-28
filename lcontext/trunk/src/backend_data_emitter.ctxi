@@ -317,13 +317,14 @@ end
 
 /*****************************************************************************/
 
-void EmitPEImport(char @Buff; word L)
+void EmitPEImport(char @Buff)
 
 	EmitNL();
 	EmitStringNL("section ~".idata~" import data readable writeable");
 	EmitNL();
 
-	word L1 = L;
+	word FirstLabel = NewLabel();
+	word LabelCount = 0;
 
 
 	/* Таблица экспортируемых библиотек. */
@@ -332,13 +333,16 @@ void EmitPEImport(char @Buff; word L)
 	while I<nDict do
 		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
 
+			word Label = NewLabel();
+			inc LabelCount;
+			when FirstLabel + LabelCount != Label: Stop(@eINTERNAL);
+
 			strcpy(@Buff, "dd      0, 0, 0, RVA @");
-			strcat(@Buff, @str(L1));
+			strcat(@Buff, @str(Label));
 			strcat(@Buff, ", RVA @");
 			strcat(@Buff, @str(Dict[I].Value));
 			Emit(@Buff);
 
-			inc  L1;
 		end:if
 
 		inc I;
@@ -358,12 +362,16 @@ void EmitPEImport(char @Buff; word L)
 			word  J=0;
 			while J<nDict do
 				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+
+					word Label = NewLabel();
+					inc LabelCount;
+					when FirstLabel + LabelCount != Label: Stop(@eINTERNAL);
+
 					strcpy(@Buff, "@");
 					strcat(@Buff, @str(Dict[J].Value));
 					strcat(@Buff, "  dd      RVA @");
-					strcat(@Buff, @str(L1));
+					strcat(@Buff, @str(Label));
 					EmitStringNL(@Buff);
-					inc  L1;
 				end:if
 
 				inc J;
@@ -380,12 +388,12 @@ void EmitPEImport(char @Buff; word L)
 
 	EmitNL();
 
-	L1=L;
+	word Label = FirstLabel + 1;
 	I =0;
 	while I<nDict do
 		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
-			EmitL(L1,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(I)),".DLL~", 0"));
-			inc  L1;
+			EmitLine(Label,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(I)),".DLL~", 0"));
+			inc Label;
 		end:if
 
 		inc I;
@@ -402,9 +410,9 @@ void EmitPEImport(char @Buff; word L)
 			word  J=0;
 			while J<nDict do
 				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
-					EmitL(L1,"dw      0");
+					EmitLine(Label,"dw      0");
 					Emit(@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(J)),"~", 0"));
-					inc  L1;
+					inc Label;
 				end:if
 
 				inc J;

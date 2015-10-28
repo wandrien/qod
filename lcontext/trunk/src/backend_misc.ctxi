@@ -1,13 +1,5 @@
 
 
-word NextLabelNr = 10000;
-
-word NewLabel()
-	word l = NextLabelNr;
-	inc NextLabelNr;
-	return l;
-end
-
 
 
 void EmitUsageInfo(char @Name; word Used; word Total)

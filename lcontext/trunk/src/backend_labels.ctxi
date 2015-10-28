@@ -1,4 +1,13 @@
 
+/*****************************************************************************/
+
+word NextLabelNr = 10000;
+
+word NewLabel()
+	word l = NextLabelNr;
+	inc NextLabelNr;
+	return l;
+end
 
 /*****************************************************************************/
 
@@ -56,7 +65,7 @@ end
 
 // Pасстановка меток
 
-word     Enum(word P; word Flag; word @L)
+word     Enum(word P; word Flag)
   if P>=nNODE then
     return 0;
   end
@@ -72,32 +81,28 @@ word     Enum(word P; word Flag; word @L)
             while P1<nNODE do
               word P2=Node[P1].pLeft;
 
-              Enum(Node[P2].pLeft,0,@L);
+              Enum(Node[P2].pLeft,0);
 
-              Node[P2].Value=L;
-              inc  L;
+              Node[P2].Value = NewLabel();
 
-              word V=Enum(Node[P2].pRight,1,@L);
+              word V=Enum(Node[P2].pRight,1);
               if M<S+V then
                 M=S+V;
               end
 
-              Node[P1].Value=L;
-              inc  L;
+              Node[P1].Value = NewLabel();
 
               P1=Node[P1].pRight;
             end
 
-            Node[P].Value=L;
-            inc  L;
+            Node[P].Value = NewLabel();
 
           case Node[P].ID=iSWITCH :
             word  P1=Node[Node[P].pLeft].pRight;
             while P1<nNODE do
-              Node[P1].Value=L;
-              inc  L;
+              Node[P1].Value = NewLabel();
 
-              word V=Enum(Node[Node[P1].pLeft].pRight,1,@L);
+              word V=Enum(Node[Node[P1].pLeft].pRight,1);
               if M<S+V then
                 M=S+V;
               end
@@ -105,45 +110,39 @@ word     Enum(word P; word Flag; word @L)
               P1=Node[P1].pRight;
             end
 
-            Node[P].Value=L;
-            inc  L;
+            Node[P].Value = NewLabel();
 
           case Node[P].ID=iWHILE:
             word P1=Node[P] .pLeft;
             word P2=Node[P1].pLeft;
 
-            Node[P2].Value=L;
-            inc  L;
+            Node[P2].Value = NewLabel();
 
-          //Enum(Node[P2].pLeft, 0,@L);
-            Enum(Node[P2].pRight,0,@L);
+          //Enum(Node[P2].pLeft, 0);
+            Enum(Node[P2].pRight,0);
 
-            Node[P1].Value=L;
-            inc  L;
+            Node[P1].Value = NewLabel();
 
-            word V=Enum(Node[P1].pRight,1,@L);
+            word V=Enum(Node[P1].pRight,1);
             if M<S+V then
               M=S+V;
             end
 
-            Node[P].Value=L;
-            inc  L;
+            Node[P].Value = NewLabel();
 
           case Node[P].ID=iREPEAT:
             word P1=Node[P].pLeft;
 
-            Node[P1].Value=L;
-            inc  L;
+            Node[P1].Value = NewLabel();
 
-            word V=Enum(Node[Node[P1].pRight].pLeft,1,@L);
+            word V=Enum(Node[Node[P1].pRight].pLeft,1);
             if M<S+V then
               M=S+V;
             end
 
-            Enum(Node[Node[P1].pRight].pRight,0,@L);
+            Enum(Node[Node[P1].pRight].pRight,0);
 
-            Node[P].Value=L;
-            inc  L;
+            Node[P].Value = NewLabel();
 
           case Node[P].ID=iDEF:
             word Size=4;
@@ -163,14 +162,13 @@ word     Enum(word P; word Flag; word @L)
       return M;
 
     case Node[P].ID!=iASSIGN & Node[P].ID!=iINC & Node[P].ID!=iDEC:
-      Enum(Node[P].pLeft, 0,@L);
+      Enum(Node[P].pLeft, 0);
 
       if (iOR<=Node[P].ID & Node[P].ID<=iAND) | (Node[P].ID=iEMPTY) then
-        Node[P].Value=L;
-        inc  L;
+        Node[P].Value = NewLabel();
       end
 
-      Enum(Node[P].pRight,0,@L);
+      Enum(Node[P].pRight,0);
   end
 
   return 0;
@@ -241,16 +239,15 @@ void AssignLabels_Struct()
 end
 
 
-void AssignLabels_Func(word @L)
+void AssignLabels_Func()
 
   word I=0;
   while I<nDict do
     select
       case Dict[I].Class=cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
-        Dict [I].Value=L;
-        inc   L;
+        Dict [I].Value = NewLabel();
 
-        Dict [I].Stack=Enum(Dict[I].pNode,1,@L);
+        Dict [I].Stack=Enum(Dict[I].pNode,1);
     end
 
     inc I;
@@ -259,7 +256,7 @@ void AssignLabels_Func(word @L)
 end
 
 
-void AssignLabels_FuncExternal(word @L)
+void AssignLabels_FuncExternal()
 
   word I=0;
   while I<nDict do
@@ -267,13 +264,13 @@ void AssignLabels_FuncExternal(word @L)
       word  J=0;
       while J<nDict do
         if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+          word Label = NewLabel();
           if Dict[I].Used=0 then
-            Dict[I].Value=L;
+            Dict[I].Value = Label;
             Dict[I].Used =1;
           end
 
-          Dict [J].Value=L;
-          inc   L;
+          Dict [J].Value = Label;
         end
 
         inc J;

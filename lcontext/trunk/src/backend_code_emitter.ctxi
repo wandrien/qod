@@ -1087,7 +1087,7 @@ word EmitFunctions(char @Buff)
 					strcat(@Buff, "begin");
 					S = Dict[I].Value;
 				end:if
-				EmitL(Dict[I].Value, @Buff);
+				EmitLine(Dict[I].Value, @Buff);
 
 				word S1 = 0;
 

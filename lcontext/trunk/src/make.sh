@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/bash
 
 set -e
 set -x
@@ -20,6 +20,8 @@ mk out/lcontext_b ctx4lnx       --linux out/ lcontext_c_debug --optimize none
 
 mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c.exe
 mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
+
+diff out/lcontext_b out/lcontext_c
 
 mk out/lcontext_c samples/z_t1  --win32-c out/ z_t1.exe
 mk out/lcontext_c samples/z_t2  --win32-w out/ z_t2.exe
