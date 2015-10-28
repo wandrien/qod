@@ -74,7 +74,7 @@ void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
                     Node[P2].ID   =iINT;
                     Node[P2].Value= Node[Node[P2].pRight].Value-Node[Node[P2].pLeft].Value;
 
-                    if Node[P2].Value>$80000000 then
+                    if Node[P2].Value>0x80000000 then
                       Stop(@eCALCERR);
                     end
 
@@ -95,11 +95,11 @@ void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
                 Node[P2].Value=Node[Node[P2].pLeft].Value*Node[Node[P2].pRight].Value;
 
                 if Node[P2].ID=iINT then
-                  if Node[P2].Value>$80000000 then // !!!
+                  if Node[P2].Value>0x80000000 then // !!!
                     Stop(@eCALCERR);
                   end
 
-                  Node[P2].Value=$FFFFFFFF-Node[P2].Value+1;
+                  Node[P2].Value=0xFFFFFFFF-Node[P2].Value+1;
                 end
 
               case ID=iDIV:
@@ -107,7 +107,7 @@ void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
 
                 if Node[P2].Value!=0 then
                   if Node[P2].ID=iINT then
-                    if Node[P2].Value>$80000000 then // !!!
+                    if Node[P2].Value>0x80000000 then // !!!
                       Stop(@eCALCERR);
                     end
 

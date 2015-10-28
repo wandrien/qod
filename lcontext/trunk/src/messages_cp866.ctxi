@@ -1,4 +1,4 @@
-define @eWRONGPARM       "Неизвестный паpаметp"                        // Wrong зфкфьуеук
+define @eWRONGPARM       "Неизвестный паpаметp"                        // Wrong argument
 define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
 define @eNOFILE          "Невозможно откpыть файл"                     // Can't open file
 define @eINCLUDE         "Некоppектная вставка файла"                  // Incorrect file include
@@ -46,6 +46,8 @@ define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote 
 define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param expected
 define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
+
+define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
 
 define @msgUSAGE
 "~r~n"

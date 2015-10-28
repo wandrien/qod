@@ -14,6 +14,32 @@ FILEINFO CurrentFileInfo;
 
 /*****************************************************************************/
 
+void WarnAt(char @Msg; char @FileName; word L; word C)
+
+	puts("~r");
+	if @FileName != NULL then
+		puts(@FileName);
+		puts("(");
+		puts(@str(L));
+		puts(",");
+		puts(@str(C));
+		puts("): ");
+	end:if
+	puts(@Msg);
+	puts("~r~n");
+
+end
+
+void Warn(char @Msg)
+	WarnAt(
+		@Msg,
+		@CurrentFileInfo.Name,
+		CurrentFileInfo.Line,
+		CurrentFileInfo.Col
+	);
+end
+
+
 void StopAt(char @Msg; char @FileName; word L; word C)
 
 	puts("~r");

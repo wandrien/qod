@@ -42,8 +42,8 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
   select
     case Message=WM_SIZE:
       if wParam!=SIZE_MINIMIZED then
-        Width =lParam % $10000;
-        Height=lParam / $10000;
+        Width =lParam % 0x10000;
+        Height=lParam / 0x10000;
 
         DeleteObject(hFont);
         CreateFont  ();
@@ -69,11 +69,11 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
 
     case Message=WM_COMMAND:
       select
-        case (wParam & $FFFF)=101:
+        case (wParam & 0xFFFF)=101:
           MessageBox(hWnd,"Context-2 demonstration program",@Class,MB_OK);
           return 0;
 
-        case (wParam & $FFFF)=102:
+        case (wParam & 0xFFFF)=102:
           PostQuitMessage (0);
           return 0;
       end:select

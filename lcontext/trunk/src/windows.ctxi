@@ -1,66 +1,66 @@
-define   IDI_APPLICATION         $00007F00                // default icon
-define   IDI_WINLOGO             $00007F05
+define   IDI_APPLICATION         0x00007F00                // default icon
+define   IDI_WINLOGO             0x00007F05
 
-define   IDC_ARROW               $00007F00                // arrow cusror
-define   IDC_WAIT                $00007F02                // hourglass cusror
-define   IDC_CROSS               $00007F03                // cross cusror
+define   IDC_ARROW               0x00007F00                // arrow cusror
+define   IDC_WAIT                0x00007F02                // hourglass cusror
+define   IDC_CROSS               0x00007F03                // cross cusror
 
-define   CS_VREDRAW              $00000001                // class styles
-define   CS_HREDRAW              $00000002
+define   CS_VREDRAW              0x00000001                // class styles
+define   CS_HREDRAW              0x00000002
 
-define   WS_MAXIMIZEBOX          $00010000                // window styles
-define   WS_TABSTOP              $00010000
-define   WS_MINIMIZEBOX          $00020000
-define   WS_GROUP                $00020000
-define   WS_THICKFRAME           $00040000
-define   WS_SYSMENU              $00080000
-define   WS_HSCROLL              $00100000
-define   WS_VSCROLL              $00200000
-define   WS_DLGFRAME             $00400000
-define   WS_BORDER               $00800000
-define   WS_CAPTION              $00C00000                // WS_BORDER | WS_DLGFRAME
-define   WS_MAXIMIZE             $01000000
-define   WS_CLIPCHILDREN         $02000000
-define   WS_CLIPSIBLINGS         $04000000
-define   WS_DISABLED             $08000000
-define   WS_VISIBLE              $10000000
-define   WS_MINIMIZE             $20000000
-define   WS_CHILD                $40000000
+define   WS_MAXIMIZEBOX          0x00010000                // window styles
+define   WS_TABSTOP              0x00010000
+define   WS_MINIMIZEBOX          0x00020000
+define   WS_GROUP                0x00020000
+define   WS_THICKFRAME           0x00040000
+define   WS_SYSMENU              0x00080000
+define   WS_HSCROLL              0x00100000
+define   WS_VSCROLL              0x00200000
+define   WS_DLGFRAME             0x00400000
+define   WS_BORDER               0x00800000
+define   WS_CAPTION              0x00C00000                // WS_BORDER | WS_DLGFRAME
+define   WS_MAXIMIZE             0x01000000
+define   WS_CLIPCHILDREN         0x02000000
+define   WS_CLIPSIBLINGS         0x04000000
+define   WS_DISABLED             0x08000000
+define   WS_VISIBLE              0x10000000
+define   WS_MINIMIZE             0x20000000
+define   WS_CHILD                0x40000000
 
-define   ES_LEFT                 $00000000                // edit styles
-define   ES_CENTER               $00000001
-define   ES_RIGHT                $00000002
-define   ES_MULTILINE            $00000004
-define   ES_UPPERCASE            $00000008
-define   ES_LOWERCASE            $00000010
-define   ES_PASSWORD             $00000020
-define   ES_AUTOVSCROLL          $00000040
-define   ES_AUTOHSCROLL          $00000080
-define   ES_NOHIDESEL            $00000100
-define   ES_OEMCONVERT           $00000400
-define   ES_READONLY             $00000800
-define   ES_WANTRETURN           $00001000
+define   ES_LEFT                 0x00000000                // edit styles
+define   ES_CENTER               0x00000001
+define   ES_RIGHT                0x00000002
+define   ES_MULTILINE            0x00000004
+define   ES_UPPERCASE            0x00000008
+define   ES_LOWERCASE            0x00000010
+define   ES_PASSWORD             0x00000020
+define   ES_AUTOVSCROLL          0x00000040
+define   ES_AUTOHSCROLL          0x00000080
+define   ES_NOHIDESEL            0x00000100
+define   ES_OEMCONVERT           0x00000400
+define   ES_READONLY             0x00000800
+define   ES_WANTRETURN           0x00001000
 
-define   MF_STRING               $00000000                // menu flags
-define   MF_POPUP                $00000010
-define   MF_SEPARATOR            $00000800
+define   MF_STRING               0x00000000                // menu flags
+define   MF_POPUP                0x00000010
+define   MF_SEPARATOR            0x00000800
 
-define   SW_SHOWNORMAL           $00000001                // ShowWindow flag
+define   SW_SHOWNORMAL           0x00000001                // ShowWindow flag
 
-define   WM_DESTROY              $00000002                // messages
-define   WM_SIZE                 $00000005
-define   WM_PAINT                $0000000F
-define   WM_ERASEBKGND           $00000014
-define   WM_COMMAND              $00000111
+define   WM_DESTROY              0x00000002                // messages
+define   WM_SIZE                 0x00000005
+define   WM_PAINT                0x0000000F
+define   WM_ERASEBKGND           0x00000014
+define   WM_COMMAND              0x00000111
 
-define   SIZE_MINIMIZED          $00000001
+define   SIZE_MINIMIZED          0x00000001
 
-define   MB_OK                   $00000000                // msgbox styles
+define   MB_OK                   0x00000000                // msgbox styles
 
-define   WHITE_BRUSH             $00000000                // stock objects
-define   LTGRAY_BRUSH            $00000001
+define   WHITE_BRUSH             0x00000000                // stock objects
+define   LTGRAY_BRUSH            0x00000001
 
-define   COLOR_WINDOW            $00000005                // desktop colors
+define   COLOR_WINDOW            0x00000005                // desktop colors
 
 define   LF_FACESIZE                    32                // font attributes
 define   FW_BOLD                       700

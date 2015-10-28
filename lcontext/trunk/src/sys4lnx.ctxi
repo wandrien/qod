@@ -1,48 +1,48 @@
 
 word     open(char @Name)
-  inline $B8, $05, $00, $00, $00;           // mov     EAX,   5
-  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
-  inline $B9, $00, $00, $00, $00;           // mov     ECX,   0
-  inline $BA, $00, $00, $00, $00;           // mov     EDX,   0
-  inline $CD, $80;                          // int     80H
+  inline 0xB8, 0x05, 0x00, 0x00, 0x00;           // mov     EAX,   5
+  inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
+  inline 0xB9, 0x00, 0x00, 0x00, 0x00;           // mov     ECX,   0
+  inline 0xBA, 0x00, 0x00, 0x00, 0x00;           // mov     EDX,   0
+  inline 0xCD, 0x80;                          // int     80H
 end
 
 
 word     create(char @Name)
-  inline $B8, $05, $00, $00, $00;           // mov     EAX,   5
-  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
-  inline $B9, $41, $02, $00, $00;           // mov     ECX,   241H
-//inline $BA, $44, $06, $00, $00;           // mov     EDX,   644H
-  inline $BA, $A4, $01, $00, $00;           // mov     EDX,   1A4H // 644o!!!
-  inline $CD, $80;                          // int     80H
+  inline 0xB8, 0x05, 0x00, 0x00, 0x00;           // mov     EAX,   5
+  inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
+  inline 0xB9, 0x41, 0x02, 0x00, 0x00;           // mov     ECX,   241H
+//inline 0xBA, 0x44, 0x06, 0x00, 0x00;           // mov     EDX,   644H
+  inline 0xBA, 0xA4, 0x01, 0x00, 0x00;           // mov     EDX,   1A4H // 644o!!!
+  inline 0xCD, 0x80;                          // int     80H
 end
 
 
 word     read(word F; void @Buff; word N)
-  inline $B8, $03, $00, $00, $00;           // mov     EAX,   3
-  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
-  inline $8B, $4D, $0C;                     // mov     ECX,  [EBP+12]
-  inline $8B, $55, $10;                     // mov     EDX,  [EBP+16]
-  inline $CD, $80;                          // int     80H
-  inline $09, $C0;                          // or      EAX,   EAX
-  inline $79, $02;                          // jns     $+2
-  inline $31, $C0;                          // xor     EAX,   EAX
+  inline 0xB8, 0x03, 0x00, 0x00, 0x00;           // mov     EAX,   3
+  inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
+  inline 0x8B, 0x4D, 0x0C;                     // mov     ECX,  [EBP+12]
+  inline 0x8B, 0x55, 0x10;                     // mov     EDX,  [EBP+16]
+  inline 0xCD, 0x80;                          // int     80H
+  inline 0x09, 0xC0;                          // or      EAX,   EAX
+  inline 0x79, 0x02;                          // jns     $+2
+  inline 0x31, 0xC0;                          // xor     EAX,   EAX
 end
 
 
 word     write(word F; void @Buff; word N)
-  inline $B8, $04, $00, $00, $00;           // mov     EAX,   4
-  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
-  inline $8B, $4D, $0C;                     // mov     ECX,  [EBP+12]
-  inline $8B, $55, $10;                     // mov     EDX,  [EBP+16]
-  inline $CD, $80;                          // int     80H
+  inline 0xB8, 0x04, 0x00, 0x00, 0x00;           // mov     EAX,   4
+  inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
+  inline 0x8B, 0x4D, 0x0C;                     // mov     ECX,  [EBP+12]
+  inline 0x8B, 0x55, 0x10;                     // mov     EDX,  [EBP+16]
+  inline 0xCD, 0x80;                          // int     80H
 end
 
 
 void     close(word F)
-  inline $B8, $06, $00, $00, $00;           // mov     EAX,   6
-  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
-  inline $CD, $80;                          // int     80H
+  inline 0xB8, 0x06, 0x00, 0x00, 0x00;           // mov     EAX,   6
+  inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
+  inline 0xCD, 0x80;                          // int     80H
 end
 
 
@@ -52,16 +52,16 @@ void     puts(char @St)
     inc  N;
   end
 
-  inline $B8, $04, $00, $00, $00;           // mov     EAX,   4
-  inline $BB, $01, $00, $00, $00;           // mov     EBX,   1
-  inline $8B, $4D, $08;                     // mov     ECX,  [EBP+ 8]
-  inline $8B, $55, $FC;                     // mov     EDX,  [EBP- 4]
-  inline $CD, $80;                          // int     80H
+  inline 0xB8, 0x04, 0x00, 0x00, 0x00;           // mov     EAX,   4
+  inline 0xBB, 0x01, 0x00, 0x00, 0x00;           // mov     EBX,   1
+  inline 0x8B, 0x4D, 0x08;                     // mov     ECX,  [EBP+ 8]
+  inline 0x8B, 0x55, 0xFC;                     // mov     EDX,  [EBP- 4]
+  inline 0xCD, 0x80;                          // int     80H
 end
 
 
 void     halt(word Code)
-  inline $B8, $01, $00, $00, $00;           // mov     EAX,   1
-  inline $8B, $5D, $08;                     // mov     EBX,  [EBP+ 8]
-  inline $CD, $80;                          // int     80H
+  inline 0xB8, 0x01, 0x00, 0x00, 0x00;           // mov     EAX,   1
+  inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
+  inline 0xCD, 0x80;                          // int     80H
 end

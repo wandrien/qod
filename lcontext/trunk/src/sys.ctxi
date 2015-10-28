@@ -13,7 +13,7 @@ word Argc = 0;
 /*****************************************************************************/
 
 word is_handle_valid(word h)
-	if h >= $80000000 then
+	if h >= 0x80000000 then
 		return 0;
 	end
 	return 1;
