@@ -105,7 +105,7 @@ end
 
 word NodeHasConst(word P; word Data)
 	if (Node[P].ID = iNULL & Data = 0)
-	 | ( (Node[P].ID = iWORD | Node[P].ID = iINT) & Node[P].Value = 0) then
+	 | ( (Node[P].ID = iWORD | Node[P].ID = iINT) & Node[P].Value = Data) then
 		return 1;
 	end:if
 	return 0;
