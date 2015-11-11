@@ -66,6 +66,10 @@ void StopInternal()
 	Stop(@eINTERNAL);
 end
 
+void StopMemory()
+	Stop(@eNOMEMORY);
+end
+
 void ShowParseProgress(word nl)
 
 	if show_parse_progress = 0 then

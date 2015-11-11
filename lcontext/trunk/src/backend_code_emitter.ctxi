@@ -1005,7 +1005,7 @@ word Code(word P; word F; word T; word M)
 
     case iDEF:
       if nParm>=nPARM then
-        Stop(@eNOMEMORY);
+        StopMemory();
       end
 
       word pType = Node[P].Value;

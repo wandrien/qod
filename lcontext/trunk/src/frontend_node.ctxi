@@ -11,7 +11,7 @@ word    nNode;
 word Peek()
 	word N  = nNode;
 	when N >= nNODE:
-		Stop(@eNOMEMORY);
+		StopMemory();
 
 	Node[nNode].pLeft  = nNODE;
 	Node[nNode].pRight = nNODE;

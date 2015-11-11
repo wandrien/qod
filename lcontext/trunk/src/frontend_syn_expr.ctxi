@@ -86,7 +86,7 @@ end
 word     Tabl(char @Buff)
   while strcmp(@Buff,"[")=0 do
     if nIndx>=nINDX then
-      Stop(@eNOMEMORY);
+      StopMemory();
     end
 
     word pType,  nPtr;
@@ -172,7 +172,7 @@ word     List(char @Buff)
       end
 
       if nParm>=nPARM then
-        Stop(@eNOMEMORY);
+        StopMemory();
       end
 
       Parm[nParm].pType=pType;                 Copy(@Parm[nParm].Name,@Buff,0);

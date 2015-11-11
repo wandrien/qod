@@ -90,7 +90,7 @@ void DeclStruct(char @Buff)
             end
 
             if nParm>=nPARM then
-              Stop(@eNOMEMORY);
+              StopMemory();
             end
 
             Parm[nParm].pType=pType;           Copy(@Parm[nParm].Name,@Buff,0);

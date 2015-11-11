@@ -24,7 +24,7 @@ word st_int;
 */
 void DictMemCheck()
 	when nDict >= nDICT:
-		Stop(@eNOMEMORY);
+		StopMemory();
 end
 
 /*****************************************************************************/

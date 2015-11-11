@@ -41,7 +41,7 @@ word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
 		end:select
 
 		if b_i >= BuffLen then
-			Stop(@eNOMEMORY);
+			StopMemory();
 		end
 
 		inc s_i;
@@ -72,7 +72,7 @@ void ParseCmdLine(char@ S)
 	@ArgV[Argc].Arg = @CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff];
 	inc Argc;
 	if Argc >= nARGV then
-		Stop(@eNOMEMORY);
+		StopMemory();
 	end:if
 
 	nCmdLineBuff = nCmdLineBuff - l;

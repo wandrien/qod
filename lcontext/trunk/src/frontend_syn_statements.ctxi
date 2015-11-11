@@ -549,7 +549,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		end:while
 
 		if nParm>=nPARM then
-			Stop(@eNOMEMORY);
+			StopMemory();
 		end:if
 
 		Parm[nParm].pType=pType;               Copy(@Parm[nParm].Name,@Buff,0);

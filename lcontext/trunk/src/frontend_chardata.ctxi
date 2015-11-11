@@ -49,7 +49,7 @@ word SaveString(char @Str; word Size)
 	_nChar = _nChar + Tail;
 
 	if _nChar >= _nCHAR then
-		Stop(@eNOMEMORY);
+		StopMemory();
 	end
 
 	memcpy(@Char[R], @Str[j], Tail);

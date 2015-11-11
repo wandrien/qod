@@ -160,7 +160,7 @@ void IncludeFile(char @FileName)
 	ShowParseProgress(1);
 
 	when nFile >= nFILE:
-		Stop(@eNOMEMORY);
+		StopMemory();
 
 	/* Сохраняем информацию о текущем файле. */
 	File[nFile].hText = hText;

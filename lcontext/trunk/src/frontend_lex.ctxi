@@ -81,7 +81,7 @@ void ScanString(word D)
 			end
 
 			if i >= nMAX_STR_LEN then
-				Stop(@eNOMEMORY);
+				StopMemory();
 			end
 
 			Buff[i] = ScanChar();
@@ -99,7 +99,7 @@ void ScanString(word D)
 	end:do
 
 	if i >= nMAX_STR_LEN then
-		Stop(@eNOMEMORY);
+		StopMemory();
 	end
 
 	Buff[i] = #0;
