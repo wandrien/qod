@@ -174,14 +174,14 @@ void EmitROData()
 	int next_len = -1;
 	word I;
 
-	if RODataMergeMode = 0 then
+	if RODataMergeMode = RODataMergeModeNone then
 		rodata_nr = 0;
 	else
 		rodata_nr = RODATA_NR;
 	end
 
 
-	if RODataMergeMode = 2 then
+	if RODataMergeMode = RODataMergeModeAgressive then
 		I = 0;
 		while I < nDict do
 			if Dict[I].Class = cCONST & Dict[I].nPtr > 0 & Dict[I].Used != 0 then

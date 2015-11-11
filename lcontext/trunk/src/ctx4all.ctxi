@@ -355,15 +355,15 @@ end
 void SetupOptimization(char@ Mode)
 	select
 	case str_eq(@Mode, "size") != 0:
-		RODataMergeMode = 2;
+		RODataMergeMode = RODataMergeModeAgressive;
 		PHOptimization  = 1;
 		CompactFunctionEnterLeave = 1;
 	case str_eq(@Mode, "speed") != 0:
-		RODataMergeMode = 2;
+		RODataMergeMode = RODataMergeModeNormal;
 		PHOptimization  = 1;
 		CompactFunctionEnterLeave = 1;
 	default:
-		RODataMergeMode = 0;
+		RODataMergeMode = RODataMergeModeNone;
 		PHOptimization  = 0;
 		CompactFunctionEnterLeave = 0;
 	end:select

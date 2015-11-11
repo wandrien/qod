@@ -37,13 +37,14 @@ word ROStrings = 0;
 
 /*
 	Задаёт режим объединения строк в RO-секции.
-	0 - строки не объединяются.
-	1 - строки объединяются.
-	2 - сортируются по убыванию длины и затем объединяются.
-
 	Действительно только при ROStrings = 1.
 */
-word RODataMergeMode = 2;
+define RODataMergeModeNone      0 /* строки не объединяются. */
+define RODataMergeModeNormal    1 /* строки объединяются */
+define RODataMergeModeAgressive 2 /* сортируются по убыванию длины и затем объединяются */
+word RODataMergeMode = RODataMergeModeNormal;
+
+
 
 /* Проводить ли pipehole оптимизацию. */
 word PHOptimization = 1;
