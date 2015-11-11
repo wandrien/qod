@@ -1,7 +1,7 @@
 $context2
 
 include "sys4win.ctxi"
-include "messages_utf8.ctxi"
+include "messages_cp866.ctxi"
 include "ctx4all.ctxi"
 
 define nCMDLINEBUFF 1024
