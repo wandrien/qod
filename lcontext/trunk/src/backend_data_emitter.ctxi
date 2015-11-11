@@ -2,7 +2,7 @@
 /*****************************************************************************/
 
 word EmitByteState;
-word EmitByteBytesInLine;
+word EmitByteBytesInLine = 0;
 
 /*****************************************************************************/
 
@@ -82,12 +82,13 @@ void EmitByte(char c)
 	while Buff[I]!=#0 do
 		EmitChar(Buff[I]);
 		inc  I;
-	end	
-
+	end
 
 	inc EmitByteBytesInLine;
 	select
-	case EmitByteBytesInLine > 60:
+	case EmitByteBytesInLine > 70 & word(c) < 0x80:
+		EmitByteReset();
+	case EmitByteBytesInLine > 50 & c = ' ':
 		EmitByteReset();
 	case EmitByteBytesInLine > 40 & c = '~n':
 		EmitByteReset();
