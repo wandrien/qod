@@ -291,10 +291,6 @@ end
 /* Формирует листинг секции данных. */
 void EmitSection_Data(char @Buff; word D)
 
-	if D = 0 then
-		return;
-	end
-
 	EmitStringNL("");
 
 	select
@@ -308,11 +304,12 @@ void EmitSection_Data(char @Buff; word D)
 			StopInternal();
 	end
 
-
 	EmitSection_Data_Strings(@Buff);
 
-	EmitStringNL("");
-	EmitStringNL(@strcat(@strcpy(@Buff,"@@DATA  rb      "),@str(D)));
+	if D != 0 then
+		EmitStringNL("");
+		EmitStringNL(@strcat(@strcpy(@Buff,"@@DATA  rb      "),@str(D)));
+	end
 
 end
 
