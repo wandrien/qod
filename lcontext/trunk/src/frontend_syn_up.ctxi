@@ -469,11 +469,7 @@ void Parse(char @Buff)
 		case strcmp(@Buff,"synonym")=0:       // Синоним
 			DeclSynonym(@Buff);
 		case strcmp(@Buff,"$context2")=0:
-			c_style_semicolons = 1;
-			ROStrings = 1;
-		case strcmp(@Buff,"$context")=0:
-			c_style_semicolons = 0;
-			ROStrings = 0;
+			null;
 		default:                              // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select
