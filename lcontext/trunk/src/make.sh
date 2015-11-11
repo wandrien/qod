@@ -63,3 +63,5 @@ set +x
 do_test compilation_should_fail div_0 'Попытка деления на ноль'
 do_test compilation_should_fail div_0_2 'Попытка деления на ноль'
 do_test compilation_should_fail div_0_3 'Попытка деления на ноль'
+do_test compilation_should_fail wrong_continue 'continue вне цикла'
+do_test compilation_should_fail wrong_exit 'exit вне цикла'

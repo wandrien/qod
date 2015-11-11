@@ -394,7 +394,7 @@ end
 void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
 
 	if pLoop>=nNODE then
-		Stop(@eWHILEEXP);
+		Stop(@eWRONGCONTINUE);
 	end
 
 	Node[P1].ID=iCONTINUE;
@@ -418,7 +418,7 @@ end
 void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
 
 	if pLoop>=nNODE then
-		Stop(@eWHILEEXP);
+		Stop(@eWRONGEXIT);
 	end
 
 	Node[P1].ID   =iEXIT;

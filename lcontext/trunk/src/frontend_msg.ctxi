@@ -14,20 +14,24 @@ FILEINFO CurrentFileInfo;
 
 /*****************************************************************************/
 
-void WarnAt(char @Msg; char @FileName; word L; word C)
-
-	puts("~r");
+void PutPosition(char @FileName; word L; word C)
 	if @FileName != NULL then
 		puts(@FileName);
-		puts("(");
+		puts(":");
 		puts(@str(L));
-		puts(",");
+		puts(":");
 		puts(@str(C));
-		puts("): ");
+		puts(": ");
 	end:if
+end
+
+
+void WarnAt(char @Msg; char @FileName; word L; word C)
+	puts("~r");
+	PutPosition(@FileName, L, C);
+	puts(@msgWARNING);
 	puts(@Msg);
 	puts("~r~n");
-
 end
 
 void Warn(char @Msg)
@@ -41,19 +45,11 @@ end
 
 
 void StopAt(char @Msg; char @FileName; word L; word C)
-
 	puts("~r");
-	if @FileName != NULL then
-		puts(@FileName);
-		puts("(");
-		puts(@str(L));
-		puts(",");
-		puts(@str(C));
-		puts("): ");
-	end:if
+	PutPosition(@FileName, L, C);
+	puts(@msgERROR);
 	puts(@Msg);
 	puts("~r~n");
-
 	halt(1);
 end
 
