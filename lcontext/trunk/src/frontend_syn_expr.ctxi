@@ -115,7 +115,7 @@ end
 
 word StringNode()
 	word D = DictAlloc();
-	Dict[D].Class = cCONST;
+	Dict[D].Class = cLITERAL;
 	SetDictName(D, "");
 	ScanString(D);
 
@@ -378,7 +378,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		end:if
 
 		select
-		case Dict[I].Class=cCONST: /* Константа? */
+		case Dict[I].Class=cLITERAL: /* Именованный литерал? */
 			P1=Peek();
 			select
 			case Dict[I].pType=st_word:

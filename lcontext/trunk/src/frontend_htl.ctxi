@@ -2,7 +2,7 @@
 
 define  cWORD        0 // Заpезеpвиpованное слово
 define  cNAME        1 // Имя
-define  cCONST       2 // Константа
+define  cLITERAL     2 // Литерал
 define  cTYPE        3 // Тип
 define  cDATA        4 // Глобальная пеpеменная
 define  cFUNC        5 // Функция

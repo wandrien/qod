@@ -357,7 +357,7 @@ word DeclDefine(char @Buff)
 	word D = DictAlloc();
 
 	SetDictName(D, @Buff);
-	Dict[D].Class = cCONST;
+	Dict[D].Class = cLITERAL;
 	Dict[D].nPtr  = 0;
 
 	Scan(@Buff);
