@@ -290,7 +290,7 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 
 			char@ Reg = "EAX";
 			if pType = st_char then
-				value = value & $FF;
+				value = value & 0xFF;
 				@Reg = "AL";
 			end:if
 

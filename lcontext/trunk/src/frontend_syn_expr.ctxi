@@ -945,7 +945,7 @@ word ExprNEG(word P_; word O; word @pType, @nPtr; char @Buff)
 
       select
 	case Node[Node[P1].pLeft].ID=iWORD:
-		if Node[Node[P1].pLeft].Value>$80000000 then
+		if Node[Node[P1].pLeft].Value>0x80000000 then
 			Stop(@eCALCERR);
 		end
 
