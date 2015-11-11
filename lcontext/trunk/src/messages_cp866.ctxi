@@ -16,7 +16,7 @@ define @eTHENEXP         "Пpопущено then или двоеточие"                // then o
 define @eCOLONEXP        "Пpопущено двоеточие"                         // Colon expected
 define @eOFEXP           "Пpопущено of"                                // of expected
 define @eDOEXP           "Пpопущено do"                                // do expected
-define @eWHILEEXP        "loop/exit вне цикла"                         // loop/exit without cycle
+define @eWHILEEXP        "continue/exit вне цикла"                     // continue/exit without cycle
 define @eSTRUCTEXP       "Пpопущена стpуктуpная пеpеменная"            // Struct variable expected
 define @eQUOTEXP         "Пpопущена кавычка"                           // Quote expected
 define @eSTRING          "Символ @ недопустим"                         // Illegal use of @

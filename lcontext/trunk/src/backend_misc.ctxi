@@ -109,7 +109,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iSELECT , "iSELECT" );
 	InitIDDesc2(iWHILE  , "iWHILE"  , vcNone, 1);
 	InitIDDesc2(iREPEAT , "iREPEAT" , vcNone, 1);
-	InitIDDesc1(iLOOP   , "iLOOP"   );
+	InitIDDesc1(iCONTINUE, "iCONTINUE");
 	InitIDDesc1(iEXIT   , "iEXIT"   );
 	InitIDDesc2(iCAST   , "iCAST"   , vcDict, 0);
 	InitIDDesc2(iINC    , "iINC"    , vcNone, 1);

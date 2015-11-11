@@ -408,7 +408,7 @@ end
 
 /*****************************************************************************/
 
-word Code_LOOP_EXIT(word P; word F; word T; word M; char @Buff)
+word Code_CONTINUE_EXIT(word P; word F; word T; word M; char @Buff)
 	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(Node[Node[P].Value].Value)));
 end
 

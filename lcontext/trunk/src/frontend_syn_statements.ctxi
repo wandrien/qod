@@ -391,13 +391,13 @@ end
 
 /*****************************************************************************/
 
-void Statement_LOOP(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
 
 	if pLoop>=nNODE then
 		Stop(@eWHILEEXP);
 	end
 
-	Node[P1].ID=iLOOP;
+	Node[P1].ID=iCONTINUE;
 
 	select
 		case Node[pLoop].ID=iWHILE:
@@ -645,8 +645,8 @@ word Ctrl(char @Buff)
 		case strcmp(@Buff,"repeat")=0:
 			Statement_REPEAT(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"loop")=0:
-			Statement_LOOP(@Buff, @P1, @SkipFinalScan);
+		case strcmp(@Buff,"continue")=0:
+			Statement_CONTINUE(@Buff, @P1, @SkipFinalScan);
 
 		case strcmp(@Buff,"exit")=0:
 			Statement_EXIT(@Buff, @P1, @SkipFinalScan);

@@ -185,7 +185,7 @@ void InitFrontEnd()
 	Word("do");
 	Word("repeat");
 	Word("until");
-	Word("loop");
+	Word("continue");
 	Word("exit");
 	Word("inc");
 	Word("dec");
