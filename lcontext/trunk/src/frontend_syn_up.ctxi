@@ -358,6 +358,7 @@ word DeclDefine(char @Buff)
 
 	SetDictName(D, @Buff);
 	Dict[D].Class = cLITERAL;
+	Dict[D].RO = 1;
 	Dict[D].nPtr  = 0;
 
 	Scan(@Buff);

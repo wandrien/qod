@@ -75,7 +75,8 @@ word Code1(word P; word F; word T; word M)
 	word pType;
 	word nPtr;
 	word  Ofs;
-	word ID=ExtractDataInfo(P, @pType, @nPtr, @pIndx, @nIndx, @Ofs);
+	word  RO;
+	word ID=ExtractDataInfo(P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO);
 	word IX=0;
 
 	word P1=Node[P].pLeft;
@@ -248,7 +249,10 @@ word Code1(word P; word F; word T; word M)
 				case ID=iLOCAL:
 					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX-"),@str(Ofs)),"]"));
 				case ID=iSTRING:
-					Emit(@strcat(@strcpy(@Buff,"add     EAX,  @@TEXT+"),@str(Ofs)));
+					char @s = "@@ROLITERALS+";
+					when RO = 0:
+						@s = "@@RWLITERALS+";
+					Emit(@strcat(@strcat(@strcpy(@Buff,"add     EAX,  "), @s),@str(Ofs)));
 				case ID=iREF & Ofs!=0:
 					Emit(@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
@@ -263,7 +267,10 @@ word Code1(word P; word F; word T; word M)
 				case ID=iLOCAL:
 					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP-"),@str(Ofs)),"]"));
 				case ID=iSTRING:
-					Emit(@strcat(@strcpy(@Buff,"mov     EAX,  @@TEXT+"),@str(Ofs)));
+					char @s = "@@ROLITERALS+";
+					when RO = 0:
+						@s = "@@RWLITERALS+";
+					Emit(@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  "), @s),@str(Ofs)));
 				case ID!=iCALL:
 					StopInternal();
 				end:select

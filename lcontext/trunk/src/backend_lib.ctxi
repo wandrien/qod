@@ -57,7 +57,7 @@ end
 	Распаковывает из узлов iDATA, iPARM, iLOCAL и iSTRING информацию об объекте.
 	(Ofs - смещение относительно специфичного источника (напр., для iDATA - смещение от начала секции данных и т.п.))
 */
-word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs)
+word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO)
 
 	word ID = Node[P].ID;
 
@@ -68,6 +68,7 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs)
 			pIndx = Dict[Node[P].Value].pIndx;
 			nIndx = Dict[Node[P].Value].nIndx;
 			Ofs   = Dict[Node[P].Value].Value;
+			RO    = 0;
 
 		case ID = iPARM:
 			pType = Parm[Node[P].Value].pType;
@@ -75,6 +76,7 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs)
 			pIndx = Parm[Node[P].Value].pIndx;
 			nIndx = Parm[Node[P].Value].nIndx;
 			Ofs   = Parm[Node[P].Value].Value;
+			RO    = 0;
 
 		case ID = iLOCAL:
 			pType = Parm[Node[P].Value+pParm].pType;
@@ -82,6 +84,7 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs)
 			pIndx = Parm[Node[P].Value+pParm].pIndx;
 			nIndx = Parm[Node[P].Value+pParm].nIndx;
 			Ofs   = Parm[Node[P].Value+pParm].Value;
+			RO    = 0;
 
 		case ID = iSTRING:
 			pIndx = 0;
@@ -89,6 +92,7 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs)
 			pType = Dict[Node[P].Value].pType;
 			nPtr  = 1;
 			Ofs   = Dict[Node[P].Value].Value;
+			RO    = Dict[Node[P].Value].RO;
 
 		default:
 			StopInternal();

@@ -149,3 +149,25 @@ end
 
 /*****************************************************************************/
 
+word DictDupLiteral(word D1)
+
+	when D1 >= nDict:
+		StopInternal();
+
+	when Dict[D1].Class != cLITERAL:
+		StopInternal();
+
+	word D2 = DictAlloc();
+	SetDictName(D2, "");
+	Dict[D2].Class = Dict[D1].Class;
+	Dict[D2].Sub   = Dict[D1].Sub;
+	Dict[D2].pType = Dict[D1].pType;
+	Dict[D2].nPtr  = Dict[D1].nPtr;
+	Dict[D2].pIndx = Dict[D1].pIndx;
+	Dict[D2].nIndx = Dict[D1].nIndx;
+	Dict[D2].RO    = Dict[D1].RO;
+
+	return D2;
+end
+
+/*****************************************************************************/

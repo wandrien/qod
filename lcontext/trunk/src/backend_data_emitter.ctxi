@@ -167,10 +167,6 @@ end
 */
 void EmitROData()
 
-	if ROStrings = 0 then
-		return;
-	end
-
 	int curr_len = -1;
 	int next_len = -1;
 	word I;
@@ -185,7 +181,7 @@ void EmitROData()
 	if RODataMergeMode = RODataMergeModeAgressive then
 		I = 0;
 		while I < nDict do
-			if Dict[I].Class = cLITERAL & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+			if Dict[I].Class = cLITERAL & Dict[I].RO != 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
 				word len = Dict[I].nIndx - Dict[I].pIndx;
 				if next_len < len then
 					next_len = len;
@@ -198,7 +194,7 @@ void EmitROData()
 	rodata_size = 0;
 
 
-	Emit("~r~n@@TEXT:");
+	Emit("~r~n@@ROLITERALS:");
 	EmitByteReset();
 
 	repeat
@@ -206,7 +202,7 @@ void EmitROData()
 		next_len = -1;
 		I = 0;
 		while I < nDict do
-			if Dict[I].Class = cLITERAL & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+			if Dict[I].Class = cLITERAL & Dict[I].RO != 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
 				word len = Dict[I].nIndx - Dict[I].pIndx;
 				if len = curr_len | curr_len = -1 then
 					EmitByteReset();
@@ -230,14 +226,10 @@ end
 */
 void AssignStringOffsets()
 
-	if ROStrings != 0 then
-		return;
-	end
-
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if Dict[I].Class = cLITERAL & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+		if Dict[I].Class = cLITERAL & Dict[I].RO = 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
 			word pIndx = Dict[I].pIndx;
 			word nIndx = Dict[I].nIndx;
 			word len = nIndx - pIndx;
@@ -255,18 +247,15 @@ end
 	Смещения строк должны быть заполнены заранее.
 */
 void EmitSection_Data_Strings(char @Buff)
-	if ROStrings != 0 then
-		return;
-	end
 
 	EmitStringNL("");
 
-	Emit("~r~n@@TEXT:");
+	Emit("~r~n@@RWLITERALS:");
 
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if Dict[I].Class = cLITERAL & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
+		if Dict[I].Class = cLITERAL & Dict[I].RO = 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
 			word pIndx = Dict[I].pIndx;
 			word nIndx = Dict[I].nIndx;
 			word len = nIndx - pIndx;

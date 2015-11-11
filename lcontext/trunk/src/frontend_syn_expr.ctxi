@@ -116,6 +116,7 @@ end
 word StringNode()
 	word D = DictAlloc();
 	Dict[D].Class = cLITERAL;
+	Dict[D].RO = ROStrings;
 	SetDictName(D, "");
 	ScanString(D);
 
@@ -395,7 +396,13 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 			default:
 				Node[P1].ID    =iSTRING;
-				Node[P1].Value = I;
+				if ROStrings != 0 then
+					Node[P1].Value = I;
+				else
+					word NewLiteral = DictDupLiteral(I);
+					Dict[NewLiteral].RO = 0;
+					Node[P1].Value = NewLiteral;
+				end
 			end:select
 
 			pType          = Dict[I].pType;
