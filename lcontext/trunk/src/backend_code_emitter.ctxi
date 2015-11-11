@@ -482,7 +482,7 @@ word Code1(word P; word F; word T; word M)
 
 					case IX1=1:
 						if fIX!=0 then
-							Stop(@eINTERNAL);
+							StopInternal();
 						end
 
 						Emit("pop     EBX");

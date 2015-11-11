@@ -335,7 +335,7 @@ void EmitPEImport(char @Buff)
 
 			word Label = NewLabel();
 			inc LabelCount;
-			when FirstLabel + LabelCount != Label: Stop(@eINTERNAL);
+			when FirstLabel + LabelCount != Label: StopInternal();
 
 			strcpy(@Buff, "dd      0, 0, 0, RVA @");
 			strcat(@Buff, @str(Label));
@@ -365,7 +365,7 @@ void EmitPEImport(char @Buff)
 
 					word Label = NewLabel();
 					inc LabelCount;
-					when FirstLabel + LabelCount != Label: Stop(@eINTERNAL);
+					when FirstLabel + LabelCount != Label: StopInternal();
 
 					strcpy(@Buff, "@");
 					strcat(@Buff, @str(Dict[J].Value));

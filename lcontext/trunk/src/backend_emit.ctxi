@@ -119,7 +119,7 @@ end
 /*****************************************************************************/
 
 void EmitLabel(word Label)
-	when Label = 0: Stop(@eINTERNAL);
+	when Label = 0: StopInternal();
 	EmitLine(Label, "");
 end
 
