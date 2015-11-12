@@ -122,6 +122,7 @@ void InitializeIDDesc()
 
 	InitIDDesc2(iBODY   , "iBODY"  , vcNone, 1);
 	InitIDDesc2(iCOND   , "iCOND"  , vcNone, 1);
+	InitIDDesc2(iCASE   , "iCASE"  , vcNone, 1);
 end
 
 

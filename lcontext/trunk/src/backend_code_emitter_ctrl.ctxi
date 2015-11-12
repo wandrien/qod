@@ -245,38 +245,46 @@ word Code_SELECT(word P; word F; word T; word M; char @Buff)
 	/*
 	                 iSELECT
 	                /       \
-	              case      [next statement]
-	             /    \
-	            x     [next case]
-	           / \
-	[condition]  [body]
+	              iCASE      [next statement]
+	             /     \
+	            iCOND   [next case]
+	           /     \
+	[condition]     iBODY
+	               /    \
+	         [body]     NULL
 	*/
 
-	word E=Node[P].Value;
+	word CASE = Node[P].pLeft;
+	while CASE < nNODE do
+		when Node[CASE].ID != iCASE:
+			StopInternal();
 
-	P=Node[P].pLeft;
-	while P<nNODE do
-		if Node[Node[P].pLeft].pLeft<nNODE then
-			F=Node[P].Value;
-			T=Node[Node[P].pLeft].Value;
-			_Code(Node[Node[P].pLeft].pLeft,F,0,T);
-			EmitLabel(T);
+		word COND = Node[CASE].pLeft;
+		word BODY = Node[COND].pRight;
+
+		when Node[BODY].ID != iBODY
+		|    Node[COND].ID != iCOND:
+			StopInternal();
+
+		if Node[COND].pLeft < nNODE then
+			_Code(Node[COND].pLeft,LabelResolve(CASE, lCASEBODYEND),0,LabelResolve(CASE, lCASEBODY));
+			EmitLabel(LabelResolve(CASE, lCASEBODY));
 		end
 
-		Code_Block(Node[Node[P].pLeft].pRight);
+		Code_Block(Node[BODY].pLeft);
 
-		if Node[P].pRight<nNODE then
-			Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(E)));
+		if Node[CASE].pRight < nNODE then
+			Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(P, lEXIT))));
 		end
 
-		if Node[Node[P].pLeft].pLeft<nNODE then
-			EmitLabel(F);
+		if Node[COND].pLeft < nNODE then
+			EmitLabel(LabelResolve(CASE, lCASEBODYEND));
 		end
 
-		P=Node[P].pRight;
+		CASE = Node[CASE].pRight;
 	end:while
 
-	EmitLabel(E);
+	EmitLabel(LabelResolve(P, lEXIT));
 end
 
 /*****************************************************************************/

@@ -106,25 +106,31 @@ word     Enum(word P; word Flag)
       while P<nNODE do
         select
           case Node[P].ID=iSELECT:
-            word  P1=Node[P].pLeft;
-            while P1<nNODE do
-              word P2=Node[P1].pLeft;
+            LabelAllocate(P, lEXIT);
+            word  CASE = Node[P].pLeft;
+            while CASE < nNODE do
+                when Node[CASE].ID != iCASE:
+                    StopInternal();
 
-              Enum(Node[P2].pLeft,0);
+                LabelAllocate(CASE, lCASEBODY);
+                LabelAllocate(CASE, lCASEBODYEND);
 
-              Node[P2].Value = NewLabel();
+                word COND = Node[CASE].pLeft;
+                word BODY = Node[COND].pRight;
 
-              word V=Enum(Node[P2].pRight,1);
-              if M<S+V then
-                M=S+V;
-              end
+                when Node[BODY].ID != iBODY
+                |    Node[COND].ID != iCOND:
+                    StopInternal();
 
-              Node[P1].Value = NewLabel();
+                Enum(Node[COND].pLeft,0);
 
-              P1=Node[P1].pRight;
+                word V=Enum(Node[BODY].pLeft,1);
+                if M<S+V then
+                  M=S+V;
+                end
+
+                CASE = Node[CASE].pRight;
             end
-
-            Node[P].Value = NewLabel();
 
           case Node[P].ID=iSWITCH :
             word  P1=Node[Node[P].pLeft].pRight;

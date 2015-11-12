@@ -47,8 +47,7 @@ end
 /*****************************************************************************/
 
 void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
-
-	Node [P1].ID=iSELECT;
+	Node[P1].ID = iSELECT;
 
 	char @End1="if";
 	char @Case="";
@@ -67,18 +66,24 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		strcpy(@Buff,@Case);
 	end:if
 
-	word @P2=@Node[P1].pLeft;
+	word @BackLink = @Node[P1].pLeft;
 	while strcmp(@Buff,"end")!=0 do
-		word  P3=Peek();
-		word  P4=Peek();
-		Node [P3]. ID  =iEMPTY;
-		Node [P3].pLeft= P4;
+		word CASE = Peek();
+		word COND = Peek();
+		word BODY = Peek();
 
-		Node [P4]. ID  =iEMPTY;
+		Node[CASE].ID = iCASE;
+		Node[COND].ID = iCOND;
+		Node[BODY].ID = iBODY;
+
+		Node[CASE].pLeft  = COND;
+		Node[COND].pRight = BODY;
+		BackLink = CASE;
+		@BackLink = @Node[CASE].pRight;
 
 		if strcmp(@Buff,@Case)=0 then
 			word pType, nPtr;
-			Node [P4].pLeft= Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+			Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
 			if strcmp(@Buff,@Then)!=0 then
 				Stop(@eTHENEXP);
@@ -98,11 +103,10 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 			@Else="";
 		end:if
 
-		word @P5=@Node[P4].pRight;
+		word @P5 = @Node[BODY].pLeft;
 
 		word nParm1=nParm;
 		word nIndx1=nIndx;
-		word  Flag =    0;
 
 		Scan(@Buff);
 		_Statements(@P5, @Buff, @Case, @Else, "end");
@@ -110,12 +114,9 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		nIndx=nIndx1;
 		nParm=nParm1;
 
-		P2 = P3;
-		@P2=@Node[P3].pRight;
 	end:while
 
 	SkipFinalScan = EndOf(@Buff, @End1, NULL);
-
 end
 
 /*****************************************************************************/
@@ -124,15 +125,20 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[P1].ID=iSELECT;
 
-	word P3=Peek();
-	word P4=Peek();
-	Node[P1].pLeft= P3;
-	Node[P3].ID   =iEMPTY;
-	Node[P3].pLeft= P4;
-	Node[P4].ID   =iEMPTY;
+	word CASE = Peek();
+	word COND = Peek();
+	word BODY = Peek();
+
+	Node[CASE].ID = iCASE;
+	Node[COND].ID = iCOND;
+	Node[BODY].ID = iBODY;
+
+	Node[CASE].pLeft  = COND;
+	Node[COND].pRight = BODY;
+	Node[P1].pLeft = CASE;
 
 	word pType, nPtr;
-	Node[P4].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
 	if pType<nDICT then
 		Stop(@eTYPE);
@@ -144,7 +150,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 
 	Scan(@Buff);
 
-	Node[P4].pRight = _Ctrl(@Buff);
+	Node[BODY].pLeft = _Ctrl(@Buff);
 
 	SkipFinalScan = 1;
 end

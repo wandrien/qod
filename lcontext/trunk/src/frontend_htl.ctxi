@@ -83,8 +83,9 @@ define  iSWITCH     51 // Пеpеключатель
 
 define  iBODY       52 // Тело цикла
 define  iCOND       53 // Условие цикла
+define  iCASE       54
 
-define  iID_COUNT   54
+define  iID_COUNT   55
 
 
 /* Приоритеты операций: */
@@ -108,5 +109,6 @@ define  pCONST      20 // char-литералы и NULL
 define lLOOPBODY    1
 define lCONTINUE    2
 define lEXIT        3
-
+define lCASEBODY    4
+define lCASEBODYEND 5
 
