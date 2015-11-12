@@ -48,6 +48,9 @@ define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param 
 define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
 
+define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
+define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
+
 define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
 
 define @msgWARNING       "предупреждение: "                            // warning

@@ -17,45 +17,13 @@ end
 /*****************************************************************************/
 
 word Code_XOR(word P; word F; word T; word M; char @Buff)
-	word L1=Node[Node[P].pLeft] .Value;
-	word L2=Node[P].Value;
-	if T=0 then
-		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		EmitLabel(L1);
-		_Code(Node[Node[P].pLeft] .pRight,M, 0,F);
-		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(F)));
-		EmitLabel(L2);
-		_Code(Node[P].pRight,             F, 0,M);
-	else
-		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		EmitLabel(L1);
-		_Code(Node[Node[P].pLeft] .pRight,T, 0,M);
-		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
-		EmitLabel(L2);
-		_Code(Node[P].pRight,             M, 0,T);
-	end
+	Stop(@eXORNOTIMPL);
 end
 
 /*****************************************************************************/
 
 word Code_EQV(word P; word F; word T; word M; char @Buff)
-	word L1=Node[Node[P].pLeft] .Value;
-	word L2=Node[P].Value;
-	if T=0 then
-		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		EmitLabel(L1);
-		_Code(Node[Node[P].pLeft] .pRight,F, 0,M);
-		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
-		EmitLabel(L2);
-		_Code(Node[P].pRight,             0, F,M);
-	else
-		_Code(Node[Node[P].pLeft] .pLeft, L2,0,L1);
-		EmitLabel(L1);
-		_Code(Node[Node[P].pLeft] .pRight,0, T,M);
-		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(M)));
-		EmitLabel(L2);
-		_Code(Node[P].pRight,             T, 0,M);
-	end
+	Stop(@eEQVNOTIMPL);
 end
 
 /*****************************************************************************/

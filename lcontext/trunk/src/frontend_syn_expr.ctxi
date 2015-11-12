@@ -756,13 +756,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 		case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_XOR;
 		case pType>=nDICT:
-			word P3=Peek();
-			Node[P3]. ID   =iEMPTY;
-			Node[P3].pLeft = Node[P2].pLeft;
-			Node[P3].pRight= Node[P2].pRight;
-
-			Node[P2].pLeft = P3;
-			Node[P2].pRight= Dup(Node[P2].pRight); /* FIXME: исправить этот бред тут и кодогенераторе... */
+			Stop(@eXORNOTIMPL);
 		default:
 			Stop(@eTYPE);
 		end
