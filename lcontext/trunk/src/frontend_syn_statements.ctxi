@@ -357,11 +357,11 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].pLeft = P2;
 
 	Node[P2].ID    =iEMPTY;
-	Node[P2].pRight= P3;
+	Node[P2].pLeft = P3;
 
 	Node[P3].ID    =iEMPTY;
 
-	word @P4   =@Node[P3].pLeft;
+	word @P4 = @Node[P2].pRight;
 
 	word nParm1=nParm;
 	word nIndx1=nIndx;
@@ -392,23 +392,15 @@ end
 /*****************************************************************************/
 
 void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
-
-	if pLoop>=nNODE then
+	when pLoop>=nNODE:
 		Stop(@eWRONGCONTINUE);
-	end
 
-	Node[P1].ID=iCONTINUE;
+	when Node[pLoop].ID != iWHILE
+	&    Node[pLoop].ID != iREPEAT:
+		StopInternal();
 
-	select
-		case Node[pLoop].ID=iWHILE:
-			Node[P1].Value=Node[Node[pLoop].pLeft].pLeft;
-
-		case Node[pLoop].ID=iREPEAT:
-			Node[P1].Value=Node[pLoop].pLeft;
-
-		default:
-			StopInternal();
-	end
+	Node[P1].ID = iCONTINUE;
+	Node[P1].Value = pLoop;
 
 	MatchCStyleSemicolon(@Buff);
 end
@@ -416,13 +408,15 @@ end
 /*****************************************************************************/
 
 void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
-
-	if pLoop>=nNODE then
+	when pLoop>=nNODE:
 		Stop(@eWRONGEXIT);
-	end
 
-	Node[P1].ID   =iEXIT;
-	Node[P1].Value=pLoop;
+	when Node[pLoop].ID != iWHILE
+	&    Node[pLoop].ID != iREPEAT:
+		StopInternal();
+
+	Node[P1].ID = iEXIT;
+	Node[P1].Value = pLoop;
 
 	MatchCStyleSemicolon(@Buff);
 end

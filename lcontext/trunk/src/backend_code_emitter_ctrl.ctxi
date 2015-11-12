@@ -348,33 +348,32 @@ end
 word Code_WHILE(word P; word F; word T; word M; char @Buff)
 
 	/*
-		       iWHILE
-		      /      \ <-- F
-		    BODY      ...
-	         /    \ <-T
-	      HEAD     ...
-	     L -> \...
+	           iWHILE
+	          /      \
+	        BODY      [next statement]
+	       /    \
+	     HEAD   [loop body]
+	         \
+	         [loop condition]
 	*/
-
-	F = Node[P].Value;
-	P = Node[P].pLeft;
-	T = Node[P].Value;
 
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
 
-	word HEAD = Node[P].pLeft;
-	word L = Node[HEAD].Value;
-	EmitLabel(L);
+	word BODY = Node[P].pLeft;
+	word HEAD = Node[BODY].pLeft;
+
+	EmitLabel(LabelResolve(P, lCONTINUE));
+
 	if Node[HEAD].pRight < nNODE then
-		_Code(Node[HEAD].pRight, F, 0, T);
-		EmitLabel(T);
+		_Code(Node[HEAD].pRight, LabelResolve(P, lEXIT), 0, LabelResolve(P, lLOOPBODY));
+		EmitLabel(LabelResolve(P, lLOOPBODY));
 	end
 
-	Code_List(Node[P].pRight);
+	Code_List(Node[BODY].pRight);
 
-	Emit(@strcat(@strcpy(@Buff, "jmp     @"), @str(L)));
-	EmitLabel(F);
+	Emit(@strcat(@strcpy(@Buff, "jmp     @"), @str(LabelResolve(P, lCONTINUE))));
+	EmitLabel(LabelResolve(P, lEXIT));
 
 	Code_EndBlock(@CB);
 end
@@ -384,38 +383,47 @@ end
 word Code_REPEAT(word P; word F; word T; word M; char @Buff)
 
 	/*
-	             iREPEAT
-	            /       \ <-- T
-	          BODY       ...
-	         |    \
-	         |   TAIL
-	    F ---+> /    \
-	         ...      ...
+	           iREPEAT
+	          /       \
+	        BODY       [next statement]
+	       /    \
+	     HEAD   [loop body]
+	         \
+	         [loop condition]
 	*/
-
-	T = Node[P].Value;
-	P = Node[P].pLeft;
-	F = Node[P].Value;
-	P = Node[P].pRight;
 
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
 
-	EmitLabel(F);
+	word BODY = Node[P].pLeft;
+	word HEAD = Node[BODY].pLeft;
 
-	Code_List(Node[P].pLeft);
+	EmitLabel(LabelResolve(P, lLOOPBODY));
 
-	_Code(Node[P].pRight, F, 0, T);
+	Code_List(Node[BODY].pRight);
 
-	EmitLabel(T);
+	EmitLabel(LabelResolve(P, lCONTINUE));
+
+	if Node[HEAD].pRight < nNODE then
+		_Code(Node[HEAD].pRight, LabelResolve(P, lLOOPBODY), 0, LabelResolve(P, lEXIT));
+	end
+
+	EmitLabel(LabelResolve(P, lEXIT));
 
 	Code_EndBlock(@CB);
+
 end
 
 /*****************************************************************************/
 
-word Code_CONTINUE_EXIT(word P; word F; word T; word M; char @Buff)
-	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(Node[Node[P].Value].Value)));
+word Code_CONTINUE(word P; word F; word T; word M; char @Buff)
+	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(Node[P].Value, lCONTINUE))));
+end
+
+/*****************************************************************************/
+
+word Code_EXIT(word P; word F; word T; word M; char @Buff)
+	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(Node[P].Value, lEXIT))));
 end
 
 /*****************************************************************************/

@@ -1060,8 +1060,10 @@ word Code(word P; word F; word T; word M)
 		Code_WHILE(P, F, T, M, @Buff);
 	case iREPEAT:
 		Code_REPEAT(P, F, T, M, @Buff);
-	case iCONTINUE, iEXIT:
-		Code_CONTINUE_EXIT(P, F, T, M, @Buff);
+	case iCONTINUE:
+		Code_CONTINUE(P, F, T, M, @Buff);
+	case iEXIT:
+		Code_EXIT(P, F, T, M, @Buff);
 	case iEMPTY:
 		null;
 	default:

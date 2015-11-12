@@ -1,12 +1,41 @@
 
 /*****************************************************************************/
 
-word NextLabelNr = 10000;
+LABEL    Label [nLABEL]; // Таблица ссылок
+word    nLabel = 1;
+
+/*****************************************************************************/
+
+word NextLabelValue = 10000;
 
 word NewLabel()
-	word l = NextLabelNr;
-	inc NextLabelNr;
+	word l = NextLabelValue;
+	inc NextLabelValue;
 	return l;
+end
+
+/*****************************************************************************/
+
+void LabelAllocate(word N; word Name)
+	when nLabel >= nLABEL:
+		StopMemory();
+	Label[nLabel].Name = Name;
+	Label[nLabel].Value = NewLabel();
+	Label[nLabel].pNext = Node[N].pLabel;
+	Node[N].pLabel = nLabel;
+	inc nLabel;
+end
+
+word LabelResolve(word N; word Name)
+	word L = Node[N].pLabel;
+	do
+		when L = 0 | L >= nLabel:
+			StopInternal();
+		when Label[L].Name = Name:
+			exit;
+		L = Label[L].pNext;
+	end:do
+	return Label[L].Value;
 end
 
 /*****************************************************************************/
@@ -112,37 +141,20 @@ word     Enum(word P; word Flag)
 
             Node[P].Value = NewLabel();
 
-          case Node[P].ID=iWHILE:
-            word P1=Node[P] .pLeft;
-            word P2=Node[P1].pLeft;
+          case Node[P].ID=iWHILE | Node[P].ID=iREPEAT:
+            word BODY = Node[P].pLeft;
+            word HEAD = Node[BODY].pLeft;
 
-            Node[P2].Value = NewLabel();
+            LabelAllocate(P, lLOOPBODY);
+            LabelAllocate(P, lCONTINUE);
+            LabelAllocate(P, lEXIT);
 
-          //Enum(Node[P2].pLeft, 0);
-            Enum(Node[P2].pRight,0);
+            Enum(Node[HEAD].pRight,0);
 
-            Node[P1].Value = NewLabel();
-
-            word V=Enum(Node[P1].pRight,1);
+            word V=Enum(Node[BODY].pRight,1);
             if M<S+V then
               M=S+V;
             end
-
-            Node[P].Value = NewLabel();
-
-          case Node[P].ID=iREPEAT:
-            word P1=Node[P].pLeft;
-
-            Node[P1].Value = NewLabel();
-
-            word V=Enum(Node[Node[P1].pRight].pLeft,1);
-            if M<S+V then
-              M=S+V;
-            end
-
-            Enum(Node[Node[P1].pRight].pRight,0);
-
-            Node[P].Value = NewLabel();
 
           case Node[P].ID=iDEF:
             word Size=4;

@@ -98,3 +98,12 @@ define  pLVALUE      7 // LVALUE
 define  pEXPR       10 // выражение в скобках
 
 define  pCONST      20 // char-литералы и NULL
+
+
+/* Имена ссылок */
+
+define lLOOPBODY    1
+define lCONTINUE    2
+define lEXIT        3
+
+
