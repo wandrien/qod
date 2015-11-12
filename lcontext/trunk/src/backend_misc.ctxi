@@ -27,6 +27,7 @@ void EmitInternalsInfo()
 	EmitUsageInfo("Parm", nParm, nPARM);
 	EmitUsageInfo("Char", CharDataUsed(), CharDataTotal());
 	EmitUsageInfo("Node", nNode, nNODE);
+	EmitUsageInfo("Label", nLabel, nLABEL);
 //	EmitUsageInfo("Text", nText, nTEXT);
 
 end
