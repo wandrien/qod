@@ -218,45 +218,19 @@ include "frontend_syn_cast.ctxi"
 */
 
 void Not(word P)
-	select
-	case Node[P].ID=iOR:
-		Node[P].ID=iAND;
-		Not (Node[P].pLeft);
-		Not (Node[P].pRight);
-
-	case Node[P].ID=iXOR:
-		Node[P].ID=iEQV;
-
-	case Node[P].ID=iEQV:
-		Node[P].ID=iXOR;
-
-	case Node[P].ID=iAND:
-		Node[P].ID=iOR;
-		Not(Node[P].pLeft);
-		Not(Node[P].pRight);
-
-	case Node[P].ID=iLT:
-		Node[P].ID=iGE;
-
-	case Node[P].ID=iLE:
-		Node[P].ID=iGT;
-
-	case Node[P].ID=iEQ:
-		Node[P].ID=iNE;
-
-	case Node[P].ID=iNE:
-		Node[P].ID=iEQ;
-
-	case Node[P].ID=iGE:
-		Node[P].ID=iLT;
-
-	case Node[P].ID=iGT:
-		Node[P].ID=iLE;
-
-	default:
-		StopInternal();
-
-	end:select
+	switch Node[P].ID of
+	case iOR:   Node[P].ID = iAND; Not(Node[P].pLeft); Not(Node[P].pRight);
+	case iAND:  Node[P].ID = iOR;  Not(Node[P].pLeft); Not(Node[P].pRight);
+	case iXOR:  Node[P].ID = iEQV;
+	case iEQV:  Node[P].ID = iXOR;
+	case iLT:   Node[P].ID = iGE;
+	case iLE:   Node[P].ID = iGT;
+	case iEQ:   Node[P].ID = iNE;
+	case iNE:   Node[P].ID = iEQ;
+	case iGE:   Node[P].ID = iLT;
+	case iGT:   Node[P].ID = iLE;
+	default:    StopInternal();
+	end:switch
 end
 
 /*****************************************************************************/
