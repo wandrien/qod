@@ -113,4 +113,5 @@ define lCONTINUE    2
 define lEXIT        3
 define lCASEBODY    4
 define lCASEBODYEND 5
+define lBRANCH      6
 

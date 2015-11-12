@@ -205,8 +205,8 @@ word     Enum(word P; word Flag)
     case Node[P].ID!=iASSIGN & Node[P].ID!=iINC & Node[P].ID!=iDEC:
       Enum(Node[P].pLeft, 0);
 
-      if (iOR<=Node[P].ID & Node[P].ID<=iAND) | (Node[P].ID=iEMPTY) then
-        Node[P].Value = NewLabel();
+      if Node[P].ID = iOR | Node[P].ID = iAND then
+        LabelAllocate(P, lBRANCH);
       end
 
       Enum(Node[P].pRight,0);

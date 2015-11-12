@@ -2,7 +2,7 @@
 /*****************************************************************************/
 
 word Code_OR(word P; word F; word T; word M; char @Buff)
-	word L = Node[P].Value;
+	word L = LabelResolve(P, lBRANCH);
 	if T=0 then
 		_Code(Node[P].pLeft ,  0, M, L);
 		EmitLabel(L);
@@ -29,7 +29,7 @@ end
 /*****************************************************************************/
 
 word Code_AND(word P; word F; word T; word M; char @Buff)
-	word L = Node[P].Value;
+	word L = LabelResolve(P, lBRANCH);
 	if T=0 then
 		_Code(Node[P].pLeft , F, 0, L);
 		EmitLabel(L);
