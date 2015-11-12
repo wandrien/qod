@@ -242,6 +242,16 @@ end
 
 word Code_SELECT(word P; word F; word T; word M; char @Buff)
 
+	/*
+	                 iSELECT
+	                /       \
+	              case      [next statement]
+	             /    \
+	            x     [next case]
+	           / \
+	[condition]  [body]
+	*/
+
 	word E=Node[P].Value;
 
 	P=Node[P].pLeft;
@@ -348,29 +358,29 @@ end
 word Code_WHILE(word P; word F; word T; word M; char @Buff)
 
 	/*
-	           iWHILE
-	          /      \
-	        BODY      [next statement]
-	       /    \
-	     HEAD   [loop body]
-	         \
-	         [loop condition]
+	                iWHILE
+	               /      \
+	             BODY     [next statement]
+	            /    \
+	 [loop body]     HEAD
+	                /    \
+	[loop condition]      NULL
 	*/
 
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
 
 	word BODY = Node[P].pLeft;
-	word HEAD = Node[BODY].pLeft;
+	word HEAD = Node[BODY].pRight;
 
 	EmitLabel(LabelResolve(P, lCONTINUE));
 
-	if Node[HEAD].pRight < nNODE then
-		_Code(Node[HEAD].pRight, LabelResolve(P, lEXIT), 0, LabelResolve(P, lLOOPBODY));
+	if Node[HEAD].pLeft < nNODE then
+		_Code(Node[HEAD].pLeft, LabelResolve(P, lEXIT), 0, LabelResolve(P, lLOOPBODY));
 		EmitLabel(LabelResolve(P, lLOOPBODY));
 	end
 
-	Code_List(Node[BODY].pRight);
+	Code_List(Node[BODY].pLeft);
 
 	Emit(@strcat(@strcpy(@Buff, "jmp     @"), @str(LabelResolve(P, lCONTINUE))));
 	EmitLabel(LabelResolve(P, lEXIT));
@@ -383,29 +393,29 @@ end
 word Code_REPEAT(word P; word F; word T; word M; char @Buff)
 
 	/*
-	           iREPEAT
-	          /       \
-	        BODY       [next statement]
-	       /    \
-	     HEAD   [loop body]
-	         \
-	         [loop condition]
+	                iREPEAT
+	               /       \
+	             BODY      [next statement]
+	            /    \
+	 [loop body]     HEAD
+	                /    \
+	[loop condition]      NULL
 	*/
 
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
 
 	word BODY = Node[P].pLeft;
-	word HEAD = Node[BODY].pLeft;
+	word HEAD = Node[BODY].pRight;
 
 	EmitLabel(LabelResolve(P, lLOOPBODY));
 
-	Code_List(Node[BODY].pRight);
+	Code_List(Node[BODY].pLeft);
 
 	EmitLabel(LabelResolve(P, lCONTINUE));
 
-	if Node[HEAD].pRight < nNODE then
-		_Code(Node[HEAD].pRight, LabelResolve(P, lLOOPBODY), 0, LabelResolve(P, lEXIT));
+	if Node[HEAD].pLeft < nNODE then
+		_Code(Node[HEAD].pLeft, LabelResolve(P, lLOOPBODY), 0, LabelResolve(P, lEXIT));
 	end
 
 	EmitLabel(LabelResolve(P, lEXIT));

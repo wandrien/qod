@@ -301,23 +301,22 @@ end
 
 void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
-	word  P2=Peek();
-	word  P3=Peek();
-	Node [P1].ID    =iWHILE;
-	Node [P1].pLeft = P2;
+	word  BODY = Peek();
+	word  HEAD = Peek();
+	Node [P1].ID = iWHILE;
+	Node [P1].pLeft = BODY;
 
-	Node [P2].ID    =iEMPTY;
-	Node [P2].pLeft = P3;
+	Node [BODY].ID = iEMPTY;
+	Node [BODY].pRight = HEAD;
 
-	Node [P3].ID    =iEMPTY;
+	Node [HEAD].ID = iEMPTY;
 
 	char @End2 = NULL;
 
 	if strcmp(@Buff,"while")=0 then
 		@End2 = "while";
 		word pType, nPtr;
-		//Node[P3].pLeft =Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
-		Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		Node[HEAD].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
 		if strcmp(@Buff,"do")!=0 then
 			Stop(@eDOEXP);
@@ -328,7 +327,7 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 		end
 	end:if
 
-	word @P4=@Node[P2].pRight;
+	word @P4 = @Node[BODY].pLeft;
 
 	word nParm1=nParm;
 	word nIndx1=nIndx;
@@ -351,17 +350,17 @@ end
 /*****************************************************************************/
 
 void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
-	word P2=Peek();
-	word P3=Peek();
-	Node[P1].ID    =iREPEAT;
-	Node[P1].pLeft = P2;
+	word  BODY = Peek();
+	word  HEAD = Peek();
+	Node[P1].ID = iREPEAT;
+	Node[P1].pLeft = BODY;
 
-	Node[P2].ID    =iEMPTY;
-	Node[P2].pLeft = P3;
+	Node[BODY].ID = iEMPTY;
+	Node[BODY].pRight = HEAD;
 
-	Node[P3].ID    =iEMPTY;
+	Node[HEAD].ID = iEMPTY;
 
-	word @P4 = @Node[P2].pRight;
+	word @P4 = @Node[BODY].pLeft;
 
 	word nParm1=nParm;
 	word nIndx1=nIndx;
@@ -374,7 +373,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	_Statements(@P4, @Buff, "until", NULL, NULL);
 
 	word pType, nPtr;
-	Node[P3].pRight=Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[HEAD].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
 	if strcmp(@Buff,";")!=0 then
 		Stop(@eSEMICOLONEXP);
