@@ -291,73 +291,124 @@ end
 
 word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 
-	word L_End = Node[P].Value;
-	word L_Default = L_End;
+	/*
+	                 iSWITCH
+	                /       \
+	              iCOND      [next statement]
+	             /     \
+	 [expression]     iCASE
+	                 /     \
+	            iVALUE      [next case]
+	           /      \
+	    [value]       iVALUE
+                    /      \
+	         [value]       iBODY
+	                      /     \
+	                [body]       NULL
+
+
+                      iCASE
+	                 /     \
+	          iDEFAULT      [next case]
+	         /        \
+	     NULL        iBODY
+	                /     \
+	          [body]       NULL
+
+
+	*/
+
+	word COND = Node[P].pLeft;
+	when Node[COND].ID != iCOND:
+		StopInternal();
 
 	fEAX = 0;
-	word pType = _Code(Node[Node[P].pLeft].pLeft,0,0,0);
+	word pType = _Code(Node[COND].pLeft,0,0,0);
 	if pType = st_byte then
 		Emit("and     EAX,  0FFH");
 	end:if
 
+	word L_Default = LabelResolve(P, lEXIT);
 	word offset = 0;
 
-	word  P1 = Node[Node[P].pLeft].pRight;
-	while P1 < nNODE do
-		word  P2 = Node[Node[P1].pLeft].pLeft;
-		if    P2 = nNODE then
-			L_Default = Node[P1].Value;
-		end:if
+	word  CASE_I = Node[COND].pRight;
+	while CASE_I < nNODE do
+		when Node[CASE_I].ID != iCASE:
+			StopInternal();
 
-		while P2 != nNODE do
-			word value = Node[P2].Value - offset;
+		word  VALUE_I = Node[CASE_I].pLeft;
+		while VALUE_I < nNode do
+			switch Node[VALUE_I].ID of
+			case iVALUE:
+				word value = Node[Node[VALUE_I].pLeft].Value - offset;
 
-			char@ Reg = "EAX";
-			if pType = st_char then
-				value = value & 0xFF;
-				@Reg = "AL";
-			end:if
+				char@ Reg = "EAX";
+				if pType = st_char then
+					value = value & 0xFF;
+					@Reg = "AL";
+				end:if
 
-			switch value of
-			case 1:
-				strcpy(@Buff, "dec    ");
-				strcat(@Buff, @Reg);
-			case 2:
-				strcpy(@Buff, "dec    ");
-				strcat(@Buff, @Reg);
-				Emit(@Buff);
+				switch value of
+				case 1:
+					strcpy(@Buff, "dec    ");
+					strcat(@Buff, @Reg);
+					Emit(@Buff);
+				case 2:
+					strcpy(@Buff, "dec    ");
+					strcat(@Buff, @Reg);
+					Emit(@Buff);
+					Emit(@Buff);
+				default:
+					strcpy(@Buff, "sub    ");
+					strcat(@Buff, @Reg);
+					strcat(@Buff, ", 0x");
+					strcat(@Buff, @str2(value, 16));
+					Emit(@Buff);
+				end:switch
+
+				offset = offset + value;
+
+				Emit(@strcat(@strcpy  (@Buff,"je      @"),@str(LabelResolve(CASE_I, lCASEBODY))));
+
+			case iDEFAULT:
+				L_Default = LabelResolve(CASE_I, lCASEBODY);
+			case iBODY:
+				null;
 			default:
-				strcpy(@Buff, "sub    ");
-				strcat(@Buff, @Reg);
-				strcat(@Buff, ", 0x");
-				strcat(@Buff, @str2(value, 16));
+				StopInternal();
 			end:switch
-			Emit(@Buff);
-
-			offset = offset + value;
-
-			Emit(@strcat(@strcpy  (@Buff,"je      @"),@str(Node[P1].Value)));
-
-			P2=Node[P2].pLeft;
+			VALUE_I = Node[VALUE_I].pRight;
 		end:while
 
-		P1=Node[P1].pRight;
+		CASE_I = Node[CASE_I].pRight;
 	end:while
 
 	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(L_Default)));
 
-	word  P2= Node[Node[P].pLeft].pRight;
-	while P2<nNODE do
-		EmitLabel(Node[P2].Value);
+	CASE_I = Node[COND].pRight;
+	while CASE_I < nNODE do
+		when Node[CASE_I].ID != iCASE:
+			StopInternal();
 
-		Code_Block(Node[Node[P2].pLeft].pRight);
+		word  VALUE_I = Node[CASE_I].pLeft;
+		while VALUE_I < nNode do
+			switch Node[VALUE_I].ID of
+			case iVALUE, iDEFAULT:
+				null;
+			case iBODY:
+				EmitLabel(LabelResolve(CASE_I, lCASEBODY));
+				Code_Block(Node[VALUE_I].pLeft);
+				Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(P, lEXIT))));
+			default:
+				StopInternal();
+			end:switch
+			VALUE_I = Node[VALUE_I].pRight;
+		end:while
 
-		Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(L_End)));
-
-		P2=Node[P2].pRight;
+		CASE_I = Node[CASE_I].pRight;
 	end:while
 
-	EmitLabel(L_End);
+	EmitLabel(LabelResolve(P, lEXIT));
 
 end
 

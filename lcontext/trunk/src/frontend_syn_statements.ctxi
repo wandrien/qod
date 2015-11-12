@@ -160,104 +160,90 @@ end
 
 void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
-	word P2=Peek();
-	Node[P1].ID    = iSWITCH;
-	Node[P1].pLeft = P2;
+	Node[P1].ID = iSWITCH;
 
-	Node[P2].ID = iEMPTY;
+	word COND = Peek();
+	Node[COND].ID = iCOND;
+	Node[P1].pLeft = COND;
+
+	word @CaseBackLink = @Node[COND].pRight;
 
 	word pType, nPtr;
-	Node[P2].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
-	if nPtr != 0 then
+	when nPtr != 0:
 		Stop(@eSWTYPE);
-	end
 
-	if pType != st_char & pType != st_byte & pType != st_word & pType != st_int then
+	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
 		Stop(@eSWTYPE);
-	end
 
-	if strcmp(@Buff,"of") != 0 then
+	when strcmp(@Buff,"of") != 0:
 		Stop(@eOFEXP);
-	end
 
-	if strcmp(@Scan(@Buff),"case") != 0 then
+	when strcmp(@Scan(@Buff),"case") != 0:
 		Stop(@eCASEEXP);
-	end
-
-	word @P3 = @Node[P2].pRight;
 
 	while strcmp(@Buff,"case") = 0 do
-		word P4=Peek();
-		word P5=Peek();
-		Node[P4].ID    = iEMPTY;
-		Node[P4].pLeft = P5;
-
-		Node[P5].ID    = iEMPTY;
-
-		word @P6 = @Node[P5].pLeft;
+		word CASE = Peek();
+		Node[CASE].ID = iCASE;
+		CaseBackLink = CASE;
+		@CaseBackLink = @Node[CASE].pRight;
+		word @ValueBackLink = @Node[CASE].pLeft;
 
 		repeat
 			word pType2, nPtr2;
-			word  P7=Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			word EXPR = Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
 
 			select
 			case pType = st_char:
-				if Node[P7].ID != iCHAR then
+				when Node[EXPR].ID != iCHAR:
 					Stop(@eTYPE);
-				end
-
 			case pType = st_byte:
-				if Node[P7].ID != iWORD then
+				when Node[EXPR].ID != iWORD:
 					Stop(@eTYPE);
-				end
-
 			case pType = st_word:
-				if Node[P7].ID != iWORD then
+				when Node[EXPR].ID != iWORD:
 					Stop(@eTYPE);
-				end
-
-			case pType=Find("int"):
-				if Node[P7].ID != iWORD & Node[P7].ID != iINT then
+			case pType = st_int:
+				when Node[EXPR].ID != iWORD & Node[EXPR].ID != iINT:
 					Stop(@eTYPE);
-				end
-
 			default:
 				Stop(@eCONSTEXP);
 			end:select
 
-			word  P8 = Node[P2].pRight;
-			while P8 < nNODE do
-				word  P9 = Node[Node[P8].pLeft].pLeft;
-				while P9 < nNode do
-					if Node[P7].Value = Node[P9].Value then
+			word  CASE_I = Node[COND].pRight;
+			while CASE_I < nNODE do
+				word  VALUE_I = Node[CASE_I].pLeft;
+				while VALUE_I < nNode & Node[VALUE_I].ID = iVALUE do
+					if Node[Node[VALUE_I].pLeft].Value = Node[EXPR].Value then
 						Stop(@eDUPCASE);
 					end:if
 
-					P9=Node[P9].pLeft;
+					VALUE_I = Node[VALUE_I].pRight;
 				end:while
 
-				P8=Node[P8].pRight;
+				CASE_I = Node[CASE_I].pRight;
 			end:while
 
-			//INFO Узел iLOAD не должен создаваться
-			Node[P7].pLeft = nNODE;
-			nNode = P7 + 1;
+			word VALUE = Peek();
+			Node[VALUE].ID = iVALUE;
+			Node[VALUE].pLeft = EXPR;
+			ValueBackLink = VALUE;
+			@ValueBackLink = @Node[VALUE].pRight;
 
-			P6 = P7;
-			@P6 = @Node[P7].pLeft;
 		until strcmp(@Buff,",") != 0;
-		
 
 		if strcmp(@Buff,":") != 0 then
 			Stop(@eCOLONEXP);
 		end
 
-		word @P7 = @Node[P5].pRight;
+		word BODY = Peek();
+		Node[BODY].ID = iBODY;
+		ValueBackLink = BODY;
+		word @P7 = @Node[BODY].pLeft;
 
 		word nParm1 = nParm;
 		word nIndx1 = nIndx;
-		word  Flag  =    0;
 
 		Scan(@Buff);
 
@@ -266,37 +252,36 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		nIndx = nIndx1;
 		nParm = nParm1;
 
-		P3 = P4;
-		@P3=@Node[P4].pRight;
-	end:while
+	end
 
 	if strcmp(@Buff,"default") = 0 then
 		if strcmp(@Scan(@Buff),":") != 0 then
 			Stop(@eCOLONEXP);
 		end
 
-		word P4=Peek();
-		word P5=Peek();
-		Node[P4].ID    =iEMPTY;
-		Node[P4].pLeft = P5;
+		word CASE = Peek();
+		word DEFAULT = Peek();
+		word BODY = Peek();
 
-		Node[P5].ID    =iEMPTY;
+		Node[CASE].ID = iCASE;
+		Node[DEFAULT].ID = iDEFAULT;
+		Node[BODY].ID = iBODY;
 
-		word @P6=@Node[P5].pRight;
+		Node[CASE].pLeft = DEFAULT;
+		Node[DEFAULT].pRight = BODY;
+		CaseBackLink = CASE;
+
+		word @P6 = @Node[BODY].pLeft;
 
 		word nParm1=nParm;
 		word nIndx1=nIndx;
-		word  Flag =    0;
 
 		Scan(@Buff);
 
 		_Statements(@P6, @Buff, "end", NULL, NULL);
 
-
 		nIndx=nIndx1;
 		nParm=nParm1;
-
-		P3 = P4;
 	end:if
 
 	SkipFinalScan = EndOf(@Buff, "switch", NULL);

@@ -108,6 +108,7 @@ void InitializeIDDesc()
 
 	InitIDDesc2(iDEF    , "iDEF"    , vcDict, 1);
 	InitIDDesc1(iSELECT , "iSELECT" );
+	InitIDDesc2(iSWITCH , "iSWITCH" , vcNone, 1);
 	InitIDDesc2(iWHILE  , "iWHILE"  , vcNone, 1);
 	InitIDDesc2(iREPEAT , "iREPEAT" , vcNone, 1);
 	InitIDDesc1(iCONTINUE, "iCONTINUE");
@@ -123,6 +124,8 @@ void InitializeIDDesc()
 	InitIDDesc2(iBODY   , "iBODY"  , vcNone, 1);
 	InitIDDesc2(iCOND   , "iCOND"  , vcNone, 1);
 	InitIDDesc2(iCASE   , "iCASE"  , vcNone, 1);
+	InitIDDesc2(iVALUE  , "iVALUE" , vcNone, 1);
+	InitIDDesc2(iDEFAULT, "iDEFAULT", vcNone, 1);
 end
 
 

@@ -133,19 +133,39 @@ word     Enum(word P; word Flag)
             end
 
           case Node[P].ID=iSWITCH :
-            word  P1=Node[Node[P].pLeft].pRight;
-            while P1<nNODE do
-              Node[P1].Value = NewLabel();
 
-              word V=Enum(Node[Node[P1].pLeft].pRight,1);
-              if M<S+V then
-                M=S+V;
-              end
+			LabelAllocate(P, lEXIT);
 
-              P1=Node[P1].pRight;
-            end
+			word COND = Node[P].pLeft;
+			when Node[COND].ID != iCOND:
+				StopInternal();
 
-            Node[P].Value = NewLabel();
+			Enum(Node[COND].pLeft,0);
+
+			word  CASE_I = Node[COND].pRight;
+			while CASE_I < nNODE do
+				when Node[CASE_I].ID != iCASE:
+					StopInternal();
+
+				LabelAllocate(CASE_I, lCASEBODY);
+
+				word  VALUE_I = Node[CASE_I].pLeft;
+				while VALUE_I < nNode do
+					when Node[VALUE_I].ID != iVALUE
+					&    Node[VALUE_I].ID != iDEFAULT
+					&    Node[VALUE_I].ID != iBODY:
+						StopInternal();
+					if Node[VALUE_I].ID = iBODY then
+						word V=Enum(Node[VALUE_I].pLeft,1);
+						if M<S+V then
+							M=S+V;
+						end
+					end
+					VALUE_I = Node[VALUE_I].pRight;
+				end:while
+
+				CASE_I = Node[CASE_I].pRight;
+			end:while
 
           case Node[P].ID=iWHILE | Node[P].ID=iREPEAT:
             word BODY = Node[P].pLeft;
