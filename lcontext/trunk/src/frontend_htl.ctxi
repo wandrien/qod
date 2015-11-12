@@ -81,7 +81,10 @@ define  iINLINE     49 // Вставка кода
 define  iRETURN     50 // Возвpат
 define  iSWITCH     51 // Пеpеключатель
 
-define  iID_COUNT   52
+define  iBODY       52 // Тело цикла
+define  iCOND       53 // Условие цикла
+
+define  iID_COUNT   54
 
 
 /* Приоритеты операций: */

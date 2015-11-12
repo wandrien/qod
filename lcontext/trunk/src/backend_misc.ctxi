@@ -119,6 +119,8 @@ void InitializeIDDesc()
 	InitIDDesc1(iINLINE , "iINLINE" );
 	InitIDDesc2(iRETURN , "iRETURN" , vcNone, 1);
 
+	InitIDDesc2(iBODY   , "iBODY"  , vcNone, 1);
+	InitIDDesc2(iCOND   , "iCOND"  , vcNone, 1);
 end
 
 

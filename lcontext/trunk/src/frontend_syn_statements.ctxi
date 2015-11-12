@@ -302,21 +302,21 @@ end
 void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
 	word  BODY = Peek();
-	word  HEAD = Peek();
+	word  COND = Peek();
 	Node [P1].ID = iWHILE;
 	Node [P1].pLeft = BODY;
 
-	Node [BODY].ID = iEMPTY;
-	Node [BODY].pRight = HEAD;
+	Node [BODY].ID = iBODY;
+	Node [BODY].pRight = COND;
 
-	Node [HEAD].ID = iEMPTY;
+	Node [COND].ID = iCOND;
 
 	char @End2 = NULL;
 
 	if strcmp(@Buff,"while")=0 then
 		@End2 = "while";
 		word pType, nPtr;
-		Node[HEAD].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
 		if strcmp(@Buff,"do")!=0 then
 			Stop(@eDOEXP);
@@ -351,14 +351,14 @@ end
 
 void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	word  BODY = Peek();
-	word  HEAD = Peek();
+	word  COND = Peek();
 	Node[P1].ID = iREPEAT;
 	Node[P1].pLeft = BODY;
 
-	Node[BODY].ID = iEMPTY;
-	Node[BODY].pRight = HEAD;
+	Node[BODY].ID = iBODY;
+	Node[BODY].pRight = COND;
 
-	Node[HEAD].ID = iEMPTY;
+	Node[COND].ID = iCOND;
 
 	word @P4 = @Node[BODY].pLeft;
 
@@ -373,7 +373,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	_Statements(@P4, @Buff, "until", NULL, NULL);
 
 	word pType, nPtr;
-	Node[HEAD].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
 	if strcmp(@Buff,";")!=0 then
 		Stop(@eSEMICOLONEXP);

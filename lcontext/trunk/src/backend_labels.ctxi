@@ -143,13 +143,16 @@ word     Enum(word P; word Flag)
 
           case Node[P].ID=iWHILE | Node[P].ID=iREPEAT:
             word BODY = Node[P].pLeft;
-            word HEAD = Node[BODY].pRight;
+            word COND = Node[BODY].pRight;
+            when Node[BODY].ID != iBODY
+            |    Node[COND].ID != iCOND:
+                StopInternal();
 
             LabelAllocate(P, lLOOPBODY);
             LabelAllocate(P, lCONTINUE);
             LabelAllocate(P, lEXIT);
 
-            Enum(Node[HEAD].pLeft,0);
+            Enum(Node[COND].pLeft,0);
 
             word V=Enum(Node[BODY].pLeft,1);
             if M<S+V then
