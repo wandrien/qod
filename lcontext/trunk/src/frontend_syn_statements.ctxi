@@ -323,7 +323,6 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 	word nParm1=nParm;
 	word nIndx1=nIndx;
 	word pLoop1=pLoop;
-	word  Flag =    0;
 
 	pLoop=P1;
 
