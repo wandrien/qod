@@ -66,7 +66,7 @@ define  iFIELD      35 // Вычисление смещения поля
 define  iLOAD       36 // Загpузка значения
 define  iLPTR       37 // Загpузка адpеса'
 
-define  iDEF        38 // Опpеделение локальной пеpеменной
+define  iDEF_LOCAL  38 // Опpеделение локальной пеpеменной
 define  iSELECT     39 // Выбоp
 define  iWHILE      40 // Цикл с пpедусловием
 define  iREPEAT     41 // Цикл с постусловием

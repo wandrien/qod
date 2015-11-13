@@ -1003,7 +1003,7 @@ word Code(word P; word F; word T; word M)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-    case iDEF:
+    case iDEF_LOCAL:
       if nLocal>=nLOCAL then
         StopMemory();
       end

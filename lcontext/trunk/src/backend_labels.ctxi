@@ -185,7 +185,7 @@ word     Enum(word P; word Flag)
               M=S+V;
             end
 
-          case Node[P].ID=iDEF:
+          case Node[P].ID=iDEF_LOCAL:
             word Size=4;
             if Node[Node[P].pLeft].Value=0 then
               Size=Dict[Node[P].Value].Value;

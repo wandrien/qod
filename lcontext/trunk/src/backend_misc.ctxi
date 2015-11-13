@@ -106,7 +106,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iLOAD   , "iLOAD"   );
 	InitIDDesc1(iLPTR   , "iLPTR"   );
 
-	InitIDDesc2(iDEF    , "iDEF"    , vcDict, 1);
+	InitIDDesc2(iDEF_LOCAL, "iDEF_LOCAL", vcDict, 1);
 	InitIDDesc1(iSELECT , "iSELECT" );
 	InitIDDesc2(iSWITCH , "iSWITCH" , vcNone, 1);
 	InitIDDesc2(iWHILE  , "iWHILE"  , vcNone, 1);

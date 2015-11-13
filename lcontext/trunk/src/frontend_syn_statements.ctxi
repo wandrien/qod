@@ -505,7 +505,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		end:while
 
 		word P3=Peek();
-		Node[P1].ID   =iDEF;
+		Node[P1].ID   =iDEF_LOCAL;
 		Node[P1].Value=pType;
 		Node[P1].pLeft =P3;
 
