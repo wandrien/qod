@@ -1,12 +1,12 @@
 
 word ResolveLocal(char @Name)
-	word  I=pParmLocal;
-	while I<nParm do
-		when strcmp(@Parm[I].Name,@Name)=0:
+	word  I=0;
+	while I<nLocal do
+		when strcmp(@Local[I].Name,@Name)=0:
 			return I;
 		inc I;
 	end:while
-	return nPARM;
+	return nLOCAL;
 end
 
 

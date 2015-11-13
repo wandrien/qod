@@ -480,25 +480,26 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		end:if
 
 		word I = ResolveLocal(@Buff);
-		when I < nPARM:
+		when I < nLOCAL:
 			Stop(@eDUPLICATE);
 
 		I = ResolveParm(@Buff);
 		when I < nPARM:
 			Stop(@eDUPLICATE);
 
-		if nParm>=nPARM then
+		if nLocal>=nLOCAL then
 			StopMemory();
 		end:if
 
-		Parm[nParm].pType=pType;               Copy(@Parm[nParm].Name,@Buff,0);
-		Parm[nParm].nPtr =nPtr;
-		Parm[nParm].pIndx=nIndx;
-		Parm[nParm].nIndx= Tabl(@Scan(@Buff));
+		Copy(@Local[nLocal].Name,@Buff,0);
+		Local[nLocal].pType=pType;
+		Local[nLocal].nPtr =nPtr;
+		Local[nLocal].pIndx=nIndx;
+		Local[nLocal].nIndx= Tabl(@Scan(@Buff));
 
 		word  N=1;
-		word  K=Parm[nParm].pIndx;
-		while K<Parm[nParm].nIndx do
+		word  K=Local[nLocal].pIndx;
+		while K<Local[nLocal].nIndx do
 			N = Indx[K]*N;
 			inc K;
 		end:while
@@ -517,7 +518,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P4].Value = N;
 
 		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-			if Parm[nParm].pIndx<Parm[nParm].nIndx then
+			if Local[nLocal].pIndx<Local[nLocal].nIndx then
 				Stop(@eNOTAVAIL);
 			end:if
 
@@ -532,12 +533,12 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Node[P5].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
 
 			Node[P6].ID    =iLOCAL;
-			Node[P6].Value =nParm-pParmLocal;
+			Node[P6].Value =nLocal;
 
 			Test(pType,nPtr,pType2,nPtr2,@Node[P5].pRight);
 		end:if
 
-		inc nParm;
+		inc nLocal;
 ///*
 		if strcmp(@Buff,",")=0 then
 			strcpy(@Buff,@GetDictName(pType));
@@ -618,8 +619,8 @@ end
 
 word Statements(char @Buff; char @End1; char @End2; char @End3)
 
-	word nParm1=nParm;
-	word nIndx1=nIndx;
+	word Saved_nLocal = nLocal;
+	word nIndx1 = nIndx;
 
 	word P = nNODE;
 	word @Backlink = @P;
@@ -637,8 +638,8 @@ word Statements(char @Buff; char @End1; char @End2; char @End3)
 
 	until strcmp(@Buff, @End1) = 0;
 
-	nIndx=nIndx1;
-	nParm=nParm1;
+	nIndx = nIndx1;
+	nLocal = Saved_nLocal;
 
 	return P;
 end

@@ -303,14 +303,14 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 	if Flag=0 then /* Это локальная переменная? */
 		word I = ResolveLocal(@Buff);
-		if I < nPARM then
+		if I < nLOCAL then
 			P1=Peek();
 			Node[P1].ID    =iLOCAL;
-			Node[P1].Value = I-pParmLocal;
-			pType          = Parm[I].pType;
-			nPtr1          = Parm[I].nPtr;
-			pIndx          = Parm[I].pIndx;
-			nIndx          = Parm[I].nIndx;
+			Node[P1].Value = I;
+			pType          = Local[I].pType;
+			nPtr1          = Local[I].nPtr;
+			pIndx          = Local[I].pIndx;
+			nIndx          = Local[I].nIndx;
 			Flag           = 1;
 		end:if
 	end:if
