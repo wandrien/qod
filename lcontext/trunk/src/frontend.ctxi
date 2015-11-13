@@ -67,7 +67,7 @@ end
 
 /*****************************************************************************/
 
-void function __Statements(word @P; char @Buff; char @End1; char @End2; char @End3)
+word function __Statements(char @Buff; char @End1; char @End2; char @End3)
 __Statements @_Statements;
 
 /*****************************************************************************/

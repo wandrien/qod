@@ -23,7 +23,7 @@ void DeclMainFunc(char@ Buff)
 	Dict[p].Used  = 1;
 
 	Scan(@Buff);
-	Statements(@Dict[pFunc].pNode, @Buff, "end", NULL, NULL);
+	Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 
 	nIndx = pIndx;
 	nParm = pParm;
@@ -209,7 +209,7 @@ void DeclFunc1(char @Buff; word a)
 		default: /* Тело функции. */
 			pParm=nParm;
 			pIndx=nIndx;
-			Statements(@Dict[pFunc].pNode, @Buff, "end", NULL, NULL);
+			Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 			nIndx=pIndx;
 			nParm=pParm;
 
