@@ -5,11 +5,13 @@
 
 /*****************************************************************************/
 
+define RegA 0
+define RegB 1
+define RegC 2
+define RegD 3
+
 /*
 	Помещает в Buff обозначение регистра Reg в режиме RegMode
-	Reg:
-		0 - A
-		1 - B
 	RegMode:
 		1 - 8 бит
 		2 - 16 бит
@@ -17,24 +19,39 @@
 */
 char @CodeReg(char @Buff; word Reg; word RegMode)
 
-	char R[4];
+	char @R = NULL;
 
-	select
-		case RegMode = 1:
-			strcpy(@R, " AL");
-		case RegMode = 2:
-			strcpy(@R, " AX");
-		case RegMode = 4:
-			strcpy(@R, "EAX");
-		default:
-			StopInternal();
-	end
-
-	if Reg < 0 | Reg > 3 then
-		StopInternal();
-	end
-
-	R[1] = char(word(R[1]) + Reg);
+	switch Reg of
+	case RegA:
+		switch RegMode of
+			case 1: @R = " AL";
+			case 2: @R = " AX";
+			case 4: @R = "EAX";
+			default: StopInternal();
+		end:switch
+	case RegB:
+		switch RegMode of
+			case 1: @R = " BL";
+			case 2: @R = " BX";
+			case 4: @R = "EBX";
+			default: StopInternal();
+		end:switch
+	case RegC:
+		switch RegMode of
+			case 1: @R = " CL";
+			case 2: @R = " CX";
+			case 4: @R = "ECX";
+			default: StopInternal();
+		end:switch
+	case RegD:
+		switch RegMode of
+			case 1: @R = " DL";
+			case 2: @R = " DX";
+			case 4: @R = "EDX";
+			default: StopInternal();
+		end:switch
+	default: StopInternal();
+	end:switch
 
 	strcat(@Buff, @R);
 
