@@ -60,7 +60,6 @@ include "backend_code_emitter_ctrl.ctxi"
 word Code1(word P)
 
 	char Buff [nBUFF];
-
 	Buff[0] = #0;
 
 	word ID1=Node[P].ID;
@@ -81,6 +80,7 @@ word Code1(word P)
 
 	word P1=Node[P].pLeft;
 	do
+		Buff[0] = #0;
 		select
 		case P1>=nNODE:
 			select
@@ -423,32 +423,15 @@ word Code1(word P)
 
 				select
 				case Size=2:
-					if IX1=RegA then
-						Emit("add     EAX, EAX");
-					else
-						Emit("add     EBX, EBX");
-					end:if
-
+					Emit(@CodeCmdRegReg(@Buff, "add", IX1, 4, IX1, 4));
 				case Size=4:
-					if IX1=RegA then
-						Emit("shl     EAX,  2");
-					else
-						Emit("shl     EBX,  2");
-					end:if
-
+					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 2));
 				case Size=8:
-					if IX1=RegA then
-						Emit("shl     EAX,  3");
-					else
-						Emit("shl     EBX,  3");
-					end:if
-
+					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 3));
+				case Size=16:
+					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 4));
 				case Size>1:
-					if IX1=RegA then
-						Emit(@strcat(@strcpy(@Buff,"imul    EAX, "),@str(Size)));
-					else
-						Emit(@strcat(@strcpy(@Buff,"imul    EBX, "),@str(Size)));
-					end:if
+					Emit(@CodeCmdRegConst(@Buff, "imul", IX1, 4, Size));
 				end:select
 
 				if IX!=RegNone then
