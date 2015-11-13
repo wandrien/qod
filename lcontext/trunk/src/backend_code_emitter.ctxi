@@ -432,6 +432,8 @@ word Code1(word P)
 					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 4));
 				case Size>1:
 					Emit(@CodeCmdRegConst(@Buff, "imul", IX1, 4, Size));
+				case Size<1:
+					StopInternal();
 				end:select
 
 				if IX!=RegNone then
