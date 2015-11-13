@@ -5,10 +5,11 @@
 
 /*****************************************************************************/
 
-define RegA 0
-define RegB 1
-define RegC 2
-define RegD 3
+define RegNone 0
+define RegA    1
+define RegB    2
+define RegC    3
+define RegD    4
 
 /*
 	Помещает в Buff обозначение регистра Reg в режиме RegMode

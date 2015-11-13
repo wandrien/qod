@@ -77,7 +77,7 @@ word Code1(word P)
 	word  Ofs;
 	word  RO;
 	word ID=ExtractDataInfo(P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO);
-	word IX=0;
+	word IX=RegNone;
 
 	word P1=Node[P].pLeft;
 	do
@@ -85,7 +85,7 @@ word Code1(word P)
 		case P1>=nNODE:
 			select
 			case ID1=iINC | ID1=iDEC:
-				if IX=2 | nPtr>0 then
+				if IX=RegB | nPtr>0 then
 					StopInternal();
 				end:if
 
@@ -134,7 +134,7 @@ word Code1(word P)
 						Emit(@Buff);
 					end:select
 
-				case IX=1:
+				case IX=RegA:
 					select
 					case Size=1:
 						Emit("pop     EBX");
@@ -147,7 +147,7 @@ word Code1(word P)
 						Emit(@Buff);
 					end:select
 
-				case IX=2:
+				case IX=RegB:
 					select
 					case Size=1:
 						Emit("pop     EAX");
@@ -196,7 +196,7 @@ word Code1(word P)
 				end:if
 			end:select
 
-			if IX=0 & ID=iCALL then
+			if IX=RegNone & ID=iCALL then
 				null;
 			else
 				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
@@ -209,11 +209,11 @@ word Code1(word P)
 			end:if
 
 		case Node[P1].ID=iLPTR:
-			if fEAX!=RegA | IX=2 then
+			if fEAX!=RegA | IX=RegB then
 				StopInternal();
 			end:if
 
-			if IX!=0 then
+			if IX!=RegNone then
 				select
 				case ID=iDATA:
 					Emit(@strcat(@strcpy(@Buff,"add     EAX,  @@DATA+"),@str(Ofs)));
@@ -296,7 +296,7 @@ word Code1(word P)
 
 			word  C   = 0;
 			word  N   = 0;
-			word  IX1 = 0;
+			word  IX1 = RegNone;
 			word fIX  = 1;
 			do
 				if Node[Node[P1].pLeft].ID=iWORD then
@@ -304,7 +304,7 @@ word Code1(word P)
 					N = N * Node[P1].Value;
 				else
 					select
-					case IX1=2:
+					case IX1=RegB:
 						if fEAX!=RegA then
 							if IX!=0 then
 								StopInternal();
@@ -312,7 +312,7 @@ word Code1(word P)
 
 							fEAX=RegA;
 						else
-							if IX!=1 then
+							if IX!=RegA then
 								StopInternal();
 							end:if
 
@@ -328,10 +328,10 @@ word Code1(word P)
 						Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
 						Emit("add     EAX,  EBX");
 
-						IX1=1;
+						IX1=RegA;
 
-					case IX1=1:
-						if fEAX!=RegA | IX!=0 then
+					case IX1=RegA:
+						if fEAX!=RegA | IX!=RegNone then
 							StopInternal();
 						end
 
@@ -350,7 +350,7 @@ word Code1(word P)
 
 						fEAX=RegA;
 
-					case IX =2:
+					case IX=RegB:
 						if fEAX=RegA then
 							StopInternal();
 						end:if
@@ -363,9 +363,9 @@ word Code1(word P)
 
 						_Code(Node[P1].pLeft,0,0,0);
 
-						IX1=1;
+						IX1=RegA;
 
-					case IX =1:
+					case IX=RegA:
 						if fEAX!=RegA then
 							StopInternal();
 						end:if
@@ -376,9 +376,9 @@ word Code1(word P)
 
 						if fEAX=RegA then
 							fIX=0;
-							IX1=1;
+							IX1=RegA;
 						else
-							IX1=2;
+							IX1=RegB;
 						end:if
 
 						fEAX=RegA;
@@ -387,9 +387,9 @@ word Code1(word P)
 						_Code(Node[P1].pLeft,0,0,0);
 
 						if fEAX=RegA then
-							IX1=1;
+							IX1=RegA;
 						else
-							IX1=2;
+							IX1=RegB;
 						end:if
 					end:select
 
@@ -418,49 +418,49 @@ word Code1(word P)
 				Ofs = Ofs - C;
 			end
 
-			if IX1!=0 then
+			if IX1!=RegNone then
 				Size = Size * N;
 
 				select
 				case Size=2:
-					if IX1=1 then
+					if IX1=RegA then
 						Emit("add     EAX, EAX");
 					else
 						Emit("add     EBX, EBX");
 					end:if
 
 				case Size=4:
-					if IX1=1 then
+					if IX1=RegA then
 						Emit("shl     EAX,  2");
 					else
 						Emit("shl     EBX,  2");
 					end:if
 
 				case Size=8:
-					if IX1=1 then
+					if IX1=RegA then
 						Emit("shl     EAX,  3");
 					else
 						Emit("shl     EBX,  3");
 					end:if
 
 				case Size>1:
-					if IX1=1 then
+					if IX1=RegA then
 						Emit(@strcat(@strcpy(@Buff,"imul    EAX, "),@str(Size)));
 					else
 						Emit(@strcat(@strcpy(@Buff,"imul    EBX, "),@str(Size)));
 					end:if
 				end:select
 
-				if IX!=0 then
+				if IX!=RegNone then
 					select
-					case IX1=2:
-						if IX!=1 | fIX=0 then
+					case IX1=RegB:
+						if IX!=RegNone | fIX=0 then
 							StopInternal();
 						end:if
 
 						Emit("add     EAX,  EBX");
 
-					case IX1=1:
+					case IX1=RegA:
 						if fIX!=0 then
 							StopInternal();
 						end
@@ -468,7 +468,7 @@ word Code1(word P)
 						Emit("pop     EBX");
 						Emit("add     EAX,  EBX");
 
-						IX=1;
+						IX=RegA;
 
 					default:
 						StopInternal();
@@ -489,16 +489,16 @@ word Code1(word P)
 				word Size = SizeOfType(pType, nPtr);
 
 				select
-				case IX=2:
+				case IX=RegB:
 					if fEAX!=RegA then
 						Emit("push    EAX");
 					end:if
 
 					Emit("xchg    EAX,  EBX");
-					IX  =1;
+					IX  =RegA;
 					fEAX=RegB;
 
-				case IX=1:
+				case IX=RegA:
 					fEAX=RegB;
 				end:select
 
@@ -511,9 +511,9 @@ word Code1(word P)
 						Emit(@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Size)));
 					end:select
 
-					if IX!=0 then
+					if IX!=RegNone then
 						Emit("pop     EBX");
-						IX=2;
+						IX=RegB;
 					end:if
 
 					strcpy(@Buff,"add     EAX,  dword ");     // FASM
@@ -535,9 +535,9 @@ word Code1(word P)
 				end:if
 			end:if
 
-			if IX!=0 then
+			if IX!=RegNone then
 				char RX[4];
-				if IX=1 then
+				if IX=RegA then
 					strcpy(@RX,"EAX");
 				else
 					strcpy(@RX,"EBX");
@@ -572,13 +572,13 @@ word Code1(word P)
 			end:if
 
 			if fEAX=RegA then
-				IX=1;
+				IX=RegA;
 			else
-				if IX!=0 then
+				if IX!=RegNone then
 					fEAX=RegA;
 				end:if
 
-				IX=2;
+				IX=RegB;
 			end:if
 
 			ID =iREF;
