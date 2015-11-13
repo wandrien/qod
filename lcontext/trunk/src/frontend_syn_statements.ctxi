@@ -104,16 +104,8 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		end:if
 
 		word @P5 = @Node[BODY].pLeft;
-
-		word nParm1=nParm;
-		word nIndx1=nIndx;
-
 		Scan(@Buff);
 		_Statements(@P5, @Buff, @Case, @Else, "end");
-
-		nIndx=nIndx1;
-		nParm=nParm1;
-
 	end:while
 
 	SkipFinalScan = EndOf(@Buff, @End1, NULL);
@@ -242,16 +234,8 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		ValueBackLink = BODY;
 		word @P7 = @Node[BODY].pLeft;
 
-		word nParm1 = nParm;
-		word nIndx1 = nIndx;
-
 		Scan(@Buff);
-
 		_Statements(@P7, @Buff, "case", "default", "end");
-
-		nIndx = nIndx1;
-		nParm = nParm1;
-
 	end
 
 	if strcmp(@Buff,"default") = 0 then
@@ -272,16 +256,8 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		CaseBackLink = CASE;
 
 		word @P6 = @Node[BODY].pLeft;
-
-		word nParm1=nParm;
-		word nIndx1=nIndx;
-
 		Scan(@Buff);
-
 		_Statements(@P6, @Buff, "end", NULL, NULL);
-
-		nIndx=nIndx1;
-		nParm=nParm1;
 	end:if
 
 	SkipFinalScan = EndOf(@Buff, "switch", NULL);
@@ -320,10 +296,7 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
 	word @P4 = @Node[BODY].pLeft;
 
-	word nParm1=nParm;
-	word nIndx1=nIndx;
 	word pLoop1=pLoop;
-
 	pLoop=P1;
 
 	Scan(@Buff);
@@ -332,9 +305,6 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 	SkipFinalScan = EndOf(@Buff, "do", @End2);
 
 	pLoop=pLoop1;
-	nIndx=nIndx1;
-	nParm=nParm1;
-
 end
 
 /*****************************************************************************/
@@ -352,8 +322,6 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 
 	word @P4 = @Node[BODY].pLeft;
 
-	word nParm1=nParm;
-	word nIndx1=nIndx;
 	word pLoop1=pLoop;
 	word  Flag =    0;
 
@@ -374,8 +342,6 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	end
 
 	pLoop=pLoop1;
-	nIndx=nIndx1;
-	nParm=nParm1;
 end
 
 /*****************************************************************************/
@@ -661,6 +627,10 @@ end
 /*****************************************************************************/
 
 void Statements(word @P; char @Buff; char @End1; char @End2; char @End3)
+
+	word nParm1=nParm;
+	word nIndx1=nIndx;
+
 	repeat
 		P  = Ctrl(@Buff);
 		@P =@Node[P].pRight;
@@ -674,6 +644,8 @@ void Statements(word @P; char @Buff; char @End1; char @End2; char @End3)
 
 	until strcmp(@Buff, @End1) = 0;
 
+	nIndx=nIndx1;
+	nParm=nParm1;
 end
 
 /*****************************************************************************/
