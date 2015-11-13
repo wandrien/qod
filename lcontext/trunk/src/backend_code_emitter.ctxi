@@ -420,21 +420,7 @@ word Code1(word P)
 
 			if IX1!=RegNone then
 				Size = Size * N;
-
-				select
-				case Size=2:
-					Emit(@CodeCmdRegReg(@Buff, "add", IX1, 4, IX1, 4));
-				case Size=4:
-					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 2));
-				case Size=8:
-					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 3));
-				case Size=16:
-					Emit(@CodeCmdRegConst(@Buff, "shl", IX1, 4, 4));
-				case Size>1:
-					Emit(@CodeCmdRegConst(@Buff, "imul", IX1, 4, Size));
-				case Size<1:
-					StopInternal();
-				end:select
+				Emit_IMUL_Reg_Const(IX1, 4, Size);
 
 				if IX!=RegNone then
 					select
@@ -488,28 +474,15 @@ word Code1(word P)
 				end:select
 
 				_Code(Node[P1].pLeft,0,0,0);
-				if fEAX=RegA then
-					select
-					case Size=4:
-						Emit("shl     EAX,  2");
-					case Size>1:
-						Emit(@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(Size)));
-					end:select
 
+				Emit_IMUL_Reg_Const(fEAX, 4, Size);
+				if fEAX=RegA then
 					if IX!=RegNone then
 						Emit("pop     EBX");
 						IX=RegB;
 					end:if
-
 					strcpy(@Buff,"add     EAX,  dword ");     // FASM
 				else
-					select
-					case Size=4:
-						Emit("shl     EBX,  2");
-					case Size>1:
-						Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(Size)));
-					end:select
-
 					strcpy(@Buff,"add     EBX,  dword ");     // FASM
 				end:if
 			else

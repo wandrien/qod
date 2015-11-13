@@ -228,3 +228,25 @@ end
 
 
 /*****************************************************************************/
+
+void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+
+	select
+	case Value=2:
+		CodeCmdRegReg(@Buff, "add", Reg, RegMode, Reg, RegMode);
+	case Value=4:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 2);
+	case Value=8:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 3);
+	case Value=16:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 4);
+	case Value>1:
+		CodeCmdRegConst(@Buff, "imul", Reg, RegMode, Value);
+	case Value<1:
+		StopInternal();
+	end:select
+
+	Emit(@Buff);
+end
