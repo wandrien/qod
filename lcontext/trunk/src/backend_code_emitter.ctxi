@@ -65,7 +65,7 @@ word Code1(word P; word F; word T; word M)
 
 	word ID1=Node[P].ID;
 	if ID1=iINC | ID1=iDEC then
-		fEAX=0;
+		fEAX=RegA;
 		P   =Node[P].pLeft;
 	end
 
@@ -122,7 +122,7 @@ word Code1(word P; word F; word T; word M)
 				CodeDataIX_offset(@Buff, ID, IX, Ofs);
 
 				select
-				case fEAX!=0:
+				case fEAX!=RegA:
 					select
 					case Size=1:
 						Emit(@strcat(@Buff,", AL"));
@@ -175,21 +175,21 @@ word Code1(word P; word F; word T; word M)
 
 			select
 			case Size=1:
-				if fEAX=0 then
+				if fEAX=RegA then
 					strcpy(@Buff,"mov     AL,   byte  ");     // FASM
 				else
 					strcpy(@Buff,"mov     BL,   byte  ");     // FASM
 				end:if
 
 			case Size=4:
-				if fEAX=0 then
+				if fEAX=RegA then
 					strcpy(@Buff,"mov     EAX,  dword ");     // FASM
 				else
 					strcpy(@Buff,"mov     EBX,  dword ");     // FASM
 				end:if
 
 			default:
-				if fEAX=0 then
+				if fEAX=RegA then
 					strcpy(@Buff,"lea     EAX,  ");
 				else
 					strcpy(@Buff,"lea     EBX,  ");
@@ -209,7 +209,7 @@ word Code1(word P; word F; word T; word M)
 			end:if
 
 		case Node[P1].ID=iLPTR:
-			if fEAX!=0 | IX=2 then
+			if fEAX!=RegA | IX=2 then
 				StopInternal();
 			end:if
 
@@ -252,9 +252,9 @@ word Code1(word P; word F; word T; word M)
 			return nDICT;
 
 		case Node[P1].ID=iCALL:
-			if fEAX!=0 then
+			if fEAX!=RegA then
 				Emit("push    EAX");
-				fEAX=0;
+				fEAX=RegA;
 			end:if
 
 			if Node[P1].pLeft<nNODE then
@@ -271,9 +271,9 @@ word Code1(word P; word F; word T; word M)
 			Ofs=    0;
 
 		case Node[P1].ID=iCALL2:
-			if fEAX!=0 then
+			if fEAX!=RegA then
 				Emit("push    EAX");
-				fEAX=0;
+				fEAX=RegA;
 			end:if
 
 			word P2=Node[P1].pLeft;
@@ -305,12 +305,12 @@ word Code1(word P; word F; word T; word M)
 				else
 					select
 					case IX1=2:
-						if fEAX!=0 then
+						if fEAX!=RegA then
 							if IX!=0 then
 								StopInternal();
 							end:if
 
-							fEAX=0;
+							fEAX=RegA;
 						else
 							if IX!=1 then
 								StopInternal();
@@ -331,15 +331,15 @@ word Code1(word P; word F; word T; word M)
 						IX1=1;
 
 					case IX1=1:
-						if fEAX!=0 | IX!=0 then
+						if fEAX!=RegA | IX!=0 then
 							StopInternal();
 						end
 
-						fEAX=1;
+						fEAX=RegB;
 
 						_Code(Node[P1].pLeft,0,0,0);
 
-						if fEAX=0 then
+						if fEAX=RegA then
 							Emit("pop     EBX");
 							Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
 						else
@@ -348,17 +348,17 @@ word Code1(word P; word F; word T; word M)
 
 						Emit("add     EAX,  EBX");
 
-						fEAX=0;
+						fEAX=RegA;
 
 					case IX =2:
-						if fEAX=0 then
+						if fEAX=RegA then
 							StopInternal();
 						end:if
 
 						Emit("push    EAX");
 						Emit("push    EBX");
 
-						fEAX=0;
+						fEAX=RegA;
 						fIX =0;
 
 						_Code(Node[P1].pLeft,0,0,0);
@@ -366,27 +366,27 @@ word Code1(word P; word F; word T; word M)
 						IX1=1;
 
 					case IX =1:
-						if fEAX!=0 then
+						if fEAX!=RegA then
 							StopInternal();
 						end:if
 
-						fEAX=1;
+						fEAX=RegB;
 
 						_Code(Node[P1].pLeft,0,0,0);
 
-						if fEAX=0 then
+						if fEAX=RegA then
 							fIX=0;
 							IX1=1;
 						else
 							IX1=2;
 						end:if
 
-						fEAX=0;
+						fEAX=RegA;
 
 					default:
 						_Code(Node[P1].pLeft,0,0,0);
 
-						if fEAX=0 then
+						if fEAX=RegA then
 							IX1=1;
 						else
 							IX1=2;
@@ -490,20 +490,20 @@ word Code1(word P; word F; word T; word M)
 
 				select
 				case IX=2:
-					if fEAX!=0 then
+					if fEAX!=RegA then
 						Emit("push    EAX");
 					end:if
 
 					Emit("xchg    EAX,  EBX");
 					IX  =1;
-					fEAX=1;
+					fEAX=RegB;
 
 				case IX=1:
-					fEAX=1;
+					fEAX=RegB;
 				end:select
 
 				_Code(Node[P1].pLeft,0,0,0);
-				if fEAX=0 then
+				if fEAX=RegA then
 					select
 					case Size=4:
 						Emit("shl     EAX,  2");
@@ -528,7 +528,7 @@ word Code1(word P; word F; word T; word M)
 					strcpy(@Buff,"add     EBX,  dword ");     // FASM
 				end:if
 			else
-				if fEAX=0 then
+				if fEAX=RegA then
 					strcpy(@Buff,"mov     EAX,  dword ");     // FASM
 				else
 					strcpy(@Buff,"mov     EBX,  dword ");     // FASM
@@ -571,11 +571,11 @@ word Code1(word P; word F; word T; word M)
 				end:select
 			end:if
 
-			if fEAX=0 then
+			if fEAX=RegA then
 				IX=1;
 			else
 				if IX!=0 then
-					fEAX=0;
+					fEAX=RegA;
 				end:if
 
 				IX=2;
@@ -704,12 +704,12 @@ word Code(word P; word F; word T; word M)
 	case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
 
       if iLT<=Node[P].ID & Node[P].ID<=iGT then
-        fEAX=0;
+        fEAX=RegA;
       end
 
-      if fEAX!=0 then
+      if fEAX!=RegA then
         Emit("push    EAX");
-        fEAX=0;
+        fEAX=RegA;
       end
 
       word fSwap=0;
@@ -721,21 +721,21 @@ word Code(word P; word F; word T; word M)
 
         case Node[Node[P].pLeft].ID=iCHAR | Node[Node[P].pLeft].ID=iWORD | Node[Node[P].pLeft].ID=iINT:
           Code(Node[P].pRight,0,0,0);
-          fEAX =1;
+          fEAX =RegB;
           pType=Code(Node[P].pLeft,0,0,0);
           fSwap=1;
 
         case Node[Node[Node[P].pLeft].pLeft].ID=iLOAD:
           Code(Node[P].pRight,0,0,0);
-          fEAX =1;
+          fEAX =RegB;
           pType=Code(Node[P].pLeft,0,0,0);
           fSwap=1;
 
         default:
           pType=Code(Node[P].pLeft,0,0,0);
-          fEAX =1;
+          fEAX =RegB;
           Code(Node[P].pRight,0,0,0);
-          if fEAX=0 then
+          if fEAX=RegA then
             Emit("pop     EBX");
             fSwap=1;
           end
@@ -764,12 +764,12 @@ word Code(word P; word F; word T; word M)
         case fSwap=2:
           select
             case ID=iMUL | ID=iDIV | ID=iMOD:
-              fEAX =1;
+              fEAX =RegB;
               Code(Node[P].pRight,0,0,0);
           end
       end
 
-      fEAX=0;
+      fEAX=RegA;
 
       word Size=4;
       if pType<nDICT then
@@ -998,10 +998,10 @@ word Code(word P; word F; word T; word M)
 
 	case iASSIGN:
 		P    = Node[P].pLeft;
-		fEAX = 0;
+		fEAX = RegA;
 		if Node[P].pRight < nNODE then
 			Code(Node[P].pRight, 0, 0, 0);
-			fEAX = 1;
+			fEAX = RegB;
 		end
 
 		Code(Node[P].pLeft, 0, 0, 0);
