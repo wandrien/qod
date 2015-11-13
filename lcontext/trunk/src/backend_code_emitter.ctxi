@@ -57,7 +57,7 @@ include "backend_code_emitter_ctrl.ctxi"
 	Генератор кода для "постфиксных деревьев", генерируемых функцией Primary синтаксического анализатора.
 	(Эта функция - самая главная среди множества причин, почему весь кодогенератор надо переписать. VU)
 */
-word Code1(word P; word F; word T; word M)
+word Code1(word P)
 
 	char Buff [nBUFF];
 
@@ -645,7 +645,7 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
-		return Code1(P, F, T, M);
+		return Code1(P);
 
 ///////////////////////////////////////////////////////////////////////////////
 
