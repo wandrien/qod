@@ -242,7 +242,7 @@ word Code_SELECT(word P; word F; word T; word M; char @Buff)
 		Code_Block(Node[BODY].pLeft);
 
 		if Node[CASE].pRight < nNODE then
-			Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(P, lEXIT))));
+			EmitJumpToLabel(LabelResolve(P, lEXIT));
 		end
 
 		if Node[COND].pLeft < nNODE then
@@ -336,8 +336,7 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 
 				offset = offset + value;
 
-				Emit(@strcat(@strcpy  (@Buff,"je      @"),@str(LabelResolve(CASE_I, lCASEBODY))));
-
+				EmitBranchToLabel("e", LabelResolve(CASE_I, lCASEBODY));
 			case iDEFAULT:
 				L_Default = LabelResolve(CASE_I, lCASEBODY);
 			case iBODY:
@@ -351,7 +350,7 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 		CASE_I = Node[CASE_I].pRight;
 	end:while
 
-	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(L_Default)));
+	EmitJumpToLabel(L_Default);
 
 	CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
@@ -366,7 +365,7 @@ word Code_SWITCH(word P; word F; word T; word M; char @Buff)
 			case iBODY:
 				EmitLabel(LabelResolve(CASE_I, lCASEBODY));
 				Code_Block(Node[VALUE_I].pLeft);
-				Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(P, lEXIT))));
+				EmitJumpToLabel(LabelResolve(P, lEXIT));
 			default:
 				StopInternal();
 			end:switch
@@ -413,7 +412,7 @@ word Code_WHILE(word P; word F; word T; word M; char @Buff)
 
 	Code_List(Node[BODY].pLeft);
 
-	Emit(@strcat(@strcpy(@Buff, "jmp     @"), @str(LabelResolve(P, lCONTINUE))));
+	EmitJumpToLabel(LabelResolve(P, lCONTINUE));
 	EmitLabel(LabelResolve(P, lEXIT));
 
 	Code_EndBlock(@CB);
@@ -463,13 +462,13 @@ end
 /*****************************************************************************/
 
 word Code_CONTINUE(word P; word F; word T; word M; char @Buff)
-	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(Node[P].Value, lCONTINUE))));
+	EmitJumpToLabel(LabelResolve(Node[P].Value, lCONTINUE));
 end
 
 /*****************************************************************************/
 
 word Code_EXIT(word P; word F; word T; word M; char @Buff)
-	Emit(@strcat(@strcpy(@Buff,"jmp     @"),@str(LabelResolve(Node[P].Value, lEXIT))));
+	EmitJumpToLabel(LabelResolve(Node[P].Value, lEXIT));
 end
 
 /*****************************************************************************/

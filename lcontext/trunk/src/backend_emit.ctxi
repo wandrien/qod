@@ -130,3 +130,30 @@ void Emit(char @Inst)
 end
 
 /*****************************************************************************/
+
+void strcpy2(char @Dst, @Src1, @Src2)
+	strcat(@strcpy(@Dst, @Src1), @Src2);
+end
+
+void strcpy3(char @Dst, @Src1, @Src2, @Src3)
+	strcat(@strcat(@strcpy(@Dst, @Src1), @Src2), @Src3);
+end
+
+void strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
+	strcat(@strcat(@strcat(@strcpy(@Dst, @Src1), @Src2), @Src3), @Src4);
+end
+
+/*****************************************************************************/
+
+char EmitTmpBuff[1024];
+
+void EmitJumpToLabel(word Label)
+	Emit(@strcpy2(@EmitTmpBuff, "jmp     @", @str(Label)));
+end
+
+void EmitBranchToLabel(char @Condition; word Label)
+	Emit(@strcpy4(@EmitTmpBuff, "j", @Condition, "     @", @str(Label)));
+end
+
+/*****************************************************************************/
+

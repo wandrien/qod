@@ -860,22 +860,22 @@ word Code(word P; word F; word T; word M)
             StopInternal();
           end
 
-          char@ Cmd;
+          char@ BranchCondition;
           select
             case pType=st_int:
               select
                 case ID=iLT:
-                  @Cmd = "jl ";
+                  @BranchCondition = "l ";
                 case ID=iLE:
-                  @Cmd = "jle";
+                  @BranchCondition = "le";
                 case ID=iEQ:
-                  @Cmd = "je ";
+                  @BranchCondition = "e ";
                 case ID=iNE:
-                  @Cmd = "jne";
+                  @BranchCondition = "ne";
                 case ID=iGE:
-                  @Cmd = "jge";
+                  @BranchCondition = "ge";
                 case ID=iGT:
-                  @Cmd = "jg ";
+                  @BranchCondition = "g ";
                 default:
                   StopInternal();
               end
@@ -883,22 +883,22 @@ word Code(word P; word F; word T; word M)
             default:
               select
                 case ID=iLT:
-                  @Cmd = "jb ";
+                  @BranchCondition = "b ";
                 case ID=iLE:
-                  @Cmd = "jbe";
+                  @BranchCondition = "be";
                 case ID=iEQ:
-                  @Cmd = "je ";
+                  @BranchCondition = "e ";
                 case ID=iNE:
-                  @Cmd = "jne";
+                  @BranchCondition = "ne";
                 case ID=iGE:
-                  @Cmd = "jae";
+                  @BranchCondition = "ae";
                 case ID=iGT:
-                  @Cmd = "ja ";
+                  @BranchCondition = "a ";
                 default:
                   StopInternal();
               end
           end
-          Emit(@strcat(@strcat(@strcpy(@Buff, @Cmd),"     @"),@str(T)));
+          EmitBranchToLabel(@BranchCondition, T);
 
           return nDICT;
 
