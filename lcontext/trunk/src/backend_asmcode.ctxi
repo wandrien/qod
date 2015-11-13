@@ -180,13 +180,13 @@ char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 
 		select
 		case ID=iDATA:
-			strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+");
+			strcat3(@Buff,"[@@DATA+",@RX,"+");
 		case ID=iPARM:
-			strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+");
+			strcat3(@Buff,"[EBP+",@RX,"+");
 		case ID=iLOCAL:
-			strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-");
+			strcat3(@Buff,"[EBP+",@RX,"-");
 		case ID=iREF:
-			strcat(@strcat(@strcat(@Buff,"["),@RX),"+");
+			strcat3(@Buff,"[",@RX,"+");
 		default:
 			StopInternal();
 		end:select
@@ -203,7 +203,7 @@ char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 		end:select
 	end:if
 
-	strcat(@strcat(@Buff,@str(offset)),"]");
+	strcat2(@Buff,@str(offset),"]");
 
 	return @Buff;
 end

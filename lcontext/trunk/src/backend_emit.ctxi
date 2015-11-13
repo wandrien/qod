@@ -143,6 +143,19 @@ void strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
 	strcat(@strcat(@strcat(@strcpy(@Dst, @Src1), @Src2), @Src3), @Src4);
 end
 
+void strcat2(char @Dst, @Src1, @Src2)
+	strcat(@strcat(@Dst, @Src1), @Src2);
+end
+
+void strcat3(char @Dst, @Src1, @Src2, @Src3)
+	strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3);
+end
+
+void strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
+	strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4);
+end
+
+
 /*****************************************************************************/
 
 char EmitTmpBuff[1024];
