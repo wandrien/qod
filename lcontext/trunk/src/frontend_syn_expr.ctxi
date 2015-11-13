@@ -275,12 +275,8 @@ word pLoop;
 
 word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
-	word Flag=0;
-	word Call=0;
-	word P1;
-
 	if isdigit(Buff)!=0 then /* Число. */
-		P1=Peek();
+		word P1 = Peek();
 		Node[P1].ID    = iWORD;
 		Node[P1].Value = val (@Buff);
 		pType          = st_word;
@@ -288,6 +284,10 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		Scan(@Buff);
 		return P1;
 	end
+
+	word Flag=0;
+	word Call=0;
+	word P1;
 
 	nPtr = ReadPtrs(@Buff);
 
