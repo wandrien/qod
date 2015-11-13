@@ -6,7 +6,7 @@
 /*****************************************************************************/
 
 word pSize; /* Размер фрейма стека, освобождаемого при выходе из функции. */
-word pVar;  /* Текущий размер фрейма стека, задействованный под локальные переменные. */
+word AllocatedFrameSize; /* Текущий размер фрейма стека, задействованный под локальные переменные. */
 word fEAX;  /* Маркер активного регистра. (Cуть этого хака более ясна его автору - Хохлову, нежели мне. VU) */
 
 /*****************************************************************************/
@@ -18,17 +18,17 @@ __Code @_Code;
 
 struct CODEBLOCK
 	word Saved_nLocal;
-	word Saved_pVar;
+	word Saved_AllocatedFrameSize;
 end
 
 void Code_BeginBlock(CODEBLOCK@ CB)
 	CB.Saved_nLocal = nLocal;
-	CB.Saved_pVar   = pVar;
+	CB.Saved_AllocatedFrameSize = AllocatedFrameSize;
 end
 
 void Code_EndBlock(CODEBLOCK@ CB)
 	nLocal = CB.Saved_nLocal;
-	pVar   = CB.Saved_pVar;
+	AllocatedFrameSize = CB.Saved_AllocatedFrameSize;
 end
 
 /*****************************************************************************/
@@ -1012,11 +1012,12 @@ word Code(word P; word F; word T; word M)
       word nPtr  = Node[Node[P].pLeft].Value;
       word Size  = SizeOfType(pType, nPtr);
 
-      pVar=pVar+DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
+      AllocatedFrameSize =
+          AllocatedFrameSize + DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
 
       Local[nLocal].pType=pType;
       Local[nLocal].nPtr =nPtr;
-      Local[nLocal].Value=pVar;
+      Local[nLocal].Value=AllocatedFrameSize;
       inc   nLocal;
 
       Code(Node[Node[P].pLeft].pLeft,0,0,0);
@@ -1144,7 +1145,7 @@ word EmitFunctions(char @Buff)
 
 				pFunc = I;
 				pSize = S1;
-				pVar  = 0;
+				AllocatedFrameSize = 0;
 
 				CODEBLOCK CB;
 				Code_BeginBlock(@CB);
