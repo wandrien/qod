@@ -197,8 +197,8 @@ word Code_RETURN(word P; word F; word T; word M; char @Buff)
 			Emit("pop     EBP");
 		end:if
 
-		if pSize > 0 then
-			Emit(@strcat(@strcpy(@Buff,"ret     "),@str(pSize)));
+		if ParmFrameSize > 0 then
+			Emit(@strcat(@strcpy(@Buff,"ret     "),@str(ParmFrameSize)));
 		else
 			Emit("ret");
 		end:if
