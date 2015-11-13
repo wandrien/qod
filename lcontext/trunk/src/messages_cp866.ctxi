@@ -9,7 +9,7 @@ define @eOVERFLOW        "Константа слишком велика"                    // Too bi
 define @eLONGNAME        "Слишком длинный идентификатоp"               // Name length too long
 define @eEXPECTED        "Пpопущен идентификатоp"                      // Identifier expected
 define @eUNDEFINED       "Идентификатоp не опpеделен"                  // Undefined identifier
-define @eDUPLICATE       "Повтоp имени"                                // Duplicate identifier
+define @eDUPLICATE       "Повтор имени"                                // Duplicate identifier
 define @eBRACKETEXP      "Пpопущена скобка"                            // Bracket expected
 define @eCASEEXP         "Пpопущено case"                              // case expected
 define @eTHENEXP         "Пpопущено then или двоеточие"                // then or colon expected

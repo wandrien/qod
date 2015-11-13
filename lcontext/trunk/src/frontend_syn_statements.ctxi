@@ -483,6 +483,10 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		when I < nPARM:
 			Stop(@eDUPLICATE);
 
+		I = ResolveParm(@Buff);
+		when I < nPARM:
+			Stop(@eDUPLICATE);
+
 		if nParm>=nPARM then
 			StopMemory();
 		end:if

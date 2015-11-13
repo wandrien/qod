@@ -1,0 +1,9 @@
+$context2
+
+word f(word a)
+	word a;
+end
+
+begin
+	null;
+end
