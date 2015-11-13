@@ -196,37 +196,10 @@ word Code1(word P; word F; word T; word M)
 				end:if
 			end:select
 
-			if IX!=0 then
-				char RX[4];
-				if IX=1 then
-					strcpy(@RX,"EAX");
-				else
-					strcpy(@RX,"EBX");
-				end
-
-				select
-				case ID=iDATA:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
-				case ID=iPARM:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
-				case ID=iLOCAL:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
-				case ID=iREF:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
-				default:
-					StopInternal();
-				end:select
+			if IX=0 & ID=iCALL then
+				null;
 			else
-				select
-				case ID=iDATA:
-					Emit(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]"));
-				case ID=iPARM:
-					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
-				case ID=iLOCAL:
-					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
-				case ID!=iCALL:
-					StopInternal();
-				end:select
+				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
 			end:if
 
 			if nPtr>0 then

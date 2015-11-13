@@ -171,11 +171,11 @@ end
 char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 
 	if IX!=0 then
-		char RX[4];
+		char@ RX;
 		if IX=1 then
-			strcpy(@RX,"EAX");
+			@RX = "EAX";
 		else
-			strcpy(@RX,"EBX");
+			@RX = "EBX";
 		end
 
 		select
