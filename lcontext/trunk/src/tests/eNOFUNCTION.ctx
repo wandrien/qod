@@ -1,0 +1,9 @@
+$context2
+
+word a, b(word c)
+	null;
+end
+
+begin
+	null;
+end

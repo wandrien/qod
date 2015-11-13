@@ -264,7 +264,7 @@ void DeclVarFunc(char @Buff)
 	end
 
 
-	word First=1;
+	word FirstName = 1;
 
 	do
 		word nPtr = ReadPtrs(@Buff);
@@ -283,14 +283,14 @@ void DeclVarFunc(char @Buff)
 
 		/* Функция. */
 		if strcmp(@Buff,"(")=0 then
-			if First = 0 then
+			if FirstName = 0 then
 				Stop(@eNOFUNCTION);
 			end
 			DeclFunc1(@Buff, D);
 			return;
 		end
 
-		First = 1;
+		FirstName = 0;
 
 		if pType=st_void & nPtr<1 then
 			Stop(@eNOVOID);
