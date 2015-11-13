@@ -250,3 +250,13 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 
 	Emit(@Buff);
 end
+
+/*****************************************************************************/
+
+void Emit_Load_Constant(word Reg; word RegMode; word Value)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	Emit(@CodeLoadConstant(@Buff, Reg, RegMode, Value));
+end
+
+/*****************************************************************************/

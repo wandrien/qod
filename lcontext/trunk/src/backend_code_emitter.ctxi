@@ -576,23 +576,19 @@ word Code(word P; word F; word T; word M)
 
 	switch Node[P].ID of
 	case iNULL:
-		CodeLoadConstant(@Buff, fEAX, 4, 0);
-		Emit(@Buff);
+		Emit_Load_Constant(fEAX, 4, 0);
 		return nDICT;
 
 	case iCHAR:
-		CodeLoadConstant(@Buff, fEAX, 1, Node[P].Value);
-		Emit(@Buff);
+		Emit_Load_Constant(fEAX, 1, Node[P].Value);
 		return st_char;
 
 	case iWORD:
-		CodeLoadConstant(@Buff, fEAX, 4, Node[P].Value);
-		Emit(@Buff);
+		Emit_Load_Constant(fEAX, 4, Node[P].Value);
 		return st_word;
 
 	case iINT:
-		CodeLoadConstant(@Buff, fEAX, 4, Node[P].Value);
-		Emit(@Buff);
+		Emit_Load_Constant(fEAX, 4, Node[P].Value);
 		return st_int;
 
 	case iFUNC:
@@ -646,8 +642,7 @@ word Code(word P; word F; word T; word M)
 
 	case iNEG:
 		if Node[Node[P].pLeft].ID=iWORD then
-			CodeLoadConstant(@Buff, fEAX, 4, -Node[Node[P].pLeft].Value);
-			Emit(@Buff);
+			Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
 			return st_int;
 		end
 
