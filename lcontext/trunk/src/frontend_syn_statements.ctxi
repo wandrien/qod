@@ -323,8 +323,6 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	word @P4 = @Node[BODY].pLeft;
 
 	word pLoop1=pLoop;
-	word  Flag =    0;
-
 	pLoop=P1;
 
 	Scan(@Buff);
