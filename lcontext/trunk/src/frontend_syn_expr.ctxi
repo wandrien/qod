@@ -266,13 +266,6 @@ end
 
 /*****************************************************************************/
 
-word pFunc;
-word pParm;
-word pIndx;
-word pLoop;
-
-/*****************************************************************************/
-
 word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 	if isdigit(Buff)!=0 then /* Число. */
@@ -309,41 +302,29 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	end:if
 
 	if Flag=0 then /* Это локальная переменная? */
-		word  I=pParm;
-		while I<nParm do
-			if strcmp(@Parm[I].Name,@Buff)=0 then
-				P1=Peek();
-				Node[P1].ID    =iLOCAL;
-				Node[P1].Value = I-pParm;
-				pType          = Parm[I].pType;
-				nPtr1          = Parm[I].nPtr;
-				pIndx          = Parm[I].pIndx;
-				nIndx          = Parm[I].nIndx;
-				Flag           = 1;
-
-				exit;
-			end:if
-
-			inc I;
-		end:while
+		word I = ResolveLocal(@Buff);
+		if I < nPARM then
+			P1=Peek();
+			Node[P1].ID    =iLOCAL;
+			Node[P1].Value = I-pParm;
+			pType          = Parm[I].pType;
+			nPtr1          = Parm[I].nPtr;
+			pIndx          = Parm[I].pIndx;
+			nIndx          = Parm[I].nIndx;
+			Flag           = 1;
+		end:if
 	end:if
 
 	if Flag=0 then /* Это параметр функции? */
-		word I=Dict[pFunc].pIndx;
-		while I<Dict[pFunc].nIndx do
-			if strcmp(@Parm[I].Name,@Buff)=0 then
-				P1=Peek();
-				Node[P1].ID    =iPARM;
-				Node[P1].Value = I;
-				pType          = Parm[I].pType;
-				nPtr1          = Parm[I].nPtr;
-				Flag           = 1;
-
-				exit;
-			end:if
-
-			inc I;
-		end:while
+		word I = ResolveParm(@Buff);
+		if I < nPARM then
+			P1=Peek();
+			Node[P1].ID    =iPARM;
+			Node[P1].Value = I;
+			pType          = Parm[I].pType;
+			nPtr1          = Parm[I].nPtr;
+			Flag           = 1;
+		end:if
 	end:if
 
 	if Flag=0 then /* Значит это глобальное имя. */

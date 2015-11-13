@@ -1,0 +1,22 @@
+
+word ResolveLocal(char @Name)
+	word  I=pParm;
+	while I<nParm do
+		when strcmp(@Parm[I].Name,@Name)=0:
+			return I;
+		inc I;
+	end:while
+	return nPARM;
+end
+
+
+word ResolveParm(char @Name)
+	word I=Dict[pFunc].pIndx;
+	while I<Dict[pFunc].nIndx do
+		when strcmp(@Parm[I].Name,@Name)=0:
+			return I;
+		inc I;
+	end:while
+	return nPARM;
+end
+

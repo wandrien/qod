@@ -479,14 +479,9 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Stop(@eNOVAL);
 		end:if
 
-		word I=pParm;
-		while I<nParm do
-			if strcmp(@Parm[I].Name,@Buff)=0 then
-				Stop(@eDUPLICATE);
-			end:if
-
-			inc I;
-		end:while
+		word I = ResolveLocal(@Buff);
+		when I < nPARM:
+			Stop(@eDUPLICATE);
 
 		if nParm>=nPARM then
 			StopMemory();

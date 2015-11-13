@@ -82,6 +82,14 @@ __Expr @_Expr;
 
 /*****************************************************************************/
 
+word pFunc;
+word pParm;
+word pIndx;
+word pLoop;
+
+/*****************************************************************************/
+
+include "frontend_local.ctxi"
 include "frontend_syn_operators.ctxi"
 include "frontend_syn_expr.ctxi"
 include "frontend_syn_statements.ctxi"
