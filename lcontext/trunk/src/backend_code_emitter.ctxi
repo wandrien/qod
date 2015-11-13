@@ -17,18 +17,18 @@ __Code @_Code;
 /*****************************************************************************/
 
 struct CODEBLOCK
-	word Saved_nParm;
+	word Saved_nLocal;
 	word Saved_pVar;
 end
 
 void Code_BeginBlock(CODEBLOCK@ CB)
-	CB.Saved_nParm = nParm;
-	CB.Saved_pVar  = pVar;
+	CB.Saved_nLocal = nLocal;
+	CB.Saved_pVar   = pVar;
 end
 
 void Code_EndBlock(CODEBLOCK@ CB)
-	nParm = CB.Saved_nParm;
-	pVar  = CB.Saved_pVar;
+	nLocal = CB.Saved_nLocal;
+	pVar   = CB.Saved_pVar;
 end
 
 /*****************************************************************************/
@@ -1004,7 +1004,7 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
     case iDEF:
-      if nParm>=nPARM then
+      if nLocal>=nLOCAL then
         StopMemory();
       end
 
@@ -1014,10 +1014,10 @@ word Code(word P; word F; word T; word M)
 
       pVar=pVar+DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
 
-      Parm[nParm].pType=pType;
-      Parm[nParm].nPtr =nPtr;
-      Parm[nParm].Value=pVar;
-      inc  nParm;
+      Local[nLocal].pType=pType;
+      Local[nLocal].nPtr =nPtr;
+      Local[nLocal].Value=pVar;
+      inc   nLocal;
 
       Code(Node[Node[P].pLeft].pLeft,0,0,0);
 ///////////////////////////////////////////////////////////////////////////////
@@ -1142,10 +1142,12 @@ word EmitFunctions(char @Buff)
 					end:while
 				end:if
 
-				pParm =nParm;
 				pFunc = I;
 				pSize = S1;
 				pVar  = 0;
+
+				CODEBLOCK CB;
+				Code_BeginBlock(@CB);
 
 				word  P = Dict[I].pNode;
 				word  ID;
@@ -1159,7 +1161,8 @@ word EmitFunctions(char @Buff)
 					_Code(pRet, 0, 0, 0);
 				end
 
-				nParm=pParm;
+				Code_EndBlock(@CB);
+
 		end // of select
 
 		inc I;
