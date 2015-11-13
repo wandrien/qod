@@ -1,6 +1,6 @@
 
 word ResolveLocal(char @Name)
-	word  I=pParm;
+	word  I=pParmLocal;
 	while I<nParm do
 		when strcmp(@Parm[I].Name,@Name)=0:
 			return I;

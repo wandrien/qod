@@ -10,8 +10,7 @@ void DeclMainFunc(char@ Buff)
 	word p = DictAlloc();
 
 	pFunc = p;
-	pParm = nParm;
-	pIndx = nIndx;
+	pParmLocal = nParm;
 
 	SetDictName(p, "");
 	Dict[p].Class = cFUNC;
@@ -25,9 +24,7 @@ void DeclMainFunc(char@ Buff)
 	Scan(@Buff);
 	Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 
-	nIndx = pIndx;
-	nParm = pParm;
-
+	nParm = pParmLocal;
 end
 
 /*****************************************************************************/
@@ -207,11 +204,9 @@ void DeclFunc1(char @Buff; word a)
 			end:if
 
 		default: /* Тело функции. */
-			pParm=nParm;
-			pIndx=nIndx;
+			pParmLocal=nParm;
 			Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
-			nIndx=pIndx;
-			nParm=pParm;
+			nParm=pParmLocal;
 
 	end:select
 

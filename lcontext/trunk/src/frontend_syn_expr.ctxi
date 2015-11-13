@@ -306,7 +306,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		if I < nPARM then
 			P1=Peek();
 			Node[P1].ID    =iLOCAL;
-			Node[P1].Value = I-pParm;
+			Node[P1].Value = I-pParmLocal;
 			pType          = Parm[I].pType;
 			nPtr1          = Parm[I].nPtr;
 			pIndx          = Parm[I].pIndx;

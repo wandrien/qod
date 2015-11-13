@@ -532,7 +532,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Node[P5].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
 
 			Node[P6].ID    =iLOCAL;
-			Node[P6].Value =nParm-pParm;
+			Node[P6].Value =nParm-pParmLocal;
 
 			Test(pType,nPtr,pType2,nPtr2,@Node[P5].pRight);
 		end:if
