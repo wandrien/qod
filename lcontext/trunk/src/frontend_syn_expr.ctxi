@@ -164,7 +164,7 @@ word     List(char @Buff)
 
       word  I=P;
       while I<nParm do
-        if strcmp(@Parm[I].Name,@Buff)=0 then
+        if strcmp(@ParmGetName(I),@Buff)=0 then
           Stop(@eDUPLICATE);
         end
 
@@ -175,7 +175,8 @@ word     List(char @Buff)
         StopMemory();
       end
 
-      Parm[nParm].pType=pType;                 Copy(@Parm[nParm].Name,@Buff,0);
+      Parm[nParm].pType=pType;
+      Parm[nParm].Name2=SaveString0(@Buff);
       Parm[nParm].nPtr =nPtr;
       inc  nParm;
 
@@ -580,7 +581,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 					Stop(@eUNDEFINED);
 				end:if
 
-				if strcmp(@Parm[I].Name,@Buff)=0 then
+				if strcmp(@ParmGetName(I),@Buff)=0 then
 					exit;
 				end:if
 

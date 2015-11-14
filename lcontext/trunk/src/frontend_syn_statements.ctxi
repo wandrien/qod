@@ -491,7 +491,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			StopMemory();
 		end:if
 
-		Copy(@Local[nLocal].Name,@Buff,0);
+		Local[nLocal].Name2=SaveString0(@Buff);
 		Local[nLocal].pType=pType;
 		Local[nLocal].nPtr =nPtr;
 		Local[nLocal].pIndx=nIndx;

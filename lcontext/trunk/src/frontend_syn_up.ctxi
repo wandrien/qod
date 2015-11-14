@@ -79,7 +79,7 @@ void DeclStruct(char @Buff)
 
             word  I=pParm; // I=pParm;
             while I<nParm do
-              if strcmp(@Parm[I].Name,@Buff)=0 then
+              if strcmp(@ParmGetName(I),@Buff)=0 then
                 Stop(@eDUPLICATE);
               end
 
@@ -90,7 +90,8 @@ void DeclStruct(char @Buff)
               StopMemory();
             end
 
-            Parm[nParm].pType=pType;           Copy(@Parm[nParm].Name,@Buff,0);
+            Parm[nParm].pType=pType;
+            Parm[nParm].Name2=SaveString0(@Buff);
             Parm[nParm].nPtr =nPtr;
             Parm[nParm].pIndx=nIndx;
             Parm[nParm].nIndx= Tabl(@Scan(@Buff));

@@ -158,7 +158,7 @@ void OutputNodeValue(word P)
 	char @N;
 	select
 		case IDDesc[Node[P].ID].ValueClass = vcParm:
-			@N = @Parm[Node[P].Value].Name;
+			@N = @ParmGetName(Node[P].Value);
 		case IDDesc[Node[P].ID].ValueClass = vcDict:
 			@N = @GetDictName(Node[P].Value);
 		default:
