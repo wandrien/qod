@@ -12,7 +12,7 @@ void DeclMainFunc(char@ Buff)
 	pFunc = p;
 	word Saved_nLocal = nLocal;
 
-	SetDictName(p, "");
+	DictSetName(p, "");
 	Dict[p].Class = cFUNC;
 	Dict[p].Sub   = sMAIN;
 	Dict[p].pType = st_void;
@@ -37,7 +37,7 @@ void DeclStruct(char @Buff)
         end
 
         word p = DictAlloc();
-        SetDictName(p, @Buff);
+        DictSetName(p, @Buff);
         Dict[p]. Class=cTYPE;
         Dict[p]. Sub  =sSTRUCT;
         Dict[p].pIndx =nParm;
@@ -50,7 +50,7 @@ void DeclStruct(char @Buff)
         do
           pType=Find(@Buff);
           if   pType>=nDict then
-            if strcmp(@Buff,@GetDictName(p))!=0 then
+            if strcmp(@Buff,@DictGetName(p))!=0 then
               Stop(@eTYPEEXP);
             end
           else
@@ -129,7 +129,7 @@ void DeclSynonym(char @Buff)
 	end
 
 	word D = DictAlloc();
-	SetDictName(D, @Buff);
+	DictSetName(D, @Buff);
 	Dict[D].Class = cNAME;
 
 	word pType = Find(@Scan(@Buff));
@@ -170,7 +170,7 @@ void DeclFunc1(char @Buff; word a)
 
 				pLib = DictAlloc();
 
-				SetDictName(pLib, @Buff);
+				DictSetName(pLib, @Buff);
 				Dict[pLib].Class = cLIB;
 
 			end:if
@@ -188,11 +188,11 @@ void DeclFunc1(char @Buff; word a)
 
 				word pAlias = DictAlloc();
 
-				SetDictName(pAlias, @GetDictName(pFunc));
+				DictSetName(pAlias, @DictGetName(pFunc));
 				Dict[pAlias].Class = cNAME;
 				Dict[pAlias].pType = pFunc;
 
-				SetDictName(pFunc, @Buff);
+				DictSetName(pFunc, @Buff);
 				Scan(@Buff);
 
 			end:if
@@ -226,7 +226,7 @@ void DeclVarFuncType(char @Buff; word pType)
 
 	word D = DictAlloc();
 
-	SetDictName(D, @Buff);
+	DictSetName(D, @Buff);
 	Dict[D].Class = cTYPE;
 	Dict[D].Sub   = sHEADER;
 
@@ -271,7 +271,7 @@ void DeclVarFunc(char @Buff)
 
 		word D = DictAlloc();
 
-		SetDictName(D, @Buff);
+		DictSetName(D, @Buff);
 		Dict[D].pType = pType;
 		Dict[D].nPtr  = nPtr;
 
@@ -352,7 +352,7 @@ word DeclDefine(char @Buff)
 
 	word D = DictAlloc();
 
-	SetDictName(D, @Buff);
+	DictSetName(D, @Buff);
 	Dict[D].Class = cLITERAL;
 	Dict[D].RO = 1;
 	Dict[D].nPtr  = 0;
@@ -436,7 +436,7 @@ word DeclInclude(char @Buff)
 
 	/* Заносим имя файла в словарь. */
 	word D = DictAlloc();
-	SetDictName(D, @FileName);
+	DictSetName(D, @FileName);
 	Dict[D].Class = cFILE;
 
 	IncludeFile(@FileName);

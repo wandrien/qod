@@ -117,7 +117,7 @@ word StringNode()
 	word D = DictAlloc();
 	Dict[D].Class = cLITERAL;
 	Dict[D].RO = ROStrings;
-	SetDictName(D, "");
+	DictSetName(D, "");
 	ScanString(D);
 
 	word P = Peek();

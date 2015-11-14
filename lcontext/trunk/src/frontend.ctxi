@@ -25,7 +25,7 @@ void Copy(char @Dest, @Name; word _P)
 	word P = 0;
 
 	while P < pKeyWords & Dict[P].Class = cWORD do
-		if strcmp(@GetDictName(P), @Name) = 0 then
+		if strcmp(@DictGetName(P), @Name) = 0 then
 			Stop(@eEXPECTED);
 		end
 

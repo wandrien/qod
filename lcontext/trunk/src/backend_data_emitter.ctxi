@@ -379,7 +379,7 @@ void EmitPEImport(char @Buff)
 	I =0;
 	while I<nDict do
 		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
-			EmitLine(Label,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(I)),".DLL~", 0"));
+			EmitLine(Label,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@DictGetName(I)),".DLL~", 0"));
 			inc Label;
 		end:if
 
@@ -398,7 +398,7 @@ void EmitPEImport(char @Buff)
 			while J<nDict do
 				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
 					EmitLine(Label,"dw      0");
-					Emit(@strcat(@strcat(@strcpy(@Buff,"db     ~""),@GetDictName(J)),"~", 0"));
+					Emit(@strcat(@strcat(@strcpy(@Buff,"db     ~""),@DictGetName(J)),"~", 0"));
 					inc Label;
 				end:if
 

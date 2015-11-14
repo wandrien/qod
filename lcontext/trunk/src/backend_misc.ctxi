@@ -160,7 +160,7 @@ void OutputNodeValue(word P)
 		case IDDesc[Node[P].ID].ValueClass = vcParm:
 			@N = @ParmGetName(Node[P].Value);
 		case IDDesc[Node[P].ID].ValueClass = vcDict:
-			@N = @GetDictName(Node[P].Value);
+			@N = @DictGetName(Node[P].Value);
 		default:
 			@N = @str(Node[P].Value);
 	end:select
@@ -292,9 +292,9 @@ void OutputFunctionTrees()
 				EmitNL();
 				EmitString(@LinePrefix);
 				EmitString("== ");
-				EmitString(@GetDictName(I));
+				EmitString(@DictGetName(I));
 				EmitString(" ");
-				word j = strlen(@GetDictName(I));
+				word j = strlen(@DictGetName(I));
 				while j < 74 do
 					EmitString("=");
 					inc j;
@@ -314,7 +314,7 @@ void OutputIncludeList()
 	while i < nDict do
 		select
 		case Dict[i].Class = cFILE:
-			EmitStringNL(@GetDictName(i));
+			EmitStringNL(@DictGetName(i));
 		end:select
 		inc i;
 	end

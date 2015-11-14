@@ -29,7 +29,7 @@ end
 
 /*****************************************************************************/
 
-void SetDictName(word D; char@ Name)
+void DictSetName(word D; char@ Name)
 
 	when D >= nDict:
 		StopInternal();
@@ -40,7 +40,7 @@ end
 
 /*****************************************************************************/
 
-char @GetDictName(word D)
+char @DictGetName(word D)
 
 	when D >= nDict:
 		StopInternal();
@@ -75,7 +75,7 @@ word Find(char @Name)
 	word hash = str_hash(@Name);
 	word P = 0;
 	while P < nDict do
-		if Dict[P].NameHash = hash & strcmp(@GetDictName(P), @Name) = 0 & Dict[P].Class != cFILE then
+		if Dict[P].NameHash = hash & strcmp(@DictGetName(P), @Name) = 0 & Dict[P].Class != cFILE then
 			while Dict[P].Class = cNAME do
 				P = Dict[P].pType;
 			end
@@ -98,7 +98,7 @@ word Find_cFILE(char @Name)
 	word hash = str_hash(@Name);
 	word  P = 0;
 	while P < nDict do
-		if Dict[P].NameHash = hash & strcmp(@GetDictName(P), @Name) = 0 & Dict[P].Class = cFILE then
+		if Dict[P].NameHash = hash & strcmp(@DictGetName(P), @Name) = 0 & Dict[P].Class = cFILE then
 			exit;
 		end
 
@@ -114,7 +114,7 @@ void A_Name(char @Name)
 	word P = 0;
 
 	while P < pKeyWords & Dict[P].Class = cWORD do
-		when strcmp(@GetDictName(P), @Name) = 0:
+		when strcmp(@DictGetName(P), @Name) = 0:
 			Stop(@eEXPECTED);
 
 		inc P;
@@ -130,7 +130,7 @@ end
 /* Регистрирует ключевое слово. */
 void Word(char @Name)
 	word p = DictAlloc();
-	SetDictName(p, @Name);
+	DictSetName(p, @Name);
 	Dict[p].Class = cWORD;
 	pKeyWords = p + 1;
 end
@@ -140,7 +140,7 @@ end
 /* Регистрирует базовый тип. */
 word Base(char @Name; word Size)
 	word p = DictAlloc();
-	SetDictName(p, @Name);
+	DictSetName(p, @Name);
 	Dict[p].Class = cTYPE;
 	Dict[p].Sub   = sBASE;
 	Dict[p].Value = Size;
@@ -158,7 +158,7 @@ word DictDupLiteral(word D1)
 		StopInternal();
 
 	word D2 = DictAlloc();
-	SetDictName(D2, "");
+	DictSetName(D2, "");
 	Dict[D2].Class = Dict[D1].Class;
 	Dict[D2].Sub   = Dict[D1].Sub;
 	Dict[D2].pType = Dict[D1].pType;

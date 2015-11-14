@@ -541,7 +541,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		inc nLocal;
 ///*
 		if strcmp(@Buff,",")=0 then
-			strcpy(@Buff,@GetDictName(pType));
+			strcpy(@Buff,@DictGetName(pType));
 			SkipFinalScan = 1;
 			return;
 		end:if

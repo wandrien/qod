@@ -1018,7 +1018,7 @@ word EmitFunctions(char @Buff)
 				EmitStringNL("");
 				strcpy(@Buff,"       ;;");
 				if Dict[I].Sub != sMAIN then
-					strcat(@Buff, @GetDictName(I));
+					strcat(@Buff, @DictGetName(I));
 				else
 					strcat(@Buff, "begin");
 					S = Dict[I].Value;
