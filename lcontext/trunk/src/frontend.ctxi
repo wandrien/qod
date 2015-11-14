@@ -11,36 +11,6 @@ include "frontend_lex.ctxi"
 
 /*****************************************************************************/
 
-/*
-	Данная функция копирует строку,
-	проверяя при этом, что строка является корректным идентификатором:
-	не совпадает с ключевым словом и начинается с буквы.
-
-	Если _P = 0, сканирование на совпадение с ключевым словом производится.
-	Если _P = nDict, сканирование не производится.
-	Других осмысленных значений у этого параметра нет.
-*/
-void Copy(char @Dest, @Name; word _P)
-
-	word P = 0;
-
-	while P < pKeyWords & Dict[P].Class = cWORD do
-		if strcmp(@DictGetName(P), @Name) = 0 then
-			Stop(@eEXPECTED);
-		end
-
-		inc P;
-	end
-
-	if isalpha(Name) = 0 then
-		Stop(@eEXPECTED);
-	end
-
-	strcpy(@Dest, @Name);
-end
-
-/*****************************************************************************/
-
 char@ ResolveFileName(char@ Buff)
 	char FileName[MAX_FPATH];
 	
