@@ -46,6 +46,8 @@ ID_DESC IDDesc[iID_COUNT];
 word IDDescInitialized = 0;
 
 void InitIDDesc2(word ID; char @Name; word vc; word RightList)
+	when @IDDesc[ID].Name != NULL:
+		StopInternal();
 	@IDDesc[ID].Name = @Name;
 	IDDesc[ID].ValueClass = vc;
 	IDDesc[ID].RightList  = RightList;
@@ -147,9 +149,8 @@ end
 
 void OutputNodeName(word P)
 	char @N = @IDDesc[Node[P].ID].Name;
-	if @N = NULL then
-		@N = @str(Node[P].ID);
-	end
+	when @N = NULL:
+		StopInternal();
 	EmitString(@N);
 end
 
