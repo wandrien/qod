@@ -50,7 +50,6 @@ end
 
 /*****************************************************************************/
 
-
 /* Выделить запись в таблице глобальных имён и вернуть её индекс.  */
 word DictAlloc()
 
@@ -106,23 +105,6 @@ word Find_cFILE(char @Name)
 	end
 
 	return P;
-end
-
-/*****************************************************************************/
-
-void A_Name(char @Name)
-	word P = 0;
-
-	while P < pKeyWords & Dict[P].Class = cWORD do
-		when strcmp(@DictGetName(P), @Name) = 0:
-			Stop(@eEXPECTED);
-
-		inc P;
-	end
-
-	when isalpha(Name) = 0:
-		Stop(@eEXPECTED);
-
 end
 
 /*****************************************************************************/
