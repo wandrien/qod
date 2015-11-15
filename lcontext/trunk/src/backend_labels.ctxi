@@ -40,54 +40,63 @@ end
 
 /*****************************************************************************/
 
+void function __NodeMarkUsed(word P)
+__NodeMarkUsed @_NodeMarkUsed;
 
-/* Отметка используемых объектов. */
-void Mark(word P)
-	if P >= nNODE then
+void DictMarkUsed(word D)
+	when D >= nDICT:
 		return;
-	end
 
-	select
-		case Node[P].ID = iCALL:
-			if Dict[Node[P].Value].Used = 0 then
-				Dict[Node[P].Value].Used = 1;
-				if Dict[Node[P].Value].Sub = sFUNC then
-					Mark(Dict[Node[P].Value].pNode);
-				end
-			end
+	when Dict[D].Used != 0:
+		return;
 
-		case Node[P].ID = iDATA:
-			select
-				case Node[P].pLeft >= nNODE:
-					if Dict[Node[P].Value].Used = 0 then
-						Dict [Node[P].Value].Used = 1;
-						Mark(Dict[Node[P].Value].pNode);
-					end
-
-				case Node[Node[P].pLeft].ID != iCALL:
-					if Dict[Node[P].Value].Used = 0 then
-						Dict [Node[P].Value].Used = 1;
-						Mark(Dict[Node[P].Value].pNode);
-					end
-			end
-
-		case Node[P].ID = iFUNC:
-			if Dict[Node[P].Value].Used = 0 then
-				Dict [Node[P].Value].Used = 1;
-				if Dict[Node[P].Value].Sub = sFUNC then
-					Mark(Dict[Node[P].Value].pNode);
-				end
-			end
-
-		case Node[P].ID = iSTRING:
-			Dict[Node[P].Value].Used = 1;
-
-	end
-
-	Mark(Node[P].pLeft );
-	Mark(Node[P].pRight);
+	Dict[D].Used = 1;
+	DictMarkUsed(Dict[D].pType);
+	_NodeMarkUsed(Dict[D].pNode);
 end
 
+void NodeMarkUsed(word P)
+	when P >= nNODE:
+		return;
+
+	when Node[P].Used != 0:
+		return;
+
+	Node[P].Used = 1;
+	DictMarkUsed(Node[P].pType);
+
+	switch Node[P].ID of
+	case iCALL, iFUNC, iDATA, iSTRING:
+		DictMarkUsed(Node[P].Value);
+	end:switch
+
+	NodeMarkUsed(Node[P].pLeft );
+	NodeMarkUsed(Node[P].pRight);
+end
+
+void DoWarnUnusedGlobals()
+	char Buff[1024];
+	word  P = 0;
+	while P < nDict do
+		if Dict[P].Used = 0 then
+			select
+			case Dict[P].Class = cDATA:
+				strcpy(@Buff, @DictGetName(P));
+				strcat(@Buff, @wGLOBALVARUNUSED);
+				Warn(@Buff);
+			case Dict[P].Class = cFUNC:
+				strcpy(@Buff, @DictGetName(P));
+				strcat(@Buff, @wFUNCUNUSED);
+				Warn(@Buff);
+			case Dict[P].Class = cTYPE & Dict[P].Sub != sBASE:
+				strcpy(@Buff, @DictGetName(P));
+				strcat(@Buff, @wTYPEUNUSED);
+				Warn(@Buff);
+			end:select
+		end:if
+		inc P;
+	end
+end
 
 /*****************************************************************************/
 

@@ -5,7 +5,11 @@ set -x
 
 mk()
 {
-    $1 $2.ctx $3 --output $4.$5.asm --output-tree $4.$5.tree --output-include-list $4.$5.includes $6 $7 && \
+    $1 $2.ctx $3 \
+        --output $4.$5.asm \
+        --output-tree $4.$5.tree \
+        --output-include-list $4.$5.includes \
+        $6 $7 $8 && \
     fasm  $4.$5.asm $4$5
 }
 
@@ -14,11 +18,11 @@ iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 mk ../bin/lcontext_c ctx4lnx    --linux out/ lcontext_a
 
 mk out/lcontext_a ctx4lnx       --linux out/ lcontext_b
-mk out/lcontext_b ctx4lnx       --linux out/ lcontext_c
+mk out/lcontext_b ctx4lnx       --linux out/ lcontext_c --warn-unused-globals
 
 mk out/lcontext_b ctx4lnx       --linux out/ lcontext_c_debug --optimize none
 
-mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c.exe
+mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c.exe --warn-unused-globals
 mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
 
 diff out/lcontext_b out/lcontext_c

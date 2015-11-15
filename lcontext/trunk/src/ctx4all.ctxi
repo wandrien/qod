@@ -28,6 +28,7 @@ end
 
 struct NODE                // Узел синтаксического деpева
 	word   ID;           // Тип узла
+	byte   Used;
 	word   Value;        // Значение
 	word  pLeft;         // Ссылка на левое  поддеpево
 	word  pRight;        // Ссылка на пpавое поддеpево
@@ -235,6 +236,8 @@ void Translate()
 
 	@_Code = @Code;
 
+	@_NodeMarkUsed = @NodeMarkUsed;
+
 	/* Синтаксический анализ **********************/
 
 	InitFrontEnd();
@@ -249,7 +252,7 @@ void Translate()
 	/* Промежуточные операции *********************/
 
 	/* Отметка используемых объектов. */
-	Mark(Dict[pFunc].pNode);
+	DictMarkUsed(pFunc);
 	select
 		case TargetFileFormat = tPE:
 			Dict[Find("ExitProcess")].Used = 1;
@@ -264,6 +267,11 @@ void Translate()
 	AssignLabels_FuncExternal();
 
 	AssignStringOffsets();
+
+	/* Вывод информации по анализу кода ***********/
+
+	when WarnUnusedGlobals != 0:
+		DoWarnUnusedGlobals();
 
 	/* Генерация кода *****************************/
 
@@ -415,6 +423,8 @@ void __main()
 			show_parse_progress = 1;
 		case strcmp(@arg, "--optimize" ) = 0:
 			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
+		case strcmp(@arg, "--warn-unused-globals" ) = 0:
+			WarnUnusedGlobals = 1;
 		default:
 			@InputFile = @GetArg(i, @eFNAMEEXP);
 		end:select

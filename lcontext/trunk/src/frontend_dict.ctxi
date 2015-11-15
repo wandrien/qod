@@ -59,6 +59,7 @@ word DictAlloc()
 	inc nDict;
 
 	Dict[r].Used = 0;
+	Dict[r].pType = nDICT;
 
 	return r;
 

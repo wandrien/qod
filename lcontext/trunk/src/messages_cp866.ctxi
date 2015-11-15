@@ -52,6 +52,10 @@ define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logi
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
 
 define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
+define @wGLOBALVARUNUSED ": глобальная переменная не используется"     // a global variable is never used
+define @wFUNCUNUSED      ": функция не используется"                   // a function is never used
+define @wTYPEUNUSED      ": тип данных не используется"                // a type is never used
+
 
 define @msgWARNING       "предупреждение: "                            // warning
 define @msgERROR         "ошибка: "                                    // error
