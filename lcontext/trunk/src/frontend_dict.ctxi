@@ -13,6 +13,7 @@ word st_char;
 word st_byte;
 word st_word;
 word st_int;
+word st_bool;
 
 /*****************************************************************************/
 

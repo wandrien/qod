@@ -696,14 +696,14 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 			Stop(@eTYPE);
 		end
 
-		pType = nDICT;
+		pType = st_bool;
 		nPtr  = 0;
 
 	case ID=iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями (тип "отсутствие типа"). */
 		select
 		case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_OR;
-		case pType<nDICT:
+		case pType != st_bool:
 			Stop(@eTYPE);
 		end
 
@@ -711,7 +711,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 		select
 		case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_XOR;
-		case pType>=nDICT:
+		case pType = st_bool:
 			Stop(@eXORNOTIMPL);
 		default:
 			Stop(@eTYPE);
@@ -721,7 +721,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 		select
 			case pType=st_byte | pType=st_word:
 			Node[P2].ID=iBIT_AND;
-		case pType<nDICT:
+		case pType != st_bool:
 			Stop(@eTYPE);
 		end
 
@@ -730,7 +730,7 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 			Stop(@eTYPE);
 		end
 
-		pType=nDICT;
+		pType = st_bool;
 
 	case iADD<=ID & ID<=iDIV:
 		if pType!=st_byte & pType!=st_word & pType!=st_int then /* Арифметические операции только с целыми. */

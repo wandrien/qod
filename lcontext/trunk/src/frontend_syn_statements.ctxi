@@ -89,7 +89,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 				Stop(@eTHENEXP);
 			end:if
 
-			if pType<nDICT then
+			if pType != st_bool then
 				Stop(@eTYPE);
 			end:if
 		else
@@ -131,7 +131,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	word pType, nPtr;
 	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
-	if pType<nDICT then
+	if pType != st_bool then
 		Stop(@eTYPE);
 	end:if
 
@@ -286,7 +286,7 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 			Stop(@eDOEXP);
 		end
 
-		if pType<nDICT then
+		if pType != st_bool then
 			Stop(@eTYPE);
 		end
 	end:if
@@ -328,7 +328,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 		Stop(@eSEMICOLONEXP);
 	end
 
-	if pType<nDICT then
+	if pType != st_bool then
 		Stop(@eTYPE);
 	end
 
