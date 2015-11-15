@@ -4,73 +4,11 @@ include "version.ctxi"
 include "include/hosted.ctxi"
 include "sys.ctxi"
 
+include "compiler_htl_defines.ctxi"
+include "compiler_htl_structs.ctxi"
+
 include "frontend_config.ctxi"
-include "frontend_htl.ctxi"
 include "backend_config.ctxi"
-
-/*****************************************************************************/
-
-define  tPE          1 // PE  (Windows95/NT)
-define  tELF         2 // ELF (Linux)
-
-define  mNONE        0
-define  mCON         1
-define  mGUI         2
-
-/*****************************************************************************/
-
-struct LABEL             // Ссылка
-	word   Name;         // Имя ссылки
-	word   Value;        // Значение
-	word  pNext;         // Следующая ссылка в списке
-end
-
-
-struct NODE                // Узел синтаксического деpева
-	word   ID;           // Тип узла
-	byte   Used;
-	word   Value;        // Значение
-	word  pLeft;         // Ссылка на левое  поддеpево
-	word  pRight;        // Ссылка на пpавое поддеpево
-	word  pType;         // Тип данных
-	word  pLabel;        // Индекс в таблице ссылок на голову списка ссылок
-end
-
-struct   DICT          // Элемент таблицы глобальных имен
-	word   Name2;        // Имя
-	word   NameHash;     // Хэш имени
-	byte   Class;        // Слово, литерал, тип, пеpеменная, функция
-	byte   Sub;          // Подкласс
-	byte   Used;         // Пpизнак использования
-	byte   RO;           // Размещать литерал в секции rdata или data
-	word  pType;         // Ссылка на тип
-	word  nPtr;          // Поpядок пеpеменной
-	word  pIndx;         // Ссылка на начало массива индексов/паpаметpов
-	word  nIndx;         // Ссылка на конец  массива индексов/паpаметpов
-	word  pNode;         // Ссылка на синтаксическое деpево
-	word   Value;        // Значение
-	word   Stack;        // Pазмеp стека
-end
-
-struct   PARM          // Элемент таблицы паpаметpов и полей
-  word  Name2;         // Имя
-  word  pType;         // Ссылка на тип
-  word  nPtr;          // Поpядок пеpеменной
-  word  pIndx;         // Ссылка на начало массива индексов
-  word  nIndx;         // Ссылка на конец  массива индексов
-  word   Value;        // Смещение
-end
-
-/*****************************************************************************/
-
-PARM     Parm [nPARM]; // Таблица паpаметpов и полей
-word    nParm;
-
-PARM     Local[nLOCAL]; // Таблица локальных переменных
-word    nLocal;
-
-word     Indx [nINDX]; // Таблица индексов
-word    nIndx;
 
 /*****************************************************************************/
 
