@@ -11,7 +11,7 @@ include "frontend_lex.ctxi"
 char@ ResolveFileName(char@ Buff)
 	char FileName[MAX_FPATH];
 	
-	strn_cpy(@FileName, @CurrentFileInfo.Name, MAX_FPATH);
+	strn_cpy(@FileName, @CurrentFileInfo.FileName, MAX_FPATH);
 	FileName[fpath_last_part(@FileName)] = #0;
 	
 	char @S = @Buff;
@@ -157,7 +157,7 @@ void InitFrontEnd()
 	pText = 0;
 	CurrentFileInfo.Line = 1;
 	CurrentFileInfo.Column = 1;
-	@CurrentFileInfo.Name = NULL;
+	@CurrentFileInfo.FileName = NULL;
 	BeforeFirstFile = 1;
 
 	pLoop = nNODE;

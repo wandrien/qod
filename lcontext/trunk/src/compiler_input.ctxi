@@ -147,7 +147,7 @@ void OpenInputFile(char @FileName)
 
 	hText = hFile;
 
-	@CurrentFileInfo.Name = @Char[SaveString0(@FileName)];
+	@CurrentFileInfo.FileName = @Char[SaveString0(@FileName)];
 	CurrentFileInfo.Line = 1;
 	CurrentFileInfo.Column = 1;
 end

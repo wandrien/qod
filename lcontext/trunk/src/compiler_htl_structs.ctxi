@@ -2,7 +2,7 @@
 /*****************************************************************************/
 
 struct SOURCELOCATION
-	char@ Name;
+	char@ FileName;
 	word  Line;
 	word  Column;
 end

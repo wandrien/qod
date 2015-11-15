@@ -7,39 +7,34 @@ SOURCELOCATION CurrentFileInfo;
 
 /*****************************************************************************/
 
-void PutPosition(char @FileName; word L; word C)
-	if @FileName != NULL then
-		puts(@FileName);
+void PutLocation(SOURCELOCATION @SourceLocation)
+	if @SourceLocation != NULL & @SourceLocation.FileName != NULL then
+		puts(@SourceLocation.FileName);
 		puts(":");
-		puts(@str(L));
+		puts(@str(SourceLocation.Line));
 		puts(":");
-		puts(@str(C));
+		puts(@str(SourceLocation.Column));
 		puts(": ");
 	end:if
 end
 
 
-void WarnAt(char @Msg; char @FileName; word L; word C)
+void WarnAt(SOURCELOCATION @SourceLocation; char @Msg)
 	puts("~r");
-	PutPosition(@FileName, L, C);
+	PutLocation(@SourceLocation);
 	puts(@msgWARNING);
 	puts(@Msg);
 	puts("~r~n");
 end
 
 void Warn(char @Msg)
-	WarnAt(
-		@Msg,
-		@CurrentFileInfo.Name,
-		CurrentFileInfo.Line,
-		CurrentFileInfo.Column
-	);
+	WarnAt(@CurrentFileInfo, @Msg);
 end
 
 
-void StopAt(char @Msg; char @FileName; word L; word C)
+void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	puts("~r");
-	PutPosition(@FileName, L, C);
+	PutLocation(@SourceLocation);
 	puts(@msgERROR);
 	puts(@Msg);
 	puts("~r~n");
@@ -47,12 +42,7 @@ void StopAt(char @Msg; char @FileName; word L; word C)
 end
 
 void Stop(char @Msg)
-	StopAt(
-		@Msg,
-		@CurrentFileInfo.Name,
-		CurrentFileInfo.Line,
-		CurrentFileInfo.Column
-	);
+	StopAt(@CurrentFileInfo, @Msg);
 end
 
 void StopInternal()
@@ -69,7 +59,7 @@ void ShowParseProgress(word nl)
 		return;
 	end:if
 
-	if @CurrentFileInfo.Name = NULL then
+	if @CurrentFileInfo.FileName = NULL then
 		return;
 	end:if
 
@@ -79,7 +69,7 @@ void ShowParseProgress(word nl)
 	end
 	char Buff[nBUFF];
 	puts(@strcat(@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,
-		"~r"), @CurrentFileInfo.Name), "("), @str(CurrentFileInfo.Line)), ")"), @NL)
+		"~r"), @CurrentFileInfo.FileName), "("), @str(CurrentFileInfo.Line)), ")"), @NL)
 	);
 end
 
