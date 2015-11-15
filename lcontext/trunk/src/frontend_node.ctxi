@@ -24,3 +24,60 @@ end
 
 /*****************************************************************************/
 
+word NodeGetImmediateValue(word P)
+
+	when P >= nNode:
+		StopInternal();
+
+	switch Node[P].ID of
+	case iCHAR, iWORD, iINT:
+		return Node[P].Value;
+	end
+
+	StopInternal();
+	return 0;
+end
+
+void NodeSetImmediateValue(word P; word Value)
+
+	when P >= nNode:
+		StopInternal();
+
+	switch Node[P].ID of
+	case iCHAR, iWORD, iINT:
+		Node[P].Value = Value;
+	default:
+		StopInternal();
+	end
+end
+
+/*****************************************************************************/
+
+word NodeGetDict(word P)
+
+	when P >= nNode:
+		StopInternal();
+
+	switch Node[P].ID of
+	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
+		return Node[P].Value;
+	end
+
+	StopInternal();
+	return 0;
+end
+
+void NodeSetDict(word P; word D)
+
+	when P >= nNode:
+		StopInternal();
+
+	switch Node[P].ID of
+	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
+		Node[P].Value = D;
+	default:
+		StopInternal();
+	end
+end
+
+/*****************************************************************************/

@@ -96,7 +96,7 @@ word     Tabl(char @Buff)
       Stop(@eTYPE);
     end
 
-    Indx[nIndx]=Node[P].Value;
+    Indx[nIndx]=NodeGetImmediateValue(P);
     inc  nIndx;
 
     if strcmp(@Buff,"]")!=0 then // strcmp(@Scan(@Buff),"]")!=0
@@ -122,7 +122,7 @@ word StringNode()
 
 	word P = Peek();
 	Node[P].ID    = iSTRING;
-	Node[P].Value = D;
+	NodeSetDict(P, D);
 
 	return P;
 end

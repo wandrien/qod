@@ -67,7 +67,7 @@ void NodeMarkUsed(word P)
 
 	switch Node[P].ID of
 	case iCALL, iFUNC, iDATA, iSTRING:
-		DictMarkUsed(Node[P].Value);
+		DictMarkUsed(NodeGetDict(P));
 	end:switch
 
 	NodeMarkUsed(Node[P].pLeft );
