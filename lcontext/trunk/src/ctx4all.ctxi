@@ -244,8 +244,7 @@ void Translate()
 
 	OpenInputFile(@InputFile);
 
-	char Buff[nBUFF];
-	Parse(@Buff);
+	Parse();
 
 	CloseAllFiles();
 
@@ -292,6 +291,8 @@ void Translate()
 
 	word T=0;
 	word I=0;
+
+	char Buff[nBUFF];
 
 	word S = EmitSection_Code(@Buff);
 

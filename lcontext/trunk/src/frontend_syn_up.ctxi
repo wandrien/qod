@@ -445,8 +445,9 @@ end
 
 /*****************************************************************************/
 
-void Parse(char @Buff)
+void Parse()
 
+	char Buff[nBUFF];
 	Scan(@Buff);
 
 	do
