@@ -24,16 +24,3 @@ end
 
 /*****************************************************************************/
 
-/* Клониpование поддеpева. */
-word Dup(word P)
-	when P >= nNODE:
-		return P;
-
-	word P1=Peek();
-	Node[P1].ID     = Node[P].ID;
-	Node[P1].Value  = Node[P].Value;
-	Node[P1].pLeft  = Dup(Node[P].pLeft);
-	Node[P1].pRight = Dup(Node[P].pRight);
-
-	return P1;
-end
