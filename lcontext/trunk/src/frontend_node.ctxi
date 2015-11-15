@@ -17,6 +17,7 @@ word Peek()
 	Node[nNode].pLeft  = nNODE;
 	Node[nNode].pRight = nNODE;
 	Node[nNode].pType  = nDICT;
+	Node[nNode].SourceLocation = CurrentFileInfo;
 	inc  nNode;
 
 	return N;
