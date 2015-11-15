@@ -129,48 +129,6 @@ void InitFrontEnd()
 	@_Ctrl       = @Ctrl;
 	@_Expr       = @Expr;
 
-	strcpy(@Text,"");
-
-	strcat(@Text,"define __CONTEXT2_VERSION_MAJOR__ 0~r~n");
-	strcat(@Text,"define __CONTEXT2_VERSION_MINOR__ 1~r~n");
-	strcat(@Text,"define @__CONTEXT2_VERSION_STR__  ~"0.1~"~r~n");
-
-
-	strcat(@Text,"define @__TRANSLATOR__ ~"");
-	strcat(@Text,@msgPRODUCT);
-	strcat(@Text,"~"~r~n");
-
-	strcat(@Text,"define @__TRANSLATOR_VERSION__ ~"");
-	strcat(@Text,@msgVERSION);
-	strcat(@Text,"~"~r~n");
-
-	strcat(@Text,"define @__TRANSLATOR_HOST__ ~"");
-	strcat(@Text,@__TRANSLATOR_TARGET__);
-	strcat(@Text,"~"~r~n");
-
-
-	select
-	case TargetFileFormat = tPE:
-		strcat(@Text,"define @__TRANSLATOR_TARGET__ ~"i386-win32-pe~"~r~n");
-		strcat(@Text,"void ExitProcess(word uExitCode) external KERNEL32;");
-	case TargetFileFormat = tELF:
-		strcat(@Text,"define @__TRANSLATOR_TARGET__ ~"i386-linux-elf~"~r~n");
-	default:
-		StopInternal();
-	end:select
-
-	strcat(@Text,"  ");
-
-
-	nText = strlen(@Text);
-	pText = 0;
-	CurrentFileInfo.Line = 1;
-	CurrentFileInfo.Col  = 1;
-	@CurrentFileInfo.Name = NULL;
-	BeforeFirstFile = 1;
-
-	pLoop = nNODE;
-
 	RegisterDigraph("!=");
 	RegisterDigraph("<=");
 	RegisterDigraph(">=");
@@ -219,6 +177,38 @@ void InitFrontEnd()
 	st_int  = Base("int" , 4);
 
 	RegisterOperators();
+
+	strcpy(@Text,"");
+
+	DefineWord("__CONTEXT2_VERSION_MAJOR__ ", 0);
+	DefineWord("__CONTEXT2_VERSION_MINOR__ ", 1);
+	DefineString("__CONTEXT2_VERSION_STR__", "0.1");
+	DefineString("__TRANSLATOR__", @msgPRODUCT);
+	DefineString("__TRANSLATOR_VERSION__", @msgVERSION);
+	DefineString("__TRANSLATOR_HOST__", @__TRANSLATOR_TARGET__);
+
+	select
+	case TargetFileFormat = tPE:
+		DefineString("__TRANSLATOR_TARGET__", "i386-win32-pe");
+		strcat(@Text,"void ExitProcess(word uExitCode) external KERNEL32;");
+	case TargetFileFormat = tELF:
+		DefineString("__TRANSLATOR_TARGET__", "i386-linux-elf");
+	default:
+		StopInternal();
+	end:select
+
+	strcat(@Text,"  ");
+
+
+	nText = strlen(@Text);
+	pText = 0;
+	CurrentFileInfo.Line = 1;
+	CurrentFileInfo.Col  = 1;
+	@CurrentFileInfo.Name = NULL;
+	BeforeFirstFile = 1;
+
+	pLoop = nNODE;
+
 end
 
 /*****************************************************************************/

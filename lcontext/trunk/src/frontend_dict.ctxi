@@ -154,3 +154,37 @@ word DictDupLiteral(word D1)
 end
 
 /*****************************************************************************/
+
+void DefineWord(char @Name; word Value)
+	if Find(@Name) < nDict then
+		StopInternal();
+	end
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	Dict[D].Class = cLITERAL;
+	Dict[D].RO = 1;
+	Dict[D].nPtr = 0;
+	Dict[D].pType = st_word;
+	Dict[D].Value = Value;
+end
+
+/*****************************************************************************/
+
+void DefineString(char @Name; char @Value)
+	if Find(@Name) < nDict then
+		StopInternal();
+	end
+
+	word i = strlen(@Value) + 1;
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	Dict[D].Class = cLITERAL;
+	Dict[D].RO = 1;
+	Dict[D].nPtr = 1;
+	Dict[D].pType = st_char;
+	Dict[D].pIndx = SaveString(@Value, i);
+	Dict[D].nIndx = Dict[D].pIndx + i;
+end
+
