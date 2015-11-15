@@ -1,6 +1,12 @@
 
 /*****************************************************************************/
 
+struct SOURCELOCATION
+	char@ Name;
+	word  Line;
+	word  Column;
+end
+
 struct LABEL             // Ссылка
 	word   Name;         // Имя ссылки
 	word   Value;        // Значение

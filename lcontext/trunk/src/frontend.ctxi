@@ -1,12 +1,9 @@
 
 /*****************************************************************************/
 
-include "frontend_msg.ctxi"
 include "frontend_charid.ctxi"
-include "frontend_chardata.ctxi"
 include "frontend_dict.ctxi"
 include "frontend_node.ctxi"
-include "frontend_input.ctxi"
 include "frontend_lex.ctxi"
 
 /*****************************************************************************/
