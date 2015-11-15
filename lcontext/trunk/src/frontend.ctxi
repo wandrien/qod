@@ -159,7 +159,7 @@ void InitFrontEnd()
 	nText = strlen(@Text);
 	pText = 0;
 	CurrentFileInfo.Line = 1;
-	CurrentFileInfo.Col  = 1;
+	CurrentFileInfo.Column = 1;
 	@CurrentFileInfo.Name = NULL;
 	BeforeFirstFile = 1;
 

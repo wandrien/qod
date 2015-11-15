@@ -11,7 +11,7 @@ struct FILE
 	word     hText;     // Описатель файла
 	word     nText;     // Длина блока
 	word     pText;     // Текущая позиция
-	FILEINFO Info;
+	SOURCELOCATION Info;
 end
 
 /*****************************************************************************/
@@ -109,7 +109,7 @@ char Read()
 			ShowParseProgress(0);
 		end
 
-		CurrentFileInfo.Col = 1;
+		CurrentFileInfo.Column = 1;
 		inc CurrentFileInfo.Line;
 	end
 
@@ -131,7 +131,7 @@ void Next()
 	AlreadyOnNext = 1;
 
 	when BeforeFirstFile = 0:
-		inc CurrentFileInfo.Col;
+		inc CurrentFileInfo.Column;
 
 	inc pText;
 
@@ -149,7 +149,7 @@ void OpenInputFile(char @FileName)
 
 	@CurrentFileInfo.Name = @Char[SaveString0(@FileName)];
 	CurrentFileInfo.Line = 1;
-	CurrentFileInfo.Col  = 1;
+	CurrentFileInfo.Column = 1;
 end
 
 /*****************************************************************************/

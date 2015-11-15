@@ -1,17 +1,17 @@
 
 /*****************************************************************************/
 
-struct FILEINFO
+struct SOURCELOCATION
 	char@ Name;
 	word  Line;
-	word  Col;
+	word  Column;
 end
 
 /*****************************************************************************/
 
 /* Информация о текущем файле. */
 
-FILEINFO CurrentFileInfo;
+SOURCELOCATION CurrentFileInfo;
 
 /*****************************************************************************/
 
@@ -40,7 +40,7 @@ void Warn(char @Msg)
 		@Msg,
 		@CurrentFileInfo.Name,
 		CurrentFileInfo.Line,
-		CurrentFileInfo.Col
+		CurrentFileInfo.Column
 	);
 end
 
@@ -59,7 +59,7 @@ void Stop(char @Msg)
 		@Msg,
 		@CurrentFileInfo.Name,
 		CurrentFileInfo.Line,
-		CurrentFileInfo.Col
+		CurrentFileInfo.Column
 	);
 end
 
