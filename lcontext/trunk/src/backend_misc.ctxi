@@ -70,6 +70,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iCHAR   , "iCHAR"   );
 	InitIDDesc1(iWORD   , "iWORD"   );
 	InitIDDesc1(iINT    , "iINT"    );
+	InitIDDesc1(iBOOL   , "iBOOL"   );
 	InitIDDesc2(iFUNC   , "iFUNC"   , vcDict, 0);
 	InitIDDesc1(iSTRING , "iSTRING" );
 	InitIDDesc2(iDATA   , "iDATA"   , vcDict, 0);

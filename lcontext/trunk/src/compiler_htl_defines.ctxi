@@ -108,7 +108,9 @@ define  iCASE       54 // ветка select или switch
 define  iVALUE      55 //
 define  iDEFAULT    56 //
 
-define  iID_COUNT   57
+define  iBOOL       57
+
+define  iID_COUNT   58
 
 /*****************************************************************************/
 

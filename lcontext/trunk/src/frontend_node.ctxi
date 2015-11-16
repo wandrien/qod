@@ -82,3 +82,33 @@ void NodeSetDict(word P; word D)
 end
 
 /*****************************************************************************/
+
+word NodeTypeIs(word P; word T)
+	when P >= nNode:
+		StopInternal();
+	when Node[P].nPtr = 0 & Node[P].pType = T:
+		return 1;
+	return 0;
+end
+
+/*****************************************************************************/
+
+word NodeTypeIsPointerTo(word P; word T)
+	when P >= nNode:
+		StopInternal();
+	when Node[P].nPtr = 1 & Node[P].pType = T:
+		return 1;
+	return 0;
+end
+
+/*****************************************************************************/
+
+word NodeTypeIsPointer(word P)
+	when P >= nNode:
+		StopInternal();
+	when Node[P].nPtr > 0:
+		return 1;
+	return 0;
+end
+
+/*****************************************************************************/

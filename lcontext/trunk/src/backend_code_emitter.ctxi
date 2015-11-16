@@ -574,10 +574,32 @@ word Code(word P; word F; word T; word M)
 
 	Buff[0] = #0;
 
+	when M != 0: /* M может быть установлено только когда F или T установлены */
+		when T = 0 & F = 0:
+			StopInternal();
+
+	when T != 0 & F != 0: /* T и F не могут быть установлены в не 0 одновременно. */
+		StopInternal();
+
+	when T != 0 | F != 0: /* T и F имеют смысл только для булевых вычислений. */
+		when NodeTypeIs(P, st_bool) = 0:
+			StopInternal();
+
 	switch Node[P].ID of
 	case iNULL:
 		Emit_Load_Constant(fEAX, 4, 0);
 		return nDICT;
+
+	case iBOOL:
+		select
+		case T = 0 & F = 0:
+			Emit_Load_Constant(fEAX, 4, Node[P].Value);
+		case Node[P].Value = 0 & F != 0:
+			EmitJumpToLabel(F);
+		case Node[P].Value != 0 & T != 0:
+			EmitJumpToLabel(T);
+		end:select
+		return st_bool;
 
 	case iCHAR:
 		Emit_Load_Constant(fEAX, 1, Node[P].Value);

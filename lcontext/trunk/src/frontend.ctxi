@@ -122,6 +122,8 @@ void InitFrontEnd()
 	Word("switch");
 	Word("of");
 	Word("when");
+	Word("false");
+	Word("true");
 
 	st_void = Base("void", 0);
 	st_char = Base("char", 1);

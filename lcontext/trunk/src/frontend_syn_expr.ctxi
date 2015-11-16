@@ -275,6 +275,8 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		Node[P1].Value = val (@Buff);
 		pType          = st_word;
 		nPtr           = 0;
+		Node[P1].pType = pType;
+		Node[P1].nPtr  = nPtr;
 		Scan(@Buff);
 		return P1;
 	end
@@ -797,6 +799,9 @@ word Expr1(word P1; word O; word @pType, @nPtr; char @Buff)
 		Cast2(@P1, @pType, @nPtr, @P2, @pType2, @nPtr2, @ID, @Buff);
 	end:if
 
+	Node[P2].pType = pType;
+	Node[P2].nPtr  = nPtr;
+
 	return P2;
 end
 
@@ -844,20 +849,44 @@ word ExprLitChar(word P_; word O; word @pType, @nPtr; char @Buff)
 		StopInternal();
 	end:select
 
+	Node[P1].pType = pType;
+	Node[P1].nPtr  = nPtr;
+
 	Scan(@Buff);
 
 	return P1;
 end
 
 word ExprLitNULL(word P_; word O; word @pType, @nPtr; char @Buff)
-
 	word P1=Peek();
 	Node[P1].ID = iNULL;
+	Node[P1].pType = st_void;
+	Node[P1].nPtr = 1;
 	pType       = st_void;
 	nPtr        = 1;
-
 	Scan(@Buff);
+	return P1;
+end
 
+word ExprLitFALSE(word P_; word O; word @pType, @nPtr; char @Buff)
+	word P1 = Peek();
+	Node[P1].ID    = iBOOL;
+	Node[P1].Value = 0;
+	Node[P1].pType = st_bool;
+	pType          = st_bool;
+	nPtr           = 0;
+	Scan(@Buff);
+	return P1;
+end
+
+word ExprLitTRUE(word P_; word O; word @pType, @nPtr; char @Buff)
+	word P1 = Peek();
+	Node[P1].ID    = iBOOL;
+	Node[P1].Value = 1;
+	Node[P1].pType = st_bool;
+	pType          = st_bool;
+	nPtr           = 0;
+	Scan(@Buff);
 	return P1;
 end
 
@@ -879,13 +908,16 @@ word ExprNOT(word P_; word O; word @pType, @nPtr; char @Buff)
 		Node[P1].ID    =iNOT;
 		Node[P1].pLeft = P2;
 
-	case pType>=nDICT:
+	case pType = st_bool:
 		Not(P2);
 		P1= P2;
 
 	default:
 		Stop(@eTYPE);
-      end
+	end:select
+
+	Node[P1].pType = pType;
+	Node[P1].nPtr  = nPtr;
 
 	return P1;
 end
@@ -900,7 +932,7 @@ word ExprNEG(word P_; word O; word @pType, @nPtr; char @Buff)
 	Node[P1].ID    = iNEG;
 	Node[P1].pLeft = _Expr(Operator[O].Prio,@pType,@nPtr,@Scan(@Buff));
 
-      select
+	select
 	case Node[Node[P1].pLeft].ID=iWORD:
 		if Node[Node[P1].pLeft].Value>0x80000000 then
 			Stop(@eCALCERR);
@@ -925,6 +957,9 @@ word ExprNEG(word P_; word O; word @pType, @nPtr; char @Buff)
 		Test(st_int,0,pType,nPtr,@Node[P1].pLeft);
 		pType         = st_int;
 	end:select
+
+	Node[P1].pType = pType;
+	Node[P1].nPtr  = nPtr;
 
 	return P1;
 
@@ -957,10 +992,13 @@ void RegisterOperators()
 
 	RegisterOperator("("   , pEXPR , OPERATOR_UPRE , 0   , @Expr2);
 
-	RegisterOperator("'"   , pCONST, OPERATOR_UPRE , iCHAR, @ExprLitChar);
-	RegisterOperator("#"   , pCONST, OPERATOR_UPRE , iCHAR, @ExprLitChar);
-	RegisterOperator("NULL", pCONST, OPERATOR_UPRE , iNULL, @ExprLitNULL);
-
+	RegisterOperator("'"    , pCONST, OPERATOR_UPRE , iCHAR, @ExprLitChar);
+	RegisterOperator("#"    , pCONST, OPERATOR_UPRE , iCHAR, @ExprLitChar);
+	RegisterOperator("NULL" , pCONST, OPERATOR_UPRE , iNULL, @ExprLitNULL);
+	RegisterOperator("false", pCONST, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
+//	RegisterOperator("FALSE", pCONST, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
+	RegisterOperator("true" , pCONST, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);
+//	RegisterOperator("TRUE" , pCONST, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);
 end
 
 /*****************************************************************************/
