@@ -104,6 +104,13 @@ void Translate()
 
 	OpenOutput(@OutputFile);
 
+	word OutputTreeFile_Done = 0;
+	if @OutputTreeFile != NULL & strcmp(@OutputFile, @OutputTreeFile) = 0 then
+		OutputTreeFile_Done = 1;
+		OutputFunctionTrees();
+		EmitInternalsInfo();
+	end:if
+
 	/* Заголовок. */
 
 	select
@@ -133,13 +140,6 @@ void Translate()
 
 	EmitNL();
 	Emit(@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
-
-	word OutputTreeFile_Done = 0;
-	if @OutputTreeFile != NULL & strcmp(@OutputFile, @OutputTreeFile) = 0 then
-		OutputTreeFile_Done = 1;
-		OutputFunctionTrees();
-		EmitInternalsInfo();
-	end:if
 
 	CloseOutput();
 
