@@ -100,12 +100,33 @@ void Translate()
 	when WarnUnusedGlobals != 0:
 		DoWarnUnusedGlobals();
 
+	word OutputTreeFile_Done = 0;
+
+	if OutputTreeFile_Done = 0
+	 & @OutputTreeFile != NULL
+	 & strlen(@OutputTreeFile) != 0
+	 & strcmp(@OutputFile, @OutputTreeFile) != 0 then
+		OutputTreeFile_Done = 1;
+		OpenOutput(@OutputTreeFile);
+		OutputFunctionTrees();
+		EmitInternalsInfo();
+		CloseOutput();
+	end:if
+
+	if @OutputIncludeListFile != NULL & strlen(@OutputIncludeListFile) != 0 then
+		OpenOutput(@OutputIncludeListFile);
+		OutputIncludeList();
+		CloseOutput();
+	end:if
+
 	/* Генерация кода *****************************/
 
 	OpenOutput(@OutputFile);
 
-	word OutputTreeFile_Done = 0;
-	if @OutputTreeFile != NULL & strcmp(@OutputFile, @OutputTreeFile) = 0 then
+	if OutputTreeFile_Done = 0
+	 & @OutputTreeFile != NULL
+	 & strlen(@OutputTreeFile) != 0
+	 & strcmp(@OutputFile, @OutputTreeFile) = 0 then
 		OutputTreeFile_Done = 1;
 		OutputFunctionTrees();
 		EmitInternalsInfo();
@@ -142,19 +163,6 @@ void Translate()
 	Emit(@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
 
 	CloseOutput();
-
-	if OutputTreeFile_Done = 0 & @OutputTreeFile != NULL & strlen(@OutputTreeFile) != 0 then
-		OpenOutput(@OutputTreeFile);
-		OutputFunctionTrees();
-		EmitInternalsInfo();
-		CloseOutput();
-	end:if
-
-	if @OutputIncludeListFile != NULL & strlen(@OutputIncludeListFile) != 0 then
-		OpenOutput(@OutputIncludeListFile);
-		OutputIncludeList();
-		CloseOutput();
-	end:if
 
 	ShowParseProgress(1);
 
