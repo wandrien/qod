@@ -59,6 +59,7 @@ word DictAlloc()
 
 	Dict[r].Used = 0;
 	Dict[r].pType = nDICT;
+	Dict[r].tPtrToMe = nDICT;
 
 	return r;
 
@@ -186,3 +187,54 @@ void DefineString(char @Name; char @Value)
 	Dict[D].nIndx = Dict[D].pIndx + i;
 end
 
+/*****************************************************************************/
+
+word T_PtrTo(word T)
+	when T >= nDict:
+		StopInternal();
+	when Dict[T].Class != cTYPE:
+		StopInternal();
+
+	if Dict[T].tPtrToMe >= nDICT then
+		word PTR = DictAlloc();
+		Dict[PTR].Class = cTYPE;
+		Dict[PTR].Sub   = sPTR;
+		Dict[PTR].Value = 4; /* FIXME */
+		Dict[PTR].pType = T;
+		Dict[T].tPtrToMe = PTR;
+	end
+
+	return Dict[T].tPtrToMe;
+end
+
+/*****************************************************************************/
+
+word T_ArrayGetSize(word T)
+	when T >= nDict:
+		StopInternal();
+	when Dict[T].Class != cTYPE | Dict[T].Sub != sARRAY:
+		StopInternal();
+	return Dict[T].Value;
+end
+
+word T_Array(word T; word S)
+	word P = 0;
+	while P < nDict do
+		if Dict[P].Class = cTYPE
+		 & Dict[P].Sub = sARRAY
+		 & Dict[P].pType = T
+		 & T_ArrayGetSize(P) = S then
+			return P;
+		end:if
+		inc P;
+	end:while
+
+	P = DictAlloc();
+	Dict[P].Class = cTYPE;
+	Dict[P].Sub = sARRAY;
+	Dict[P].pType = T;
+	Dict[P].Value = S;
+	return P;
+end
+
+/*****************************************************************************/

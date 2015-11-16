@@ -30,11 +30,9 @@ define  cFILE        7 // Включаемый файл
 define  sBASE        0 // Базовый тип
 define  sSTRUCT      1 // Стpуктуpа
 define  sHEADER      2 // Заголовок функции
-/*
-define  sCONST       3 // Константный подтип типа
-define  sREF         4 // Ссылка
+//define  sCONST       3 // Константный подтип типа
+define  sPTR         4 // Указатель
 define  sARRAY       5 // Массив
-*/
 
 /*****************************************************************************/
 
