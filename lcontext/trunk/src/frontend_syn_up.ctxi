@@ -30,28 +30,24 @@ end
 
 void DeclStruct(char @Buff)
 
-        word pType=Find(@Scan(@Buff));
-        if pType<nDict then
+        word pType1 = Find(@Scan(@Buff));
+        if pType1 < nDict then
           Stop(@eDUPLICATE);
         end
 
-        word p = DictAlloc();
-        DictSetName(p, @Buff);
-        Dict[p]. Class=cTYPE;
-        Dict[p]. Sub  =sSTRUCT;
-        Dict[p].pIndx =nParm;
+        word pStruct = DictAlloc();
+        DictSetName(pStruct, @Buff);
+        Dict[pStruct].Class = cTYPE;
+        Dict[pStruct].Sub = sSTRUCT;
 
         if strcmp(@Scan(@Buff),";")=0 then
           Stop(@eNOTAVAIL);
         end
 
-        word pParm=nParm;
         do
-          pType=Find(@Buff);
-          if   pType>=nDict then
-            if strcmp(@Buff,@DictGetName(p))!=0 then
-              Stop(@eTYPEEXP);
-            end
+          word pType = Find(@Buff);
+          if pType >= nDict then
+            Stop(@eTYPEEXP);
           else
             if Dict[pType].Class!=cTYPE then
               Stop(@eTYPEEXP);
@@ -68,7 +64,7 @@ void DeclStruct(char @Buff)
               Stop(@eNOVOID);
             end
 
-            if pType=p & nPtr<1 then
+            if pType=pStruct & nPtr<1 then
               Stop(@eNODATA);
             end
 
@@ -76,25 +72,18 @@ void DeclStruct(char @Buff)
               Stop(@eNOVAL);
             end
 
-            word  I=pParm; // I=pParm;
-            while I<nParm do
-              if strcmp(@ParmGetName(I),@Buff)=0 then
-                Stop(@eDUPLICATE);
-              end
+            word F = FindInNamespace(@Buff, pStruct);
+            when F < nDICT:
+              Stop(@eDUPLICATE);
 
-              inc I;
-            end
-
-            if nParm>=nPARM then
-              StopMemory();
-            end
-
-            Parm[nParm].pType=pType;
-            Parm[nParm].Name2=SaveString0(@Buff);
-            Parm[nParm].nPtr =nPtr;
-            Parm[nParm].pIndx=nIndx;
-            Parm[nParm].nIndx= Tabl(@Scan(@Buff));
-            inc  nParm;
+            F = DictAlloc();
+            DictSetName(F, @Buff);
+            Dict[F].Class = cFIELD;
+            Dict[F].pType = pType;
+            Dict[F].nPtr  = nPtr;
+            Dict[F].pIndx = nIndx;
+            Dict[F].nIndx = Tabl(@Scan(@Buff));
+            DictAddToNamespace(F, pStruct);
 
             if strcmp(@Buff,";") =0 then
               Scan(@Buff);
@@ -114,8 +103,6 @@ void DeclStruct(char @Buff)
             exit;
           end
         end
-
-        Dict[p].nIndx=nParm;
 
 end
 

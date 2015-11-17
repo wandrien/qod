@@ -257,35 +257,32 @@ void AssignLabels_Struct()
 	word I=0;
 	while I < nDict do
 		select
-			case Dict[I].Class = cTYPE & Dict[I].Sub = sSTRUCT:
-				word D1 = 0;
-
-				word  K = Dict[I].pIndx;
-				while K < Dict[I].nIndx do
-					Parm[K].Value = D1;
-
-					word D2 = 4;
-					if Parm[K].nPtr = 0 then
-						D2 = Dict[Parm[K].pType].Value;
-					end
-
-					word  N = Parm[K].pIndx;
-					while N < Parm[K].nIndx do
-						D2 = Indx[N] * D2;
-						inc N;
-					end
-
-					D1 = D1 + D2;
-
-					inc K;
+		case Dict[I].Class = cTYPE & Dict[I].Sub = sSTRUCT:
+			word D1 = 0;
+			word P = Dict[I].pFirst;
+			while P < nDICT do
+				when Dict[P].Class != cFIELD:
+					StopInternal();
+				Dict[P].Value = D1;
+				word D2 = 4; // FIXME
+				if Dict[P].nPtr = 0 then
+					D2 = Dict[Dict[P].pType].Value;
 				end
 
-				Dict[I].Value = D1;
-		end
+				word  N = Dict[P].pIndx;
+				while N < Dict[P].nIndx do
+					D2 = Indx[N] * D2;
+					inc N;
+				end
+				D1 = D1 + D2;
 
+				P = Dict[P].pNext;
+			end:while
+
+			Dict[I].Value = D1;
+		end:select
 		inc I;
-	end
-
+	end:while
 end
 
 

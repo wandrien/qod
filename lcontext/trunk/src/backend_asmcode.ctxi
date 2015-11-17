@@ -173,14 +173,17 @@ end
 
 void CodeData_FIELD(word @P1, @pType, @nPtr, @ID, @Ofs)
 
-	word p = Node[P1].Value;
+	word F = Node[P1].Value;
 
-	pType = Parm[p].pType;
-	nPtr  = Parm[p].nPtr;
+	when Dict[F].Class != cFIELD:
+		StopInternal();
+
+	pType = Dict[F].pType;
+	nPtr  = Dict[F].nPtr;
 	if ID != iLOCAL then
-		Ofs = Ofs + Parm[p].Value;
+		Ofs = Ofs + Dict[F].Value;
 	else
-		Ofs = Ofs - Parm[p].Value;
+		Ofs = Ofs - Dict[F].Value;
 	end
 end
 

@@ -577,26 +577,19 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 			Scan(@Buff);
 
-			word I=Dict[pType].pIndx;
-			do
-				if I>=Dict[pType].nIndx then
-					Stop(@eUNDEFINED);
-				end:if
-
-				if strcmp(@ParmGetName(I),@Buff)=0 then
-					exit;
-				end:if
-
-				inc I;
-			end:do
+			word F = FindInNamespace(@Buff, pType);
+			when F >= nDICT:
+				Stop(@eUNDEFINED);
+			when Dict[F].Class != cFIELD:
+				StopInternal();
 
 			word P3=Peek();
 			Node[P3].ID   =iFIELD;
-			Node[P3].Value= I;
-			pType         = Parm[I].pType;
-			nPtr1         = Parm[I].nPtr;
-			pIndx         = Parm[I].pIndx;
-			nIndx         = Parm[I].nIndx;
+			Node[P3].Value= F;
+			pType         = Dict[F].pType;
+			nPtr1         = Dict[F].nPtr;
+			pIndx         = Dict[F].pIndx;
+			nIndx         = Dict[F].nIndx;
 			Call          = 0;
 
 			P2 = P3;

@@ -105,7 +105,7 @@ void InitializeIDDesc()
 	InitIDDesc2(iCALL2  , "iCALL2"  , vcDict, 0);
 	InitIDDesc1(iINDEX  , "iINDEX"  );
 	InitIDDesc1(iADDR   , "iADDR"   );
-	InitIDDesc2(iFIELD  , "iFIELD"  , vcParm, 0);
+	InitIDDesc2(iFIELD  , "iFIELD"  , vcDict, 0);
 	InitIDDesc1(iLOAD   , "iLOAD"   );
 	InitIDDesc1(iLPTR   , "iLPTR"   );
 

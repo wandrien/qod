@@ -60,29 +60,66 @@ word DictAlloc()
 	Dict[r].Used = 0;
 	Dict[r].pType = nDICT;
 	Dict[r].tPtrToMe = nDICT;
+	Dict[r].pNamespace = nDICT;
+	Dict[r].pNext = nDICT;
+	Dict[r].pFirst = nDICT;
+	Dict[r].pLast = nDICT;
 
 	return r;
-
 end
 
 /*****************************************************************************/
 
 /*
-	Поиск объекта в словаре по имени.
+	Поиск объекта в заданном пространстве по имени.
+	(Кроме объектов класса cFILE.)
+*/
+word FindInNamespace(char @Name; word pNamespace)
+	when pNamespace >= nDict:
+		StopInternal();
+
+	word hash = str_hash(@Name);
+	word P = Dict[pNamespace].pFirst;
+	while P < nDict do
+		when Dict[P].pNamespace != pNamespace:
+			StopInternal();
+		if Dict[P].NameHash = hash
+		&  strcmp(@DictGetName(P), @Name) = 0
+		&  Dict[P].Class != cFILE then
+			while Dict[P].Class = cNAME do
+				P = Dict[P].pType;
+				when P >= nDict:
+					StopInternal();
+			end
+			exit;
+		end
+		P = Dict[P].pNext;
+	end
+
+	return P;
+end
+
+/*****************************************************************************/
+
+/*
+	Поиск объекта в корневом пространстве по имени.
 	(Кроме объектов класса cFILE.)
 */
 word Find(char @Name)
 	word hash = str_hash(@Name);
 	word P = 0;
 	while P < nDict do
-		if Dict[P].NameHash = hash & strcmp(@DictGetName(P), @Name) = 0 & Dict[P].Class != cFILE then
+		if Dict[P].NameHash = hash
+		&  strcmp(@DictGetName(P), @Name) = 0
+		&  Dict[P].Class != cFILE
+		&  Dict[P].pNamespace = nDICT then
 			while Dict[P].Class = cNAME do
 				P = Dict[P].pType;
+				when P >= nDict:
+					StopInternal();
 			end
-
 			exit;
 		end
-
 		inc P;
 	end
 
@@ -92,20 +129,48 @@ end
 /*****************************************************************************/
 
 /*
-	Поиск объекта с классом cFILE в словаре по имени.
+	Поиск объекта с классом cFILE в корневом пространстве имён по имени.
 */
 word Find_cFILE(char @Name)
 	word hash = str_hash(@Name);
 	word  P = 0;
 	while P < nDict do
-		if Dict[P].NameHash = hash & strcmp(@DictGetName(P), @Name) = 0 & Dict[P].Class = cFILE then
+		if Dict[P].NameHash = hash
+		&  strcmp(@DictGetName(P), @Name) = 0
+		&  Dict[P].Class = cFILE
+		&  Dict[P].pNamespace = nDICT then
 			exit;
 		end
-
 		inc P;
 	end
 
 	return P;
+end
+
+/*****************************************************************************/
+
+word DictAddToNamespace(word P; word pNamespace)
+	when P >= nDict:
+		StopInternal();
+	when pNamespace >= nDict:
+		StopInternal();
+	when Dict[P].pNamespace != nDICT:
+		StopInternal();
+	when Dict[P].pNext != nDICT:
+		StopInternal();
+	when Dict[pNamespace].pFirst != nDICT & Dict[pNamespace].pLast = nDICT:
+		StopInternal();
+	when Dict[pNamespace].pFirst = nDICT & Dict[pNamespace].pLast != nDICT:
+		StopInternal();
+
+	Dict[P].pNamespace = pNamespace;
+	if Dict[pNamespace].pLast < nDICT then
+		Dict[Dict[pNamespace].pLast].pNext = P;
+		Dict[pNamespace].pLast = P;
+	else
+		Dict[pNamespace].pFirst = P;
+		Dict[pNamespace].pLast = P;
+	end:if
 end
 
 /*****************************************************************************/
