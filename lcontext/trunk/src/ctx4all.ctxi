@@ -10,6 +10,7 @@ include "compiler_config.ctxi"
 include "compiler_msg.ctxi"
 include "compiler_chardata.ctxi"
 include "compiler_input.ctxi"
+include "compiler_dict.ctxi"
 
 include "frontend_config.ctxi"
 include "backend_config.ctxi"

@@ -2,7 +2,6 @@
 /*****************************************************************************/
 
 include "frontend_charid.ctxi"
-include "frontend_dict.ctxi"
 include "frontend_node.ctxi"
 include "frontend_lex.ctxi"
 
