@@ -264,15 +264,7 @@ void AssignLabels_Struct()
 				when Dict[P].Class != cFIELD:
 					StopInternal();
 				Dict[P].Value = D1;
-				word D2 = 4; // FIXME
-				if Dict[P].nPtr = 0 then
-					D2 = Dict[Dict[P].pType].Value;
-				end
-
-				if Dict[P].nIndx > 0 then
-					D2 = Dict[P].nIndx * D2;
-				end
-				D1 = D1 + D2;
+				D1 = D1 + SizeOfType(Dict[P].pType, Dict[P].nPtr, Dict[P].nIndx);
 
 				P = Dict[P].pNext;
 			end:while

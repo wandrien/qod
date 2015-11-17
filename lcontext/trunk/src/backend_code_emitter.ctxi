@@ -1053,12 +1053,7 @@ word EmitFunctions(char @Buff)
 				word pARG = Dict[pARGS].pFirst;
 				while pARG < nDICT do
 					Dict[pARG].Value = S1 + 8;
-					if Dict[pARG].nPtr = 0 then
-						S1 = S1 + DefaultInStackAlign(Dict[Dict[pARG].pType].Value);
-					else
-						S1 = S1 + 4; // FIXME
-					end
-
+					S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, Dict[pARG].nPtr, Dict[pARG].nIndx));
 					pARG = Dict[pARG].pNext;
 				end:while
 
