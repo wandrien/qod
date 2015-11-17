@@ -71,11 +71,13 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO)
 			RO    = 0;
 
 		case ID = iPARM:
-			pType = Parm[Node[P].Value].pType;
-			nPtr  = Parm[Node[P].Value].nPtr;
-			pIndx = Parm[Node[P].Value].pIndx;
-			nIndx = Parm[Node[P].Value].nIndx;
-			Ofs   = Parm[Node[P].Value].Value;
+			when Dict[Node[P].Value].Class != cARG:
+				StopInternal();
+			pType = Dict[Node[P].Value].pType;
+			nPtr  = Dict[Node[P].Value].nPtr;
+			pIndx = Dict[Node[P].Value].pIndx;
+			nIndx = Dict[Node[P].Value].nIndx;
+			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
 
 		case ID = iLOCAL:

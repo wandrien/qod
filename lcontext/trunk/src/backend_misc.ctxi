@@ -24,7 +24,6 @@ void EmitInternalsInfo()
 
 	EmitNL();
 	EmitUsageInfo("Dict", nDict, nDICT);
-	EmitUsageInfo("Parm", nParm, nPARM);
 	EmitUsageInfo("Char", CharDataUsed(), CharDataTotal());
 	EmitUsageInfo("Node", nNode, nNODE);
 	EmitUsageInfo("Label", nLabel, nLABEL);
@@ -34,8 +33,8 @@ end
 
 
 define vcNone 0;
-define vcParm 1;
 define vcDict 2;
+
 struct ID_DESC
 	char @Name;
 	word ValueClass;
@@ -74,7 +73,7 @@ void InitializeIDDesc()
 	InitIDDesc2(iFUNC   , "iFUNC"   , vcDict, 0);
 	InitIDDesc1(iSTRING , "iSTRING" );
 	InitIDDesc2(iDATA   , "iDATA"   , vcDict, 0);
-	InitIDDesc2(iPARM   , "iPARM"   , vcParm, 0);
+	InitIDDesc2(iPARM   , "iPARM"   , vcDict, 0);
 	InitIDDesc1(iLOCAL  , "iLOCAL"  );
 	InitIDDesc1(iREF    , "iREF"    );
 
@@ -158,8 +157,6 @@ end
 void OutputNodeValue(word P)
 	char @N;
 	select
-		case IDDesc[Node[P].ID].ValueClass = vcParm:
-			@N = @ParmGetName(Node[P].Value);
 		case IDDesc[Node[P].ID].ValueClass = vcDict:
 			@N = @DictGetName(Node[P].Value);
 		default:

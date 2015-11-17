@@ -1049,16 +1049,19 @@ word EmitFunctions(char @Buff)
 
 				word S1 = 0;
 
-				word K = Dict[I].pIndx;
-				while K < Dict[I].nIndx do
-					Parm[K].Value = S1 + 8;
-					if Parm[K].nPtr = 0 then
-						S1 = S1 + DefaultInStackAlign(Dict[Parm[K].pType].Value);
+				word pARGS = FindInNamespace("args", I);
+				when pARGS >= nDICT:
+					StopInternal();
+				word pARG = Dict[pARGS].pFirst;
+				while pARG < nDICT do
+					Dict[pARG].Value = S1 + 8;
+					if Dict[pARG].nPtr = 0 then
+						S1 = S1 + DefaultInStackAlign(Dict[Dict[pARG].pType].Value);
 					else
-						S1 = S1 + 4;
+						S1 = S1 + 4; // FIXME
 					end
 
-					inc K;
+					pARG = Dict[pARG].pNext;
 				end:while
 
 				PHO_InvalidateRegs();

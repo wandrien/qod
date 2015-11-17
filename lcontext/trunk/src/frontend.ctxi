@@ -69,7 +69,6 @@ void InitFrontEnd()
 	InitOperator();
 
 	nDict = 0;
-	nParm = 0;
 	nLocal = 0;
 	nIndx = 0;
 	nNode = 0;

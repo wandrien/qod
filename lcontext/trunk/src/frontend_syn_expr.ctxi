@@ -142,67 +142,51 @@ end
 
 /*****************************************************************************/
 
-word     List(char @Buff)
-  word  P=nParm;
-  while strcmp(@Buff,")")!=0 do
-    word pType=Find(@Buff);
-    if   pType>=nDict | Dict[pType].Class!=cTYPE then
-      Stop(@eTYPEEXP);
-    end
-
-    do
-      Scan(@Buff);
-      word  nPtr=ReadPtrs(@Buff);
-
-      if pType=st_void & nPtr<1 then
-        Stop(@eNOVOID);
-      end
-
-      if Dict[pType].Sub=sHEADER & nPtr<1 then
-        Stop(@eNOVAL);
-      end
-
-      word  I=P;
-      while I<nParm do
-        if strcmp(@ParmGetName(I),@Buff)=0 then
-          Stop(@eDUPLICATE);
-        end
-
-        inc I;
-      end
-
-      if nParm>=nPARM then
-        StopMemory();
-      end
-
-      Parm[nParm].pType=pType;
-      Parm[nParm].Name2=SaveString0(@Buff);
-      Parm[nParm].nPtr =nPtr;
-      inc  nParm;
-
-      if strcmp(@Scan(@Buff),",")!=0 then
-        exit;
-      end
-    end
-
-    if strcmp(@Buff,")")!=0 then
-      if strcmp(@Buff,";")!=0 then
-        Stop(@eSEMICOLONEXP);
-      end
-
-      if strcmp(@Scan(@Buff),")")=0 then
-        Stop(@eTYPEEXP);
-      end
-    end
-  end
-
-  return nParm;
-end
-
-
 void FuncArgs(char @Buff; word pFunc)
-	Dict[pFunc].pIndx = nParm;
-	Dict[pFunc].nIndx = List(@Scan(@Buff));
+	word pARGS = DictAlloc();
+	DictSetName(pARGS, "args");
+	Dict[pARGS].Class = cARGS;
+	DictAddToNamespace(pARGS, pFunc);
+
+	Scan(@Buff);
+	while strcmp(@Buff,")")!=0 do
+		word pType = Find(@Buff);
+		when pType >= nDICT | Dict[pType].Class != cTYPE:
+			Stop(@eTYPEEXP);
+
+		do
+			Scan(@Buff);
+			word  nPtr=ReadPtrs(@Buff);
+
+			when pType=st_void & nPtr<1:
+				Stop(@eNOVOID);
+			when Dict[pType].Sub=sHEADER & nPtr<1:
+				Stop(@eNOVAL);
+
+			word pARG = FindInNamespace(@Buff, pARGS);
+			when pARG < nDICT:
+				Stop(@eDUPLICATE);
+
+			pARG = DictAlloc();
+			DictSetName(pARG, @Buff);
+			Dict[pARG].Class = cARG;
+			Dict[pARG].pType = pType;
+			Dict[pARG].nPtr  = nPtr;
+			DictAddToNamespace(pARG, pARGS);
+
+			when strcmp(@Scan(@Buff),",")!=0:
+				exit;
+		end
+
+		if strcmp(@Buff,")")!=0 then
+			when strcmp(@Buff,";")!=0:
+				Stop(@eSEMICOLONEXP);
+			when strcmp(@Scan(@Buff),")")=0:
+				Stop(@eTYPEEXP);
+		end
+
+	end:while
+
 end
 
 /*****************************************************************************/
@@ -236,32 +220,35 @@ end
 
 /*****************************************************************************/
 
-void ParseCallArgs(word pType; word @P7; char @Buff)
-	word  pParm=Dict[pType].pIndx;
-	while pParm<Dict[pType].nIndx do
+void ParseCallArgs(word pFunc; word @P7; char @Buff)
+	word pARGS = FindInNamespace("args", pFunc);
+	when pARGS >= nDICT:
+		StopInternal();
+	word pARG = Dict[pARGS].pFirst;
+
+	while pARG < nDICT do
 		word pType2, nPtr2;
 		word P8=Peek();
 		Node[P8].ID   =iPUSH;
 		Node[P8].pLeft=_Expr(pZERO,@pType2,@nPtr2,@Buff);
 
-		Test(Parm[pParm].pType,Parm[pParm].nPtr,pType2,nPtr2,@Node[P8].pLeft);
+		Test(Dict[pARG].pType,Dict[pARG].nPtr,pType2,nPtr2,@Node[P8].pLeft);
 
 		P7 = P8;
 		@P7=@Node[P8].pRight;
 
-		inc pParm;
-		if  pParm<Dict[pType].nIndx then
-			if strcmp(@Buff,",")!=0 then
-				Stop(@eCOMMAEXP);
-			end:if
+		pARG = Dict[pARG].pNext;
 
+		if  pARG < nDICT then
+			when strcmp(@Buff,",")!=0:
+				Stop(@eCOMMAEXP);
 			Scan(@Buff);
 		end:if
+
 	end:while
 
-	if strcmp(@Buff,")")!=0 then
+	when strcmp(@Buff,")")!=0:
 		Stop(@eBRACKETEXP);
-	end:if
 
 end
 
@@ -320,12 +307,12 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 	if Flag=0 then /* Это параметр функции? */
 		word I = ResolveParm(@Buff);
-		if I < nPARM then
+		if I < nDICT then
 			P1=Peek();
 			Node[P1].ID    =iPARM;
 			Node[P1].Value = I;
-			pType          = Parm[I].pType;
-			nPtr1          = Parm[I].nPtr;
+			pType          = Dict[I].pType;
+			nPtr1          = Dict[I].nPtr;
 			Flag           = 1;
 		end:if
 	end:if

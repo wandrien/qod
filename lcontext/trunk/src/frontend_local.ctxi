@@ -5,14 +5,6 @@ char @LocalGetName(word I)
 	return @Char[Local[I].Name2];
 end
 
-
-char @ParmGetName(word I)
-	when I >= nParm:
-		StopInternal();
-	return @Char[Parm[I].Name2];
-end
-
-
 word ResolveLocal(char @Name)
 	word  I=0;
 	while I<nLocal do
@@ -25,12 +17,9 @@ end
 
 
 word ResolveParm(char @Name)
-	word I=Dict[pFunc].pIndx;
-	while I<Dict[pFunc].nIndx do
-		when strcmp(@ParmGetName(I),@Name)=0:
-			return I;
-		inc I;
-	end:while
-	return nPARM;
+	word pARGS = FindInNamespace("args", pFunc);
+	when pARGS >= nDICT:
+		StopInternal();
+	return FindInNamespace(@Name, pARGS);
 end
 

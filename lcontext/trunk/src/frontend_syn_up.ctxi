@@ -17,8 +17,11 @@ void DeclMainFunc(char@ Buff)
 	Dict[p].Sub   = sMAIN;
 	Dict[p].pType = st_void;
 	Dict[p].nPtr  = 0;
-	Dict[p].pIndx = nParm;
-	Dict[p].nIndx = nParm;
+
+	word pARGS = DictAlloc();
+	DictSetName(pARGS, "args");
+	Dict[pARGS].Class = cARGS;
+	DictAddToNamespace(pARGS, p);
 
 	Scan(@Buff);
 	Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);

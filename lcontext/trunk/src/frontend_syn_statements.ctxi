@@ -484,7 +484,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Stop(@eDUPLICATE);
 
 		I = ResolveParm(@Buff);
-		when I < nPARM:
+		when I < nDICT:
 			Stop(@eDUPLICATE);
 
 		if nLocal>=nLOCAL then
