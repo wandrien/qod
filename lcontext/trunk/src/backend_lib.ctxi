@@ -26,27 +26,21 @@ end
 
 /*****************************************************************************/
 
-word SizeOfType(word pType; word nPtr)
+word SizeOfType(word pType; word nPtr; word nIndx)
 
+	word S = 0;
 	if nPtr = 0 then
-		if Dict[pType].Class != cTYPE then
+		when Dict[pType].Class != cTYPE:
 			StopInternal();
-		end
-		return Dict[pType].Value;
+		S = Dict[pType].Value;
+	else
+		S = PointerSize;
 	end
 
-	return PointerSize;
-end
-
-/*****************************************************************************/
-
-word GetVarSize(word pType; word nPtr; word nIndx)
-	word Size = SizeOfType(pType, nPtr);
-
 	when nIndx > 0:
-		Size = nIndx * Size;
+		S = nIndx * S;
 
-	return Size;
+	return S;
 end
 
 /*****************************************************************************/

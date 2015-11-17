@@ -69,7 +69,6 @@ word Code1(word P)
 	end
 
 	word nIndx;
-
 	word pType;
 	word nPtr;
 	word  Ofs;
@@ -107,7 +106,7 @@ word Code1(word P)
 				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
 
 			case ID!=iCALL:
-				word Size = SizeOfType(pType, nPtr);
+				word Size = SizeOfType(pType, nPtr, 0);
 
 				select
 				case Size=1:
@@ -170,7 +169,7 @@ word Code1(word P)
 			exit;
 
 		case Node[P1].ID=iLOAD:
-			word Size = SizeOfType(pType, nPtr);
+			word Size = SizeOfType(pType, nPtr, 0);
 
 			select
 			case Size=1:
@@ -407,7 +406,7 @@ word Code1(word P)
 				P1  =Node[P1].pRight;
 			end:do
 
-			word Size = SizeOfType(pType, nPtr);
+			word Size = SizeOfType(pType, nPtr, 0);
 
 			C = C * Size;
 
@@ -456,7 +455,7 @@ word Code1(word P)
 			dec nPtr;
 
 			if Node[P1].pLeft<nNODE then
-				word Size = SizeOfType(pType, nPtr);
+				word Size = SizeOfType(pType, nPtr, 0);
 
 				select
 				case IX=RegB:
@@ -957,7 +956,7 @@ word Code(word P; word F; word T; word M)
 
       word pType = Node[P].Value;
       word nPtr  = Node[Node[P].pLeft].Value;
-      word Size  = SizeOfType(pType, nPtr);
+      word Size  = SizeOfType(pType, nPtr, 0);
 
       AllocatedFrameSize =
           AllocatedFrameSize + DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);

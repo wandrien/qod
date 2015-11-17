@@ -68,7 +68,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 
 			/* FIXME: проверка pIndx >= nIndx не работает для локальных переменных, поскольку компилятор не сохраняет эту информацию >< */
 //			if pIndx >= nIndx & SizeOfType(pType, nPtr) = 4 then
-			if 1 >= 1 & SizeOfType(pType, nPtr) = 4 then
+			if 1 >= 1 & SizeOfType(pType, nPtr, nIndx) = 4 then
 				strcpy(@Buff, "push    dword ");
 				Emit(@CodeDataIX_offset(@Buff, ID, 0, Ofs));
 				return nDICT;

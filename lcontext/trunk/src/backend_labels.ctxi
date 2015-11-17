@@ -237,7 +237,7 @@ word AssignLabels_Data()
 		select
 		case Dict[I].Class = cDATA & Dict[I].Used != 0:
 			Dict[I].Value = D;
-			word Size = GetVarSize(Dict[I].pType, Dict[I].nPtr, Dict[I].nIndx);
+			word Size = SizeOfType(Dict[I].pType, Dict[I].nPtr, Dict[I].nIndx);
 			D = D + DefaultStaticAlign(Size);
 		end:select
 
