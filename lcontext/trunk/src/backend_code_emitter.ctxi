@@ -68,14 +68,13 @@ word Code1(word P)
 		P   =Node[P].pLeft;
 	end
 
-	word pIndx;
 	word nIndx;
 
 	word pType;
 	word nPtr;
 	word  Ofs;
 	word  RO;
-	word ID=ExtractDataInfo(P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO);
+	word ID=ExtractDataInfo(P, @pType, @nPtr, @nIndx, @Ofs, @RO);
 	word IX=RegNone;
 
 	word P1=Node[P].pLeft;

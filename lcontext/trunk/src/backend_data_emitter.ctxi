@@ -182,7 +182,7 @@ void EmitROData()
 		I = 0;
 		while I < nDict do
 			if Dict[I].Class = cLITERAL & Dict[I].RO != 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
-				word len = Dict[I].nIndx - Dict[I].pIndx;
+				word len = Dict[I].nIndx;
 				if next_len < len then
 					next_len = len;
 				end
@@ -203,10 +203,10 @@ void EmitROData()
 		I = 0;
 		while I < nDict do
 			if Dict[I].Class = cLITERAL & Dict[I].RO != 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
-				word len = Dict[I].nIndx - Dict[I].pIndx;
+				word len = Dict[I].nIndx;
 				if len = curr_len | curr_len = -1 then
 					EmitByteReset();
-					Dict[I].Value = EmitRODataFragment(Dict[I].pIndx, len);
+					Dict[I].Value = EmitRODataFragment(Dict[I].Stack, len);
 				end
 				if next_len < len & len < curr_len then
 					next_len = len;
@@ -230,9 +230,7 @@ void AssignStringOffsets()
 	word I = 0;
 	while I < nDict do
 		if Dict[I].Class = cLITERAL & Dict[I].RO = 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
-			word pIndx = Dict[I].pIndx;
-			word nIndx = Dict[I].nIndx;
-			word len = nIndx - pIndx;
+			word len = Dict[I].nIndx;
 			Dict[I].Value = data_len;
 			data_len = data_len + len;
 		end:if
@@ -256,17 +254,16 @@ void EmitSection_Data_Strings(char @Buff)
 	word I = 0;
 	while I < nDict do
 		if Dict[I].Class = cLITERAL & Dict[I].RO = 0 & Dict[I].nPtr > 0 & Dict[I].Used != 0 then
-			word pIndx = Dict[I].pIndx;
-			word nIndx = Dict[I].nIndx;
-			word len = nIndx - pIndx;
+			word len = Dict[I].nIndx;
 			if Dict[I].Value != data_len then
 				StopInternal();
 			end:if
 			data_len = data_len + len;
 			EmitByteReset();
-			while pIndx < nIndx do
-				EmitByte(Char[pIndx]);
-				inc pIndx;
+			word J = 0;
+			while J < len do
+				EmitByte(Char[Dict[I].Stack + J]);
+				inc J;
 			end:while
 		end:if
 		inc I;

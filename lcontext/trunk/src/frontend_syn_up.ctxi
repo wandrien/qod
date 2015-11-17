@@ -84,7 +84,6 @@ void DeclStruct(char @Buff)
             Dict[F].Class = cFIELD;
             Dict[F].pType = pType;
             Dict[F].nPtr  = nPtr;
-            Dict[F].pIndx = nIndx;
             Dict[F].nIndx = Tabl(@Scan(@Buff));
             DictAddToNamespace(F, pStruct);
 
@@ -286,12 +285,11 @@ void DeclVarFunc(char @Buff)
 		end
 
 		Dict[D]. Class=cDATA;
-		Dict[D].pIndx =nIndx;
 		Dict[D].nIndx = Tabl(@Buff);
 		Dict[D].pNode =nNODE;
 
 		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-			if Dict[D].pIndx<Dict[D].nIndx then
+			if Dict[D].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end
 

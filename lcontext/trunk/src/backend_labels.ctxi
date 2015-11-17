@@ -237,7 +237,7 @@ word AssignLabels_Data()
 		select
 		case Dict[I].Class = cDATA & Dict[I].Used != 0:
 			Dict[I].Value = D;
-			word Size = GetVarSize(Dict[I].pType, Dict[I].nPtr, Dict[I].pIndx, Dict[I].nIndx);
+			word Size = GetVarSize(Dict[I].pType, Dict[I].nPtr, Dict[I].nIndx);
 			D = D + DefaultStaticAlign(Size);
 		end:select
 
@@ -269,10 +269,8 @@ void AssignLabels_Struct()
 					D2 = Dict[Dict[P].pType].Value;
 				end
 
-				word  N = Dict[P].pIndx;
-				while N < Dict[P].nIndx do
-					D2 = Indx[N] * D2;
-					inc N;
+				if Dict[P].nIndx > 0 then
+					D2 = Dict[P].nIndx * D2;
 				end
 				D1 = D1 + D2;
 

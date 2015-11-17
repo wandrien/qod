@@ -210,9 +210,10 @@ word DictDupLiteral(word D1)
 	Dict[D2].Sub   = Dict[D1].Sub;
 	Dict[D2].pType = Dict[D1].pType;
 	Dict[D2].nPtr  = Dict[D1].nPtr;
-	Dict[D2].pIndx = Dict[D1].pIndx;
 	Dict[D2].nIndx = Dict[D1].nIndx;
 	Dict[D2].RO    = Dict[D1].RO;
+	Dict[D2].Value = Dict[D1].Value;
+	Dict[D2].Stack = Dict[D1].Stack;
 
 	return D2;
 end
@@ -248,8 +249,8 @@ void DefineString(char @Name; char @Value)
 	Dict[D].RO = 1;
 	Dict[D].nPtr = 1;
 	Dict[D].pType = st_char;
-	Dict[D].pIndx = SaveString(@Value, i);
-	Dict[D].nIndx = Dict[D].pIndx + i;
+	Dict[D].Stack = SaveString(@Value, i);
+	Dict[D].nIndx = i;
 end
 
 /*****************************************************************************/

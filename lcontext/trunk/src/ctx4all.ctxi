@@ -62,7 +62,6 @@ char@ DefaultTarget;
 /*****************************************************************************/
 
 void Translate()
-
 	@_Code = @Code;
 
 	@_NodeMarkUsed = @NodeMarkUsed;

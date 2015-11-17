@@ -494,15 +494,12 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Local[nLocal].Name2=SaveString0(@Buff);
 		Local[nLocal].pType=pType;
 		Local[nLocal].nPtr =nPtr;
-		Local[nLocal].pIndx=nIndx;
 		Local[nLocal].nIndx= Tabl(@Scan(@Buff));
 
 		word  N=1;
-		word  K=Local[nLocal].pIndx;
-		while K<Local[nLocal].nIndx do
-			N = Indx[K]*N;
-			inc K;
-		end:while
+		if Local[nLocal].nIndx > 0 then
+			N = Local[nLocal].nIndx;
+		end
 
 		word P3=Peek();
 		Node[P1].ID   =iDEF_LOCAL;
@@ -518,7 +515,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P4].Value = N;
 
 		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-			if Local[nLocal].pIndx<Local[nLocal].nIndx then
+			if Local[nLocal].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end:if
 
@@ -620,7 +617,6 @@ end
 word Statements(char @Buff; char @End1; char @End2; char @End3)
 
 	word Saved_nLocal = nLocal;
-	word nIndx1 = nIndx;
 
 	word P = nNODE;
 	word @Backlink = @P;
@@ -638,7 +634,6 @@ word Statements(char @Buff; char @End1; char @End2; char @End3)
 
 	until strcmp(@Buff, @End1) = 0;
 
-	nIndx = nIndx1;
 	nLocal = Saved_nLocal;
 
 	return P;

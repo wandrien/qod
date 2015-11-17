@@ -83,30 +83,23 @@ end
 
 /*****************************************************************************/
 
-word     Tabl(char @Buff)
-  while strcmp(@Buff,"[")=0 do
-    if nIndx>=nINDX then
-      StopMemory();
-    end
+word Tabl(char @Buff)
+	word nIndx = 0;
+	if strcmp(@Buff,"[")=0 then
+		word pType,  nPtr;
+		word  P=_Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
 
-    word pType,  nPtr;
-    word  P=_Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		when Node[P].ID!=iWORD:
+			Stop(@eTYPE);
 
-    if Node[P].ID!=iWORD then
-      Stop(@eTYPE);
-    end
+		nIndx = NodeGetImmediateValue(P);
 
-    Indx[nIndx]=NodeGetImmediateValue(P);
-    inc  nIndx;
+		when strcmp(@Buff,"]")!=0:
+			Stop(@eBRACKETEXP);
+	    Scan(@Buff);
+	end:if
 
-    if strcmp(@Buff,"]")!=0 then // strcmp(@Scan(@Buff),"]")!=0
-      Stop(@eBRACKETEXP);
-    end
-
-    Scan(@Buff);
-  end
-
-  return nIndx;
+	return nIndx;
 end
 
 /*****************************************************************************/
@@ -275,7 +268,6 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	nPtr = ReadPtrs(@Buff);
 
 	word nPtr1=0;
-	word pIndx=0;
 	word nIndx=0;
 
 	if Flag=0 then /* Это строка? */
@@ -299,7 +291,6 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			Node[P1].Value = I;
 			pType          = Local[I].pType;
 			nPtr1          = Local[I].nPtr;
-			pIndx          = Local[I].pIndx;
 			nIndx          = Local[I].nIndx;
 			Flag           = 1;
 		end:if
@@ -327,19 +318,19 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 		case Dict[I].Class=cLITERAL: /* Именованный литерал? */
 			P1=Peek();
 			select
-			case Dict[I].pType=st_word:
+			case Dict[I].pType=st_word & Dict[I].nPtr=0:
 				Node[P1].ID    =iWORD;
 				Node[P1].Value = Dict[I].Value;
 
-			case Dict[I].pType=st_int:
+			case Dict[I].pType=st_int & Dict[I].nPtr=0:
 				Node[P1].ID    =iINT;
 				Node[P1].Value = Dict[I].Value;
 
-			case Dict[I].nPtr=0:
+			case Dict[I].pType=st_char & Dict[I].nPtr=0:
 				Node[P1].ID    =iCHAR;
 				Node[P1].Value = Dict[I].Value;
 
-			default:
+			case Dict[I].pType=st_char & Dict[I].nPtr=1:
 				Node[P1].ID    =iSTRING;
 				if ROStrings != 0 then
 					Node[P1].Value = I;
@@ -348,6 +339,8 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 					Dict[NewLiteral].RO = 0;
 					Node[P1].Value = NewLiteral;
 				end
+			default:
+				StopInternal();
 			end:select
 
 			pType          = Dict[I].pType;
@@ -383,7 +376,6 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 					return P1;
 				end:if
 			else
-				pIndx            = Dict[I].pIndx;
 				nIndx            = Dict[I].nIndx;
 			end:if
 
@@ -438,21 +430,13 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 	do
 		Scan(@Buff);
-		word pIndx1=pIndx;
-		while pIndx<nIndx do /* Индексация массива. */
-			if strcmp(@Buff,"[")!=0 then
-				if pIndx!=pIndx1 | strcmp(@Buff,".")=0 then
-					Stop(@eBRACKETEXP);
-				end:if
-
-				exit;
-			end:if
-
+		if strcmp(@Buff,"[")=0 & nIndx > 0 then /* Индексация массива. */
 			word pType2, nPtr2;
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
-			Node[P3].Value= Indx[pIndx];
+			Node[P3].Value= nIndx;
 			Node[P3].pLeft= _Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			nIndx = 0;
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
@@ -464,8 +448,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			@P2=@Node[P3].pRight;
 
 			Scan(@Buff);
-			inc  pIndx;
-		end:while
+		end:if
 
 		while strcmp(@Buff,"[")=0 do /* Индексация указателя. */
 			if nPtr1<1 then
@@ -535,7 +518,6 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			word pType0     =pType;
 			pType           = Dict[pType0].pType;
 			nPtr1           = Dict[pType0].nPtr;
-			pIndx           = 0;
 			nIndx           = 0;
 			Call            = 1;
 
@@ -575,7 +557,6 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			Node[P3].Value= F;
 			pType         = Dict[F].pType;
 			nPtr1         = Dict[F].nPtr;
-			pIndx         = Dict[F].pIndx;
 			nIndx         = Dict[F].nIndx;
 			Call          = 0;
 

@@ -40,13 +40,11 @@ end
 
 /*****************************************************************************/
 
-word GetVarSize(word pType; word nPtr; word pIndx; word nIndx)
+word GetVarSize(word pType; word nPtr; word nIndx)
 	word Size = SizeOfType(pType, nPtr);
 
-	while  pIndx < nIndx do
-		Size = Indx[pIndx] * Size;
-		inc pIndx;
-	end
+	when nIndx > 0:
+		Size = nIndx * Size;
 
 	return Size;
 end
@@ -57,7 +55,7 @@ end
 	Распаковывает из узлов iDATA, iPARM, iLOCAL и iSTRING информацию об объекте.
 	(Ofs - смещение относительно специфичного источника (напр., для iDATA - смещение от начала секции данных и т.п.))
 */
-word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO)
+word ExtractDataInfo(word P, @pType, @nPtr, @nIndx, @Ofs, @RO)
 
 	word ID = Node[P].ID;
 
@@ -65,7 +63,6 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO)
 		case ID = iDATA:
 			pType = Dict[Node[P].Value].pType;
 			nPtr  = Dict[Node[P].Value].nPtr;
-			pIndx = Dict[Node[P].Value].pIndx;
 			nIndx = Dict[Node[P].Value].nIndx;
 			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
@@ -75,7 +72,6 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO)
 				StopInternal();
 			pType = Dict[Node[P].Value].pType;
 			nPtr  = Dict[Node[P].Value].nPtr;
-			pIndx = Dict[Node[P].Value].pIndx;
 			nIndx = Dict[Node[P].Value].nIndx;
 			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
@@ -83,13 +79,11 @@ word ExtractDataInfo(word P, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO)
 		case ID = iLOCAL:
 			pType = Local[Node[P].Value].pType;
 			nPtr  = Local[Node[P].Value].nPtr;
-			pIndx = Local[Node[P].Value].pIndx;
 			nIndx = Local[Node[P].Value].nIndx;
 			Ofs   = Local[Node[P].Value].Value;
 			RO    = 0;
 
 		case ID = iSTRING:
-			pIndx = 0;
 			nIndx = 0;
 			pType = Dict[Node[P].Value].pType;
 			nPtr  = 1;

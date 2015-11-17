@@ -59,13 +59,12 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 
 		if Node[P1].pLeft < nNODE & Node[Node[P1].pLeft].ID=iLOAD then
 
-			word pIndx;
 			word nIndx;
 			word pType;
 			word nPtr;
 			word  Ofs;
 			word  RO;
-			word ID=ExtractDataInfo(P1, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO);
+			word ID=ExtractDataInfo(P1, @pType, @nPtr, @nIndx, @Ofs, @RO);
 
 			/* FIXME: проверка pIndx >= nIndx не работает для локальных переменных, поскольку компилятор не сохраняет эту информацию >< */
 //			if pIndx >= nIndx & SizeOfType(pType, nPtr) = 4 then
@@ -84,13 +83,12 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 		if Node[P1].pLeft != nNODE
 		 & Node[Node[P1].pLeft].ID=iLPTR then
 
-			word pIndx;
 			word nIndx;
 			word pType;
 			word nPtr;
 			word  Ofs;
 			word  RO;
-			word ID=ExtractDataInfo(P1, @pType, @nPtr, @pIndx, @nIndx, @Ofs, @RO);
+			word ID=ExtractDataInfo(P1, @pType, @nPtr, @nIndx, @Ofs, @RO);
 
 			strcpy(@Buff, "push    ");
 

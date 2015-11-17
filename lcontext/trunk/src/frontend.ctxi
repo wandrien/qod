@@ -70,7 +70,6 @@ void InitFrontEnd()
 
 	nDict = 0;
 	nLocal = 0;
-	nIndx = 0;
 	nNode = 0;
 
 	nFile = 0;
