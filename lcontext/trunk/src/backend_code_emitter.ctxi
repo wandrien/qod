@@ -599,22 +599,22 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	word ID=Node[P].ID;
 	select
 	case fSwap=1:
-		select
-		case ID=iLT: ID=iGT;
-		case ID=iLE: ID=iGE;
-		case ID=iGE: ID=iLE;
-		case ID=iGT: ID=iLT;
+		switch ID of
+		case iLT: ID=iGT;
+		case iLE: ID=iGE;
+		case iGE: ID=iLE;
+		case iGT: ID=iLT;
 
-		case ID=iSUB | ID=iDIV | ID=iMOD:
+		case iSUB, iDIV, iMOD:
               Emit("xchg    EAX,  EBX");
-		end:select
+		end:switch
 
 	case fSwap=2:
-		select
-		case ID=iMUL | ID=iDIV | ID=iMOD:
+		switch ID of
+		case iMUL, iDIV, iMOD:
 			fEAX =RegB;
 			_Code(Node[P].pRight,0,0,0);
-		end:select
+		end:switch
 	end:select
 
 	fEAX=RegA;
@@ -648,16 +648,16 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		end:select
 
 		if T=0 then
-			select
-			case ID=iLT: ID=iGE;
-			case ID=iLE: ID=iGT;
-			case ID=iEQ: ID=iNE;
-			case ID=iNE: ID=iEQ;
-			case ID=iGE: ID=iLT;
-			case ID=iGT: ID=iLE;
+			switch ID of
+			case iLT: ID=iGE;
+			case iLE: ID=iGT;
+			case iEQ: ID=iNE;
+			case iNE: ID=iEQ;
+			case iGE: ID=iLT;
+			case iGT: ID=iLE;
 			default:
 				StopInternal();
-            end:select
+            end:switch
 
             T=F;
             F=0;
@@ -670,28 +670,28 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		char@ BranchCondition = "";
 		select
 		case pType=st_int:
-			select
-			case ID=iLT: @BranchCondition = "l ";
-			case ID=iLE: @BranchCondition = "le";
-			case ID=iEQ: @BranchCondition = "e ";
-			case ID=iNE: @BranchCondition = "ne";
-			case ID=iGE: @BranchCondition = "ge";
-			case ID=iGT: @BranchCondition = "g ";
+			switch ID of
+			case iLT: @BranchCondition = "l ";
+			case iLE: @BranchCondition = "le";
+			case iEQ: @BranchCondition = "e ";
+			case iNE: @BranchCondition = "ne";
+			case iGE: @BranchCondition = "ge";
+			case iGT: @BranchCondition = "g ";
 			default:
                   StopInternal();
-			end:select
+			end:switch
 
 		default:
-			select
-			case ID=iLT: @BranchCondition = "b ";
-			case ID=iLE: @BranchCondition = "be";
-			case ID=iEQ: @BranchCondition = "e ";
-			case ID=iNE: @BranchCondition = "ne";
-			case ID=iGE: @BranchCondition = "ae";
-			case ID=iGT: @BranchCondition = "a ";
+			switch ID of
+			case iLT: @BranchCondition = "b ";
+			case iLE: @BranchCondition = "be";
+			case iEQ: @BranchCondition = "e ";
+			case iNE: @BranchCondition = "ne";
+			case iGE: @BranchCondition = "ae";
+			case iGT: @BranchCondition = "a ";
 			default:
                   StopInternal();
-			end:select
+			end:switch
 		end:select
 		EmitBranchToLabel(@BranchCondition, T);
 
