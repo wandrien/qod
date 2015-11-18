@@ -57,15 +57,15 @@ include "backend_code_emitter_ctrl.ctxi"
 	Генератор кода для "постфиксных деревьев", генерируемых функцией Primary синтаксического анализатора.
 	(Эта функция - самая главная среди множества причин, почему весь кодогенератор надо переписать. VU)
 */
-word Code1(word P)
+word Code1(word pPrimary)
 
 	char Buff [nBUFF];
 	Buff[0] = #0;
 
-	word ID1=Node[P].ID;
-	if ID1=iINC | ID1=iDEC then
+	word IncID=Node[pPrimary].ID;
+	if IncID=iINC | IncID=iDEC then
 		fEAX=RegA;
-		P   =Node[P].pLeft;
+		pPrimary = Node[pPrimary].pLeft;
 	end
 
 	word nIndx;
@@ -73,21 +73,21 @@ word Code1(word P)
 	word nPtr;
 	word  Ofs;
 	word  RO;
-	word ID=ExtractDataInfo(P, @pType, @nPtr, @nIndx, @Ofs, @RO);
+	word ID=ExtractDataInfo(pPrimary, @pType, @nPtr, @nIndx, @Ofs, @RO);
 	word IX=RegNone;
 
-	word P1=Node[P].pLeft;
+	word P1=Node[pPrimary].pLeft;
 	do
 		Buff[0] = #0;
 		select
 		case P1>=nNODE:
 			select
-			case ID1=iINC | ID1=iDEC:
+			case IncID=iINC | IncID=iDEC:
 				if IX=RegB | nPtr>0 then
 					StopInternal();
 				end:if
 
-				if ID1=iINC then
+				if IncID=iINC then
 					strcpy(@Buff,"inc     ");
 				else
 					strcpy(@Buff,"dec     ");
