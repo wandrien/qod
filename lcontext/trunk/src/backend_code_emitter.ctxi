@@ -555,6 +555,240 @@ end
 
 /*****************************************************************************/
 
+word CodeBinOp(char @Buff; word P; word F; word T; word M)
+	Buff[0] = #0;
+
+	if iLT<=Node[P].ID & Node[P].ID<=iGT then
+		fEAX=RegA;
+	end
+
+	if fEAX!=RegA then
+		Emit("push    EAX");
+		fEAX=RegA;
+	end
+
+	word fSwap=0;
+	word pType;
+	select
+	case Node[Node[P].pRight].ID=iCHAR | Node[Node[P].pRight].ID=iWORD | Node[Node[P].pRight].ID=iINT:
+		pType=_Code(Node[P].pLeft,0,0,0);
+		fSwap=2;
+
+	case Node[Node[P].pLeft].ID=iCHAR | Node[Node[P].pLeft].ID=iWORD | Node[Node[P].pLeft].ID=iINT:
+		_Code(Node[P].pRight,0,0,0);
+		fEAX =RegB;
+		pType=_Code(Node[P].pLeft,0,0,0);
+		fSwap=1;
+
+	case Node[Node[Node[P].pLeft].pLeft].ID=iLOAD:
+		_Code(Node[P].pRight,0,0,0);
+		fEAX =RegB;
+		pType=_Code(Node[P].pLeft,0,0,0);
+		fSwap=1;
+
+	default:
+		pType=_Code(Node[P].pLeft,0,0,0);
+		fEAX =RegB;
+		_Code(Node[P].pRight,0,0,0);
+		if fEAX=RegA then
+			Emit("pop     EBX");
+			fSwap=1;
+		end
+	end:select
+
+	word ID=Node[P].ID;
+	select
+	case fSwap=1:
+		select
+		case ID=iLT: ID=iGT;
+		case ID=iLE: ID=iGE;
+		case ID=iGE: ID=iLE;
+		case ID=iGT: ID=iLT;
+
+		case ID=iSUB | ID=iDIV | ID=iMOD:
+              Emit("xchg    EAX,  EBX");
+		end:select
+
+	case fSwap=2:
+		select
+		case ID=iMUL | ID=iDIV | ID=iMOD:
+			fEAX =RegB;
+			_Code(Node[P].pRight,0,0,0);
+		end:select
+	end:select
+
+	fEAX=RegA;
+
+	word Size=4;
+	if pType<nDICT then
+		Size=Dict[pType].Value;
+	end
+
+	select
+	case iLT<=ID & ID<=iGT:
+		select
+		case Size=1:
+			select
+			case fSwap=2:
+				Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
+			default:
+				Emit("cmp     AL,   BL");
+			end
+
+		case Size=4:
+			select
+			case fSwap=2:
+				Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
+			default:
+				Emit("cmp     EAX,  EBX");
+			end
+
+		default:
+			StopInternal();
+		end:select
+
+		if T=0 then
+			select
+			case ID=iLT: ID=iGE;
+			case ID=iLE: ID=iGT;
+			case ID=iEQ: ID=iNE;
+			case ID=iNE: ID=iEQ;
+			case ID=iGE: ID=iLT;
+			case ID=iGT: ID=iLE;
+			default:
+				StopInternal();
+            end:select
+
+            T=F;
+            F=0;
+		end:if
+
+		if T=0 | F!=0 then
+			StopInternal();
+		end
+
+		char@ BranchCondition = "";
+		select
+		case pType=st_int:
+			select
+			case ID=iLT: @BranchCondition = "l ";
+			case ID=iLE: @BranchCondition = "le";
+			case ID=iEQ: @BranchCondition = "e ";
+			case ID=iNE: @BranchCondition = "ne";
+			case ID=iGE: @BranchCondition = "ge";
+			case ID=iGT: @BranchCondition = "g ";
+			default:
+                  StopInternal();
+			end:select
+
+		default:
+			select
+			case ID=iLT: @BranchCondition = "b ";
+			case ID=iLE: @BranchCondition = "be";
+			case ID=iEQ: @BranchCondition = "e ";
+			case ID=iNE: @BranchCondition = "ne";
+			case ID=iGE: @BranchCondition = "ae";
+			case ID=iGT: @BranchCondition = "a ";
+			default:
+                  StopInternal();
+			end:select
+		end:select
+		EmitBranchToLabel(@BranchCondition, T);
+
+		return nDICT;
+
+	case ID=iBIT_OR:
+		strcpy(@Buff,"or      ");
+
+	case ID=iBIT_XOR:
+		strcpy(@Buff,"xor     ");
+
+	case ID=iBIT_AND:
+		strcpy(@Buff,"and     ");
+
+	case ID=iADD:
+		strcpy(@Buff,"add     ");
+
+	case ID=iSUB:
+		strcpy(@Buff,"sub     ");
+
+	case ID=iMUL:
+		select
+		case pType=st_byte:
+			Emit("mul     BL");
+		case pType=st_word:
+			Emit("mul     EBX");
+		case pType=st_int:
+			Emit("imul    EBX");
+		default:
+			StopInternal();
+		end:select
+
+		return pType;
+
+	case ID=iDIV:
+		select
+		case pType=st_byte:
+			Emit("xor     AH,   AH");
+			Emit("div     BL");
+		case pType=st_word:
+			Emit("xor     EDX,  EDX");
+			Emit("div     EBX");
+		case pType=st_int:
+			Emit("xor     EDX,  EDX");
+			Emit("idiv    EBX");
+		default:
+			StopInternal();
+		end:select
+
+		return pType;
+
+	case ID=iMOD:
+		select
+		case pType=st_byte:
+			Emit("xor     AH,   AH");
+			Emit("div     BL");
+			Emit("xchg    AL,   AH");
+		case pType=st_word:
+			Emit("xor     EDX,  EDX");
+			Emit("div     EBX");
+			Emit("xchg    EAX,  EDX");
+		default:
+			StopInternal();
+		end:select
+
+		return pType;
+
+	default:
+		StopInternal();
+	end:select
+
+	select
+	case Size=1:
+		select
+		case fSwap=2:
+			Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
+		default:
+			Emit(@strcat(@Buff,"AL,   BL"));
+		end:select
+
+	case Size=4:
+		select
+		case fSwap=2:
+			Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
+		default:
+			Emit(@strcat(@Buff,"EAX,  EBX"));
+		end:select
+
+	default:
+		StopInternal();
+	end:select
+
+	return pType;
+end
+
+/*****************************************************************************/
+
 /*
 	Основная функция кодогенератора.
 
@@ -675,277 +909,7 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
-
-      if iLT<=Node[P].ID & Node[P].ID<=iGT then
-        fEAX=RegA;
-      end
-
-      if fEAX!=RegA then
-        Emit("push    EAX");
-        fEAX=RegA;
-      end
-
-      word fSwap=0;
-      word pType;
-      select
-        case Node[Node[P].pRight].ID=iCHAR | Node[Node[P].pRight].ID=iWORD | Node[Node[P].pRight].ID=iINT:
-          pType=Code(Node[P].pLeft,0,0,0);
-          fSwap=2;
-
-        case Node[Node[P].pLeft].ID=iCHAR | Node[Node[P].pLeft].ID=iWORD | Node[Node[P].pLeft].ID=iINT:
-          Code(Node[P].pRight,0,0,0);
-          fEAX =RegB;
-          pType=Code(Node[P].pLeft,0,0,0);
-          fSwap=1;
-
-        case Node[Node[Node[P].pLeft].pLeft].ID=iLOAD:
-          Code(Node[P].pRight,0,0,0);
-          fEAX =RegB;
-          pType=Code(Node[P].pLeft,0,0,0);
-          fSwap=1;
-
-        default:
-          pType=Code(Node[P].pLeft,0,0,0);
-          fEAX =RegB;
-          Code(Node[P].pRight,0,0,0);
-          if fEAX=RegA then
-            Emit("pop     EBX");
-            fSwap=1;
-          end
-      end
-
-      word ID=Node[P].ID;
-      select
-        case fSwap=1:
-          select
-            case ID=iLT:
-              ID=iGT;
-
-            case ID=iLE:
-              ID=iGE;
-
-            case ID=iGE:
-              ID=iLE;
-
-            case ID=iGT:
-              ID=iLT;
-
-            case ID=iSUB | ID=iDIV | ID=iMOD:
-              Emit("xchg    EAX,  EBX");
-          end
-
-        case fSwap=2:
-          select
-            case ID=iMUL | ID=iDIV | ID=iMOD:
-              fEAX =RegB;
-              Code(Node[P].pRight,0,0,0);
-          end
-      end
-
-      fEAX=RegA;
-
-      word Size=4;
-      if pType<nDICT then
-        Size=Dict[pType].Value;
-      end
-
-      select
-        case iLT<=ID & ID<=iGT:
-          select
-            case Size=1:
-              select
-                case fSwap=2:
-                  Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
-
-                default:
-                  Emit("cmp     AL,   BL");
-              end
-
-            case Size=4:
-              select
-                case fSwap=2:
-                  Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
-
-                default:
-                  Emit("cmp     EAX,  EBX");
-              end
-
-            default:
-              StopInternal();
-          end
-
-          if T=0 then
-            select
-              case ID=iLT:
-                ID=iGE;
-
-              case ID=iLE:
-                ID=iGT;
-
-              case ID=iEQ:
-                ID=iNE;
-
-              case ID=iNE:
-                ID=iEQ;
-
-              case ID=iGE:
-                ID=iLT;
-
-              case ID=iGT:
-                ID=iLE;
-
-              default:
-                StopInternal();
-            end
-
-            T=F;
-            F=0;
-          end
-
-          if T=0 | F!=0 then
-            StopInternal();
-          end
-
-          char@ BranchCondition;
-          select
-            case pType=st_int:
-              select
-                case ID=iLT:
-                  @BranchCondition = "l ";
-                case ID=iLE:
-                  @BranchCondition = "le";
-                case ID=iEQ:
-                  @BranchCondition = "e ";
-                case ID=iNE:
-                  @BranchCondition = "ne";
-                case ID=iGE:
-                  @BranchCondition = "ge";
-                case ID=iGT:
-                  @BranchCondition = "g ";
-                default:
-                  StopInternal();
-              end
-
-            default:
-              select
-                case ID=iLT:
-                  @BranchCondition = "b ";
-                case ID=iLE:
-                  @BranchCondition = "be";
-                case ID=iEQ:
-                  @BranchCondition = "e ";
-                case ID=iNE:
-                  @BranchCondition = "ne";
-                case ID=iGE:
-                  @BranchCondition = "ae";
-                case ID=iGT:
-                  @BranchCondition = "a ";
-                default:
-                  StopInternal();
-              end
-          end
-          EmitBranchToLabel(@BranchCondition, T);
-
-          return nDICT;
-
-        case ID=iBIT_OR:
-          strcpy(@Buff,"or      ");
-
-        case ID=iBIT_XOR:
-          strcpy(@Buff,"xor     ");
-
-        case ID=iBIT_AND:
-          strcpy(@Buff,"and     ");
-
-        case ID=iADD:
-          strcpy(@Buff,"add     ");
-
-        case ID=iSUB:
-          strcpy(@Buff,"sub     ");
-
-        case ID=iMUL:
-          select
-            case pType=st_byte:
-              Emit("mul     BL");
-
-            case pType=st_word:
-              Emit("mul     EBX");
-
-            case pType=st_int:
-              Emit("imul    EBX");
-
-            default:
-              StopInternal();
-          end
-
-          return pType;
-
-        case ID=iDIV:
-          select
-            case pType=st_byte:
-              Emit("xor     AH,   AH");
-              Emit("div     BL");
-
-            case pType=st_word:
-              Emit("xor     EDX,  EDX");
-              Emit("div     EBX");
-
-            case pType=st_int:
-              Emit("xor     EDX,  EDX");
-              Emit("idiv    EBX");
-
-            default:
-              StopInternal();
-          end
-
-          return pType;
-
-        case ID=iMOD:
-          select
-            case pType=st_byte:
-              Emit("xor     AH,   AH");
-              Emit("div     BL");
-              Emit("xchg    AL,   AH");
-
-            case pType=st_word:
-              Emit("xor     EDX,  EDX");
-              Emit("div     EBX");
-              Emit("xchg    EAX,  EDX");
-
-            default:
-              StopInternal();
-          end
-
-          return pType;
-
-        default:
-          StopInternal();
-      end
-
-      select
-        case Size=1:
-          select
-            case fSwap=2:
-              Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
-
-            default:
-              Emit(@strcat(@Buff,"AL,   BL"));
-          end
-
-        case Size=4:
-          select
-            case fSwap=2:
-              Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
-
-            default:
-              Emit(@strcat(@Buff,"EAX,  EBX"));
-          end
-
-        default:
-          StopInternal();
-      end
-
-      return pType;
+		return CodeBinOp(@Buff, P, F, T, M);
 
 ///////////////////////////////////////////////////////////////////////////////
 
