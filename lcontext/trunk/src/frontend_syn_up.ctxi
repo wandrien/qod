@@ -298,16 +298,15 @@ void DeclVarFunc(char @Buff)
 			Node[P1].ID    =iASSIGN;
 			Node[P1].pLeft = P2;
 
-			word pType2, nPtr2;
 			word P3=Peek();
 			Node[P2].ID    =iEMPTY;
 			Node[P2].pLeft = P3;
-			Node[P2].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			Node[P2].pRight= Expr__(pZERO, @Scan(@Buff));
 
 			Node[P3].ID    =iDATA;
 			Node[P3].Value =D;
 
-			Test(pType,nPtr,pType2,nPtr2,@Node[P2].pRight);
+			ImplicitCast(pType, nPtr, @Node[P2].pRight);
 
 			Dict[D].pNode=P1;
 
@@ -348,8 +347,7 @@ word DeclDefine(char @Buff)
 	select
 		case nPtr=0:
 
-			word pType2, nPtr2;
-			word P = Expr(pZERO, @pType2, @nPtr2, @Buff);
+			word P = Expr__(pZERO, @Buff);
 
 			select
 				case Node[P].ID=iWORD:

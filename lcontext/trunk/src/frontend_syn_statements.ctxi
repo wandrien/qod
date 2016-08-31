@@ -82,8 +82,9 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		@BackLink = @Node[CASE].pRight;
 
 		if strcmp(@Buff,@Case)=0 then
-			word pType, nPtr;
-			Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+			Node[COND].pLeft = Expr__(pZERO, @Scan(@Buff));
+			word pType = Node[Node[COND].pLeft].pType;
+			word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 			if strcmp(@Buff,@Then)!=0 then
 				Stop(@eTHENEXP);
@@ -128,8 +129,9 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	Node[COND].pRight = BODY;
 	Node[P1].pLeft = CASE;
 
-	word pType, nPtr;
-	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[COND].pLeft = Expr__(pZERO, @Scan(@Buff));
+	word pType = Node[Node[COND].pLeft].pType;
+	word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 	if pType != st_bool then
 		Stop(@eTYPE);
@@ -159,8 +161,9 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	word @CaseBackLink = @Node[COND].pRight;
 
-	word pType, nPtr;
-	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[COND].pLeft = Expr__(pZERO, @Scan(@Buff));
+	word pType = Node[Node[COND].pLeft].pType;
+	word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 	when nPtr != 0:
 		Stop(@eSWTYPE);
@@ -182,8 +185,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		word @ValueBackLink = @Node[CASE].pLeft;
 
 		repeat
-			word pType2, nPtr2;
-			word EXPR = Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			word EXPR = Expr__(pZERO, @Scan(@Buff));
 
 			select
 			case pType = st_char:
@@ -279,8 +281,9 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
 	if strcmp(@Buff,"while")=0 then
 		@End2 = "while";
-		word pType, nPtr;
-		Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		Node[COND].pLeft = Expr__(pZERO, @Scan(@Buff));
+		word pType = Node[Node[COND].pLeft].pType;
+		word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 		if strcmp(@Buff,"do")!=0 then
 			Stop(@eDOEXP);
@@ -321,8 +324,9 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	Scan(@Buff);
 	Node[BODY].pLeft = _Statements(@Buff, "until", NULL, NULL);
 
-	word pType, nPtr;
-	Node[COND].pLeft = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	Node[COND].pLeft = Expr__(pZERO, @Scan(@Buff));
+	word pType = Node[Node[COND].pLeft].pType;
+	word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 	if strcmp(@Buff,";")!=0 then
 		Stop(@eSEMICOLONEXP);
@@ -377,8 +381,9 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P1].ID =iDEC;
 	end:if
 
-	word pType, nPtr;
-	Node[P1].pLeft= Expr(pINC,@pType,@nPtr,@Scan(@Buff));
+	Node[P1].pLeft= Expr__(pINC, @Scan(@Buff));
+	word pType = Node[Node[P1].pLeft].pType;
+	word nPtr  = Node[Node[P1].pLeft].nPtr;
 
 	if strcmp(@Buff,";")!=0 then
 		Stop(@eSEMICOLONEXP);
@@ -400,12 +405,8 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	word need_semicolon = 0;
 
 	if Dict[pFunc].nPtr!=0 | Dict[pFunc].pType != st_void then
-
-		word pType2, nPtr2;
-		Node[P1].pLeft=Expr(pZERO,@pType2,@nPtr2,@Buff);
-
-		Test(Dict[pFunc].pType,Dict[pFunc].nPtr,pType2,nPtr2,@Node[P1].pLeft);
-
+		Node[P1].pLeft=Expr__(pZERO, @Buff);
+		ImplicitCast(Dict[pFunc].pType, Dict[pFunc].nPtr, @Node[P1].pLeft);
 		need_semicolon = 1;
 	end:if
 
@@ -447,8 +448,7 @@ end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
-	word pType1, nPtr1;
-	word P2=Expr(pLVALUE,@pType1,@nPtr1,@Buff);
+	word P2=Expr__(pLVALUE, @Buff);
 	if P2<nNODE then
 		word P3=Peek();
 		Node[P1].ID    =iASSIGN;
@@ -458,9 +458,8 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P3].pLeft = P2;
 
 		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-			word pType2, nPtr2;
-			Node[P3].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
-			Test(pType1,nPtr1,pType2,nPtr2,@Node[P3].pRight);
+			Node[P3].pRight = Expr__(pZERO, @Scan(@Buff));
+			ImplicitCast(Node[P2].pType, Node[P2].nPtr, @Node[P3].pRight);
 		end:if
 	else
 		word pType=Find(@Buff);
@@ -523,16 +522,15 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Node[P4].ID    =iASSIGN;
 			Node[P4].pLeft = P5;
 
-			word pType2, nPtr2;
 			word P6=Peek();
 			Node[P5].ID    =iEMPTY;
 			Node[P5].pLeft = P6;
-			Node[P5].pRight= Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			Node[P5].pRight= Expr__(pZERO, @Scan(@Buff));
 
 			Node[P6].ID    =iLOCAL;
 			Node[P6].Value =nLocal;
 
-			Test(pType,nPtr,pType2,nPtr2,@Node[P5].pRight);
+			ImplicitCast(pType, nPtr, @Node[P5].pRight);
 		end:if
 
 		inc nLocal;

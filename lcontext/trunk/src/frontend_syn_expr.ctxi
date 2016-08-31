@@ -5,6 +5,13 @@
 
 /*****************************************************************************/
 
+word Expr__(word Prio; char @Buff)
+	word pType, nPtr;
+	return _Expr(Prio, @pType, @nPtr, @Buff);
+end
+
+/*****************************************************************************/
+
 /* Парсинг строки в целое число по указанному основанию. */
 word val2(char @Str; word Base)
 	if Str[0] = #0 then
@@ -86,8 +93,7 @@ end
 word Tabl(char @Buff)
 	word nIndx = 0;
 	if strcmp(@Buff,"[")=0 then
-		word pType,  nPtr;
-		word  P=_Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+		word P = Expr__(pZERO, @Scan(@Buff));
 
 		when Node[P].ID!=iWORD:
 			Stop(@eTYPE);
@@ -220,12 +226,11 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff)
 	word pARG = Dict[pARGS].pFirst;
 
 	while pARG < nDICT do
-		word pType2, nPtr2;
 		word P8=Peek();
 		Node[P8].ID   =iPUSH;
-		Node[P8].pLeft=_Expr(pZERO,@pType2,@nPtr2,@Buff);
+		Node[P8].pLeft=Expr__(pZERO, @Buff);
 
-		Test(Dict[pARG].pType,Dict[pARG].nPtr,pType2,nPtr2,@Node[P8].pLeft);
+		ImplicitCast(Dict[pARG].pType, Dict[pARG].nPtr, @Node[P8].pLeft);
 
 		P7 = P8;
 		@P7=@Node[P8].pRight;
@@ -432,18 +437,17 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	do
 		Scan(@Buff);
 		if strcmp(@Buff,"[")=0 & nIndx > 0 then /* Индексация массива. */
-			word pType2, nPtr2;
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
 			Node[P3].Value= nIndx;
-			Node[P3].pLeft= _Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			Node[P3].pLeft= Expr__(pZERO, @Scan(@Buff));
 			nIndx = 0;
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
 			end:if
 
-			Test(st_word,0,pType2,nPtr2,@Node[P3].pLeft);
+			ImplicitCast(st_word, 0, @Node[P3].pLeft);
 
 			P2 = P3;
 			@P2=@Node[P3].pRight;
@@ -456,16 +460,15 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 				Stop(@eNOADDR);
 			end:if
 
-			word pType2, nPtr2;
 			word P3=Peek();
 			Node[P3].ID   =iADDR;
-			Node[P3].pLeft= _Expr(pZERO,@pType2,@nPtr2,@Scan(@Buff));
+			Node[P3].pLeft= Expr__(pZERO, @Scan(@Buff));
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
 			end:if
 
-			Test(st_word,0,pType2,nPtr2,@Node[P3].pLeft);
+			ImplicitCast(st_word, 0, @Node[P3].pLeft);
 
 			P2 = P3;
 			@P2=@Node[P3].pRight;
@@ -626,25 +629,25 @@ void Cast2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID; char @B
 		if pType2!=pType then /* Преобразование целочисленных типов к одному типу. */
 			select
 			case pType=st_byte & pType2=st_word:
-				Cast(pType2,pType,@Node[P2].pLeft);
+				AddCast(pType2,pType,@Node[P2].pLeft);
 				pType=pType2;
 
 			case pType=st_byte & pType2=st_int:
-				Cast(pType2,pType,@Node[P2].pLeft);
+				AddCast(pType2,pType,@Node[P2].pLeft);
 				pType=pType2;
 
 			case pType=st_word & pType2=st_byte:
-				Cast(pType,pType2,@Node[P2].pRight);
+				AddCast(pType,pType2,@Node[P2].pRight);
 
 			case pType=st_word & pType2=st_int:
-				Cast(pType2,pType,@Node[P2].pLeft);
+				AddCast(pType2,pType,@Node[P2].pLeft);
 				pType=pType2;
 
 			case pType=st_int & pType2=st_byte:
-				Cast(pType,pType2,@Node[P2].pRight);
+				AddCast(pType,pType2,@Node[P2].pRight);
 
 			case pType=st_int & pType2=st_word:
-				Cast(pType,pType2,@Node[P2].pRight);
+				AddCast(pType,pType2,@Node[P2].pRight);
 
 			default:
 				Stop(@eTYPE);
@@ -921,7 +924,7 @@ word ExprNEG(word P_; word O; word @pType, @nPtr; char @Buff)
 		pType         = st_word;
 
 	default:
-		Test(st_int,0,pType,nPtr,@Node[P1].pLeft);
+		ImplicitCast(st_int, 0, @Node[P1].pLeft);
 		pType         = st_int;
 	end:select
 
