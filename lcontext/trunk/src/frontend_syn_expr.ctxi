@@ -419,7 +419,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	/*
 		В этом месте имеем следующие поля:
 		P1 - (логически) дочерний узел
-		pType, nPtr1, pIndx, nIndx - тип дочернего узла: собственно тип, количество уровней @-косвенности, диапазоны размерностей массива.
+		pType, nPtr1, nIndx - тип дочернего узла: собственно тип, количество уровней @-косвенности, размерность массива.
 		nPtr - количество операций @ перед узлом.
 	*/
 
@@ -609,6 +609,9 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 	end:while
 
 	P2  =P4;
+
+	Node[P1].pType = pType;
+	Node[P1].nPtr  = nPtr;
 
 	return P1;
 
@@ -834,6 +837,7 @@ word ExprLitFALSE(word P_; word O; word @pType, @nPtr; char @Buff)
 	Node[P1].ID    = iBOOL;
 	Node[P1].Value = 0;
 	Node[P1].pType = st_bool;
+	Node[P1].nPtr  = 0;
 	pType          = st_bool;
 	nPtr           = 0;
 	Scan(@Buff);
@@ -845,6 +849,7 @@ word ExprLitTRUE(word P_; word O; word @pType, @nPtr; char @Buff)
 	Node[P1].ID    = iBOOL;
 	Node[P1].Value = 1;
 	Node[P1].pType = st_bool;
+	Node[P1].nPtr  = 0;
 	pType          = st_bool;
 	nPtr           = 0;
 	Scan(@Buff);
