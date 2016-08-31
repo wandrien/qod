@@ -255,6 +255,14 @@ end
 
 /*****************************************************************************/
 
+word T_IsPtr(word T)
+	when T >= nDict:
+		StopInternal();
+	when Dict[T].Class = cTYPE & Dict[T].Sub = sPTR:
+		return 1;
+	return 0;
+end
+
 word T_PtrTo(word T)
 	when T >= nDict:
 		StopInternal();
@@ -271,6 +279,14 @@ word T_PtrTo(word T)
 	end
 
 	return Dict[T].tPtrToMe;
+end
+
+word T_nPtrTo(word nPtr; word T)
+	while nPtr > 0 do
+		T = T_PtrTo(T);
+		dec nPtr;
+	end:while
+	return T;
 end
 
 /*****************************************************************************/
