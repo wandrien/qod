@@ -16,7 +16,7 @@ define OPERATOR_UPRE   4 // Унарная префиксная.
 define OPERATOR_UPOST  8 // Унарная постфиксная.
 
 /* Тип обработчика операции. */
-word function __Operator(word P1; word O; word @pType, @nPtr; char @Buff)
+word function __Operator(word P1; word O; char @Buff)
 
 struct OPERATOR
 	char        Name[OPERATOR_NAME_SIZE]; // Имя операции

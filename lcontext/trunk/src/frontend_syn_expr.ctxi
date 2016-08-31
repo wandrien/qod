@@ -5,13 +5,6 @@
 
 /*****************************************************************************/
 
-word Expr__(word Prio; char @Buff)
-	word pType, nPtr;
-	return _Expr(Prio, @pType, @nPtr, @Buff);
-end
-
-/*****************************************************************************/
-
 /* Парсинг строки в целое число по указанному основанию. */
 word val2(char @Str; word Base)
 	if Str[0] = #0 then
@@ -93,7 +86,7 @@ end
 word Tabl(char @Buff)
 	word nIndx = 0;
 	if strcmp(@Buff,"[")=0 then
-		word P = Expr__(pZERO, @Scan(@Buff));
+		word P = _Expr(pZERO, @Scan(@Buff));
 
 		when Node[P].ID!=iWORD:
 			Stop(@eTYPE);
@@ -228,7 +221,7 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff)
 	while pARG < nDICT do
 		word P8=Peek();
 		Node[P8].ID   =iPUSH;
-		Node[P8].pLeft=Expr__(pZERO, @Buff);
+		Node[P8].pLeft=_Expr(pZERO, @Buff);
 
 		ImplicitCast(Dict[pARG].pType, Dict[pARG].nPtr, @Node[P8].pLeft);
 
@@ -252,7 +245,10 @@ end
 
 /*****************************************************************************/
 
-word Primary(word Prty; word @pType, @nPtr; char @Buff)
+word Primary(word Prty; char @Buff)
+
+	word pType;
+	word nPtr;
 
 	if isdigit(Buff)!=0 then /* Число. */
 		word P1 = Peek();
@@ -398,7 +394,9 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 				Node[P1].pLeft = P2;
 
 				Node[P2]. ID   = iEMPTY;
-				Node[P2].pLeft = _Expr(pZERO,@pType,@nPtr1,@Scan(@Buff));
+				Node[P2].pLeft = _Expr(pZERO, @Scan(@Buff));
+				pType = Node[Node[P2].pLeft].pType;
+				nPtr1 = Node[Node[P2].pLeft].nPtr;
 
 				if strcmp(@Buff,")")!=0 then
 					Stop(@eBRACKETEXP);
@@ -440,7 +438,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
 			Node[P3].Value= nIndx;
-			Node[P3].pLeft= Expr__(pZERO, @Scan(@Buff));
+			Node[P3].pLeft= _Expr(pZERO, @Scan(@Buff));
 			nIndx = 0;
 
 			if strcmp(@Buff,"]")!=0 then
@@ -462,7 +460,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 			word P3=Peek();
 			Node[P3].ID   =iADDR;
-			Node[P3].pLeft= Expr__(pZERO, @Scan(@Buff));
+			Node[P3].pLeft= _Expr(pZERO, @Scan(@Buff));
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
@@ -724,16 +722,16 @@ end
 
 /*****************************************************************************/
 
-word Expr(word Prio; word @pType, @nPtr; char @Buff)
+word Expr(word Prio; char @Buff)
 
 	word P1;
 	word O;
 
 	O = FindOperator(@Buff, Prio, OPERATOR_UPRE);
 	if O = OPERATOR_INVALID then
-		P1 = Primary(Prio, @pType, @nPtr, @Buff);
+		P1 = Primary(Prio, @Buff);
 	else
-		P1 = Operator[O].Handler(nNODE, O, @pType, @nPtr, @Buff);
+		P1 = Operator[O].Handler(nNODE, O, @Buff);
 	end:if
 
 	do
@@ -742,7 +740,7 @@ word Expr(word Prio; word @pType, @nPtr; char @Buff)
 			exit;
 		end
 
-		P1 = Operator[O].Handler(P1, O, @pType, @nPtr, @Buff);
+		P1 = Operator[O].Handler(P1, O, @Buff);
 	end:do
 
 	return P1;
@@ -750,20 +748,28 @@ end
 
 /*****************************************************************************/
 
-word Expr1(word P1; word O; word @pType, @nPtr; char @Buff)
+word Expr1(word P1; word O; char @Buff)
 
 	word P2 = Peek();
 	Node[P2].ID = Operator[O].ID;
 
 	word ID = Operator[O].ID;
 
+	word pType;
+	word nPtr;
+
 	if P1 >= nNODE then
-		Node[P2].pLeft  = Expr(Operator[O].Prio, @pType, @nPtr, @Scan(@Buff));
+		Node[P2].pLeft  = _Expr(Operator[O].Prio, @Scan(@Buff));
+		pType = Node[Node[P2].pLeft].pType;
+		nPtr  = Node[Node[P2].pLeft].nPtr;
 		//Cast1(@P, @pType, @nPtr);
 	else
-		word pType2, nPtr2;
+		pType = Node[P1].pType;
+		nPtr  = Node[P1].nPtr;
 		Node[P2].pLeft  = P1;
-		Node[P2].pRight = Expr(Operator[O].Prio, @pType2, @nPtr2, @Scan(@Buff));
+		Node[P2].pRight = _Expr(Operator[O].Prio, @Scan(@Buff));
+		word pType2 = Node[Node[P2].pRight].pType;
+		word nPtr2  = Node[Node[P2].pRight].nPtr;
 		Cast2(@P1, @pType, @nPtr, @P2, @pType2, @nPtr2, @ID, @Buff);
 	end:if
 
@@ -775,9 +781,9 @@ end
 
 /*****************************************************************************/
 
-word Expr2(word P1; word O; word @pType, @nPtr; char @Buff)
+word Expr2(word P1; word O;  char @Buff)
 
-	word P2 = Expr(pZERO,@pType,@nPtr,@Scan(@Buff));
+	word P2 = _Expr(pZERO, @Scan(@Buff));
 	if strcmp(@Buff,")")!=0 then
 		Stop(@eBRACKETEXP);
 	end
@@ -787,7 +793,7 @@ end
 
 /*****************************************************************************/
 
-word ExprLitChar(word P_; word O; word @pType, @nPtr; char @Buff)
+word ExprLitChar(word P_; word O; char @Buff)
 
 	word P1=Peek();
 
@@ -800,14 +806,14 @@ word ExprLitChar(word P_; word O; word @pType, @nPtr; char @Buff)
 
 		Node[P1].ID    =iCHAR;
 		Node[P1].Value = N;
-		pType          = st_char;
-		nPtr           = 0;
+		Node[P1].pType = st_char;
+		Node[P1].nPtr  = 0;
 
 	case strcmp(@Buff,"'")=0: /* Символ. */
 		Node[P1].ID    =iCHAR;
 		Node[P1].Value = word(ScanChar());
-		pType          = st_char;
-		nPtr           = 0;
+		Node[P1].pType = st_char;
+		Node[P1].nPtr  = 0;
 
 		if Read()!='~'' then
 			Stop(@eQUOTEXP);
@@ -817,56 +823,49 @@ word ExprLitChar(word P_; word O; word @pType, @nPtr; char @Buff)
 		StopInternal();
 	end:select
 
-	Node[P1].pType = pType;
-	Node[P1].nPtr  = nPtr;
-
 	Scan(@Buff);
 
 	return P1;
 end
 
-word ExprLitNULL(word P_; word O; word @pType, @nPtr; char @Buff)
+word ExprLitNULL(word P_; word O; char @Buff)
 	word P1=Peek();
 	Node[P1].ID = iNULL;
 	Node[P1].pType = st_void;
 	Node[P1].nPtr = 1;
-	pType       = st_void;
-	nPtr        = 1;
 	Scan(@Buff);
 	return P1;
 end
 
-word ExprLitFALSE(word P_; word O; word @pType, @nPtr; char @Buff)
+word ExprLitFALSE(word P_; word O; char @Buff)
 	word P1 = Peek();
 	Node[P1].ID    = iBOOL;
 	Node[P1].Value = 0;
 	Node[P1].pType = st_bool;
 	Node[P1].nPtr  = 0;
-	pType          = st_bool;
-	nPtr           = 0;
 	Scan(@Buff);
 	return P1;
 end
 
-word ExprLitTRUE(word P_; word O; word @pType, @nPtr; char @Buff)
+word ExprLitTRUE(word P_; word O; char @Buff)
 	word P1 = Peek();
 	Node[P1].ID    = iBOOL;
 	Node[P1].Value = 1;
 	Node[P1].pType = st_bool;
 	Node[P1].nPtr  = 0;
-	pType          = st_bool;
-	nPtr           = 0;
 	Scan(@Buff);
 	return P1;
 end
 
 /*****************************************************************************/
 
-word ExprNOT(word P_; word O; word @pType, @nPtr; char @Buff)
+word ExprNOT(word P_; word O; char @Buff)
 
 	word P1;
 
-	word P2=Expr(Operator[O].Prio,@pType,@nPtr,@Scan(@Buff));
+	word P2=_Expr(Operator[O].Prio, @Scan(@Buff));
+	word pType = Node[P2].pType;
+	word nPtr  = Node[P2].nPtr;
 
 	if pType<nDICT & nPtr>0 then
 		 Stop(@eTYPE);
@@ -894,13 +893,15 @@ end
 
 /*****************************************************************************/
 
-word ExprNEG(word P_; word O; word @pType, @nPtr; char @Buff)
+word ExprNEG(word P_; word O; char @Buff)
 
 	word P1;
 
 	P1=Peek();
 	Node[P1].ID    = iNEG;
-	Node[P1].pLeft = _Expr(Operator[O].Prio,@pType,@nPtr,@Scan(@Buff));
+	Node[P1].pLeft = _Expr(Operator[O].Prio, @Scan(@Buff));
+	word pType = Node[Node[P1].pLeft].pType;
+	word nPtr  = Node[Node[P1].pLeft].nPtr;
 
 	select
 	case Node[Node[P1].pLeft].ID=iWORD:
