@@ -153,7 +153,7 @@ void FuncArgs(char @Buff; word pFunc)
 
 			when pType=st_void & nPtr<1:
 				Stop(@eNOVOID);
-			when Dict[pType].Sub=sHEADER & nPtr<1:
+			when Dict[pType].Sub=sFUNCTYPE & nPtr<1:
 				Stop(@eNOVAL);
 
 			word pARG = FindInNamespace(@Buff, pARGS);
@@ -370,8 +370,9 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 					Node[P1].ID    =iFUNC;
 					Node[P1].Value = I;
-					//pType          = st_void;
-					pType          = I;
+					pType          = T_FuncTypeForFunction(I);
+					Node[P1].pType = pType;
+					Node[P1].nPtr  = nPtr;
 
 					return P1;
 				end:if
@@ -477,7 +478,7 @@ word Primary(word Prty; word @pType, @nPtr; char @Buff)
 
 		select
 		case strcmp(@Buff,"(")=0: /* Вызов функтора. */
-			if Dict[pType].Sub!=sHEADER then
+			if Dict[pType].Sub!=sFUNCTYPE then
 				Stop(@eHEADEREXP);
 			end
 

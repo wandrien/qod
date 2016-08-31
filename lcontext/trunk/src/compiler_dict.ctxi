@@ -59,7 +59,8 @@ word DictAlloc()
 
 	Dict[r].Used = 0;
 	Dict[r].pType = nDICT;
-	Dict[r].tPtrToMe = nDICT;
+	Dict[r].tCachedPtrToMe = nDICT;
+	Dict[r].tCachedFuncTypeOfMe = nDICT;
 	Dict[r].pNamespace = nDICT;
 	Dict[r].pNext = nDICT;
 	Dict[r].pFirst = nDICT;
@@ -269,16 +270,16 @@ word T_PtrTo(word T)
 	when Dict[T].Class != cTYPE:
 		StopInternal();
 
-	if Dict[T].tPtrToMe >= nDICT then
+	if Dict[T].tCachedPtrToMe >= nDICT then
 		word PTR = DictAlloc();
 		Dict[PTR].Class = cTYPE;
 		Dict[PTR].Sub   = sPTR;
 		Dict[PTR].Value = 4; /* FIXME */
 		Dict[PTR].pType = T;
-		Dict[T].tPtrToMe = PTR;
+		Dict[T].tCachedPtrToMe = PTR;
 	end
 
-	return Dict[T].tPtrToMe;
+	return Dict[T].tCachedPtrToMe;
 end
 
 word T_nPtrTo(word nPtr; word T)
@@ -316,6 +317,116 @@ word T_Array(word T; word S)
 	Dict[P].Sub = sARRAY;
 	Dict[P].pType = T;
 	Dict[P].Value = S;
+	return P;
+end
+
+/*****************************************************************************/
+
+/*
+	Функция проверяет идентичность функциональных типов.
+	Аргументами могут выступать функциональные типы, либо функции.
+*/
+word T_IsFuctTypesIdentical(word T1; word T2)
+	when T1 >= nDict:
+		StopInternal();
+
+	when T2 >= nDict:
+		StopInternal();
+
+	when !((Dict[T1].Class = cTYPE & Dict[T1].Sub = sFUNCTYPE) | (Dict[T1].Class = cFUNC)):
+		StopInternal();
+
+	when !((Dict[T2].Class = cTYPE & Dict[T2].Sub = sFUNCTYPE) | (Dict[T2].Class = cFUNC)):
+		StopInternal();
+
+	when T1 = T2:
+		return 1;
+
+	when Dict[T1].pType != Dict[T2].pType:
+		return 0;
+	when Dict[T1].nPtr != Dict[T2].nPtr:
+		return 0;
+
+	word pARGS1 = FindInNamespace("args", T1);
+	word pARGS2 = FindInNamespace("args", T2);
+	when pARGS1 >= nDICT | pARGS2 >= nDICT:
+		StopInternal();
+
+	word P1 = Dict[pARGS1].pFirst;
+	word P2 = Dict[pARGS2].pFirst;
+	do
+		when P1 = nDICT & P2 = nDICT:
+			return 1;
+
+		when P1 = nDICT & P2 != nDICT:
+			exit;
+		when P1 != nDICT & P2 = nDICT:
+			exit;
+		when Dict[P1].pType != Dict[P2].pType:
+			exit;
+		when Dict[P1].nPtr != Dict[P2].nPtr:
+			exit;
+
+		P1 = Dict[P1].pNext;
+		P2 = Dict[P2].pNext;
+	end:do
+
+	return 0;
+end
+
+word T_FuncTypeForFunction(word F)
+
+	when F >= nDict:
+		StopInternal();
+	when Dict[F].Class != cFUNC:
+		StopInternal();
+
+	when Dict[F].tCachedFuncTypeOfMe < nDict:
+		return Dict[F].tCachedFuncTypeOfMe;
+
+	word P = 0;
+	while P < nDict do
+		if Dict[P].pNamespace = nDICT
+		 & Dict[P].Class = cTYPE
+		 & Dict[P].Sub = sFUNCTYPE
+		 & strcmp(@DictGetName(P), "") = 0
+		 & T_IsFuctTypesIdentical(F, P) = 1
+		 then
+			return P;
+		end:if
+		inc P;
+	end:while
+
+	P = DictAlloc();
+	Dict[P].Class = cTYPE;
+	Dict[P].Sub   = sFUNCTYPE;
+	Dict[P].pType = Dict[F].pType;
+	Dict[P].nPtr  = Dict[F].nPtr;
+
+	word F_ARGS = FindInNamespace("args", F);
+
+	word P_ARGS = DictAlloc();
+	DictSetName(P_ARGS, "args");
+	Dict[P_ARGS].Class = cARGS;
+	DictAddToNamespace(P_ARGS, P);
+
+	word F_ARG = Dict[F_ARGS].pFirst;
+	do
+		when F_ARG = nDICT:
+			exit;
+
+		word P_ARG = DictAlloc();
+		DictSetName(P_ARG, "");
+		Dict[P_ARG].Class = cARG;
+		Dict[P_ARG].pType = Dict[F_ARG].pType;
+		Dict[P_ARG].nPtr  = Dict[F_ARG].nPtr;
+		DictAddToNamespace(P_ARG, P_ARGS);
+
+		F_ARG = Dict[F_ARG].pNext;
+	end:do
+
+	Dict[F].tCachedFuncTypeOfMe = P;
+
 	return P;
 end
 

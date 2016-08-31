@@ -71,7 +71,7 @@ void DeclStruct(char @Buff)
               Stop(@eNODATA);
             end
 
-            if Dict[pType].Sub=sHEADER & nPtr<1 then
+            if Dict[pType].Sub=sFUNCTYPE & nPtr<1 then
               Stop(@eNOVAL);
             end
 
@@ -216,7 +216,7 @@ void DeclVarFuncType(char @Buff; word pType)
 
 	DictSetName(D, @Buff);
 	Dict[D].Class = cTYPE;
-	Dict[D].Sub   = sHEADER;
+	Dict[D].Sub   = sFUNCTYPE;
 
 	if strcmp(@Scan(@Buff),"(")!=0 then
 		Stop(@eBRACKETEXP);
@@ -280,7 +280,7 @@ void DeclVarFunc(char @Buff)
 			Stop(@eNOVOID);
 		end
 
-		if Dict[pType].Sub=sHEADER & nPtr<1 then
+		if Dict[pType].Sub=sFUNCTYPE & nPtr<1 then
 			Stop(@eNOVAL);
 		end
 

@@ -475,7 +475,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Stop(@eNOVOID);
 		end:if
 
-		if Dict[pType].Sub=sHEADER & nPtr<1 then
+		if Dict[pType].Sub=sFUNCTYPE & nPtr<1 then
 			Stop(@eNOVAL);
 		end:if
 

@@ -72,35 +72,9 @@ void Test(word pType1, nPtr1; word pType2, nPtr2; word @P)
 	case pType2=st_void & ((nPtr2>0 & nPtr1=nPtr2) | (nPtr2=1 & nPtr1>0)):
 		return;
 
-	case Dict[pType1].Class=cTYPE & Dict[pType1].Sub=sHEADER & Dict[pType2].Class=cFUNC:
-		when Dict[pType1].pType != Dict[pType2].pType:
-			Stop(@eTYPE);
-		when Dict[pType1].nPtr != Dict[pType2].nPtr:
-			Stop(@eTYPE);
-
-		word pARGS1 = FindInNamespace("args", pType1);
-		word pARGS2 = FindInNamespace("args", pType2);
-		when pARGS1 >= nDICT | pARGS2 >= nDICT:
-			StopInternal();
-
-		word P1 = Dict[pARGS1].pFirst;
-		word P2 = Dict[pARGS2].pFirst;
-		do
-			when P1 = nDICT & P2 = nDICT:
-				return;
-
-			when P1 = nDICT & P2 != nDICT:
-				exit;
-			when P1 != nDICT & P2 = nDICT:
-				exit;
-			when Dict[P1].pType != Dict[P2].pType:
-				exit;
-			when Dict[P1].nPtr != Dict[P2].nPtr:
-				exit;
-
-			P1 = Dict[P1].pNext;
-			P2 = Dict[P2].pNext;
-		end:do
+	case Dict[pType1].Sub=sFUNCTYPE & Dict[pType2].Sub=sFUNCTYPE:
+		when T_IsFuctTypesIdentical(pType1, pType2) = 1:
+			return;
 	end:select
 
 	Stop(@eTYPE);
