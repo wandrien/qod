@@ -147,14 +147,14 @@ word NodeDeep(word P)
 	return D1 + 1;
 end
 
-void OutputNodeName(word P)
+void EmitNodeName(word P)
 	char @N = @IDDesc[Node[P].ID].Name;
 	when @N = NULL:
 		StopInternal();
 	EmitString(@N);
 end
 
-void OutputNodeValue(word P)
+void EmitNodeValue(word P)
 	char @N;
 	select
 		case IDDesc[Node[P].ID].ValueClass = vcDict:
@@ -165,11 +165,11 @@ void OutputNodeValue(word P)
 	EmitString(@N);
 end
 
-void OutputNodeType(word P)
+void EmitNodeType(word P)
 	EmitString(@str(Node[P].pType));
 end
 
-void OutputTree_Prefix(int Pad; char @LinePrefix)
+void EmitTree_Prefix(int Pad; char @LinePrefix)
 
 	if Pad < 0 then
 		EmitChar(' ');
@@ -206,45 +206,45 @@ end
 
 */
 
-void OutputTree(word P; int Pad; char @LinePrefix)
+void EmitTree(word P; int Pad; char @LinePrefix)
 
 	if P >= nNODE then
-		OutputTree_Prefix(Pad , @LinePrefix);
+		EmitTree_Prefix(Pad , @LinePrefix);
 		EmitString("0");
 		return;
 	end
 
 	if Pad < 0 then
 		EmitString("(");
-		OutputNodeName(P);
+		EmitNodeName(P);
 		EmitString(" ");
-		OutputNodeValue(P);
+		EmitNodeValue(P);
 		EmitString(" ");
-		OutputNodeType(P);
+		EmitNodeType(P);
 		EmitString(" ");
-		OutputTree(Node[P].pLeft , Pad, "");
+		EmitTree(Node[P].pLeft , Pad, "");
 		EmitString(" ");
-		OutputTree(Node[P].pRight, Pad, "");
+		EmitTree(Node[P].pRight, Pad, "");
 		EmitString(")");
 		return;
 	end
 
 /*
 	if 1 = 1 then
-		OutputTree_Prefix(Pad    , @LinePrefix); EmitString("("); OutputNodeName(P);
-		OutputTree_Prefix(Pad + 1, @LinePrefix); OutputNodeValue(P);
-		OutputTree(Node[P].pLeft , Pad + 1, @LinePrefix);
-		OutputTree(Node[P].pRight, Pad + 1, @LinePrefix);
-		OutputTree_Prefix(Pad    , @LinePrefix); EmitString(")");
+		EmitTree_Prefix(Pad    , @LinePrefix); EmitString("("); EmitNodeName(P);
+		EmitTree_Prefix(Pad + 1, @LinePrefix); EmitNodeValue(P);
+		EmitTree(Node[P].pLeft , Pad + 1, @LinePrefix);
+		EmitTree(Node[P].pRight, Pad + 1, @LinePrefix);
+		EmitTree_Prefix(Pad    , @LinePrefix); EmitString(")");
 		return
 	end
 */
 
-	OutputTree_Prefix(Pad, @LinePrefix);
+	EmitTree_Prefix(Pad, @LinePrefix);
 
 	word Deep = NodeDeep(P);
 	if Deep < 3 then
-		OutputTree(P, -1, "");
+		EmitTree(P, -1, "");
 		return;
 	end
 
@@ -259,13 +259,13 @@ void OutputTree(word P; int Pad; char @LinePrefix)
 			RightList = 1;
 		end
 */
-		OutputNodeName(P);
-		EmitString(" "); OutputNodeValue(P);
-		EmitString(" "); OutputNodeType(P);
-		OutputTree(Node[P].pLeft , Pad + 1, @LinePrefix);
+		EmitNodeName(P);
+		EmitString(" "); EmitNodeValue(P);
+		EmitString(" "); EmitNodeType(P);
+		EmitTree(Node[P].pLeft , Pad + 1, @LinePrefix);
 
 		if RightList = 0 then
-			OutputTree(Node[P].pRight, Pad + 1, @LinePrefix);
+			EmitTree(Node[P].pRight, Pad + 1, @LinePrefix);
 			exit;
 		end
 
@@ -274,17 +274,17 @@ void OutputTree(word P; int Pad; char @LinePrefix)
 			exit;
 		end
 
-		OutputTree_Prefix(Pad, @LinePrefix);
+		EmitTree_Prefix(Pad, @LinePrefix);
 		EmitString("*");
 	end
 
-	OutputTree_Prefix(Pad, @LinePrefix);
+	EmitTree_Prefix(Pad, @LinePrefix);
 	EmitString(")");
 
 end
 
 
-void OutputFunctionTrees()
+void EmitFunctionTrees()
 
 	InitializeIDDesc();
 
@@ -306,18 +306,18 @@ void OutputFunctionTrees()
 				end
 				EmitNL();
 				EmitString(@LinePrefix);
-				OutputTree(Dict[I].pNode, 0, @LinePrefix);
+				EmitTree(Dict[I].pNode, 0, @LinePrefix);
 		end
 		inc I;
 	end
 
 end
 
-void OutputDictEntries()
+void EmitDictEntries()
 	DumpDictEntries(@EmitStringNL);
 end
 
-void OutputIncludeList()
+void EmitIncludeList()
 	word i = 0;
 	while i < nDict do
 		select
