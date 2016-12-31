@@ -492,8 +492,8 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		word P3=Peek();
 		Node[P1].ID   =iDEF_LOCAL;
-		//Node[P1].Value=pType;
-		Node[P1].Value=T_nPtrTo(nPtr, pType);
+		Node[P1].pType=Local[nLocal].pType;
+		Node[P1].Value=Local[nLocal].Name2;
 		Node[P1].pLeft =P3;
 
 		word P4=Peek();

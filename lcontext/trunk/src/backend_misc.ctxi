@@ -33,7 +33,8 @@ end
 
 
 define vcNone 0;
-define vcDict 2;
+define vcDict 1;
+define vcChar 2;
 
 struct ID_DESC
 	char @Name;
@@ -108,7 +109,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iLOAD   , "iLOAD"   );
 	InitIDDesc1(iLPTR   , "iLPTR"   );
 
-	InitIDDesc2(iDEF_LOCAL, "iDEF_LOCAL", vcDict, 1);
+	InitIDDesc2(iDEF_LOCAL, "iDEF_LOCAL", vcChar, 1);
 	InitIDDesc1(iSELECT , "iSELECT" );
 	InitIDDesc2(iSWITCH , "iSWITCH" , vcNone, 1);
 	InitIDDesc2(iWHILE  , "iWHILE"  , vcNone, 1);
@@ -159,6 +160,8 @@ void EmitNodeValue(word P)
 	select
 		case IDDesc[Node[P].ID].ValueClass = vcDict:
 			@N = @DictGetName(Node[P].Value);
+		case IDDesc[Node[P].ID].ValueClass = vcChar:
+			@N = @Char[Node[P].Value];
 		default:
 			@N = @str(Node[P].Value);
 	end:select

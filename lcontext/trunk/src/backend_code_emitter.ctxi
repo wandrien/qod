@@ -912,15 +912,13 @@ word Code(word P; word F; word T; word M)
         StopMemory();
       end
 
-      word pType = Node[P].Value;
-      //word nPtr  = Node[Node[P].pLeft].Value;
+      word pType = Node[P].pType;
       word Size  = SizeOfType(pType, 0);
 
       AllocatedFrameSize =
           AllocatedFrameSize + DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
 
       Local[nLocal].pType=pType;
-      //Local[nLocal].nPtr =nPtr;
       Local[nLocal].Value=AllocatedFrameSize;
       inc   nLocal;
 
