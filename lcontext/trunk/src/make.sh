@@ -12,7 +12,10 @@ mk()
         --output-include-list $4.$5.includes \
         $6 $7 $8 && \
     fasm  $4.$5.asm $4$5 >/dev/null
+	chmod a+x $4$5
 }
+
+mkdir -p out
 
 iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 
