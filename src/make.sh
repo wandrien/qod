@@ -21,7 +21,7 @@ iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 
 printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
 
-mk ../bin/lcontext_c ctx4lnx    --linux out/ lcontext_a
+mk ../precompiled/lcontext_c ctx4lnx    --linux out/ lcontext_a
 
 printf "=> ${CODE_COLOR_YELLOW}Stage B${CODE_COLOR_NOCOLOR}\n"
 mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b
