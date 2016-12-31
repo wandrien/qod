@@ -1,17 +1,15 @@
 
 /*****************************************************************************/
 
-word CanExplicitCast(word To; word nPtrTo; word From; word nPtrFrom)
+word CanExplicitCast(word To; word From)
 
-	if nPtrTo = 0 & nPtrFrom = 0 then
-		if(To=st_char & From=st_byte)
-		| (To=st_char & From=st_word)
-		| (To=st_char & From=st_int )
-		| (To=st_byte & From=st_char)
-		| (To=st_word & From=st_char)
-		| (To=st_int  & From=st_char) then
-			return 1;
-		end:if
+	if(To=st_char & From=st_byte)
+	| (To=st_char & From=st_word)
+	| (To=st_char & From=st_int )
+	| (To=st_byte & From=st_char)
+	| (To=st_word & From=st_char)
+	| (To=st_int  & From=st_char) then
+		return 1;
 	end:if
 
 	return 0;
@@ -41,40 +39,42 @@ end
 
 /*****************************************************************************/
 
-void Test(word pType1, nPtr1; word pType2, nPtr2; word @P)
+void Test(word pType1; word pType2; word @P)
 	select
-	case pType1=pType2 & nPtr1=nPtr2:
+	case pType1=pType2:
 		return;
 
-	case pType1=st_byte & nPtr1=0 & pType2=st_word & nPtr2=0:
+	case pType1=st_byte & pType2=st_word:
 		return;
 
-	case pType1=st_byte & nPtr1=0 & pType2=st_int & nPtr2=0:
+	case pType1=st_byte & pType2=st_int:
 		return;
 
-	case pType1=st_word & nPtr1=0 & pType2=st_byte & nPtr2=0:
+	case pType1=st_word & pType2=st_byte:
 		AddCast(pType1,pType2,@P);
 		return;
 
-	case pType1=st_word & nPtr1=0 & pType2=st_int & nPtr2=0:
+	case pType1=st_word & pType2=st_int:
 		return;
 
-	case pType1=st_int & nPtr1=0 & pType2=st_byte & nPtr2=0:
+	case pType1=st_int & pType2=st_byte:
 		AddCast(pType1,pType2,@P);
 		return;
 
-	case pType1=st_int & nPtr1=0 & pType2=st_word & nPtr2=0:
-		return;
-
-	case pType1=st_void & ((nPtr1>0 & nPtr2=nPtr1) | (nPtr1=1 & nPtr2>0)):
-		return;
-
-	case pType2=st_void & ((nPtr2>0 & nPtr1=nPtr2) | (nPtr2=1 & nPtr1>0)):
+	case pType1=st_int & pType2=st_word:
 		return;
 
 	case Dict[pType1].Sub=sFUNCTYPE & Dict[pType2].Sub=sFUNCTYPE:
 		when T_IsFuctTypesIdentical(pType1, pType2) = 1:
 			return;
+
+	case T_IsPtr(pType1) = 1 & T_IsPtr(pType2) = 1:
+		when pType1 = T_PtrTo(st_void):
+			return;
+		when pType2 = T_PtrTo(st_void):
+			return;
+		Test(T_DerefPtr(pType1), T_DerefPtr(pType2), @P);
+		return;
 	end:select
 
 	Stop(@eTYPE);
@@ -82,8 +82,8 @@ end
 
 /*****************************************************************************/
 
-void ImplicitCast(word pType1, nPtr1; word @P)
-	Test(pType1, nPtr1, Node[P].pType, Node[P].nPtr, @P);
+void ImplicitCast(word pType1; word @P)
+	Test(pType1, Node[P].pType, @P);
 end
 
 /*****************************************************************************/

@@ -84,7 +84,6 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		if strcmp(@Buff,@Case)=0 then
 			Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
 			word pType = Node[Node[COND].pLeft].pType;
-			word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 			if strcmp(@Buff,@Then)!=0 then
 				Stop(@eTHENEXP);
@@ -131,7 +130,6 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
-	word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 	if pType != st_bool then
 		Stop(@eTYPE);
@@ -163,10 +161,6 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
-	word nPtr  = Node[Node[COND].pLeft].nPtr;
-
-	when nPtr != 0:
-		Stop(@eSWTYPE);
 
 	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
 		Stop(@eSWTYPE);
@@ -283,7 +277,6 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 		@End2 = "while";
 		Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
 		word pType = Node[Node[COND].pLeft].pType;
-		word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 		if strcmp(@Buff,"do")!=0 then
 			Stop(@eDOEXP);
@@ -326,7 +319,6 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
-	word nPtr  = Node[Node[COND].pLeft].nPtr;
 
 	if strcmp(@Buff,";")!=0 then
 		Stop(@eSEMICOLONEXP);
@@ -383,13 +375,12 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[P1].pLeft= Expr(pINC, @Scan(@Buff));
 	word pType = Node[Node[P1].pLeft].pType;
-	word nPtr  = Node[Node[P1].pLeft].nPtr;
 
 	if strcmp(@Buff,";")!=0 then
 		Stop(@eSEMICOLONEXP);
 	end
 
-	if (pType!=st_byte & pType!=st_word & pType!=st_int) | nPtr!=0 then
+	if pType!=st_byte & pType!=st_word & pType!=st_int then
 		Stop(@eTYPE);
 	end
 
@@ -404,9 +395,9 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 
 	word need_semicolon = 0;
 
-	if Dict[pFunc].nPtr!=0 | Dict[pFunc].pType != st_void then
+	if Dict[pFunc].pType != st_void then
 		Node[P1].pLeft=Expr(pZERO, @Buff);
-		ImplicitCast(Dict[pFunc].pType, Dict[pFunc].nPtr, @Node[P1].pLeft);
+		ImplicitCast(Dict[pFunc].pType, @Node[P1].pLeft);
 		need_semicolon = 1;
 	end:if
 
@@ -459,7 +450,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
 			Node[P3].pRight = Expr(pZERO, @Scan(@Buff));
-			ImplicitCast(Node[P2].pType, Node[P2].nPtr, @Node[P3].pRight);
+			ImplicitCast(Node[P2].pType, @Node[P3].pRight);
 		end:if
 	else
 		word pType=Find(@Buff);
@@ -491,8 +482,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		end:if
 
 		Local[nLocal].Name2=SaveString0(@Buff);
-		Local[nLocal].pType=pType;
-		Local[nLocal].nPtr =nPtr;
+		Local[nLocal].pType=T_nPtrTo(nPtr, pType);
 		Local[nLocal].nIndx= Tabl(@Scan(@Buff));
 
 		word  N=1;
@@ -502,7 +492,8 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		word P3=Peek();
 		Node[P1].ID   =iDEF_LOCAL;
-		Node[P1].Value=pType;
+		//Node[P1].Value=pType;
+		Node[P1].Value=T_nPtrTo(nPtr, pType);
 		Node[P1].pLeft =P3;
 
 		word P4=Peek();
@@ -530,7 +521,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			Node[P6].ID    =iLOCAL;
 			Node[P6].Value =nLocal;
 
-			ImplicitCast(pType, nPtr, @Node[P5].pRight);
+			ImplicitCast(T_nPtrTo(nPtr, pType), @Node[P5].pRight);
 		end:if
 
 		inc nLocal;

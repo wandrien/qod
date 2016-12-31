@@ -33,6 +33,8 @@ end
 
 
 void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
+	when @SourceLocation = NULL:
+		@SourceLocation = @CurrentFileInfo;
 	puts("~r");
 	PutLocation(@SourceLocation);
 	puts(@msgERROR);
@@ -42,7 +44,7 @@ void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 end
 
 void Stop(char @Msg)
-	StopAt(@CurrentFileInfo, @Msg);
+	StopAt(NULL, @Msg);
 end
 
 void StopInternal()

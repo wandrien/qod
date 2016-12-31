@@ -210,7 +210,6 @@ word DictDupLiteral(word D1)
 	Dict[D2].Class = Dict[D1].Class;
 	Dict[D2].Sub   = Dict[D1].Sub;
 	Dict[D2].pType = Dict[D1].pType;
-	Dict[D2].nPtr  = Dict[D1].nPtr;
 	Dict[D2].nIndx = Dict[D1].nIndx;
 	Dict[D2].RO    = Dict[D1].RO;
 	Dict[D2].Value = Dict[D1].Value;
@@ -221,47 +220,24 @@ end
 
 /*****************************************************************************/
 
-void DefineWord(char @Name; word Value)
-	if Find(@Name) < nDict then
-		StopInternal();
-	end
-
-	word D = DictAlloc();
-	DictSetName(D, @Name);
-	Dict[D].Class = cLITERAL;
-	Dict[D].RO = 1;
-	Dict[D].nPtr = 0;
-	Dict[D].pType = st_word;
-	Dict[D].Value = Value;
-end
-
-/*****************************************************************************/
-
-void DefineString(char @Name; char @Value)
-	if Find(@Name) < nDict then
-		StopInternal();
-	end
-
-	word i = strlen(@Value) + 1;
-
-	word D = DictAlloc();
-	DictSetName(D, @Name);
-	Dict[D].Class = cLITERAL;
-	Dict[D].RO = 1;
-	Dict[D].nPtr = 1;
-	Dict[D].pType = st_char;
-	Dict[D].Stack = SaveString(@Value, i);
-	Dict[D].nIndx = i;
-end
-
-/*****************************************************************************/
-
 word T_IsPtr(word T)
 	when T >= nDict:
 		StopInternal();
 	when Dict[T].Class = cTYPE & Dict[T].Sub = sPTR:
 		return 1;
 	return 0;
+end
+
+word T_IsPtrTo(word T; word T2)
+	when T_IsPtr(T) = 1 & Dict[T].pType = T2:
+		return 1;
+	return 0;
+end
+
+word T_DerefPtr(word T)
+	when T_IsPtr(T) = 0:
+		StopInternal();
+	return Dict[T].pType;
 end
 
 word T_PtrTo(word T)
@@ -344,8 +320,6 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 
 	when Dict[T1].pType != Dict[T2].pType:
 		return 0;
-	when Dict[T1].nPtr != Dict[T2].nPtr:
-		return 0;
 
 	word pARGS1 = FindInNamespace("args", T1);
 	word pARGS2 = FindInNamespace("args", T2);
@@ -363,8 +337,6 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 		when P1 != nDICT & P2 = nDICT:
 			exit;
 		when Dict[P1].pType != Dict[P2].pType:
-			exit;
-		when Dict[P1].nPtr != Dict[P2].nPtr:
 			exit;
 
 		P1 = Dict[P1].pNext;
@@ -401,7 +373,6 @@ word T_FuncTypeForFunction(word F)
 	Dict[P].Class = cTYPE;
 	Dict[P].Sub   = sFUNCTYPE;
 	Dict[P].pType = Dict[F].pType;
-	Dict[P].nPtr  = Dict[F].nPtr;
 
 	word F_ARGS = FindInNamespace("args", F);
 
@@ -419,7 +390,6 @@ word T_FuncTypeForFunction(word F)
 		DictSetName(P_ARG, "");
 		Dict[P_ARG].Class = cARG;
 		Dict[P_ARG].pType = Dict[F_ARG].pType;
-		Dict[P_ARG].nPtr  = Dict[F_ARG].nPtr;
 		DictAddToNamespace(P_ARG, P_ARGS);
 
 		F_ARG = Dict[F_ARG].pNext;
@@ -428,6 +398,140 @@ word T_FuncTypeForFunction(word F)
 	Dict[F].tCachedFuncTypeOfMe = P;
 
 	return P;
+end
+
+/*****************************************************************************/
+
+void DefineWord(char @Name; word Value)
+	if Find(@Name) < nDict then
+		StopInternal();
+	end
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	Dict[D].Class = cLITERAL;
+	Dict[D].RO = 1;
+	Dict[D].pType = st_word;
+	Dict[D].Value = Value;
+end
+
+/*****************************************************************************/
+
+void DefineString(char @Name; char @Value)
+	if Find(@Name) < nDict then
+		StopInternal();
+	end
+
+	word i = strlen(@Value) + 1;
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	Dict[D].Class = cLITERAL;
+	Dict[D].RO = 1;
+	Dict[D].pType = T_PtrTo(st_char);
+	Dict[D].Stack = SaveString(@Value, i);
+	Dict[D].nIndx = i;
+end
+
+/*****************************************************************************/
+
+void function DumpDictEntryCallback(char @S)
+
+void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
+
+	char B[1024];
+	char @dump_prefix = "; ";
+	char @s_CLASS = "<UNK>";
+	char @s_SUB = "<UNK>";
+
+	strcpy(@B, "");
+
+	strcat(@B, @dump_prefix);
+	strcat(@B, @str(I));
+	strcat(@B, ": ");
+	strcat(@B, @DictGetName(I));
+	strcat(@B, "~n");
+
+	strcat(@B, @dump_prefix);
+	strcat(@B, "  ");
+
+
+	select
+	case Dict[I].Class = cWORD: @s_CLASS = "cWORD";
+	case Dict[I].Class = cNAME: @s_CLASS = "cNAME";
+	case Dict[I].Class = cLITERAL: @s_CLASS = "cLITERAL";
+	case Dict[I].Class = cTYPE: @s_CLASS = "cTYPE";
+	case Dict[I].Class = cDATA: @s_CLASS = "cDATA";
+	case Dict[I].Class = cFUNC: @s_CLASS = "cFUNC";
+	case Dict[I].Class = cLIB: @s_CLASS = "cLIB";
+	case Dict[I].Class = cFILE: @s_CLASS = "cFILE";
+	case Dict[I].Class = cFIELD: @s_CLASS = "cFIELD";
+	case Dict[I].Class = cARGS: @s_CLASS = "cARGS";
+	case Dict[I].Class = cARG: @s_CLASS = "cARG";
+	end:select
+
+	select
+	case Dict[I].Sub = sBASE: @s_SUB = "sBASE";
+	case Dict[I].Sub = sSTRUCT: @s_SUB = "sSTRUCT";
+	case Dict[I].Sub = sFUNCTYPE: @s_SUB = "sFUNCTYPE";
+	case Dict[I].Sub = sPTR: @s_SUB = "sPTR";
+	case Dict[I].Sub = sARRAY: @s_SUB = "sARRAY";
+	case Dict[I].Sub = sSYS: @s_SUB = "sSYS";
+	case Dict[I].Sub = sFUNC: @s_SUB = "sFUNC";
+	case Dict[I].Sub = sMAIN: @s_SUB = "sMAIN";
+	end:select
+
+/*
+	switch Dict[I].Class of
+	case cWORD: @s_CLASS = "cWORD";
+	case cNAME: @s_CLASS = "cNAME";
+	case cLITERAL: @s_CLASS = "cLITERAL";
+	case cTYPE: @s_CLASS = "cTYPE";
+	case cDATA: @s_CLASS = "cDATA";
+	case cFUNC: @s_CLASS = "cFUNC";
+	case cLIB: @s_CLASS = "cLIB";
+	case cFILE: @s_CLASS = "cFILE";
+	case cFIELD: @s_CLASS = "cFIELD";
+	case cARGS: @s_CLASS = "cARGS";
+	case cARG: @s_CLASS = "cARG";
+	end:switch
+
+	switch Dict[I].Sub of
+	case sBASE: @s_SUB = "sBASE";
+	case sSTRUCT: @s_SUB = "sSTRUCT";
+	case sFUNCTYPE: @s_SUB = "sFUNCTYPE";
+	case sPTR: @s_SUB = "sPTR";
+	case sARRAY: @s_SUB = "sARRAY";
+	case sSYS: @s_SUB = "sSYS";
+	case sFUNC: @s_SUB = "sFUNC";
+	case sMAIN: @s_SUB = "sMAIN";
+	end:switch
+*/
+
+	strcat(@B, @s_CLASS);
+	strcat(@B, " ");
+	strcat(@B, @s_SUB);
+	strcat(@B, ", Value = ");
+	strcat(@B, @str(Dict[I].Value));
+	strcat(@B, ", pType = ");
+	strcat(@B, @str(Dict[I].pType));
+
+	//strcat(@B, "~n");
+
+	if @cb != NULL then
+		cb(@B);
+	else
+		puts(@B);
+		puts("~n");
+	end
+end
+
+void DumpDictEntries(DumpDictEntryCallback@ cb)
+	word I = 0;
+	while I < nDict do
+		DumpDictEntry(I, @cb);
+		inc I;
+	end:do
 end
 
 /*****************************************************************************/

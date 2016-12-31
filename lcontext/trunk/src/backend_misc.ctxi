@@ -165,6 +165,10 @@ void OutputNodeValue(word P)
 	EmitString(@N);
 end
 
+void OutputNodeType(word P)
+	EmitString(@str(Node[P].pType));
+end
+
 void OutputTree_Prefix(int Pad; char @LinePrefix)
 
 	if Pad < 0 then
@@ -216,6 +220,8 @@ void OutputTree(word P; int Pad; char @LinePrefix)
 		EmitString(" ");
 		OutputNodeValue(P);
 		EmitString(" ");
+		OutputNodeType(P);
+		EmitString(" ");
 		OutputTree(Node[P].pLeft , Pad, "");
 		EmitString(" ");
 		OutputTree(Node[P].pRight, Pad, "");
@@ -255,6 +261,7 @@ void OutputTree(word P; int Pad; char @LinePrefix)
 */
 		OutputNodeName(P);
 		EmitString(" "); OutputNodeValue(P);
+		EmitString(" "); OutputNodeType(P);
 		OutputTree(Node[P].pLeft , Pad + 1, @LinePrefix);
 
 		if RightList = 0 then
@@ -306,6 +313,9 @@ void OutputFunctionTrees()
 
 end
 
+void OutputDictEntries()
+	DumpDictEntries(@EmitStringNL);
+end
 
 void OutputIncludeList()
 	word i = 0;

@@ -8,7 +8,7 @@
 
 /*****************************************************************************/
 
-void CTE1(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
+void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
 
         if ID=iDIV then
           if Node[Node[P2].pRight].ID=iWORD then
@@ -127,7 +127,7 @@ end
 
 /*****************************************************************************/
 
-void CTE2(word @P1, @pType, @nPtr; word @P2, @pType2, @nPtr2; word @ID)
+void CTE2(word @P1, @pType; word @P2, @pType2; word @ID)
 
         if Node[Node[P2].pRight].ID=iWORD then
           if Node[Node[P2].pRight].Value=0 then

@@ -33,6 +33,21 @@ end
 
 /*****************************************************************************/
 
+void StopAnNodeInternalCodegen(word P)
+	CloseOutput();
+	if P < nNODE then
+		StopAt(@Node[P].SourceLocation, @eINTERNAL_CODEGEN);
+	else
+		StopAt(NULL, @eINTERNAL_CODEGEN);
+	end
+end
+
+void StopInternalCodegen()
+	StopAnNodeInternalCodegen(nNODE);
+end
+
+/*****************************************************************************/
+
 /* Вывести в листинг символ. */
 void EmitChar(char C)
 

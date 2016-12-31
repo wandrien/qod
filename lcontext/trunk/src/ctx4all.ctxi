@@ -108,6 +108,7 @@ void Translate()
 	 & strcmp(@OutputFile, @OutputTreeFile) != 0 then
 		OutputTreeFile_Done = 1;
 		OpenOutput(@OutputTreeFile);
+		OutputDictEntries();
 		OutputFunctionTrees();
 		EmitInternalsInfo();
 		CloseOutput();
@@ -128,6 +129,7 @@ void Translate()
 	 & strlen(@OutputTreeFile) != 0
 	 & strcmp(@OutputFile, @OutputTreeFile) = 0 then
 		OutputTreeFile_Done = 1;
+		OutputDictEntries();
 		OutputFunctionTrees();
 		EmitInternalsInfo();
 	end:if

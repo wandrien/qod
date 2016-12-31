@@ -16,7 +16,6 @@ void DeclMainFunc(char@ Buff)
 	Dict[p].Class = cFUNC;
 	Dict[p].Sub   = sMAIN;
 	Dict[p].pType = st_void;
-	Dict[p].nPtr  = 0;
 
 	word pARGS = DictAlloc();
 	DictSetName(pARGS, "args");
@@ -82,8 +81,7 @@ void DeclStruct(char @Buff)
             F = DictAlloc();
             DictSetName(F, @Buff);
             Dict[F].Class = cFIELD;
-            Dict[F].pType = pType;
-            Dict[F].nPtr  = nPtr;
+            Dict[F].pType = T_nPtrTo(nPtr, pType);
             Dict[F].nIndx = Tabl(@Scan(@Buff));
             DictAddToNamespace(F, pStruct);
 
@@ -222,8 +220,7 @@ void DeclVarFuncType(char @Buff; word pType)
 		Stop(@eBRACKETEXP);
 	end
 
-	Dict[D].pType = pType;
-	Dict[D].nPtr  = nPtr;
+	Dict[D].pType = T_nPtrTo(nPtr, pType);
 	FuncArgs(@Buff, D);
 
 	/*if (strcmp(@Scan(@Buff),";")!=0) then
@@ -260,8 +257,7 @@ void DeclVarFunc(char @Buff)
 		word D = DictAlloc();
 
 		DictSetName(D, @Buff);
-		Dict[D].pType = pType;
-		Dict[D].nPtr  = nPtr;
+		Dict[D].pType = T_nPtrTo(nPtr, pType);
 
 		Scan(@Buff);
 
@@ -306,7 +302,7 @@ void DeclVarFunc(char @Buff)
 			Node[P3].ID    =iDATA;
 			Node[P3].Value =D;
 
-			ImplicitCast(pType, nPtr, @Node[P2].pRight);
+			ImplicitCast(T_nPtrTo(nPtr, pType), @Node[P2].pRight);
 
 			Dict[D].pNode=P1;
 
@@ -341,7 +337,6 @@ word DeclDefine(char @Buff)
 	DictSetName(D, @Buff);
 	Dict[D].Class = cLITERAL;
 	Dict[D].RO = 1;
-	Dict[D].nPtr  = 0;
 
 	Scan(@Buff);
 	select
