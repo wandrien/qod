@@ -490,16 +490,12 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			N = Local[nLocal].nIndx;
 		end
 
-		word P3=Peek();
+		word P4=Peek();
+
 		Node[P1].ID   =iDEF_LOCAL;
 		Node[P1].pType=Local[nLocal].pType;
 		Node[P1].Value=Local[nLocal].Name2;
-		Node[P1].pLeft =P3;
-
-		word P4=Peek();
-		Node[P3].ID    =iEMPTY;
-		Node[P3].Value =nPtr;
-		Node[P3].pLeft = P4;
+		Node[P1].pLeft =P4;
 
 		Node[P4].ID    =iEMPTY;
 		Node[P4].Value = N;

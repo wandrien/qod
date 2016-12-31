@@ -916,13 +916,13 @@ word Code(word P; word F; word T; word M)
       word Size  = SizeOfType(pType, 0);
 
       AllocatedFrameSize =
-          AllocatedFrameSize + DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
+          AllocatedFrameSize + DefaultInStackAlign(Node[Node[P].pLeft].Value*Size);
 
       Local[nLocal].pType=pType;
       Local[nLocal].Value=AllocatedFrameSize;
       inc   nLocal;
 
-      Code(Node[Node[P].pLeft].pLeft,0,0,0);
+      Code(Node[P].pLeft,0,0,0);
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iASSIGN:

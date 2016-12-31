@@ -195,14 +195,7 @@ word     Enum(word P; word Flag)
             end
 
           case Node[P].ID=iDEF_LOCAL:
-            /*word Size=4;
-            if Node[Node[P].pLeft].Value=0 then
-              Size=Dict[Node[P].Value].Value;
-            end
-
-            S=S+DefaultInStackAlign(Node[Node[Node[P].pLeft].pLeft].Value*Size);
-*/
-			word Size = SizeOfType(Node[P].pType, Node[Node[Node[P].pLeft].pLeft].Value);
+			word Size = SizeOfType(Node[P].pType, Node[Node[P].pLeft].Value);
 			S=S+DefaultInStackAlign(Size);
 
             if M<S then
