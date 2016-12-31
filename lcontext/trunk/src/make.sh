@@ -1,31 +1,51 @@
 #!/bin/bash
 
 set -e
-set -x
+#set -x
 
 mk()
 {
+	echo "    BUILD $4$5"
     $1 $2.ctx $3 \
         --output $4.$5.asm \
         --output-tree $4.$5.tree \
         --output-include-list $4.$5.includes \
         $6 $7 $8 && \
-    fasm  $4.$5.asm $4$5
+    fasm  $4.$5.asm $4$5 >/dev/null
 }
 
 iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 
+printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
+
 mk ../bin/lcontext_c ctx4lnx    --linux out/ lcontext_a
 
-mk out/lcontext_a ctx4lnx       --linux out/ lcontext_b
-mk out/lcontext_b ctx4lnx       --linux out/ lcontext_c --warn-unused-globals
+printf "=> ${CODE_COLOR_YELLOW}Stage B${CODE_COLOR_NOCOLOR}\n"
+mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b
+mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b_debug --optimize none
+mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b.exe
+mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b_debug.exe --optimize none
 
-mk out/lcontext_b ctx4lnx       --linux out/ lcontext_c_debug --optimize none
+printf "=> ${CODE_COLOR_YELLOW}Stage C${CODE_COLOR_NOCOLOR}\n"
+mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c #--warn-unused-globals
+mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_debug --optimize none
+mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c.exe #--warn-unused-globals
+mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
 
-mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c.exe --warn-unused-globals
-mk out/lcontext_c ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
+# Generated assembler listings for A and B stages should be identical.
+diff out/.lcontext_b.asm           out/.lcontext_c.asm
+diff out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
+diff out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
+diff out/.lcontext_b_debug.exe.asm out/.lcontext_c_debug.exe.asm
 
-diff out/lcontext_b out/lcontext_c
+# The binaries should be identical too.
+diff out/lcontext_b           out/lcontext_c
+diff out/lcontext_b_debug     out/lcontext_c_debug
+# Do not test PE files, since they differ in timestamp.
+#diff out/lcontext_b.exe       out/lcontext_c.exe
+#diff out/lcontext_b_debug.exe out/lcontext_c_debug.exe
+
+printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
 
 mk out/lcontext_c samples/z_t1  --win32-c out/ z_t1.exe
 mk out/lcontext_c samples/z_t2  --win32-w out/ z_t2.exe
@@ -33,6 +53,8 @@ mk out/lcontext_c samples/z_t3  --win32-c out/ z_t3.exe
 mk out/lcontext_c samples/z_t4  --win32-c out/ z_t4.exe
 mk out/lcontext_c samples/z_t5  --win32-c out/ z_t5.exe
 mk out/lcontext_c samples/z_t6  --win32-c out/ z_t6.exe
+
+printf "=> ${CODE_COLOR_YELLOW}Running tests${CODE_COLOR_NOCOLOR}\n"
 
 mkdir -p tests/out
 
