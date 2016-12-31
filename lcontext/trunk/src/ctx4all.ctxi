@@ -108,9 +108,7 @@ void Translate()
 	 & strcmp(@OutputFile, @OutputTreeFile) != 0 then
 		OutputTreeFile_Done = 1;
 		OpenOutput(@OutputTreeFile);
-		EmitDictEntries();
-		EmitFunctionTrees();
-		EmitInternalsInfo();
+		EmitContentForTreeFile();
 		CloseOutput();
 	end:if
 
@@ -129,9 +127,7 @@ void Translate()
 	 & strlen(@OutputTreeFile) != 0
 	 & strcmp(@OutputFile, @OutputTreeFile) = 0 then
 		OutputTreeFile_Done = 1;
-		EmitDictEntries();
-		EmitFunctionTrees();
-		EmitInternalsInfo();
+		EmitContentForTreeFile();
 	end:if
 
 	/* Заголовок. */
