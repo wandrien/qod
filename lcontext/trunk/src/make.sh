@@ -38,37 +38,46 @@ mkdir -p tests/out
 
 failed ()
 {
-	echo " => failed $*"
+	printf " => ${CODE_COLOR_RED}failed${CODE_COLOR_NOCOLOR} %s\n" "$*"
 	exit 1;
 }
 
 passed ()
 {
-	echo " => passed $*"
+	printf " => ${CODE_COLOR_GREEN}passed${CODE_COLOR_NOCOLOR} %s\n" "$*"
 }
 
 
 do_test ()
 {
-	if [ "x$1" = "xcompilation_should_fail" ] ; then
-		if (mk out/lcontext_c tests/"$2"  --linux tests/out/ "$2" 1> tests/out/"$2".stdout 2> tests/out/"$2".stderr) ; then
-			failed "$2"
+	local test_name="$1" ; shift
+	local condition="$1" ; shift
+	if [ "x$condition" = "xcompilation_should_fail" ] ; then
+		if (mk out/lcontext_c tests/"$test_name"\
+				--linux tests/out/ "$test_name" \
+				1> tests/out/"$test_name".stdout \
+				2> tests/out/"$test_name".stderr) ; then
+			failed "$test_name"
 		fi
-		if (cat tests/out/"$2".stdout tests/out/"$2".stderr | grep -q "$3") ; then
-			passed "$2"
+		if (cat tests/out/"$test_name".stdout tests/out/"$test_name".stderr | grep -q "$1") ; then
+			passed "$test_name"
 		else
-			failed "$2"
+			failed "$test_name"
 		fi
+	else
+		failed "$test_name"
 	fi
+}
+
+do_tests ()
+{
+	for f in `(cd tests && grep -l 'TEST:' *.* )` ; do
+		local t="`basename -s .ctx "$f"`"
+		local c="`grep 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
+		eval do_test $t $c
+	done
 }
 
 set +x
 
-do_test compilation_should_fail div_0 'Попытка деления на ноль'
-do_test compilation_should_fail div_0_2 'Попытка деления на ноль'
-do_test compilation_should_fail div_0_3 'Попытка деления на ноль'
-do_test compilation_should_fail wrong_continue 'continue вне цикла'
-do_test compilation_should_fail wrong_exit 'exit вне цикла'
-do_test compilation_should_fail eNOFUNCTION 'Объявление функции недопустимо'
-do_test compilation_should_fail eDUPLICATE 'Повтор имени'
-
+do_tests

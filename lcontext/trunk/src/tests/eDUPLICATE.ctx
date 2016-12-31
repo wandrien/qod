@@ -1,3 +1,4 @@
+// TEST: compilation_should_fail 'Повтор имени'
 $context2
 
 word f(word a)

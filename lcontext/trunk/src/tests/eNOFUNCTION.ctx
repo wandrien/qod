@@ -1,3 +1,4 @@
+// TEST: compilation_should_fail 'Объявление функции недопустимо'
 $context2
 
 word a, b(word c)

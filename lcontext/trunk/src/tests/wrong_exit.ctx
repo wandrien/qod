@@ -1,3 +1,4 @@
+// TEST: compilation_should_fail 'exit вне цикла'
 $context2
 
 begin
