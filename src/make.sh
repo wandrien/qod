@@ -72,23 +72,35 @@ passed ()
 	printf " => ${CODE_COLOR_GREEN}passed${CODE_COLOR_NOCOLOR} %s\n" "$*"
 }
 
-
-do_test ()
+do_test_with_compiler ()
 {
+	local failed=1
+	local passed=0
+	local c="$1" ; shift
 	local test_name="$1" ; shift
 	local condition="$1" ; shift
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
-		if (mk out/lcontext_c tests/"$test_name"\
+		if (mk out/lcontext_"$c" tests/"$test_name"\
 				--linux tests/out/ "$test_name" \
-				1> tests/out/"$test_name".stdout \
-				2> tests/out/"$test_name".stderr) ; then
-			failed "$test_name"
+				1> tests/out/"$test_name"."$c".stdout \
+				2> tests/out/"$test_name"."$c".stderr) ; then
+			return $failed
 		fi
-		if (cat tests/out/"$test_name".stdout tests/out/"$test_name".stderr | grep -q "$1") ; then
-			passed "$test_name"
+		if (cat tests/out/"$test_name"."$c".stdout tests/out/"$test_name"."$c".stderr | grep -q "$1") ; then
+			return $passed
 		else
-			failed "$test_name"
+			return $failed
 		fi
+	else
+		return $failed
+	fi
+}
+
+do_test ()
+{
+	local test_name="$1"
+	if do_test_with_compiler b "$@" && do_test_with_compiler c "$@" ; then
+		passed "$test_name"
 	else
 		failed "$test_name"
 	fi
