@@ -135,7 +135,7 @@ word Code_PUSH(word P; word F; word T; word M; char @Buff)
 	fEAX=RegA;
 	word pType = _Code(Node[P].pLeft,0,0,0);
 
-	word Size = PointerSize;
+	word Size = target_size_of_pointer;
 	if pType<nDICT then
 		Size=Dict[pType].Value;
 	end

@@ -250,7 +250,7 @@ word T_PtrTo(word T)
 		word PTR = DictAlloc();
 		Dict[PTR].Class = cTYPE;
 		Dict[PTR].Sub   = sPTR;
-		Dict[PTR].Value = 4; /* FIXME */
+		Dict[PTR].Value = target_size_of_pointer;
 		Dict[PTR].pType = T;
 		Dict[T].tCachedPtrToMe = PTR;
 	end

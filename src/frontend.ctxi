@@ -125,9 +125,9 @@ void InitFrontEnd()
 	st_void = Base("void", 0);
 	st_char = Base("char", 1);
 	st_byte = Base("byte", 1);
-	st_word = Base("word", 4);
-	st_int  = Base("int" , 4);
-	st_bool = Base("bool", 4);
+	st_word = Base("word", target_size_of_word);
+	st_int  = Base("int" , target_size_of_int);
+	st_bool = Base("bool", target_size_of_bool);
 
 	RegisterOperators();
 
