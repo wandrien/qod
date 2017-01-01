@@ -118,3 +118,14 @@ do_tests ()
 set +x
 
 do_tests
+
+printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR}\n"
+valgrind --tool=callgrind \
+	--callgrind-out-file=callgrind.out.lcontext_c \
+	--dump-instr=yes \
+	out/lcontext_c ctx4lnx.ctx --linux --output out/lcontext_c.callgrind.asm
+
+printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
+valgrind --tool=memcheck \
+	out/lcontext_c ctx4lnx.ctx --linux --output out/lcontext_c.memcheck.asm
+
