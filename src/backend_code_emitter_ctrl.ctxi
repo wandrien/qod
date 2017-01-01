@@ -186,7 +186,7 @@ word Code_RETURN(word P; word F; word T; word M; char @Buff)
 			StopInternalCodegen();
 		end:select
 	else
-		if CompactFunctionEnterLeave != 0 then
+		if EmitLeaveInstruction != 0 then
 			Emit("leave");
 		else
 			Emit("mov     ESP,  EBP");

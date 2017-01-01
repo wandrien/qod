@@ -1015,7 +1015,7 @@ word EmitFunctions(char @Buff)
 
 				PHO_InvalidateRegs();
 
-				if CompactFunctionEnterLeave != 0 & Dict[I].Stack > 0 then
+				if EmitEnterInstruction != 0 & Dict[I].Stack > 0 then
 					Emit(@strcat(@strcat(@strcpy(@Buff,"enter   "),@str(Dict[I].Stack)), ", 0"));
 				else
 					Emit("push    EBP");
