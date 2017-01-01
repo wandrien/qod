@@ -233,14 +233,14 @@ end
 
 void DeclVarFunc(char @Buff)
 
-	word pType = Find(@Buff);
-	if pType >= nDict | Dict[pType].Class != cTYPE then
+	word pPrefixType = Find(@Buff);
+	if pPrefixType >= nDict | Dict[pPrefixType].Class != cTYPE then
 		Stop(@eTYPEEXP);
 	end
 
 	/* Функтор-тип. */
 	if strcmp(@Scan(@Buff),"function")=0 then
-		DeclVarFuncType(@Buff, pType);
+		DeclVarFuncType(@Buff, pPrefixType);
 		return;
 	end
 
@@ -257,7 +257,7 @@ void DeclVarFunc(char @Buff)
 		word D = DictAlloc();
 
 		DictSetName(D, @Buff);
-		Dict[D].pType = T_nPtrTo(nPtr, pType);
+		Dict[D].pType = T_nPtrTo(nPtr, pPrefixType);
 
 		Scan(@Buff);
 
@@ -272,11 +272,11 @@ void DeclVarFunc(char @Buff)
 
 		FirstName = 0;
 
-		if pType=st_void & nPtr<1 then
+		if Dict[D].pType = st_void then
 			Stop(@eNOVOID);
 		end
 
-		if Dict[pType].Sub=sFUNCTYPE & nPtr<1 then
+		if Dict[Dict[D].pType].Sub = sFUNCTYPE then
 			Stop(@eNOVAL);
 		end
 
@@ -302,7 +302,7 @@ void DeclVarFunc(char @Buff)
 			Node[P3].ID    =iDATA;
 			Node[P3].Value =D;
 
-			ImplicitCast(T_nPtrTo(nPtr, pType), @Node[P2].pRight);
+			ImplicitCast(Dict[D].pType, @Node[P2].pRight);
 
 			Dict[D].pNode=P1;
 
