@@ -233,7 +233,7 @@ end
 void __main()
 
 	SetupTarget(@DefaultTarget);
-	SetupOptimization("speed");
+	SetupOptimization("none");
 
 	word i = 1;
 	while i < Argc do

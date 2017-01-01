@@ -7,10 +7,11 @@ mk()
 {
 	echo "    BUILD $4$5"
     $1 $2.ctx $3 \
-        --output $4.$5.asm \
-        --output-tree $4.$5.tree \
-        --output-include-list $4.$5.includes \
-        $6 $7 $8 && \
+		--optimize speed \
+		--output $4.$5.asm \
+		--output-tree $4.$5.tree \
+		--output-include-list $4.$5.includes \
+		$6 $7 $8 && \
     fasm  $4.$5.asm $4$5 >/dev/null && \
 	chmod a+x $4$5
 }
@@ -123,9 +124,9 @@ printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOC
 valgrind --tool=callgrind \
 	--callgrind-out-file=callgrind.out.lcontext_c \
 	--dump-instr=yes \
-	out/lcontext_c ctx4lnx.ctx --linux --output out/lcontext_c.callgrind.asm
+	out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.callgrind.asm
 
 printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
 valgrind --tool=memcheck \
-	out/lcontext_c ctx4lnx.ctx --linux --output out/lcontext_c.memcheck.asm
+	out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.memcheck.asm
 
