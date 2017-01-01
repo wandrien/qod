@@ -11,7 +11,7 @@ mk()
         --output-tree $4.$5.tree \
         --output-include-list $4.$5.includes \
         $6 $7 $8 && \
-    fasm  $4.$5.asm $4$5 >/dev/null
+    fasm  $4.$5.asm $4$5 >/dev/null && \
 	chmod a+x $4$5
 }
 
