@@ -1,0 +1,4 @@
+// TEST: compilation_should_fail 'Неизвестный параметр командной строки'
+// COMPILER_FLAGS: --invalid-option
+
+int a;

@@ -80,9 +80,13 @@ do_test_with_compiler ()
 	local c="$1" ; shift
 	local test_name="$1" ; shift
 	local condition="$1" ; shift
+
+	local COMPILER_FLAGS="`grep -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
+
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
 		if (mk out/lcontext_"$c" tests/"$test_name"\
 				--linux tests/out/ "$test_name" \
+				$COMPILER_FLAGS \
 				1> tests/out/"$test_name"."$c".stdout \
 				2> tests/out/"$test_name"."$c".stderr) ; then
 			return $failed
@@ -109,14 +113,12 @@ do_test ()
 
 do_tests ()
 {
-	for f in `(cd tests && grep -l 'TEST:' *.* )` ; do
-		local t="`basename -s .ctx "$f"`"
-		local c="`grep 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
+	for f in `(cd tests && grep -l  -- 'TEST:' *.* )` ; do
+		local t="`basename -s .ctx  -- "$f"`"
+		local c="`grep  -- 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
 		eval do_test $t $c
 	done
 }
-
-set +x
 
 do_tests
 

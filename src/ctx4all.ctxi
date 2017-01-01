@@ -263,6 +263,8 @@ void __main()
 			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
 		case strcmp(@arg, "--warn-unused-globals" ) = 0:
 			WarnUnusedGlobals = 1;
+		case str_has_prefix(@arg, "-") = 1:
+			Stop(@eWRONGOPTION);
 		default:
 			@InputFile = @GetArg(i, @eFNAMEEXP);
 		end:select

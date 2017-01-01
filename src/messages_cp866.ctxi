@@ -1,4 +1,4 @@
-define @eWRONGPARM       "Неизвестный параметр"                        // Wrong argument
+define @eWRONGOPTION     "Неизвестный параметр командной строки"       // unrecognized command line option
 define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
 define @eNOFILE          "Невозможно открыть файл"                     // Can't open file
 define @eINCLUDE         "Некорректная вставка файла"                  // Incorrect file include
