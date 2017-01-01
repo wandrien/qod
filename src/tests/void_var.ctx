@@ -1,0 +1,5 @@
+// TEST: compilation_should_fail 'Тип void недопустим'
+
+begin
+	void a;
+end

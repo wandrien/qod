@@ -1,0 +1,6 @@
+// TEST: compilation_should_fail 'Тип void недопустим'
+
+word f(void a)
+	return 1;
+end
+
