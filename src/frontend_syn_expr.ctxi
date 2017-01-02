@@ -772,7 +772,7 @@ end
 
 /*****************************************************************************/
 
-word Expr2(word P1; word O;  char @Buff)
+word ExprParentheses(word P1; word O;  char @Buff)
 
 	word P2 = _Expr(PRIO_ZERO, @Scan(@Buff));
 	if strcmp(@Buff,")")!=0 then
@@ -939,7 +939,7 @@ void RegisterOperators()
 	RegisterOperator("-"    , PRIO_NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
 	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
 
-	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @Expr2);
+	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
 	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
