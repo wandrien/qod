@@ -744,7 +744,7 @@ end
 
 /*****************************************************************************/
 
-word Expr1(word P1; word O; char @Buff)
+word ExprBinOp(word P1; word O; char @Buff)
 
 	word P2 = Peek();
 	Node[P2].ID = Operator[O].ID;
@@ -918,23 +918,23 @@ end
 
 void RegisterOperators()
 
-	RegisterOperator("|"    , PRIO_BOOL , OPERATOR_BLEFT, iOR , @Expr1);
-	RegisterOperator("^"    , PRIO_BOOL , OPERATOR_BLEFT, iXOR, @Expr1);
-	RegisterOperator("&"    , PRIO_BOOL , OPERATOR_BLEFT, iAND, @Expr1);
+	RegisterOperator("|"    , PRIO_BOOL , OPERATOR_BLEFT, iOR , @ExprBinOp);
+	RegisterOperator("^"    , PRIO_BOOL , OPERATOR_BLEFT, iXOR, @ExprBinOp);
+	RegisterOperator("&"    , PRIO_BOOL , OPERATOR_BLEFT, iAND, @ExprBinOp);
 
-	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @Expr1);
-	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @Expr1);
-	RegisterOperator("="    , PRIO_COMP , OPERATOR_BLEFT, iEQ , @Expr1);
-	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @Expr1);
-	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @Expr1);
-	RegisterOperator(">="   , PRIO_COMP , OPERATOR_BLEFT, iGE , @Expr1);
+	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
+	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
+	RegisterOperator("="    , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
+	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
+	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);
+	RegisterOperator(">="   , PRIO_COMP , OPERATOR_BLEFT, iGE , @ExprBinOp);
 
-	RegisterOperator("+"    , PRIO_ADD  , OPERATOR_BLEFT, iADD, @Expr1);
-	RegisterOperator("-"    , PRIO_ADD  , OPERATOR_BLEFT, iSUB, @Expr1);
+	RegisterOperator("+"    , PRIO_ADD  , OPERATOR_BLEFT, iADD, @ExprBinOp);
+	RegisterOperator("-"    , PRIO_ADD  , OPERATOR_BLEFT, iSUB, @ExprBinOp);
 
-	RegisterOperator("*"    , PRIO_MUL  , OPERATOR_BLEFT, iMUL, @Expr1);
-	RegisterOperator("/"    , PRIO_MUL  , OPERATOR_BLEFT, iDIV, @Expr1);
-	RegisterOperator("%"    , PRIO_MUL  , OPERATOR_BLEFT, iMOD, @Expr1);
+	RegisterOperator("*"    , PRIO_MUL  , OPERATOR_BLEFT, iMUL, @ExprBinOp);
+	RegisterOperator("/"    , PRIO_MUL  , OPERATOR_BLEFT, iDIV, @ExprBinOp);
+	RegisterOperator("%"    , PRIO_MUL  , OPERATOR_BLEFT, iMOD, @ExprBinOp);
 
 	RegisterOperator("-"    , PRIO_NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
 	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
