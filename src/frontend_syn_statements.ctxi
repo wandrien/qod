@@ -82,7 +82,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		@BackLink = @Node[CASE].pRight;
 
 		if strcmp(@Buff,@Case)=0 then
-			Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
+			Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 			word pType = Node[Node[COND].pLeft].pType;
 
 			if strcmp(@Buff,@Then)!=0 then
@@ -128,7 +128,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	Node[COND].pRight = BODY;
 	Node[P1].pLeft = CASE;
 
-	Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
+	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if pType != st_bool then
@@ -159,7 +159,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	word @CaseBackLink = @Node[COND].pRight;
 
-	Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
+	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
 	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
@@ -179,7 +179,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		word @ValueBackLink = @Node[CASE].pLeft;
 
 		repeat
-			word EXPR = Expr(pZERO, @Scan(@Buff));
+			word EXPR = Expr(PRIO_ZERO, @Scan(@Buff));
 
 			select
 			case pType = st_char:
@@ -275,7 +275,7 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
 	if strcmp(@Buff,"while")=0 then
 		@End2 = "while";
-		Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
+		Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 		word pType = Node[Node[COND].pLeft].pType;
 
 		if strcmp(@Buff,"do")!=0 then
@@ -317,7 +317,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	Scan(@Buff);
 	Node[BODY].pLeft = _Statements(@Buff, "until", NULL, NULL);
 
-	Node[COND].pLeft = Expr(pZERO, @Scan(@Buff));
+	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if strcmp(@Buff,";")!=0 then
@@ -373,7 +373,7 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P1].ID =iDEC;
 	end:if
 
-	Node[P1].pLeft= Expr(pINC, @Scan(@Buff));
+	Node[P1].pLeft= Expr(PRIO_INC, @Scan(@Buff));
 	word pType = Node[Node[P1].pLeft].pType;
 
 	if strcmp(@Buff,";")!=0 then
@@ -396,7 +396,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	word need_semicolon = 0;
 
 	if Dict[pFunc].pType != st_void then
-		Node[P1].pLeft=Expr(pZERO, @Buff);
+		Node[P1].pLeft=Expr(PRIO_ZERO, @Buff);
 		ImplicitCast(Dict[pFunc].pType, @Node[P1].pLeft);
 		need_semicolon = 1;
 	end:if
@@ -439,7 +439,7 @@ end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
-	word P2=Expr(pLVALUE, @Buff);
+	word P2=Expr(PRIO_LVALUE, @Buff);
 	if P2<nNODE then
 		word P3=Peek();
 		Node[P1].ID    =iASSIGN;
@@ -449,7 +449,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P3].pLeft = P2;
 
 		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
-			Node[P3].pRight = Expr(pZERO, @Scan(@Buff));
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 			ImplicitCast(Node[P2].pType, @Node[P3].pRight);
 		end:if
 	else
@@ -512,7 +512,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			word P6=Peek();
 			Node[P5].ID    =iEMPTY;
 			Node[P5].pLeft = P6;
-			Node[P5].pRight= Expr(pZERO, @Scan(@Buff));
+			Node[P5].pRight= Expr(PRIO_ZERO, @Scan(@Buff));
 
 			Node[P6].ID    =iLOCAL;
 			Node[P6].Value =nLocal;

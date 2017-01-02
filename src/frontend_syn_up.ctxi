@@ -297,7 +297,7 @@ void DeclVarFunc(char @Buff)
 			word P3=Peek();
 			Node[P2].ID    =iEMPTY;
 			Node[P2].pLeft = P3;
-			Node[P2].pRight= Expr(pZERO, @Scan(@Buff));
+			Node[P2].pRight= Expr(PRIO_ZERO, @Scan(@Buff));
 
 			Node[P3].ID    =iDATA;
 			Node[P3].Value =D;
@@ -342,7 +342,7 @@ word DeclDefine(char @Buff)
 	select
 		case nPtr=0:
 
-			word P = Expr(pZERO, @Buff);
+			word P = Expr(PRIO_ZERO, @Buff);
 
 			select
 				case Node[P].ID=iWORD:

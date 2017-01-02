@@ -86,7 +86,7 @@ end
 word Tabl(char @Buff)
 	word nIndx = 0;
 	if strcmp(@Buff,"[")=0 then
-		word P = _Expr(pZERO, @Scan(@Buff));
+		word P = _Expr(PRIO_ZERO, @Scan(@Buff));
 
 		when Node[P].ID!=iWORD:
 			Stop(@eTYPE);
@@ -220,7 +220,7 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff)
 	while pARG < nDICT do
 		word P8=Peek();
 		Node[P8].ID   =iPUSH;
-		Node[P8].pLeft=_Expr(pZERO, @Buff);
+		Node[P8].pLeft=_Expr(PRIO_ZERO, @Buff);
 
 		ImplicitCast(Dict[pARG].pType, @Node[P8].pLeft);
 
@@ -361,7 +361,7 @@ word Primary(word Prty; char @Buff)
 
 					ParseCallArgs(I, @Node[P2].pLeft, @Buff);
 				else
-					if Prty>=pINC | nPtr!=1 then
+					if Prty >= PRIO_INC | nPtr!=1 then
 						Stop(@eNOADDR);
 					end
 
@@ -376,7 +376,7 @@ word Primary(word Prty; char @Buff)
 			end:if
 
 		case Dict[I].Class=cTYPE: /* Тип данных? */
-			if Prty<pLVALUE then
+			if Prty < PRIO_LVALUE then
 				if strcmp(@Scan(@Buff),"(")!=0 then
 					Stop(@eBRACKETEXP);
 				end:if
@@ -388,7 +388,7 @@ word Primary(word Prty; char @Buff)
 				Node[P1].pLeft = P2;
 
 				Node[P2]. ID   = iEMPTY;
-				Node[P2].pLeft = _Expr(pZERO, @Scan(@Buff));
+				Node[P2].pLeft = _Expr(PRIO_ZERO, @Scan(@Buff));
 				pType = Node[Node[P2].pLeft].pType;
 
 				if strcmp(@Buff,")")!=0 then
@@ -431,7 +431,7 @@ word Primary(word Prty; char @Buff)
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
 			Node[P3].Value= nIndx;
-			Node[P3].pLeft= _Expr(pZERO, @Scan(@Buff));
+			Node[P3].pLeft= _Expr(PRIO_ZERO, @Scan(@Buff));
 			nIndx = 0;
 
 			if strcmp(@Buff,"]")!=0 then
@@ -453,7 +453,7 @@ word Primary(word Prty; char @Buff)
 
 			word P3=Peek();
 			Node[P3].ID   =iADDR;
-			Node[P3].pLeft= _Expr(pZERO, @Scan(@Buff));
+			Node[P3].pLeft= _Expr(PRIO_ZERO, @Scan(@Buff));
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
@@ -563,7 +563,7 @@ word Primary(word Prty; char @Buff)
 		end:select
 	end:do
 
-	if Prty>=pLVALUE & strcmp(@Buff,"=")!=0 & strcmp(@Buff,":=")!=0 then
+	if Prty >= PRIO_LVALUE & strcmp(@Buff,"=")!=0 & strcmp(@Buff,":=")!=0 then
 		if Call=0 | nPtr>0 then
 			Stop(@eASSIGNEXP);
 		end:if
@@ -581,7 +581,7 @@ word Primary(word Prty; char @Buff)
 	end:while
 
 	word P4=nNODE;
-	if Prty<pINC then
+	if Prty < PRIO_INC then
 		if nPtr>nPtr1+1 then
 			Stop(@eNOADDR);
 		end:if
@@ -774,7 +774,7 @@ end
 
 word Expr2(word P1; word O;  char @Buff)
 
-	word P2 = _Expr(pZERO, @Scan(@Buff));
+	word P2 = _Expr(PRIO_ZERO, @Scan(@Buff));
 	if strcmp(@Buff,")")!=0 then
 		Stop(@eBRACKETEXP);
 	end
@@ -918,36 +918,34 @@ end
 
 void RegisterOperators()
 
-	RegisterOperator("|"   , pBOOL , OPERATOR_BLEFT, iOR , @Expr1);
-	RegisterOperator("^"   , pBOOL , OPERATOR_BLEFT, iXOR, @Expr1);
-	RegisterOperator("&"   , pBOOL , OPERATOR_BLEFT, iAND, @Expr1);
+	RegisterOperator("|"    , PRIO_BOOL , OPERATOR_BLEFT, iOR , @Expr1);
+	RegisterOperator("^"    , PRIO_BOOL , OPERATOR_BLEFT, iXOR, @Expr1);
+	RegisterOperator("&"    , PRIO_BOOL , OPERATOR_BLEFT, iAND, @Expr1);
 
-	RegisterOperator("<"   , pCOMP , OPERATOR_BLEFT, iLT , @Expr1);
-	RegisterOperator("<="  , pCOMP , OPERATOR_BLEFT, iLE , @Expr1);
-	RegisterOperator("="   , pCOMP , OPERATOR_BLEFT, iEQ , @Expr1);
-	RegisterOperator("!="  , pCOMP , OPERATOR_BLEFT, iNE , @Expr1);
-	RegisterOperator(">"   , pCOMP , OPERATOR_BLEFT, iGT , @Expr1);
-	RegisterOperator(">="  , pCOMP , OPERATOR_BLEFT, iGE , @Expr1);
+	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @Expr1);
+	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @Expr1);
+	RegisterOperator("="    , PRIO_COMP , OPERATOR_BLEFT, iEQ , @Expr1);
+	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @Expr1);
+	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @Expr1);
+	RegisterOperator(">="   , PRIO_COMP , OPERATOR_BLEFT, iGE , @Expr1);
 
-	RegisterOperator("+"   , pADD  , OPERATOR_BLEFT, iADD, @Expr1);
-	RegisterOperator("-"   , pADD  , OPERATOR_BLEFT, iSUB, @Expr1);
+	RegisterOperator("+"    , PRIO_ADD  , OPERATOR_BLEFT, iADD, @Expr1);
+	RegisterOperator("-"    , PRIO_ADD  , OPERATOR_BLEFT, iSUB, @Expr1);
 
-	RegisterOperator("*"   , pMUL  , OPERATOR_BLEFT, iMUL, @Expr1);
-	RegisterOperator("/"   , pMUL  , OPERATOR_BLEFT, iDIV, @Expr1);
-	RegisterOperator("%"   , pMUL  , OPERATOR_BLEFT, iMOD, @Expr1);
+	RegisterOperator("*"    , PRIO_MUL  , OPERATOR_BLEFT, iMUL, @Expr1);
+	RegisterOperator("/"    , PRIO_MUL  , OPERATOR_BLEFT, iDIV, @Expr1);
+	RegisterOperator("%"    , PRIO_MUL  , OPERATOR_BLEFT, iMOD, @Expr1);
 
-	RegisterOperator("-"   , pNEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
-	RegisterOperator("!"   , pNEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
+	RegisterOperator("-"    , PRIO_NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
+	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
 
-	RegisterOperator("("   , pEXPR , OPERATOR_UPRE , 0   , @Expr2);
+	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @Expr2);
 
-	RegisterOperator("'"    , pCONST, OPERATOR_UPRE , iCHAR, @ExprLitChar);
-	RegisterOperator("#"    , pCONST, OPERATOR_UPRE , iCHAR, @ExprLitChar);
-	RegisterOperator("NULL" , pCONST, OPERATOR_UPRE , iNULL, @ExprLitNULL);
-	RegisterOperator("false", pCONST, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
-//	RegisterOperator("FALSE", pCONST, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
-	RegisterOperator("true" , pCONST, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);
-//	RegisterOperator("TRUE" , pCONST, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);
+	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
+	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
+	RegisterOperator("NULL" , PRIO_LITER, OPERATOR_UPRE , iNULL, @ExprLitNULL);
+	RegisterOperator("false", PRIO_LITER, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
+	RegisterOperator("true" , PRIO_LITER, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);
 end
 
 /*****************************************************************************/

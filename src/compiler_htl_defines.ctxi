@@ -114,19 +114,17 @@ define  iID_COUNT   58
 
 /*****************************************************************************/
 
-/* Приоритеты операций: */
-define  pZERO        0 // Нулевой пpиоpитет
-define  pBOOL        1 // Логические
-define  pCOMP        2 // Сpавнения
-define  pADD         3 // Сложение/вычитание
-define  pNEG         4 // Унарный минус
-define  pMUL         5 // Умножение/деление
-define  pINC         6 // inc/dec
-define  pLVALUE      7 // LVALUE
-
-define  pEXPR       10 // выражение в скобках
-
-define  pCONST      20 // char-литералы и NULL
+/* Operator priorities (precedence) */
+define  PRIO_ZERO        0
+define  PRIO_BOOL        1 // boolean operators
+define  PRIO_COMP        2 // <, >, >= etc
+define  PRIO_ADD         3 // + and -
+define  PRIO_NEG         4 // unary minus
+define  PRIO_MUL         5 // *, / and %
+define  PRIO_INC         6 // inc/dec
+define  PRIO_LVALUE      7 // LVALUE
+define  PRIO_EXPR       10 // an expression in parentheses
+define  PRIO_LITER      20 // literals
 
 /*****************************************************************************/
 
