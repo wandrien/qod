@@ -852,10 +852,6 @@ word ExprNOT(word P_; word O; char @Buff)
 	word P2=_Expr(Operator[O].Prio, @Scan(@Buff));
 	word pType = Node[P2].pType;
 
-/*	if pType<nDICT & nPtr>0 then
-		 Stop(@eTYPE);
-	end*/
-
 	select
 	case pType=st_byte | pType=st_word:
 		P1=Peek();
