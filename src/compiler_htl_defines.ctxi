@@ -119,8 +119,8 @@ define  PRIO_ZERO        0
 define  PRIO_BOOL        1 // boolean operators
 define  PRIO_COMP        2 // <, >, >= etc
 define  PRIO_ADD         3 // + and -
-define  PRIO_NEG         4 // unary minus
-define  PRIO_MUL         5 // *, / and %
+define  PRIO_MUL         4 // *, / and %
+define  PRIO_NEG         5 // unary minus
 define  PRIO_INC         6 // inc/dec
 define  PRIO_LVALUE      7 // LVALUE
 define  PRIO_EXPR       10 // an expression in parentheses
