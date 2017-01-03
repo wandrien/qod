@@ -852,30 +852,31 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iCAST:
-		word pType = Code(Node[Node[P].pLeft].pLeft, 0, 0, 0);
+		word pTypeFrom = Code(Node[Node[P].pLeft].pLeft, 0, 0, 0);
+		word pTypeTo = Node[P].pType;
 		select
-		case Node[P].pType=st_char & pType=st_byte:
+		case pTypeTo=st_char & pTypeFrom=st_byte:
 			null;
-		case Node[P].pType=st_char & pType=st_word:
+		case pTypeTo=st_char & pTypeFrom=st_word:
 			null;
-		case Node[P].pType=st_char & pType=st_int:
+		case pTypeTo=st_char & pTypeFrom=st_int:
 			null;
-		case Node[P].pType=st_byte & pType=st_char:
+		case pTypeTo=st_byte & pTypeFrom=st_char:
 			null;
-		case Node[P].pType=st_word & pType=st_char:
+		case pTypeTo=st_word & pTypeFrom=st_char:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].pType=st_word & pType=st_byte:
+		case pTypeTo=st_word & pTypeFrom=st_byte:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].pType=st_int & pType=st_char:
+		case pTypeTo=st_int & pTypeFrom=st_char:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].pType=st_int & pType=st_byte:
+		case pTypeTo=st_int & pTypeFrom=st_byte:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].pType=st_int & pType=st_word:
+		case pTypeTo=st_int & pTypeFrom=st_word:
 			null;
 		default:
 			StopInternalCodegen();
 		end
-		return Node[P].pType;
+		return pTypeTo;
 
 ///////////////////////////////////////////////////////////////////////////////
 
