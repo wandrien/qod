@@ -381,25 +381,18 @@ word Primary(word Prty; char @Buff)
 					Stop(@eBRACKETEXP);
 				end:if
 
-				P1             = Peek();
-				word P2        = Peek();
-				Node[P1]. ID   =iCAST;
-				Node[P1]. Value= I;
-				Node[P1].pLeft = P2;
-
-				Node[P2]. ID   = iEMPTY;
-				Node[P2].pLeft = _Expr(PRIO_ZERO, @Scan(@Buff));
-				pType = Node[Node[P2].pLeft].pType;
+				P1 = _Expr(PRIO_ZERO, @Scan(@Buff));
 
 				if strcmp(@Buff,")")!=0 then
 					Stop(@eBRACKETEXP);
 				end:if
 
-				if CanExplicitCast(I, pType) != 0 then
-					pType=I;
-				else
+				if CanExplicitCast(I, Node[P1].pType) = 0 then
 					Stop(@eTYPE);
 				end:if
+
+				AddCast(I, @P1);
+				pType = Node[P1].pType;
 			else
 				if nPtr>0 then
 					Stop(@eUNDEFINED);
