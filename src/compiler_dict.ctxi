@@ -220,6 +220,50 @@ end
 
 /*****************************************************************************/
 
+word T_IsUnsigned(word T)
+	when T >= nDict:
+		StopInternal();
+
+	when T = st_byte | T = st_word:
+		return 1;
+	return 0;
+end
+
+word T_IsSigned(word T)
+	when T >= nDict:
+		StopInternal();
+
+	when T = st_int:
+		return 1;
+	return 0;
+end
+
+word T_IsInteger(word T)
+	when T >= nDict:
+		StopInternal();
+
+	when T_IsUnsigned(T) = 1 | T_IsSigned(T) = 1:
+		return 1;
+	return 0;
+end
+
+/*****************************************************************************/
+
+word T_SizeOf(word T)
+	when T >= nDict:
+		StopInternal();
+
+	when Dict[T].Class != cTYPE:
+		StopInternal();
+
+	when Dict[T].Sub = sARRAY:
+		return Dict[T].Value * T_SizeOf(Dict[T].pType);
+
+	return Dict[T].Value;
+end
+
+/*****************************************************************************/
+
 word T_IsPtr(word T)
 	when T >= nDict:
 		StopInternal();
