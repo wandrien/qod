@@ -852,7 +852,7 @@ word Code(word P; word F; word T; word M)
 ///////////////////////////////////////////////////////////////////////////////
 
 	case iCAST:
-		word pTypeFrom = Code(Node[Node[P].pLeft].pLeft, 0, 0, 0);
+		word pTypeFrom = Code(Node[P].pLeft, 0, 0, 0);
 		word pTypeTo = Node[P].pType;
 		select
 		case pTypeTo=st_char & pTypeFrom=st_byte:

@@ -26,13 +26,9 @@ void AddCast(word pType1; word @P)
 	end
 
 	word P1 = Peek();
-	word P2 = Peek();
 	Node[P1].ID    = iCAST;
 	Node[P1].pType = pType1;
-	Node[P1].pLeft = P2;
-
-	Node[P2].ID    = iEMPTY;
-	Node[P2].pLeft = P;
+	Node[P1].pLeft = P;
 
 	P = P1;
 end
