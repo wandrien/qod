@@ -353,14 +353,14 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 	when T2 >= nDict:
 		StopInternal();
 
-	when !((Dict[T1].Class = cTYPE & Dict[T1].Sub = sFUNCTYPE) | (Dict[T1].Class = cFUNC)):
-		StopInternal();
-
-	when !((Dict[T2].Class = cTYPE & Dict[T2].Sub = sFUNCTYPE) | (Dict[T2].Class = cFUNC)):
-		StopInternal();
-
 	when T1 = T2:
 		return 1;
+
+	when !((Dict[T1].Class = cTYPE & Dict[T1].Sub = sFUNCTYPE) | (Dict[T1].Class = cFUNC)):
+		return 0;
+
+	when !((Dict[T2].Class = cTYPE & Dict[T2].Sub = sFUNCTYPE) | (Dict[T2].Class = cFUNC)):
+		return 0;
 
 	when Dict[T1].pType != Dict[T2].pType:
 		return 0;

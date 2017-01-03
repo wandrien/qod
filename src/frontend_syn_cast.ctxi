@@ -35,51 +35,49 @@ end
 
 /*****************************************************************************/
 
-void Test(word pType1; word pType2; word @P)
+word IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
+
 	select
-	case pType1=pType2:
-		return;
+	case pTypeFrom = pTypeTo:
+		return 1;
+	case T_IsPtr(pTypeFrom) = 1 & T_IsPtr(pTypeTo) = 1:
+		when pTypeFrom = T_PtrTo(st_void):
+			return 1;
+		when pTypeTo = T_PtrTo(st_void):
+			return 1;
+		word pTypeDerefFrom = T_DerefPtr(pTypeFrom);
+		word pTypeDerefTo = T_DerefPtr(pTypeTo);
+		when T_IsFuctTypesIdentical(pTypeDerefFrom, pTypeDerefTo) = 1:
+			return 1;
+	case T_IsInteger(pTypeFrom) = 1 & T_IsInteger(pTypeTo) = 1:
+		if T_IsSigned(pTypeFrom) = T_IsSigned(pTypeTo) then
+			when T_SizeOf(pTypeFrom) <= T_SizeOf(pTypeTo):
+				return 1;
+		end:if
 
-	case pType1=st_byte & pType2=st_word:
-		return;
+		/* HACK: temporary rules to make self-compilation possible */
+		when pTypeFrom = st_word & pTypeTo = st_int:
+			return 1;
 
-	case pType1=st_byte & pType2=st_int:
-		return;
+		when pTypeFrom = st_int & pTypeTo = st_word:
+			return 1;
 
-	case pType1=st_word & pType2=st_byte:
-		AddCast(pType1, @P);
-		return;
-
-	case pType1=st_word & pType2=st_int:
-		return;
-
-	case pType1=st_int & pType2=st_byte:
-		AddCast(pType1, @P);
-		return;
-
-	case pType1=st_int & pType2=st_word:
-		return;
-
-	case Dict[pType1].Sub=sFUNCTYPE & Dict[pType2].Sub=sFUNCTYPE:
-		when T_IsFuctTypesIdentical(pType1, pType2) = 1:
-			return;
-
-	case T_IsPtr(pType1) = 1 & T_IsPtr(pType2) = 1:
-		when pType1 = T_PtrTo(st_void):
-			return;
-		when pType2 = T_PtrTo(st_void):
-			return;
-		Test(T_DerefPtr(pType1), T_DerefPtr(pType2), @P);
-		return;
+		when pTypeFrom = st_word & pTypeTo = st_byte:
+			return 1;
+		/* END HACK */
 	end:select
 
-	Stop(@eTYPE);
+	return 0;
 end
 
 /*****************************************************************************/
 
-void ImplicitCast(word pType1; word @P)
-	Test(pType1, Node[P].pType, @P);
+void ImplicitCast(word pTypeTo; word @P)
+	when IsImplicitCastPossible(Node[P].pType, pTypeTo) = 0:
+		Stop(@eTYPE);
+
+	when Node[P].pType != pTypeTo:
+		AddCast(pTypeTo, @P);
 end
 
 /*****************************************************************************/

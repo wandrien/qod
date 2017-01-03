@@ -814,7 +814,7 @@ word Code(word P; word F; word T; word M)
 	switch Node[P].ID of
 	case iNULL:
 		Emit_Load_Constant(fEAX, 4, 0);
-		return nDICT;
+		return Node[P].pType;
 
 	case iBOOL:
 		select
@@ -854,7 +854,17 @@ word Code(word P; word F; word T; word M)
 	case iCAST:
 		word pTypeFrom = Code(Node[P].pLeft, 0, 0, 0);
 		word pTypeTo = Node[P].pType;
+
 		select
+		case pTypeFrom = nDICT:
+			null; /* FIXME: should trigger internal error */
+			//StopAnNodeInternalCodegen(P);
+		case pTypeFrom = st_void:
+			StopAnNodeInternalCodegen(P);
+		case pTypeTo = st_void:
+			StopAnNodeInternalCodegen(P);
+		case pTypeTo = pTypeFrom:
+			null;
 		case pTypeTo=st_char & pTypeFrom=st_byte:
 			null;
 		case pTypeTo=st_char & pTypeFrom=st_word:
@@ -863,18 +873,26 @@ word Code(word P; word F; word T; word M)
 			null;
 		case pTypeTo=st_byte & pTypeFrom=st_char:
 			null;
+		case pTypeTo=st_byte & pTypeFrom=st_int:
+			null;
+		case pTypeTo=st_byte & pTypeFrom=st_word:
+			null;
 		case pTypeTo=st_word & pTypeFrom=st_char:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case pTypeTo=st_word & pTypeFrom=st_byte:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+		case pTypeTo=st_word & pTypeFrom=st_int:
+			null;
 		case pTypeTo=st_int & pTypeFrom=st_char:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case pTypeTo=st_int & pTypeFrom=st_byte:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 		case pTypeTo=st_int & pTypeFrom=st_word:
 			null;
+		case T_IsPtr(pTypeTo) = 1 & T_IsPtr(pTypeFrom) = 1:
+			null;
 		default:
-			StopInternalCodegen();
+			StopAnNodeInternalCodegen(P);
 		end
 		return pTypeTo;
 
