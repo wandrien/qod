@@ -631,25 +631,25 @@ void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 			null;
 
 		case pType=st_byte & pType2=st_word:
-			AddCast(pType2,pType,@Node[P2].pLeft);
+			AddCast(pType2, @Node[P2].pLeft);
 			pType=pType2;
 
 		case pType=st_byte & pType2=st_int:
-			AddCast(pType2,pType,@Node[P2].pLeft);
+			AddCast(pType2, @Node[P2].pLeft);
 			pType=pType2;
 
 		case pType=st_word & pType2=st_byte:
-			AddCast(pType,pType2,@Node[P2].pRight);
+			AddCast(pType, @Node[P2].pRight);
 
 		case pType=st_word & pType2=st_int:
-			AddCast(pType2,pType,@Node[P2].pLeft);
+			AddCast(pType2, @Node[P2].pLeft);
 			pType=pType2;
 
 		case pType=st_int & pType2=st_byte:
-			AddCast(pType,pType2,@Node[P2].pRight);
+			AddCast(pType, @Node[P2].pRight);
 
 		case pType=st_int & pType2=st_word:
-			AddCast(pType,pType2,@Node[P2].pRight);
+			AddCast(pType, @Node[P2].pRight);
 
 		default:
 			Stop(@eTYPE);

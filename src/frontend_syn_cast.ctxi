@@ -17,7 +17,7 @@ end
 
 /*****************************************************************************/
 
-void AddCast(word pType1, pType2; word @P)
+void AddCast(word pType1; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
 	if pType1=st_int & Node[P].ID=iWORD then
@@ -51,14 +51,14 @@ void Test(word pType1; word pType2; word @P)
 		return;
 
 	case pType1=st_word & pType2=st_byte:
-		AddCast(pType1,pType2,@P);
+		AddCast(pType1, @P);
 		return;
 
 	case pType1=st_word & pType2=st_int:
 		return;
 
 	case pType1=st_int & pType2=st_byte:
-		AddCast(pType1,pType2,@P);
+		AddCast(pType1, @P);
 		return;
 
 	case pType1=st_int & pType2=st_word:
