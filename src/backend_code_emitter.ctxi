@@ -854,28 +854,28 @@ word Code(word P; word F; word T; word M)
 	case iCAST:
 		word pType = Code(Node[Node[P].pLeft].pLeft, 0, 0, 0);
 		select
-		case Node[P].Value=st_char & pType=st_byte:
+		case Node[P].pType=st_char & pType=st_byte:
 			null;
-		case Node[P].Value=st_char & pType=st_word:
+		case Node[P].pType=st_char & pType=st_word:
 			null;
-		case Node[P].Value=st_char & pType=st_int:
+		case Node[P].pType=st_char & pType=st_int:
 			null;
-		case Node[P].Value=st_byte & pType=st_char:
+		case Node[P].pType=st_byte & pType=st_char:
 			null;
-		case Node[P].Value=st_word & pType=st_char:
+		case Node[P].pType=st_word & pType=st_char:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].Value=st_word & pType=st_byte:
+		case Node[P].pType=st_word & pType=st_byte:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].Value=st_int & pType=st_char:
+		case Node[P].pType=st_int & pType=st_char:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].Value=st_int & pType=st_byte:
+		case Node[P].pType=st_int & pType=st_byte:
 			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case Node[P].Value=st_int & pType=st_word:
+		case Node[P].pType=st_int & pType=st_word:
 			null;
 		default:
 			StopInternalCodegen();
 		end
-		return  Node[P].Value;
+		return Node[P].pType;
 
 ///////////////////////////////////////////////////////////////////////////////
 
