@@ -740,16 +740,13 @@ end
 word ExprBinOp(word P1; word O; char @Buff)
 
 	word P2 = Peek();
-	Node[P2].ID = Operator[O].ID;
-
 	word ID = Operator[O].ID;
+	Node[P2].ID = ID;
 
 	word pType;
 
 	if P1 >= nNODE then
-		Node[P2].pLeft  = _Expr(Operator[O].Prio, @Scan(@Buff));
-		pType = Node[Node[P2].pLeft].pType;
-		//Cast1(@P, @pType, @nPtr);
+		StopInternal();
 	else
 		pType = Node[P1].pType;
 		Node[P2].pLeft  = P1;
