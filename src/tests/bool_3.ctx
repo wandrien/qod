@@ -1,0 +1,82 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 OK7 OK8 OK9 OK10 OK11 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+bool t = true;
+bool f = false;
+
+void foo(bool t; bool f)
+
+	if f then
+		puts("OOPS ");
+	else
+		puts("OK1 ");
+	end:if
+
+	if t then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	when f:
+		puts("OOPS");
+
+	when t:
+		puts("OK3 ");
+
+
+	if t & t then
+		puts("OK4 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if f & f then
+		puts("OOPS ");
+	else
+		puts("OK5 ");
+	end:if
+
+	if t & f then
+		puts("OOPS ");
+	else
+		puts("OK6 ");
+	end:if
+
+	if f & t then
+		puts("OOPS ");
+	else
+		puts("OK7 ");
+	end:if
+
+	if f | f then
+		puts("OOPS ");
+	else
+		puts("OK8 ");
+	end:if
+
+	if t | f then
+		puts("OK9 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if f | t then
+		puts("OK10 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if t | t then
+		puts("OK11 ");
+	else
+		puts("OOPS ");
+	end:if
+
+end
+
+begin
+	foo(true, false);
+end
