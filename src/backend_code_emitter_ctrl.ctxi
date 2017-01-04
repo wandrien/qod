@@ -43,7 +43,7 @@ end
 
 /*****************************************************************************/
 
-word Code_PUSH(word P; word F; word T; word M; char @Buff)
+word Code_PUSH(word P; char @Buff)
 
 	if Node[P].pRight<nNODE then
 		_Code(Node[P].pRight,0,0,0);
@@ -157,7 +157,7 @@ end
 
 /*****************************************************************************/
 
-word Code_RETURN(word P; word F; word T; word M; char @Buff)
+word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
 		fEAX=RegA;
@@ -204,7 +204,7 @@ end
 
 /*****************************************************************************/
 
-word Code_SELECT(word P; word F; word T; word M; char @Buff)
+word Code_SELECT(word P; char @Buff)
 
 	/*
 	                 iSELECT
@@ -253,7 +253,7 @@ end
 
 /*****************************************************************************/
 
-word Code_SWITCH(word P; word F; word T; word M; char @Buff)
+word Code_SWITCH(word P; char @Buff)
 
 	/*
 	                 iSWITCH
@@ -377,7 +377,7 @@ end
 
 /*****************************************************************************/
 
-word Code_WHILE(word P; word F; word T; word M; char @Buff)
+word Code_WHILE(word P; char @Buff)
 
 	/*
 	                 iWHILE
@@ -416,7 +416,7 @@ end
 
 /*****************************************************************************/
 
-word Code_REPEAT(word P; word F; word T; word M; char @Buff)
+word Code_REPEAT(word P; char @Buff)
 
 	/*
 	                 iREPEAT
@@ -457,13 +457,13 @@ end
 
 /*****************************************************************************/
 
-word Code_CONTINUE(word P; word F; word T; word M; char @Buff)
+word Code_CONTINUE(word P; char @Buff)
 	EmitJumpToLabel(LabelResolve(Node[P].Value, lCONTINUE));
 end
 
 /*****************************************************************************/
 
-word Code_EXIT(word P; word F; word T; word M; char @Buff)
+word Code_EXIT(word P; char @Buff)
 	EmitJumpToLabel(LabelResolve(Node[P].Value, lEXIT));
 end
 

@@ -970,22 +970,22 @@ word Code(word P; word F; word T; word M)
 		Code_AND(P, F, T, M, @Buff);
 ///////////////////////////////////////////////////////////////////////////////
 	case iPUSH:
-		Code_PUSH(P, F, T, M, @Buff);
+		Code_PUSH(P, @Buff);
 	case iRETURN:
-		Code_RETURN(P, F, T, M, @Buff);
+		Code_RETURN(P, @Buff);
 ///////////////////////////////////////////////////////////////////////////////
 	case iSELECT:
-		Code_SELECT(P, F, T, M, @Buff);
+		Code_SELECT(P, @Buff);
 	case iSWITCH:
-		Code_SWITCH(P, F, T, M, @Buff);
+		Code_SWITCH(P, @Buff);
 	case iWHILE:
-		Code_WHILE(P, F, T, M, @Buff);
+		Code_WHILE(P, @Buff);
 	case iREPEAT:
-		Code_REPEAT(P, F, T, M, @Buff);
+		Code_REPEAT(P, @Buff);
 	case iCONTINUE:
-		Code_CONTINUE(P, F, T, M, @Buff);
+		Code_CONTINUE(P, @Buff);
 	case iEXIT:
-		Code_EXIT(P, F, T, M, @Buff);
+		Code_EXIT(P, @Buff);
 	case iEMPTY:
 		null;
 	default:
