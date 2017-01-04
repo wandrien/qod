@@ -836,6 +836,17 @@ word Code(word P; word F; word T; word M)
 		case iAND:
 			Code_AND(P, F, T, M, @Buff);
 			return st_bool;
+
+		case iDATA, iPARM, iLOCAL:
+			Code(P, 0, 0, 0);
+			Emit(@CodeCmdRegReg(@Buff, "test", fEAX, 4, fEAX, 4));
+			select
+			case F != 0:
+				EmitBranchToLabel("z", F);
+			case T != 0:
+				EmitBranchToLabel("nz", T);
+			end:select
+
 		default:
 			StopInternalCodegen();
 		end:switch
