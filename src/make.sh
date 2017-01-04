@@ -62,17 +62,6 @@ printf "=> ${CODE_COLOR_YELLOW}Running tests${CODE_COLOR_NOCOLOR}\n"
 
 mkdir -p tests/out
 
-failed ()
-{
-	printf " => ${CODE_COLOR_RED}failed${CODE_COLOR_NOCOLOR} %s\n" "$*"
-	exit 1;
-}
-
-passed ()
-{
-	printf " => ${CODE_COLOR_GREEN}passed${CODE_COLOR_NOCOLOR} %s\n" "$*"
-}
-
 do_test_with_compiler ()
 {
 	local failed=1
@@ -118,9 +107,13 @@ do_test ()
 {
 	local test_name="$1"
 	if do_test_with_compiler b "$@" && do_test_with_compiler c "$@" ; then
-		passed "$test_name"
+		printf " => ${CODE_COLOR_GREEN}passed${CODE_COLOR_NOCOLOR} %s\n" "$test_name"
 	else
-		failed "$test_name"
+		printf " => ${CODE_COLOR_RED}failed${CODE_COLOR_NOCOLOR} %s\n" "$test_name"
+		set -x
+		do_test_with_compiler b "$@" && do_test_with_compiler c "$@"
+		set +x
+		exit 1
 	fi
 }
 
