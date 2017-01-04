@@ -96,6 +96,19 @@ do_test_with_compiler ()
 		else
 			return $failed
 		fi
+	elif [ "x$condition" = "xshould_print" ] ; then
+		if ! (mk out/lcontext_"$c" tests/"$test_name"\
+				--linux tests/out/ "$test_name" \
+				$COMPILER_FLAGS \
+				1> tests/out/"$test_name"."$c".stdout \
+				2> tests/out/"$test_name"."$c".stderr) ; then
+			return $failed
+		fi
+		if [ "x`tests/out/"$test_name"`" = "x$1" ] ; then
+			return $passed
+		else
+			return $failed
+		fi
 	else
 		return $failed
 	fi

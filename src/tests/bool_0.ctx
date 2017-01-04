@@ -1,0 +1,25 @@
+// TEST: should_print 'OK1 OK2 OK3 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+
+	if false then
+		puts("OOPS ");
+	else
+		puts("OK1 ");
+	end:if
+
+	if true then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	when false:
+		puts("OOPS");
+
+	when true:
+		puts("OK3 ");
+end
