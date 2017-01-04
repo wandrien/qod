@@ -807,190 +807,188 @@ word Code(word P; word F; word T; word M)
 	when T != 0 & F != 0: /* T и F не могут быть установлены в не 0 одновременно. */
 		StopInternalCodegen();
 
-	when T != 0 | F != 0: /* T и F имеют смысл только для булевых вычислений. */
-		when NodeTypeIs(P, st_bool) = 0:
+	if T != 0 | F != 0 then
+		when NodeTypeIs(P, st_bool) = 0: /* T и F имеют смысл только для булевых вычислений. */
 			StopInternalCodegen();
 
-	switch Node[P].ID of
-	case iNULL:
-		Emit_Load_Constant(fEAX, 4, 0);
-		return Node[P].pType;
+		switch Node[P].ID of
+		case iBOOL:
+			select
+			case Node[P].Value = 0 & F != 0:
+				EmitJumpToLabel(F);
+			case Node[P].Value != 0 & T != 0:
+				EmitJumpToLabel(T);
+			end:select
+			return st_bool;
 
-	case iBOOL:
-		select
-		case T = 0 & F = 0:
+		case iLT, iLE, iEQ, iNE, iGE, iGT:
+			return CodeBinOp(@Buff, P, F, T, M);
+
+		case iOR:
+			Code_OR(P, F, T, M, @Buff);
+			return st_bool;
+		case iXOR:
+			Code_XOR(P, F, T, M, @Buff);
+			return st_bool;
+		case iEQV:
+			Code_EQV(P, F, T, M, @Buff);
+			return st_bool;
+		case iAND:
+			Code_AND(P, F, T, M, @Buff);
+			return st_bool;
+		default:
+			StopInternalCodegen();
+		end:switch
+	else
+		switch Node[P].ID of
+		case iNULL:
+			Emit_Load_Constant(fEAX, 4, 0);
+			return Node[P].pType;
+
+		case iBOOL:
 			Emit_Load_Constant(fEAX, 4, Node[P].Value);
-		case Node[P].Value = 0 & F != 0:
-			EmitJumpToLabel(F);
-		case Node[P].Value != 0 & T != 0:
-			EmitJumpToLabel(T);
-		end:select
-		return st_bool;
+			return st_bool;
 
-	case iCHAR:
-		Emit_Load_Constant(fEAX, 1, Node[P].Value);
-		return st_char;
+		case iCHAR:
+			Emit_Load_Constant(fEAX, 1, Node[P].Value);
+			return st_char;
 
-	case iWORD:
-		Emit_Load_Constant(fEAX, 4, Node[P].Value);
-		return st_word;
+		case iWORD:
+			Emit_Load_Constant(fEAX, 4, Node[P].Value);
+			return st_word;
 
-	case iINT:
-		Emit_Load_Constant(fEAX, 4, Node[P].Value);
-		return st_int;
+		case iINT:
+			Emit_Load_Constant(fEAX, 4, Node[P].Value);
+			return st_int;
 
-	case iFUNC:
-		CodeLoadLabel(@Buff, fEAX, Node[P].Value);
-		Emit(@Buff);
-		return nDICT;
+		case iFUNC:
+			CodeLoadLabel(@Buff, fEAX, Node[P].Value);
+			Emit(@Buff);
+			return nDICT;
 
-///////////////////////////////////////////////////////////////////////////////
+		case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
+			return Code1(P);
 
-	case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
-		return Code1(P);
+		case iCAST:
+			word pTypeFrom = Code(Node[P].pLeft, 0, 0, 0);
+			word pTypeTo = Node[P].pType;
 
-///////////////////////////////////////////////////////////////////////////////
+			select
+			case pTypeFrom = nDICT:
+				null; /* FIXME: should trigger internal error */
+				//StopAnNodeInternalCodegen(P);
+			case pTypeFrom = st_void:
+				StopAnNodeInternalCodegen(P);
+			case pTypeTo = st_void:
+				StopAnNodeInternalCodegen(P);
+			case pTypeTo = pTypeFrom:
+				null;
+			case pTypeTo=st_char & pTypeFrom=st_byte:
+				null;
+			case pTypeTo=st_char & pTypeFrom=st_word:
+				null;
+			case pTypeTo=st_char & pTypeFrom=st_int:
+				null;
+			case pTypeTo=st_byte & pTypeFrom=st_char:
+				null;
+			case pTypeTo=st_byte & pTypeFrom=st_int:
+				null;
+			case pTypeTo=st_byte & pTypeFrom=st_word:
+				null;
+			case pTypeTo=st_word & pTypeFrom=st_char:
+				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			case pTypeTo=st_word & pTypeFrom=st_byte:
+				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			case pTypeTo=st_word & pTypeFrom=st_int:
+				null;
+			case pTypeTo=st_int & pTypeFrom=st_char:
+				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			case pTypeTo=st_int & pTypeFrom=st_byte:
+				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
+			case pTypeTo=st_int & pTypeFrom=st_word:
+				null;
+			case T_IsPtr(pTypeTo) = 1 & T_IsPtr(pTypeFrom) = 1:
+				null;
+			default:
+				StopAnNodeInternalCodegen(P);
+			end
+			return pTypeTo;
 
-	case iCAST:
-		word pTypeFrom = Code(Node[P].pLeft, 0, 0, 0);
-		word pTypeTo = Node[P].pType;
+		case iNOT:
+			word pType = Code(Node[P].pLeft, 0, 0, 0);
+			word  Size = Dict[pType].Value;
+			Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
 
-		select
-		case pTypeFrom = nDICT:
-			null; /* FIXME: should trigger internal error */
-			//StopAnNodeInternalCodegen(P);
-		case pTypeFrom = st_void:
-			StopAnNodeInternalCodegen(P);
-		case pTypeTo = st_void:
-			StopAnNodeInternalCodegen(P);
-		case pTypeTo = pTypeFrom:
-			null;
-		case pTypeTo=st_char & pTypeFrom=st_byte:
-			null;
-		case pTypeTo=st_char & pTypeFrom=st_word:
-			null;
-		case pTypeTo=st_char & pTypeFrom=st_int:
-			null;
-		case pTypeTo=st_byte & pTypeFrom=st_char:
-			null;
-		case pTypeTo=st_byte & pTypeFrom=st_int:
-			null;
-		case pTypeTo=st_byte & pTypeFrom=st_word:
-			null;
-		case pTypeTo=st_word & pTypeFrom=st_char:
-			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case pTypeTo=st_word & pTypeFrom=st_byte:
-			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case pTypeTo=st_word & pTypeFrom=st_int:
-			null;
-		case pTypeTo=st_int & pTypeFrom=st_char:
-			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case pTypeTo=st_int & pTypeFrom=st_byte:
-			Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-		case pTypeTo=st_int & pTypeFrom=st_word:
-			null;
-		case T_IsPtr(pTypeTo) = 1 & T_IsPtr(pTypeFrom) = 1:
+			return pType;
+
+		case iNEG:
+			if Node[Node[P].pLeft].ID=iWORD then
+				Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
+				return st_int;
+			end
+
+			Code(Node[P].pLeft,0,0,0);
+
+			Emit(@CodeCmdReg(@Buff, "neg", fEAX, 4));
+
+			return st_int;
+
+		case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
+			return CodeBinOp(@Buff, P, 0, 0, 0);
+
+		case iDEF_LOCAL:
+		  if nLocal>=nLOCAL then
+			StopMemory();
+		  end
+
+		  word pType = Node[P].pType;
+		  word Size  = SizeOfType(pType, 0);
+
+		  AllocatedFrameSize =
+			  AllocatedFrameSize + DefaultInStackAlign(Node[Node[P].pLeft].Value*Size);
+
+		  Local[nLocal].pType=pType;
+		  Local[nLocal].Value=AllocatedFrameSize;
+		  inc   nLocal;
+
+		  Code(Node[P].pLeft,0,0,0);
+
+		case iASSIGN:
+			P    = Node[P].pLeft;
+			fEAX = RegA;
+			if Node[P].pRight < nNODE then
+				Code(Node[P].pRight, 0, 0, 0);
+				fEAX = RegB;
+			end
+
+			Code(Node[P].pLeft, 0, 0, 0);
+
+		case iINLINE:
+			Emit(@strcat(@strcpy(@Buff,"db      0x"),@str2(Node[P].Value,16)));
+
+		case iPUSH:
+			Code_PUSH(P, @Buff);
+		case iRETURN:
+			Code_RETURN(P, @Buff);
+		case iSELECT:
+			Code_SELECT(P, @Buff);
+		case iSWITCH:
+			Code_SWITCH(P, @Buff);
+		case iWHILE:
+			Code_WHILE(P, @Buff);
+		case iREPEAT:
+			Code_REPEAT(P, @Buff);
+		case iCONTINUE:
+			Code_CONTINUE(P, @Buff);
+		case iEXIT:
+			Code_EXIT(P, @Buff);
+		case iEMPTY:
 			null;
 		default:
-			StopAnNodeInternalCodegen(P);
-		end
-		return pTypeTo;
+			StopInternalCodegen();
+		end:switch
 
-///////////////////////////////////////////////////////////////////////////////
-
-	case iNOT:
-		word pType = Code(Node[P].pLeft, 0, 0, 0);
-		word  Size = Dict[pType].Value;
-		Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
-
-		return pType;
-
-///////////////////////////////////////////////////////////////////////////////
-
-	case iNEG:
-		if Node[Node[P].pLeft].ID=iWORD then
-			Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
-			return st_int;
-		end
-
-		Code(Node[P].pLeft,0,0,0);
-
-		Emit(@CodeCmdReg(@Buff, "neg", fEAX, 4));
-
-		return st_int;
-
-///////////////////////////////////////////////////////////////////////////////
-
-	case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
-		return CodeBinOp(@Buff, P, F, T, M);
-
-///////////////////////////////////////////////////////////////////////////////
-
-    case iDEF_LOCAL:
-      if nLocal>=nLOCAL then
-        StopMemory();
-      end
-
-      word pType = Node[P].pType;
-      word Size  = SizeOfType(pType, 0);
-
-      AllocatedFrameSize =
-          AllocatedFrameSize + DefaultInStackAlign(Node[Node[P].pLeft].Value*Size);
-
-      Local[nLocal].pType=pType;
-      Local[nLocal].Value=AllocatedFrameSize;
-      inc   nLocal;
-
-      Code(Node[P].pLeft,0,0,0);
-///////////////////////////////////////////////////////////////////////////////
-
-	case iASSIGN:
-		P    = Node[P].pLeft;
-		fEAX = RegA;
-		if Node[P].pRight < nNODE then
-			Code(Node[P].pRight, 0, 0, 0);
-			fEAX = RegB;
-		end
-
-		Code(Node[P].pLeft, 0, 0, 0);
-
-///////////////////////////////////////////////////////////////////////////////
-
-	case iINLINE:
-		Emit(@strcat(@strcpy(@Buff,"db      0x"),@str2(Node[P].Value,16)));
-
-///////////////////////////////////////////////////////////////////////////////
-	case iOR:
-		Code_OR(P, F, T, M, @Buff);
-	case iXOR:
-		Code_XOR(P, F, T, M, @Buff);
-	case iEQV:
-		Code_EQV(P, F, T, M, @Buff);
-	case iAND:
-		Code_AND(P, F, T, M, @Buff);
-///////////////////////////////////////////////////////////////////////////////
-	case iPUSH:
-		Code_PUSH(P, @Buff);
-	case iRETURN:
-		Code_RETURN(P, @Buff);
-///////////////////////////////////////////////////////////////////////////////
-	case iSELECT:
-		Code_SELECT(P, @Buff);
-	case iSWITCH:
-		Code_SWITCH(P, @Buff);
-	case iWHILE:
-		Code_WHILE(P, @Buff);
-	case iREPEAT:
-		Code_REPEAT(P, @Buff);
-	case iCONTINUE:
-		Code_CONTINUE(P, @Buff);
-	case iEXIT:
-		Code_EXIT(P, @Buff);
-	case iEMPTY:
-		null;
-	default:
-		StopInternalCodegen();
-	end:switch
+	end:if
 
 	return nDICT;
 end
