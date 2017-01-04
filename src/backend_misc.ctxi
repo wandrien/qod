@@ -79,6 +79,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iREF    , "iREF"    );
 
 	InitIDDesc1(iNOT    , "iNOT"    );
+	InitIDDesc1(iBIT_NOT, "iBIT_NOT");
 	InitIDDesc1(iNEG    , "iNEG"    );
 
 	InitIDDesc1(iOR     , "iOR"     );

@@ -193,7 +193,7 @@ include "frontend_syn_cast.ctxi"
 	FIXME: Эта функция должна быть частью подсистемы CTE.
 */
 
-void Not(word P)
+word Not(word P)
 	switch Node[P].ID of
 	case iOR:   Node[P].ID = iAND; Not(Node[P].pLeft); Not(Node[P].pRight);
 	case iAND:  Node[P].ID = iOR;  Not(Node[P].pLeft); Not(Node[P].pRight);
@@ -205,8 +205,14 @@ void Not(word P)
 	case iNE:   Node[P].ID = iEQ;
 	case iGE:   Node[P].ID = iLT;
 	case iGT:   Node[P].ID = iLE;
-	default:    StopInternal();
+	default:
+		word P2 = Peek();
+		Node[P2].ID    = iNOT;
+		Node[P2].pLeft = P;
+		return P2;
 	end:switch
+
+	return P;
 end
 
 /*****************************************************************************/
@@ -845,12 +851,11 @@ word ExprNOT(word P_; word O; char @Buff)
 	select
 	case pType=st_byte | pType=st_word:
 		P1=Peek();
-		Node[P1].ID    =iNOT;
+		Node[P1].ID    =iBIT_NOT;
 		Node[P1].pLeft = P2;
 
 	case pType = st_bool:
-		Not(P2);
-		P1= P2;
+		P1 = Not(P2);
 
 	default:
 		Stop(@eTYPE);

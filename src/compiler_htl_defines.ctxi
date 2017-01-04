@@ -56,7 +56,7 @@ define  iPARM        8 // Паpаметp
 define  iLOCAL       9 // Локальная пеpеменная
 define  iREF        10 // Ссылочная пеpеменная
 
-define  iNOT        11 // Битовое отpицание
+define  iBIT_NOT    11 // Битовое отpицание
 define  iNEG        12 // Смена знака
 
 define  iOR         13 // Логическое или
@@ -110,7 +110,9 @@ define  iDEFAULT    56 //
 
 define  iBOOL       57
 
-define  iID_COUNT   58
+define  iNOT        58
+
+define  iID_COUNT   59
 
 /*****************************************************************************/
 

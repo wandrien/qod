@@ -824,6 +824,8 @@ word Code(word P; word F; word T; word M)
 		case iLT, iLE, iEQ, iNE, iGE, iGT:
 			return CodeBinOp(@Buff, P, F, T, M);
 
+		case iNOT:
+			return Code(Node[P].pLeft, T, F, M);
 		case iOR:
 			Code_OR(P, F, T, M, @Buff);
 			return st_bool;
@@ -925,7 +927,7 @@ word Code(word P; word F; word T; word M)
 			end
 			return pTypeTo;
 
-		case iNOT:
+		case iBIT_NOT:
 			word pType = Code(Node[P].pLeft, 0, 0, 0);
 			word  Size = Dict[pType].Value;
 			Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
