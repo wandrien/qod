@@ -1,4 +1,4 @@
-// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 OK7 OK8 OK9 OK10 OK11 '
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 OK7 OK8 OK9 OK10 OK11 OK12 '
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
@@ -79,6 +79,13 @@ void foo()
 	else
 		puts("OOPS ");
 	end:if
+
+	if f() | f() | t() then
+		puts("OK12 ");
+	else
+		puts("OOPS ");
+	end:if
+
 /*
 	if !!f() & t() then
 		puts("OK12 ");
