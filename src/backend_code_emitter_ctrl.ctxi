@@ -4,7 +4,7 @@
 word Code_OR(word P; word F; word T; word M; char @Buff)
 	word L = LabelResolve(P, lBRANCH);
 	if T=0 then
-		_Code(Node[P].pLeft ,  0, M, L);
+		_Code(Node[P].pLeft , 0, M, L);
 		EmitLabel(L);
 		_Code(Node[P].pRight, F, 0, M);
 	else
