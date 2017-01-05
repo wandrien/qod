@@ -455,7 +455,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 	else
 		word pType=Find(@Buff);
 		if pType>=nDict | Dict[pType].Class!=cTYPE then
-			Stop(@eUNDEFINED);
+			Stop(@eUNDECLARED);
 		end:if
 
 //do

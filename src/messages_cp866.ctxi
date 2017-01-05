@@ -8,7 +8,7 @@ define @eWRONGCHAR       "Недопустимый символ в константе"             // Illega
 define @eOVERFLOW        "Константа слишком велика"                    // Too big number
 define @eLONGNAME        "Слишком длинный идентификатор"               // Name length too long
 define @eEXPECTED        "Пропущен идентификатор"                      // Identifier expected
-define @eUNDEFINED       "Идентификатор не определен"                  // Undefined identifier
+define @eUNDECLARED      "Идентификатор не описан"                     // undeclared identifier
 define @eDUPLICATE       "Повтор имени"                                // Duplicate identifier
 define @eBRACKETEXP      "Пропущена скобка"                            // Bracket expected
 define @eCASEEXP         "Пропущено case"                              // case expected

@@ -311,7 +311,7 @@ word Primary(word Prty; char @Buff)
 	if Flag=0 then /* Значит это глобальное имя. */
 		word I=Find(@Buff);
 		if I>=nDict then
-			Stop(@eUNDEFINED);
+			Stop(@eUNDECLARED);
 		end:if
 
 		select
@@ -401,13 +401,13 @@ word Primary(word Prty; char @Buff)
 				pType = Node[P1].pType;
 			else
 				if nPtr>0 then
-					Stop(@eUNDEFINED);
+					Stop(@eUNDECLARED);
 				end:if
 
 				return nNODE;
 			end:if
 		default:
-			Stop(@eUNDEFINED);
+			Stop(@eUNDECLARED);
 		end:select
 	end:if
 
@@ -543,7 +543,7 @@ word Primary(word Prty; char @Buff)
 
 			word F = FindInNamespace(@Buff, pType);
 			when F >= nDICT:
-				Stop(@eUNDEFINED);
+				Stop(@eUNDECLARED);
 			when Dict[F].Class != cFIELD:
 				StopInternal();
 

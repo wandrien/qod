@@ -120,7 +120,7 @@ void DeclSynonym(char @Buff)
 
 	word pType = Find(@Scan(@Buff));
 	if pType >= nDict then
-		Stop(@eUNDEFINED);
+		Stop(@eUNDECLARED);
 	end
 
 	Dict[D].pType = pType;
