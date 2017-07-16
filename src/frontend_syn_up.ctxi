@@ -42,7 +42,7 @@ void DeclStruct(char @Buff)
         Dict[pStruct].Class = cTYPE;
         Dict[pStruct].Sub = sSTRUCT;
 
-        if strcmp(@Scan(@Buff),";")==0 then
+        if str_eq(@Scan(@Buff),";") then
           Stop(@eNOTAVAIL);
         end
 
@@ -58,7 +58,7 @@ void DeclStruct(char @Buff)
 
           do
             word  nPtr=0;
-            while strcmp(@Scan(@Buff),"@")==0 do
+            while str_eq(@Scan(@Buff),"@") do
               inc nPtr;
             end
 
@@ -85,21 +85,21 @@ void DeclStruct(char @Buff)
             Dict[F].nIndx = Tabl(@Scan(@Buff));
             DictAddToNamespace(F, pStruct);
 
-            if strcmp(@Buff,";") == 0 then
+            if str_eq(@Buff,";") then
               Scan(@Buff);
               exit;
             end
 
-            if strcmp(@Buff,"end") == 0 then
+            if str_eq(@Buff,"end") then
               exit;
             end
 
-            if strcmp(@Buff,",")!=0 then
+            if str_ne(@Buff,",") then
               Stop(@eSEMICOLONEXP);
             end
           end
 
-          if strcmp(@Buff,"end") == 0 then
+          if str_eq(@Buff,"end") then
             exit;
           end
         end
@@ -139,10 +139,10 @@ void DeclFunc1(char @Buff; word a)
 	Scan(@Buff);
 
 	select
-		case strcmp(@Buff,";")==0: /* Прототип. */
+		case str_eq(@Buff,";"): /* Прототип. */
 			Stop(@eNOTAVAIL);
 
-		case strcmp(@Buff,"external")==0: /* Внешняя функция. */
+		case str_eq(@Buff,"external"): /* Внешняя функция. */
 			select
 				case TargetFileFormat == tPE:
 					null;
@@ -167,7 +167,7 @@ void DeclFunc1(char @Buff; word a)
 				объявленное имя делаем алиасом для библиотечного имени.
 				FIXME: Переделать! Библиотечное имя не должно присутствовать в пространстве имён модуля.
 			*/
-			if strcmp(@Scan(@Buff),".")==0 then
+			if str_eq(@Scan(@Buff),".") then
 				if Find(@Scan(@Buff)) < nDict then
 					Stop(@eDUPLICATE);
 				end:if
@@ -186,7 +186,7 @@ void DeclFunc1(char @Buff; word a)
 			Dict[pFunc].Sub   = sSYS;
 			Dict[pFunc].pNode = pLib;
 
-			if strcmp(@Buff,";")!=0 then
+			if str_ne(@Buff,";") then
 				Stop(@eSEMICOLONEXP);
 			end:if
 
@@ -216,14 +216,14 @@ void DeclVarFuncType(char @Buff; word pType)
 	Dict[D].Class = cTYPE;
 	Dict[D].Sub   = sFUNCTYPE;
 
-	if strcmp(@Scan(@Buff),"(")!=0 then
+	if str_ne(@Scan(@Buff),"(") then
 		Stop(@eBRACKETEXP);
 	end
 
 	Dict[D].pType = T_nPtrTo(nPtr, pType);
 	FuncArgs(@Buff, D);
 
-	/*if (strcmp(@Scan(@Buff),";")!=0) then
+	/*if (str_ne(@Scan(@Buff),";")) then
 		Stop(@eSEMICOLONEXP);
 	end*/
 
@@ -239,7 +239,7 @@ void DeclVarFunc(char @Buff)
 	end
 
 	/* Функтор-тип. */
-	if strcmp(@Scan(@Buff),"function")==0 then
+	if str_eq(@Scan(@Buff),"function") then
 		DeclVarFuncType(@Buff, pPrefixType);
 		return;
 	end
@@ -262,7 +262,7 @@ void DeclVarFunc(char @Buff)
 		Scan(@Buff);
 
 		/* Функция. */
-		if strcmp(@Buff,"(")==0 then
+		if str_eq(@Buff,"(") then
 			if FirstName == 0 then
 				Stop(@eNOFUNCTION);
 			end
@@ -284,7 +284,7 @@ void DeclVarFunc(char @Buff)
 		Dict[D].nIndx = Tabl(@Buff);
 		Dict[D].pNode =nNODE;
 
-		if strcmp(@Buff,"=")==0 | strcmp(@Buff,":=")==0 then
+		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
 			if Dict[D].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end
@@ -308,11 +308,11 @@ void DeclVarFunc(char @Buff)
 
 		end
 
-		if strcmp(@Buff,";")==0 then
+		if str_eq(@Buff,";") then
 			exit;
 		end
 
-		if strcmp(@Buff,",")!=0 then
+		if str_ne(@Buff,",") then
 			Stop(@eSEMICOLONEXP);
 		end
 
@@ -361,14 +361,14 @@ word DeclDefine(char @Buff)
 					Stop(@eTYPE);
 			end:select
 
-			if strcmp(@Buff,";")==0 then
+			if str_eq(@Buff,";") then
 				Scan(@Buff);
 			end:if
 
 			return 1;
 
 		default:
-			if strcmp(@Buff,"~"")!=0 then
+			if str_ne(@Buff,"~"") then
 				Stop(@eQUOTEXP);
 			end
 			ScanString(D);
@@ -383,7 +383,7 @@ word DeclInclude(char @Buff)
 
 	/* Читаем имя файла. */
 
-	if strcmp(@Scan(@Buff),"~"")!=0 then
+	if str_ne(@Scan(@Buff),"~"") then
 		Stop(@eQUOTEXP);
 	end
 
@@ -434,20 +434,20 @@ void Parse()
 	do
 		word R = 0;
 		select
-		case strcmp(@Buff,"begin")==0:         // Главная функция
+		case str_eq(@Buff,"begin"):         // Главная функция
 			DeclMainFunc(@Buff);
 			exit;
-		case strcmp(@Buff,"include")==0:       // Включаемый файл
+		case str_eq(@Buff,"include"):       // Включаемый файл
 			R = DeclInclude(@Buff);
-		case strcmp(@Buff,"define")==0:        // Константа
+		case str_eq(@Buff,"define"):        // Константа
 			R = DeclDefine(@Buff);
-		case strcmp(@Buff,"struct")==0:        // Стpуктуpа
+		case str_eq(@Buff,"struct"):        // Стpуктуpа
 			DeclStruct(@Buff);
-		case strcmp(@Buff,"synonym")==0:       // Синоним
+		case str_eq(@Buff,"synonym"):       // Синоним
 			DeclSynonym(@Buff);
-		case strcmp(@Buff,"$context2")==0:
+		case str_eq(@Buff,"$context2"):
 			null;
-		default:                               // Пеpеменная, функция, ...
+		default:                            // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select
 

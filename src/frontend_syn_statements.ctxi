@@ -8,7 +8,7 @@
 void MatchCStyleSemicolon(char @Buff)
 	if c_style_semicolons != 0 then
 		Scan(@Buff);
-		if strcmp(@Buff,";")!=0 then
+		if str_ne(@Buff,";") then
 			Stop(@eSEMICOLONEXP);
 		end
 	end:if
@@ -21,17 +21,17 @@ word EndOf(char @Buff, @A1, @A2)
 
 	word SkipScan = 0;
 
-	if strcmp(@Buff, "end") = 0 then
+	if str_eq(@Buff, "end") then
 		Scan(@Buff);
-		if strcmp(@Buff, ":") = 0 then
+		if str_eq(@Buff, ":") then
 			Scan(@Buff);
 			if @A2 != NULL then
-				if strcmp(@Buff, @A2) = 0 then
+				if str_eq(@Buff, @A2) then
 					return SkipScan;
 				end
 			end
 
-			if strcmp(@Buff, @A1) != 0 then
+			if str_ne(@Buff, @A1) then
 				Stop(@eNOTALLOWED);
 			end
 		else
@@ -53,13 +53,13 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 	char @Case="";
 	char @Then="then";
 	char @Else="else";
-	if strcmp(@Buff,"select")=0 then
+	if str_eq(@Buff,"select") then
 		@End1="select";
 		@Case="case";
 		@Then=":";
 		@Else="default";
 
-		if strcmp(@Scan(@Buff),"case")!=0 then
+		if str_ne(@Scan(@Buff),"case") then
 			Stop(@eCASEEXP);
 		end:if
 	else
@@ -67,7 +67,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 	end:if
 
 	word @BackLink = @Node[P1].pLeft;
-	while strcmp(@Buff,"end")!=0 do
+	while str_ne(@Buff,"end") do
 		word CASE = Peek();
 		word COND = Peek();
 		word BODY = Peek();
@@ -81,11 +81,11 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		BackLink = CASE;
 		@BackLink = @Node[CASE].pRight;
 
-		if strcmp(@Buff,@Case)=0 then
+		if str_eq(@Buff,@Case) then
 			Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 			word pType = Node[Node[COND].pLeft].pType;
 
-			if strcmp(@Buff,@Then)!=0 then
+			if str_ne(@Buff,@Then) then
 				Stop(@eTHENEXP);
 			end:if
 
@@ -93,8 +93,8 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 				Stop(@eTYPE);
 			end:if
 		else
-			if strcmp(@Else,"default")=0 then
-				if strcmp(@Scan(@Buff),":")!=0 then
+			if str_eq(@Else,"default") then
+				if str_ne(@Scan(@Buff),":") then
 					Stop(@eCOLONEXP);
 				end:if
 			end:if
@@ -135,7 +135,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 		Stop(@eTYPE);
 	end:if
 
-	if strcmp(@Buff,":")!=0 then
+	if str_ne(@Buff,":") then
 		Stop(@eTHENEXP);
 	end:if
 
@@ -165,13 +165,13 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
 		Stop(@eSWTYPE);
 
-	when strcmp(@Buff,"of") != 0:
+	when str_ne(@Buff,"of"):
 		Stop(@eOFEXP);
 
-	when strcmp(@Scan(@Buff),"case") != 0:
+	when str_ne(@Scan(@Buff),"case"):
 		Stop(@eCASEEXP);
 
-	while strcmp(@Buff,"case") = 0 do
+	while str_eq(@Buff,"case") do
 		word CASE = Peek();
 		Node[CASE].ID = iCASE;
 		CaseBackLink = CASE;
@@ -218,9 +218,9 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 			ValueBackLink = VALUE;
 			@ValueBackLink = @Node[VALUE].pRight;
 
-		until strcmp(@Buff,",") != 0;
+		until str_ne(@Buff,",");
 
-		if strcmp(@Buff,":") != 0 then
+		if str_ne(@Buff,":") then
 			Stop(@eCOLONEXP);
 		end
 
@@ -232,8 +232,8 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		Node[BODY].pLeft = _Statements(@Buff, "case", "default", "end");
 	end
 
-	if strcmp(@Buff,"default") = 0 then
-		if strcmp(@Scan(@Buff),":") != 0 then
+	if str_eq(@Buff,"default") then
+		if str_ne(@Scan(@Buff),":") then
 			Stop(@eCOLONEXP);
 		end
 
@@ -273,12 +273,12 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
 	char @End2 = NULL;
 
-	if strcmp(@Buff,"while")=0 then
+	if str_eq(@Buff,"while") then
 		@End2 = "while";
 		Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 		word pType = Node[Node[COND].pLeft].pType;
 
-		if strcmp(@Buff,"do")!=0 then
+		if str_ne(@Buff,"do") then
 			Stop(@eDOEXP);
 		end
 
@@ -320,7 +320,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
-	if strcmp(@Buff,";")!=0 then
+	if str_ne(@Buff,";") then
 		Stop(@eSEMICOLONEXP);
 	end
 
@@ -367,7 +367,7 @@ end
 
 void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 
-	if strcmp(@Buff,"inc")=0 then
+	if str_eq(@Buff,"inc") then
 		Node[P1].ID =iINC;
 	else
 		Node[P1].ID =iDEC;
@@ -376,7 +376,7 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].pLeft= Expr(PRIO_INC, @Scan(@Buff));
 	word pType = Node[Node[P1].pLeft].pType;
 
-	if strcmp(@Buff,";")!=0 then
+	if str_ne(@Buff,";") then
 		Stop(@eSEMICOLONEXP);
 	end
 
@@ -402,7 +402,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	end:if
 
 	if c_style_semicolons != 0 | need_semicolon != 0 then
-		if strcmp(@Buff,";")!=0 then
+		if str_ne(@Buff,";") then
 			Stop(@eSEMICOLONEXP);
 		end
 	else
@@ -423,13 +423,13 @@ void Statement_INLINE(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].ID   =iINLINE;
 	Node[P1].Value= Code;
 
-	if strcmp(@Scan(@Buff),",")=0 then
+	if str_eq(@Scan(@Buff),",") then
 		strcpy (@Buff,"inline");
 		SkipFinalScan = 1;
 		return;
 	end
 
-	if strcmp(@Buff,";")!=0 then
+	if str_ne(@Buff,";") then
 		Stop(@eSEMICOLONEXP);
 	end
 
@@ -448,7 +448,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P3].ID    =iEMPTY;
 		Node[P3].pLeft = P2;
 
-		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 			ImplicitCast(Node[P2].pType, @Node[P3].pRight);
 		end:if
@@ -500,7 +500,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P4].ID    =iEMPTY;
 		Node[P4].Value = N;
 
-		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
 			if Local[nLocal].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end:if
@@ -522,14 +522,14 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		inc nLocal;
 ///*
-		if strcmp(@Buff,",")=0 then
+		if str_eq(@Buff,",") then
 			strcpy(@Buff,@DictGetName(pType));
 			SkipFinalScan = 1;
 			return;
 		end:if
 //*/
 
-//        if strcmp(@Buff,",") != 0 then
+//        if str_ne(@Buff,",") then
 //          exit;
 //        end:if
 //end:do
@@ -537,7 +537,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 	end:if
 
-	if strcmp(@Buff,";")!=0 then
+	if str_ne(@Buff,";") then
 		Stop(@eSEMICOLONEXP);
 	end:if
 
@@ -552,37 +552,37 @@ word Ctrl(char @Buff)
 	word P1 = Peek();
 
 	select
-		case strcmp(@Buff,"if")=0 | strcmp(@Buff,"select")=0:
+		case str_eq(@Buff,"if") | str_eq(@Buff,"select"):
 			Statement_IF(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"while")=0 | strcmp(@Buff,"do")=0:
+		case str_eq(@Buff,"while") | str_eq(@Buff,"do"):
 			Statement_DO(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"when")=0:
+		case str_eq(@Buff,"when"):
 			Statement_WHEN(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"switch")=0:
+		case str_eq(@Buff,"switch"):
 			Statement_SWITCH(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"repeat")=0:
+		case str_eq(@Buff,"repeat"):
 			Statement_REPEAT(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"continue")=0:
+		case str_eq(@Buff,"continue"):
 			Statement_CONTINUE(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"exit")=0:
+		case str_eq(@Buff,"exit"):
 			Statement_EXIT(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"inc")=0 | strcmp(@Buff,"dec")=0:
+		case str_eq(@Buff,"inc") | str_eq(@Buff,"dec"):
 			Statement_INCDEC(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"inline")=0:
+		case str_eq(@Buff,"inline"):
 			Statement_INLINE(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"return")=0:
+		case str_eq(@Buff,"return"):
 			Statement_RETURN(@Buff, @P1, @SkipFinalScan);
 
-		case strcmp(@Buff,"null")=0:
+		case str_eq(@Buff,"null"):
 			Node[P1].ID   =iEMPTY;
 			MatchCStyleSemicolon(@Buff);
 
@@ -610,14 +610,14 @@ word Statements(char @Buff; char @End1; char @End2; char @End3)
 		Backlink = Ctrl(@Buff);
 		@Backlink =@Node[Backlink].pRight;
 
-		if @End2 != NULL & strcmp(@Buff, @End2) = 0 then
+		if @End2 != NULL & str_eq(@Buff, @End2) then
 			exit;
 		end
-		if @End3 != NULL & strcmp(@Buff, @End3) = 0 then
+		if @End3 != NULL & str_eq(@Buff, @End3) then
 			exit;
 		end
 
-	until strcmp(@Buff, @End1) = 0;
+	until str_eq(@Buff, @End1);
 
 	nLocal = Saved_nLocal;
 

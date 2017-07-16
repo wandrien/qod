@@ -192,13 +192,13 @@ end
 
 void SetupTarget(char@ Target)
 	select
-	case strcmp(@Target, "--linux"  ) == 0:
+	case str_eq(@Target, "--linux"  ):
 		TargetFileFormat = tELF;
 		TargetMode = mNONE;
-	case strcmp(@Target, "--win32-c") == 0:
+	case str_eq(@Target, "--win32-c"):
 		TargetFileFormat = tPE;
 		TargetMode = mCON;
-	case strcmp(@Target, "--win32-w") == 0:
+	case str_eq(@Target, "--win32-w"):
 		TargetFileFormat = tPE;
 		TargetMode = mGUI;
 	default:
@@ -239,29 +239,29 @@ void __main()
 	while i < Argc do
 		char@ arg = @GetArg(i, NULL);
 		select
-		case strcmp(@arg, "--help"   ) == 0:
+		case str_eq(@arg, "--help"   ):
 			PrintUsage();
 			return;
-		case strcmp(@arg, "--version") == 0:
+		case str_eq(@arg, "--version"):
 			PrintVersionAndCopyright();
 			return;
-		case strcmp(@arg, "--linux"  ) == 0
-		   | strcmp(@arg, "--win32-c") == 0
-		   | strcmp(@arg, "--win32-w") == 0:
+		case str_eq(@arg, "--linux"  )
+		   | str_eq(@arg, "--win32-c")
+		   | str_eq(@arg, "--win32-w"):
 			SetupTarget(@arg);
-		case strcmp(@arg, "--output" ) == 0:
+		case str_eq(@arg, "--output" ):
 			@OutputFile = @GetArgNext(@i, @eFNAMEEXP);
-		case strcmp(@arg, "--output-tree" ) == 0:
+		case str_eq(@arg, "--output-tree" ):
 			@OutputTreeFile = @GetArgNext(@i, @eFNAMEEXP);
-		case strcmp(@arg, "--output-include-list" ) == 0:
+		case str_eq(@arg, "--output-include-list" ):
 			@OutputIncludeListFile = @GetArgNext(@i, @eFNAMEEXP);
-		case strcmp(@arg, "--file" ) == 0:
+		case str_eq(@arg, "--file" ):
 			@InputFile = @GetArgNext(@i, @eFNAMEEXP);
-		case strcmp(@arg, "--show-parse-progress" ) == 0:
+		case str_eq(@arg, "--show-parse-progress" ):
 			show_parse_progress = 1;
-		case strcmp(@arg, "--optimize" ) == 0:
+		case str_eq(@arg, "--optimize" ):
 			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
-		case strcmp(@arg, "--warn-unused-globals" ) == 0:
+		case str_eq(@arg, "--warn-unused-globals" ):
 			WarnUnusedGlobals = 1;
 		case str_has_prefix(@arg, "-"):
 			Stop(@eWRONGOPTION);
