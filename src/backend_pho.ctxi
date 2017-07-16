@@ -181,7 +181,7 @@ end
 
 char PHO_Buff[256];
 
-char@ PHO_Optimize(char @Inst)
+char@ PHO_Optimize_(char @Inst)
 
 	if PHOptimization = 0 then
 		return @Inst;
@@ -375,6 +375,16 @@ char@ PHO_Optimize(char @Inst)
 
 	return @Inst;
 
+end
+
+char@ PHO_Optimize(char @Inst)
+	char @NewInst = @PHO_Optimize_(@Inst);
+	if str_eq(@NewInst, @Inst) = 0 then
+		char Buff[nBUFF];
+		strcat(@strcat(@strcat(@strcat(@strcpy(@Buff, "PHO: Instruction: ("), @Inst), ") -> ("), @NewInst), ")");
+		_EmitLine(0, "", @Buff);
+	end:if
+	return @NewInst;
 end
 
 /*****************************************************************************/
