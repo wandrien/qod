@@ -1022,14 +1022,15 @@ word EmitFunctions(char @Buff)
 		select
 			case Dict[I].Class = cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
 				EmitStringNL("");
-				strcpy(@Buff,"       ;;");
+				strcpy(@Buff,"## ");
 				if Dict[I].Sub != sMAIN then
 					strcat(@Buff, @DictGetName(I));
 				else
-					strcat(@Buff, "begin");
+					strcat(@Buff, "<begin>");
 					S = Dict[I].Value;
 				end:if
-				EmitLine(Dict[I].Value, @Buff);
+				strcat(@Buff," ##");
+				EmitLine(Dict[I].Value, "", @Buff);
 
 				word S1 = 0;
 

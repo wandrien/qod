@@ -95,8 +95,8 @@ end
 
 /*****************************************************************************/
 
-/* Если L не равно 0, выводит метку L. Следом выводит строку Inst. */
-void EmitLine(word Label; char @Inst)
+/* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
+void EmitLine(word Label; char @Inst; char @Comment)
 
 	if Label != 0 then
 		PHO_InvalidateRegs();
@@ -107,41 +107,53 @@ void EmitLine(word Label; char @Inst)
 		end:if
 	end:if
 
+	word C = 0;
 
 	if Label != 0 then
-		EmitChar('@');
+		EmitChar('@'); inc C;
 
 		char @P = @str(Label);
 		word I = 0;
 		while P[I] != #0 do
-			EmitChar(P[I]);
+			EmitChar(P[I]); inc C;
 			inc I;
 		end:while
 
-		EmitChar(':');
-		EmitChar(' ');
+		EmitChar(':'); inc C;
+		EmitChar(' '); inc C;
 	else
 		word I = 0;
 		while I < 8 do
-			EmitChar(' ');
+			EmitChar(' '); inc C;
 			inc I;
 		end:while
 	end:if
 
-	EmitStringNL(@Inst);
+	EmitString(@Inst);
+	C = C + strlen(@Inst);
+
+	if @Comment != NULL then
+		while C < 40 do
+			EmitChar(' '); inc C;
+		end:while
+		EmitString(" ; ");
+		EmitString(@Comment);
+	end:if
+
+	EmitNL();
 end
 
 /*****************************************************************************/
 
 void EmitLabel(word Label)
 	when Label = 0: StopInternal();
-	EmitLine(Label, "");
+	EmitLine(Label, "", NULL);
 end
 
 /*****************************************************************************/
 
 void Emit(char @Inst)
-	EmitLine(0, @Inst);
+	EmitLine(0, @Inst, NULL);
 end
 
 /*****************************************************************************/
