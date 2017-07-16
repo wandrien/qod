@@ -257,7 +257,10 @@ word Code1(word pPrimary)
 			if Dict[Node[P1].Value].Sub=sSYS then
 				Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Value)),"]"));
 			else
-				Emit(@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Value)));
+				EmitLine(0,
+					@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Value)),
+					@DictGetName(Node[P1].Value)
+					);
 			end:if
 
 			ID =iCALL;
