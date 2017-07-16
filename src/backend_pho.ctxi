@@ -150,22 +150,22 @@ word PHO_DecodeReg(char @S; word @Reg; word @Mask)
 	word r, m;
 
 	select
-	case str_has_prefix(@S, "EAX") != 0: r = 0; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "EBX") != 0: r = 1; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "ECX") != 0: r = 2; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "EDX") != 0: r = 3; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "AX" ) != 0: r = 0; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "BX" ) != 0: r = 1; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "CX" ) != 0: r = 2; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "DX" ) != 0: r = 3; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "AL" ) != 0: r = 0; m = 0x0000_00FF;
-	case str_has_prefix(@S, "BL" ) != 0: r = 1; m = 0x0000_00FF;
-	case str_has_prefix(@S, "CL" ) != 0: r = 2; m = 0x0000_00FF;
-	case str_has_prefix(@S, "DL" ) != 0: r = 3; m = 0x0000_00FF;
-	case str_has_prefix(@S, "AH" ) != 0: StopInternal();
-	case str_has_prefix(@S, "BH" ) != 0: StopInternal();
-	case str_has_prefix(@S, "CH" ) != 0: StopInternal();
-	case str_has_prefix(@S, "DH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "EAX"): r = 0; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "EBX"): r = 1; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "ECX"): r = 2; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "EDX"): r = 3; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "AX" ): r = 0; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "BX" ): r = 1; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "CX" ): r = 2; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "DX" ): r = 3; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "AL" ): r = 0; m = 0x0000_00FF;
+	case str_has_prefix(@S, "BL" ): r = 1; m = 0x0000_00FF;
+	case str_has_prefix(@S, "CL" ): r = 2; m = 0x0000_00FF;
+	case str_has_prefix(@S, "DL" ): r = 3; m = 0x0000_00FF;
+	case str_has_prefix(@S, "AH" ): StopInternal();
+	case str_has_prefix(@S, "BH" ): StopInternal();
+	case str_has_prefix(@S, "CH" ): StopInternal();
+	case str_has_prefix(@S, "DH" ): StopInternal();
 	default:
 		return 0;
 	end:select
@@ -193,30 +193,30 @@ char@ PHO_Optimize_(char @Inst)
 	end:if
 
 	/* Инструкции, не изменяющие сожержимое регистров. */
-	if str_has_prefix(@Inst, "push") != 0
- 	 | str_has_prefix(@Inst, "jl"  ) != 0 
- 	 | str_has_prefix(@Inst, "jle" ) != 0 
- 	 | str_has_prefix(@Inst, "je"  ) != 0 
- 	 | str_has_prefix(@Inst, "jne" ) != 0 
- 	 | str_has_prefix(@Inst, "jnz" ) != 0 
- 	 | str_has_prefix(@Inst, "jge" ) != 0 
- 	 | str_has_prefix(@Inst, "jg"  ) != 0 
- 	 | str_has_prefix(@Inst, "jb"  ) != 0 
- 	 | str_has_prefix(@Inst, "jbe" ) != 0 
- 	 | str_has_prefix(@Inst, "jae" ) != 0 
- 	 | str_has_prefix(@Inst, "ja"  ) != 0 
- 	 | str_has_prefix(@Inst, "jz"  ) != 0 
- 	 | str_has_prefix(@Inst, "cmp" ) != 0 then
+	if str_has_prefix(@Inst, "push")
+ 	 | str_has_prefix(@Inst, "jl"  )
+ 	 | str_has_prefix(@Inst, "jle" )
+ 	 | str_has_prefix(@Inst, "je"  )
+ 	 | str_has_prefix(@Inst, "jne" )
+ 	 | str_has_prefix(@Inst, "jnz" )
+ 	 | str_has_prefix(@Inst, "jge" )
+ 	 | str_has_prefix(@Inst, "jg"  )
+ 	 | str_has_prefix(@Inst, "jb"  )
+ 	 | str_has_prefix(@Inst, "jbe" )
+ 	 | str_has_prefix(@Inst, "jae" )
+ 	 | str_has_prefix(@Inst, "ja"  )
+ 	 | str_has_prefix(@Inst, "jz"  )
+ 	 | str_has_prefix(@Inst, "cmp" ) then
 		return @Inst;
 	end:if
 
 	/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
-	if str_has_prefix(@Inst, "mov") == 0
-	 & str_has_prefix(@Inst, "add") == 0
-	 & str_has_prefix(@Inst, "sub") == 0
-	 & str_has_prefix(@Inst, "and") == 0
-	 & str_has_prefix(@Inst, "or ") == 0
-	 & str_has_prefix(@Inst, "xor") == 0 then
+	if (!str_has_prefix(@Inst, "mov"))
+	 & (!str_has_prefix(@Inst, "add"))
+	 & (!str_has_prefix(@Inst, "sub"))
+	 & (!str_has_prefix(@Inst, "and"))
+	 & (!str_has_prefix(@Inst, "or "))
+	 & (!str_has_prefix(@Inst, "xor")) then
 		PHO_InvalidateRegs();
 		return @Inst;
 	end:if
@@ -254,7 +254,7 @@ char@ PHO_Optimize_(char @Inst)
 	if PHO_DecodeReg(@s, @Reg2, @Mask2) != 0 then
 
 		/* Обработка случая обнуления через XOR. */
-		if Reg1 == Reg2 & Mask1 == Mask2 & Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") != 0 then
+		if Reg1 == Reg2 & Mask1 == Mask2 & Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") then
 			if PHO_RegContainsConst(Reg1, 0) != 0 then
 				return "";
 			else
@@ -286,7 +286,7 @@ char@ PHO_Optimize_(char @Inst)
 
 
 	/* Вариант - загрузка полного значения регистра. */
-	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") != 0 then
+	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") then
 
 		word RegC = PHO_FindRegWithConst(Const2);
 
@@ -349,17 +349,17 @@ char@ PHO_Optimize_(char @Inst)
 	word Result;
 
 	select
-	case str_has_prefix(@Inst, "mov") != 0:
+	case str_has_prefix(@Inst, "mov"):
 		Result = Const2;
-	case str_has_prefix(@Inst, "add") != 0:
+	case str_has_prefix(@Inst, "add"):
 		Result = Const1 + Const2;
-	case str_has_prefix(@Inst, "sub") != 0:
+	case str_has_prefix(@Inst, "sub"):
 		Result = Const1 - Const2;
-	case str_has_prefix(@Inst, "and") != 0:
+	case str_has_prefix(@Inst, "and"):
 		Result = Const1 & Const2;
-	case str_has_prefix(@Inst, "or ") != 0:
+	case str_has_prefix(@Inst, "or "):
 		Result = Const1 | Const2;
-	case str_has_prefix(@Inst, "xor") != 0:
+	case str_has_prefix(@Inst, "xor"):
 		Result = Const1 ^ Const2;
 	default:
 		StopInternal();
@@ -379,7 +379,7 @@ end
 
 char@ PHO_Optimize(char @Inst)
 	char @NewInst = @PHO_Optimize_(@Inst);
-	if str_eq(@NewInst, @Inst) == 0 then
+	if str_ne(@NewInst, @Inst) then
 		char Buff[nBUFF];
 		strcat(@strcat(@strcat(@strcat(@strcpy(@Buff, "PHO: Instruction: ("), @Inst), ") -> ("), @NewInst), ")");
 		_EmitLine(0, "", @Buff);

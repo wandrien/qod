@@ -58,7 +58,7 @@ word val(char @Buff)
 	word k = str_find_chars(@Buff, "$");
 	select
 	/* Префиксы 0x - шестнадцатиричное. */
-	case str_has_prefix(@Buff, "0x") != 0 :
+	case str_has_prefix(@Buff, "0x"):
 		Base = 16;
 		P    = 2;
 	/* Символ $ не найден - десятичное. */
@@ -745,7 +745,7 @@ end
 
 word ExprBinOp(word P1; word O; char @Buff)
 
-	if str_eq(@Buff, "=") != 0 then
+	if str_eq(@Buff, "=") then
 		Warn(@wDEPRECATED);
 	end:if
 

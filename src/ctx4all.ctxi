@@ -210,12 +210,12 @@ end
 
 void SetupOptimization(char@ Mode)
 	select
-	case str_eq(@Mode, "size") != 0:
+	case str_eq(@Mode, "size"):
 		RODataMergeMode = RODataMergeModeAgressive;
 		PHOptimization  = 1;
 		EmitEnterInstruction = 1;
 		EmitLeaveInstruction = 1;
-	case str_eq(@Mode, "speed") != 0:
+	case str_eq(@Mode, "speed"):
 		RODataMergeMode = RODataMergeModeNormal;
 		PHOptimization  = 1;
 		EmitEnterInstruction = 0;
@@ -263,7 +263,7 @@ void __main()
 			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
 		case strcmp(@arg, "--warn-unused-globals" ) == 0:
 			WarnUnusedGlobals = 1;
-		case str_has_prefix(@arg, "-") == 1:
+		case str_has_prefix(@arg, "-"):
 			Stop(@eWRONGOPTION);
 		default:
 			@InputFile = @GetArg(i, @eFNAMEEXP);
