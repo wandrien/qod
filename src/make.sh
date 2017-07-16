@@ -36,7 +36,7 @@ mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_debug --optimize none
 mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c.exe #--warn-unused-globals
 mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
 
-# Generated assembler listings for A and B stages should be identical.
+# Generated assembler listings for B and C stages should be identical.
 diff out/.lcontext_b.asm           out/.lcontext_c.asm
 diff out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
 diff out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
