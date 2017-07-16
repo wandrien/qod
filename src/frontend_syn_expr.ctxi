@@ -780,6 +780,27 @@ end
 
 /*****************************************************************************/
 
+word ExprConstExpr(word P1; word O;  char @Buff)
+	Scan(@Buff);
+	if strcmp(@Buff,"(") != 0 then
+		Stop(@eBRACKETEXP);
+	end
+
+	word P2 = ExprParentheses(P1, O, @Buff);
+
+	switch Node[P2].ID of
+	case iCHAR, iWORD, iINT:
+		null;
+	default:
+		Stop(@eNOTACONSTEXPR);
+	end
+
+	return P2;
+
+end
+
+/*****************************************************************************/
+
 word ExprLitChar(word P_; word O; char @Buff)
 
 	word P1=Peek();
@@ -935,6 +956,7 @@ void RegisterOperators()
 	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
 
 	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0   , @ExprConstExpr);
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
 	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);

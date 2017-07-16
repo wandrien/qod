@@ -48,6 +48,7 @@ define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote 
 define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param expected
 define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
+define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"
 
 define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
