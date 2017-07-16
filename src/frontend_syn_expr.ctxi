@@ -745,6 +745,10 @@ end
 
 word ExprBinOp(word P1; word O; char @Buff)
 
+	if str_eq(@Buff, "=") != 0 then
+		Warn(@wDEPRECATED);
+	end:if
+
 	word P2 = Peek();
 	word ID = Operator[O].ID;
 	Node[P2].ID = ID;
@@ -941,6 +945,7 @@ void RegisterOperators()
 	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
 	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
 	RegisterOperator("="    , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
+	RegisterOperator("=="   , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
 	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
 	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);
 	RegisterOperator(">="   , PRIO_COMP , OPERATOR_BLEFT, iGE , @ExprBinOp);

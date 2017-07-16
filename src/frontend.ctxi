@@ -83,6 +83,7 @@ void InitFrontEnd()
 	RegisterDigraph("<=");
 	RegisterDigraph(">=");
 	RegisterDigraph(":=");
+	RegisterDigraph("==");
 
 	RegisterDigraph("/*");
 	RegisterDigraph("//");
