@@ -98,14 +98,19 @@ end
 /* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
 void EmitLine(word Label; char @Inst; char @Comment)
 
+	when @Inst = NULL:
+		@Inst = "";
+	when @Comment = NULL:
+		@Comment = "";
+
 	if Label != 0 then
 		PHO_InvalidateRegs();
 	else
 		@Inst = @PHO_Optimize(@Inst);
-		if Inst[0] = #0 then
-			return;
-		end:if
 	end:if
+
+	when Label = 0 & Inst[0] = #0 & Comment[0] = #0:
+		return;
 
 	word C = 0;
 
@@ -121,18 +126,17 @@ void EmitLine(word Label; char @Inst; char @Comment)
 
 		EmitChar(':'); inc C;
 		EmitChar(' '); inc C;
-	else
-		word I = 0;
-		while I < 8 do
-			EmitChar(' '); inc C;
-			inc I;
-		end:while
 	end:if
 
-	EmitString(@Inst);
-	C = C + strlen(@Inst);
+	if Inst[0] != #0 then
+		while C < 8 do
+			EmitChar(' '); inc C;
+		end:while
+		EmitString(@Inst);
+		C = C + strlen(@Inst);
+	end:if
 
-	if @Comment != NULL then
+	if Comment[0] != #0 then
 		while C < 40 do
 			EmitChar(' '); inc C;
 		end:while

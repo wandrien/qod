@@ -63,7 +63,7 @@ char@ DefaultTarget;
 
 void Translate()
 	@_Code = @Code;
-
+	@_EmitLine = @EmitLine;
 	@_NodeMarkUsed = @NodeMarkUsed;
 
 	/* Синтаксический анализ **********************/

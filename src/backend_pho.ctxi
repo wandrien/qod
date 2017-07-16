@@ -9,11 +9,35 @@ word PHO_RegConst[PHO_REGS];
 
 /*****************************************************************************/
 
+char@ PHO_RegName(word Reg)
+	char @S;
+
+	select
+	case Reg = 0: @S = "EAX";
+	case Reg = 1: @S = "EBX";
+	case Reg = 2: @S = "ECX";
+	case Reg = 3: @S = "EDX";
+	default:
+		StopInternal();
+	end:select
+
+	return @S;
+end
+
+/*****************************************************************************/
+
 void PHO_InvalidateReg(word R)
 	if R >= PHO_REGS then
 		StopInternal();
 	end:if
-	PHO_ValidRegConst[R] = 0;
+
+	if PHO_ValidRegConst[R] != 0 then
+		char Buff[nBUFF];
+		strcat(@strcpy(@Buff, "PHO: Invalidate: "), @PHO_RegName(R));
+		_EmitLine(0, "", @Buff);
+
+		PHO_ValidRegConst[R] = 0;
+	end:if
 end
 
 /*****************************************************************************/
@@ -71,6 +95,10 @@ void PHO_RegLoadConst(word R; word Data)
 	end:if
 	PHO_ValidRegConst[R] = 1;
 	PHO_RegConst[R] = Data;
+
+	char Buff[nBUFF];
+	strcat(@strcat(@strcat(@strcpy(@Buff, "PHO: Constant: "), @PHO_RegName(R)), " = "), @str(Data));
+	_EmitLine(0, "", @Buff);
 end
 
 /*****************************************************************************/
