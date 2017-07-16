@@ -8,7 +8,7 @@ char @str2(word Value; word Base)
 	char @Digit="0123456789ABCDEF";
 
 	word   I = 0;
-	while  Value > 0 | I = 0 do
+	while  Value > 0 | I == 0 do
 		Buff[I] = Digit[Value % Base];
 		inc  I;
 		Value = Value / Base;

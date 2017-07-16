@@ -55,7 +55,7 @@ void EmitChar(char C)
 		StopInternal();
 	end
 
-	if nText = nTEXT then
+	if nText == nTEXT then
 		FlushOutput();
 	end
 
@@ -98,9 +98,9 @@ end
 /* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
 void EmitLine(word Label; char @Inst; char @Comment)
 
-	when @Inst = NULL:
+	when @Inst == NULL:
 		@Inst = "";
-	when @Comment = NULL:
+	when @Comment == NULL:
 		@Comment = "";
 
 	if Label != 0 then
@@ -109,7 +109,7 @@ void EmitLine(word Label; char @Inst; char @Comment)
 		@Inst = @PHO_Optimize(@Inst);
 	end:if
 
-	when Label = 0 & Inst[0] = #0 & Comment[0] = #0:
+	when Label == 0 & Inst[0] == #0 & Comment[0] == #0:
 		return;
 
 	word C = 0;
@@ -150,7 +150,7 @@ end
 /*****************************************************************************/
 
 void EmitLabel(word Label)
-	when Label = 0: StopInternal();
+	when Label == 0: StopInternal();
 	EmitLine(Label, "", NULL);
 end
 

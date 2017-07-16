@@ -13,7 +13,7 @@ word str_has_suffix(char @S; char @Suffix);
 ***************************************************************** DOCUMENTATION
 
 word str_eq(char @S1; char @S2)
-	if strcmp(@S1, @S2) = 0 then
+	if strcmp(@S1, @S2) == 0 then
 		return 1;
 	end
 	return 0;

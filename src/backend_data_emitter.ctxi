@@ -10,9 +10,9 @@ void EmitByteReset()
 	EmitByteBytesInLine = 0;
 
 	select
-		case EmitByteState = 1:
+		case EmitByteState == 1:
 			EmitNL();
-		case EmitByteState = 2:
+		case EmitByteState == 2:
 			EmitChar('"');
 			EmitNL();
 	end
@@ -33,41 +33,41 @@ void EmitByte(char c)
 	char Buff[30];
 	Buff[0] = #0;
 
-	if c < ' ' | c = '"' then
+	if c < ' ' | c == '"' then
 		NewState = 1;
 	else
 		NewState = 2;
 	end
 
 	select
-		case EmitByteState = 0:
+		case EmitByteState == 0:
 			select
-				case NewState = 1:
+				case NewState == 1:
 					strcat(@Buff, "db ");
 					strcat(@Buff, @str(word(c)));
-				case NewState = 2:
+				case NewState == 2:
 					strcat(@Buff, "db ~"");
 					strcat(@Buff, @C);
 				default:
 					StopInternalCodegen();
 			end
-		case EmitByteState = 1:
+		case EmitByteState == 1:
 			select
-				case NewState = 1:
+				case NewState == 1:
 					strcat(@Buff, ", ");
 					strcat(@Buff, @str(word(c)));
-				case NewState = 2:
+				case NewState == 2:
 					strcat(@Buff, ", ~"");
 					strcat(@Buff, @C);
 				default:
 					StopInternalCodegen();
 			end
-		case EmitByteState = 2:
+		case EmitByteState == 2:
 			select
-				case NewState = 1:
+				case NewState == 1:
 					strcat(@Buff, "~", ");
 					strcat(@Buff, @str(word(c)));
-				case NewState = 2:
+				case NewState == 2:
 					strcat(@Buff, @C);
 				default:
 					StopInternalCodegen();
@@ -88,9 +88,9 @@ void EmitByte(char c)
 	select
 	case EmitByteBytesInLine > 70 & word(c) < 0x80:
 		EmitByteReset();
-	case EmitByteBytesInLine > 50 & c = ' ':
+	case EmitByteBytesInLine > 50 & c == ' ':
 		EmitByteReset();
-	case EmitByteBytesInLine > 40 & c = '~n':
+	case EmitByteBytesInLine > 40 & c == '~n':
 		EmitByteReset();
 	end
 
@@ -130,7 +130,7 @@ word EmitRODataFragment(word FirstChar; word Len)
 
 	end
 
-	if j = Len then
+	if j == Len then
 		return offset;
 	end
 
@@ -171,17 +171,17 @@ void EmitROData()
 	int next_len = -1;
 	word I;
 
-	if RODataMergeMode = RODataMergeModeNone then
+	if RODataMergeMode == RODataMergeModeNone then
 		rodata_nr = 0;
 	else
 		rodata_nr = RODATA_NR;
 	end
 
 
-	if RODataMergeMode = RODataMergeModeAgressive then
+	if RODataMergeMode == RODataMergeModeAgressive then
 		I = 0;
 		while I < nDict do
-			if Dict[I].Class = cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) = 1 & Dict[I].Used != 0 then
+			if Dict[I].Class == cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 				word len = Dict[I].nIndx;
 				if next_len < len then
 					next_len = len;
@@ -202,9 +202,9 @@ void EmitROData()
 		next_len = -1;
 		I = 0;
 		while I < nDict do
-			if Dict[I].Class = cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) = 1 & Dict[I].Used != 0 then
+			if Dict[I].Class == cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 				word len = Dict[I].nIndx;
-				if len = curr_len | curr_len = -1 then
+				if len == curr_len | curr_len == -1 then
 					EmitByteReset();
 					Dict[I].Value = EmitRODataFragment(Dict[I].Stack, len);
 				end
@@ -229,7 +229,7 @@ void AssignStringOffsets()
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if Dict[I].Class = cLITERAL & Dict[I].RO = 0 & T_IsPtr(Dict[I].pType) = 1 & Dict[I].Used != 0 then
+		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 			word len = Dict[I].nIndx;
 			Dict[I].Value = data_len;
 			data_len = data_len + len;
@@ -253,7 +253,7 @@ void EmitSection_Data_Strings(char @Buff)
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if Dict[I].Class = cLITERAL & Dict[I].RO = 0 & T_IsPtr(Dict[I].pType) = 1 & Dict[I].Used != 0 then
+		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 			word len = Dict[I].nIndx;
 			if Dict[I].Value != data_len then
 				StopInternalCodegen();
@@ -280,10 +280,10 @@ void EmitSection_Data(char @Buff; word D)
 	EmitStringNL("");
 
 	select
-		case TargetFileFormat = tPE:
+		case TargetFileFormat == tPE:
 			EmitStringNL("section ~".data~" data readable writeable");
 
-		case TargetFileFormat = tELF:
+		case TargetFileFormat == tELF:
 			EmitStringNL("segment readable writeable");
 
 		default:
@@ -315,7 +315,7 @@ void EmitPEImport(char @Buff)
 
 	word I  = 0;
 	while I<nDict do
-		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
 
 			word Label = NewLabel();
 			inc LabelCount;
@@ -340,12 +340,12 @@ void EmitPEImport(char @Buff)
 
 	I =0;
 	while I<nDict do
-		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
 			EmitNL();
 
 			word  J=0;
 			while J<nDict do
-				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+				if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
 
 					word Label = NewLabel();
 					inc LabelCount;
@@ -375,7 +375,7 @@ void EmitPEImport(char @Buff)
 	word Label = FirstLabel + 1;
 	I =0;
 	while I<nDict do
-		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
 			EmitLine(Label,@strcat(@strcat(@strcpy(@Buff,"db     ~""),@DictGetName(I)),".DLL~", 0"), NULL);
 			inc Label;
 		end:if
@@ -388,12 +388,12 @@ void EmitPEImport(char @Buff)
 
 	I =0;
 	while I<nDict do
-		if Dict[I].Class=cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
 			EmitNL();
 
 			word  J=0;
 			while J<nDict do
-				if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+				if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
 					EmitLine(Label,"dw      0", NULL);
 					Emit(@strcat(@strcat(@strcpy(@Buff,"db     ~""),@DictGetName(J)),"~", 0"));
 					inc Label;

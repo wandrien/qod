@@ -142,10 +142,10 @@ void InitFrontEnd()
 	DefineString("__TRANSLATOR_HOST__", @__TRANSLATOR_TARGET__);
 
 	select
-	case TargetFileFormat = tPE:
+	case TargetFileFormat == tPE:
 		DefineString("__TRANSLATOR_TARGET__", "i386-win32-pe");
 		strcat(@Text,"void ExitProcess(word uExitCode) external KERNEL32;");
-	case TargetFileFormat = tELF:
+	case TargetFileFormat == tELF:
 		DefineString("__TRANSLATOR_TARGET__", "i386-linux-elf");
 	default:
 		StopInternal();

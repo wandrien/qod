@@ -29,9 +29,9 @@ word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
 		char c = S[s_i];
 
 		select
-		case c = '"':
+		case c == '"':
 			quoted = !quoted;
-		case quoted = 0 & (c = ' ' | c = '~t' | c = '~r' | c = '~n') :
+		case quoted == 0 & (c == ' ' | c == '~t' | c == '~r' | c == '~n') :
 			Buff[b_i] = #0;
 			inc b_i;
 			exit;
@@ -56,13 +56,13 @@ word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
 end
 
 void ParseCmdLine(char@ S)
-	if S[0] = #0 then
+	if S[0] == #0 then
 		return;
 	end:if
 
 	@S = @S[str_skip_wspace(@S)];
 
-	if S[0] = #0 then
+	if S[0] == #0 then
 		return;
 	end:if
 

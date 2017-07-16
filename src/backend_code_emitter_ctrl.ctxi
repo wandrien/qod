@@ -3,7 +3,7 @@
 
 word Code_OR(word P; word F; word T; word M; char @Buff)
 	word L = LabelResolve(P, lBRANCH);
-	if T=0 then
+	if T==0 then
 		_Code(Node[P].pLeft , 0, M, L);
 		EmitLabel(L);
 		_Code(Node[P].pRight, F, 0, M);
@@ -30,7 +30,7 @@ end
 
 word Code_AND(word P; word F; word T; word M; char @Buff)
 	word L = LabelResolve(P, lBRANCH);
-	if T=0 then
+	if T==0 then
 		_Code(Node[P].pLeft , F, 0, L);
 		EmitLabel(L);
 		_Code(Node[P].pRight, F, 0, M);
@@ -53,11 +53,11 @@ word Code_PUSH(word P; char @Buff)
 
 	word P1 = Node[P].pLeft;
 
-	if Node[P1].ID=iDATA
-	 | Node[P1].ID=iPARM
-	 | Node[P1].ID=iLOCAL then
+	if Node[P1].ID==iDATA
+	 | Node[P1].ID==iPARM
+	 | Node[P1].ID==iLOCAL then
 
-		if Node[P1].pLeft < nNODE & Node[Node[P1].pLeft].ID=iLOAD then
+		if Node[P1].pLeft < nNODE & Node[Node[P1].pLeft].ID==iLOAD then
 
 			word nIndx;
 			word pType;
@@ -66,8 +66,8 @@ word Code_PUSH(word P; char @Buff)
 			word ID=ExtractDataInfo(P1, @pType, @nIndx, @Ofs, @RO);
 
 			/* FIXME: проверка pIndx >= nIndx не работает для локальных переменных, поскольку компилятор не сохраняет эту информацию >< */
-//			if pIndx >= nIndx & SizeOfType(pType, nPtr) = 4 then
-			if 1 >= 1 & SizeOfType(pType, nIndx) = 4 then
+//			if pIndx >= nIndx & SizeOfType(pType, nPtr) == 4 then
+			if 1 >= 1 & SizeOfType(pType, nIndx) == 4 then
 				strcpy(@Buff, "push    dword ");
 				Emit(@CodeDataIX_offset(@Buff, ID, 0, Ofs));
 				return nDICT;
@@ -77,10 +77,10 @@ word Code_PUSH(word P; char @Buff)
 
 
 	/* Оптимизация прямой загрузки указателя на строку. */
-	if Node[P1].ID=iSTRING then
+	if Node[P1].ID==iSTRING then
 
 		if Node[P1].pLeft != nNODE
-		 & Node[Node[P1].pLeft].ID=iLPTR then
+		 & Node[Node[P1].pLeft].ID==iLPTR then
 
 			word nIndx;
 			word pType;
@@ -91,7 +91,7 @@ word Code_PUSH(word P; char @Buff)
 			strcpy(@Buff, "push    ");
 
 			char @s = "dword @@ROLITERALS+";
-			when RO = 0:
+			when RO == 0:
 				@s = "dword @@RWLITERALS+";
 			Emit(@strcat(@strcat(@strcat(@Buff,@s),@str(Ofs)),""));
 
@@ -102,7 +102,7 @@ word Code_PUSH(word P; char @Buff)
 
 	/* Оптимизация прямой загрузки числа из регистра. */
 	select
-	case Node[P1].ID=iNULL:
+	case Node[P1].ID==iNULL:
 		word RegC = PHO_FindRegWithConst(0);
 		if RegC != PHO_REG_INVALID then
 			strcpy(@Buff, "push    ");
@@ -110,7 +110,7 @@ word Code_PUSH(word P; char @Buff)
 			Emit(@Buff);
 			return nDICT;
 		end:if
-	case Node[P1].ID=iWORD | Node[P1].ID=iINT:
+	case Node[P1].ID==iWORD | Node[P1].ID==iINT:
 		word RegC = PHO_FindRegWithConst(Node[P1].Value);
 		if RegC != PHO_REG_INVALID then
 			strcpy(@Buff, "push    ");
@@ -121,7 +121,7 @@ word Code_PUSH(word P; char @Buff)
 	end:select
 
 	/* Оптимизация прямой загрузки числа. */
-	if (Node[P1].ID=iWORD | Node[P1].ID=iINT) & Node[P1].Value != 0 then
+	if (Node[P1].ID==iWORD | Node[P1].ID==iINT) & Node[P1].Value != 0 then
 
 		strcpy(@Buff, "push    dword ");
 		strcat(@Buff, @str(Node[Node[P].pLeft].Value));
@@ -141,9 +141,9 @@ word Code_PUSH(word P; char @Buff)
 	end
 
 	select
-	case Size=1:
+	case Size==1:
 		Emit("push    EAX");
-	case Size=4:
+	case Size==4:
 		Emit("push    EAX");
 	default:
 		Emit(@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(DefaultInStackAlign(Size))));
@@ -172,13 +172,13 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 	end:if
 
-	if Dict[pFunc].Sub = sMAIN then
+	if Dict[pFunc].Sub == sMAIN then
 		select
-		case TargetFileFormat = tPE:
+		case TargetFileFormat == tPE:
 			Emit("xor     EAX,  EAX");
 			Emit("push    EAX");
 			Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
-		case TargetFileFormat = tELF:
+		case TargetFileFormat == tELF:
 			Emit("mov     EAX,  1");
 			Emit("xor     EBX,  EBX");
 			Emit("int     80H");
@@ -288,7 +288,7 @@ word Code_SWITCH(word P; char @Buff)
 
 	fEAX = RegA;
 	word pType = _Code(Node[COND].pLeft,0,0,0);
-	if pType = st_byte then
+	if pType == st_byte then
 		Emit("and     EAX,  0FFH");
 	end:if
 
@@ -307,7 +307,7 @@ word Code_SWITCH(word P; char @Buff)
 				word value = Node[Node[VALUE_I].pLeft].Value - offset;
 
 				char@ Reg = "EAX";
-				if pType = st_char then
+				if pType == st_char then
 					value = value & 0xFF;
 					@Reg = "AL";
 				end:if

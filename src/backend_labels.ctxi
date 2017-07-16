@@ -29,9 +29,9 @@ end
 word LabelResolve(word N; word Name)
 	word L = Node[N].pLabel;
 	do
-		when L = 0 | L >= nLabel:
+		when L == 0 | L >= nLabel:
 			StopInternal();
-		when Label[L].Name = Name:
+		when Label[L].Name == Name:
 			exit;
 		L = Label[L].pNext;
 	end:do
@@ -78,17 +78,17 @@ void DoWarnUnusedGlobals()
 	char Buff[1024];
 	word  P = 0;
 	while P < nDict do
-		if Dict[P].Used = 0 then
+		if Dict[P].Used == 0 then
 			select
-			case Dict[P].Class = cDATA:
+			case Dict[P].Class == cDATA:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @wGLOBALVARUNUSED);
 				Warn(@Buff);
-			case Dict[P].Class = cFUNC:
+			case Dict[P].Class == cFUNC:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @wFUNCUNUSED);
 				Warn(@Buff);
-			case Dict[P].Class = cTYPE & Dict[P].Sub != sBASE:
+			case Dict[P].Class == cTYPE & Dict[P].Sub != sBASE:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @wTYPEUNUSED);
 				Warn(@Buff);
@@ -114,7 +114,7 @@ word     Enum(word P; word Flag)
       word  M=0;
       while P<nNODE do
         select
-          case Node[P].ID=iSELECT:
+          case Node[P].ID==iSELECT:
             LabelAllocate(P, lEXIT);
             word  CASE = Node[P].pLeft;
             while CASE < nNODE do
@@ -141,7 +141,7 @@ word     Enum(word P; word Flag)
                 CASE = Node[CASE].pRight;
             end
 
-          case Node[P].ID=iSWITCH :
+          case Node[P].ID==iSWITCH :
 
 			LabelAllocate(P, lEXIT);
 
@@ -164,7 +164,7 @@ word     Enum(word P; word Flag)
 					&    Node[VALUE_I].ID != iDEFAULT
 					&    Node[VALUE_I].ID != iBODY:
 						StopInternal();
-					if Node[VALUE_I].ID = iBODY then
+					if Node[VALUE_I].ID == iBODY then
 						word V=Enum(Node[VALUE_I].pLeft,1);
 						if M<S+V then
 							M=S+V;
@@ -176,7 +176,7 @@ word     Enum(word P; word Flag)
 				CASE_I = Node[CASE_I].pRight;
 			end:while
 
-          case Node[P].ID=iWHILE | Node[P].ID=iREPEAT:
+          case Node[P].ID==iWHILE | Node[P].ID==iREPEAT:
             word BODY = Node[P].pLeft;
             word COND = Node[BODY].pRight;
             when Node[BODY].ID != iBODY
@@ -194,7 +194,7 @@ word     Enum(word P; word Flag)
               M=S+V;
             end
 
-          case Node[P].ID=iDEF_LOCAL:
+          case Node[P].ID==iDEF_LOCAL:
 			word Size = SizeOfType(Node[P].pType, Node[Node[P].pLeft].Value);
 			S=S+DefaultInStackAlign(Size);
 
@@ -211,7 +211,7 @@ word     Enum(word P; word Flag)
     case Node[P].ID!=iASSIGN & Node[P].ID!=iINC & Node[P].ID!=iDEC:
       Enum(Node[P].pLeft, 0);
 
-      if Node[P].ID = iOR | Node[P].ID = iAND then
+      if Node[P].ID == iOR | Node[P].ID == iAND then
         LabelAllocate(P, lBRANCH);
       end
 
@@ -232,7 +232,7 @@ word AssignLabels_Data()
 	word I = 0;
 	while I < nDict do
 		select
-		case Dict[I].Class = cDATA & Dict[I].Used != 0:
+		case Dict[I].Class == cDATA & Dict[I].Used != 0:
 			Dict[I].Value = D;
 			word Size = SizeOfType(Dict[I].pType, Dict[I].nIndx);
 			D = D + DefaultStaticAlign(Size);
@@ -254,7 +254,7 @@ void AssignLabels_Struct()
 	word I=0;
 	while I < nDict do
 		select
-		case Dict[I].Class = cTYPE & Dict[I].Sub = sSTRUCT:
+		case Dict[I].Class == cTYPE & Dict[I].Sub == sSTRUCT:
 			word D1 = 0;
 			word P = Dict[I].pFirst;
 			while P < nDICT do
@@ -278,7 +278,7 @@ void AssignLabels_Func()
   word I=0;
   while I<nDict do
     select
-      case Dict[I].Class=cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
+      case Dict[I].Class==cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
         Dict [I].Value = NewLabel();
 
         Dict [I].Stack=Enum(Dict[I].pNode,1);
@@ -294,12 +294,12 @@ void AssignLabels_FuncExternal()
 
   word I=0;
   while I<nDict do
-    if Dict[I].Class=cLIB then
+    if Dict[I].Class==cLIB then
       word  J=0;
       while J<nDict do
-        if Dict[J].Class=cFUNC & Dict[J].Sub=sSYS & Dict[J].pNode=I & Dict[J].Used!=0 then
+        if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
           word Label = NewLabel();
-          if Dict[I].Used=0 then
+          if Dict[I].Used==0 then
             Dict[I].Value = Label;
             Dict[I].Used =1;
           end

@@ -39,8 +39,8 @@ end
 word strcmp(char @S1, @S2)
 
 	word i = 0;
-	while S1[i] = S2[i] do
-		if S1[i] = #0 then
+	while S1[i] == S2[i] do
+		if S1[i] == #0 then
 			return 0;
 		end
 

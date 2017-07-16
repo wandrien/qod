@@ -51,13 +51,13 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 	word ID = Node[P].ID;
 
 	select
-		case ID = iDATA:
+		case ID == iDATA:
 			pType = Dict[Node[P].Value].pType;
 			nIndx = Dict[Node[P].Value].nIndx;
 			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
 
-		case ID = iPARM:
+		case ID == iPARM:
 			when Dict[Node[P].Value].Class != cARG:
 				StopInternal();
 			pType = Dict[Node[P].Value].pType;
@@ -65,13 +65,13 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
 
-		case ID = iLOCAL:
+		case ID == iLOCAL:
 			pType = Local[Node[P].Value].pType;
 			nIndx = Local[Node[P].Value].nIndx;
 			Ofs   = Local[Node[P].Value].Value;
 			RO    = 0;
 
-		case ID = iSTRING:
+		case ID == iSTRING:
 			nIndx = 0;
 			pType = Dict[Node[P].Value].pType;
 			Ofs   = Dict[Node[P].Value].Value;
@@ -87,8 +87,8 @@ end
 /*****************************************************************************/
 
 word NodeHasConst(word P; word Data)
-	if (Node[P].ID = iNULL & Data = 0)
-	 | ( (Node[P].ID = iWORD | Node[P].ID = iINT) & Node[P].Value = Data) then
+	if (Node[P].ID == iNULL & Data == 0)
+	 | ( (Node[P].ID == iWORD | Node[P].ID == iINT) & Node[P].Value == Data) then
 		return 1;
 	end:if
 	return 0;

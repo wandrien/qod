@@ -40,7 +40,7 @@ end
 
 LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
   select
-    case Message=WM_SIZE:
+    case Message == WM_SIZE:
       if wParam!=SIZE_MINIMIZED then
         Width =lParam % 0x10000;
         Height=lParam / 0x10000;
@@ -49,7 +49,7 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
         CreateFont  ();
       end
 
-    case Message=WM_PAINT:
+    case Message == WM_PAINT:
       PAINTSTRUCT PS;
 
       HDC     hDC    =BeginPaint(hWnd,@PS);
@@ -67,18 +67,18 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
 
       return 0;
 
-    case Message=WM_COMMAND:
+    case Message == WM_COMMAND:
       select
-        case (wParam & 0xFFFF)=101:
+        case (wParam & 0xFFFF) == 101:
           MessageBox(hWnd,"Context-2 demonstration program",@Class,MB_OK);
           return 0;
 
-        case (wParam & 0xFFFF)=102:
+        case (wParam & 0xFFFF) == 102:
           PostQuitMessage (0);
           return 0;
       end:select
 
-    case Message=WM_DESTROY:
+    case Message == WM_DESTROY:
       PostQuitMessage (0);
       return 0;
   end:select

@@ -151,7 +151,7 @@ end
 
 void EmitNodeName(word P)
 	char @N = @IDDesc[Node[P].ID].Name;
-	when @N = NULL:
+	when @N == NULL:
 		StopInternal();
 	EmitString(@N);
 end
@@ -159,9 +159,9 @@ end
 void EmitNodeValue(word P)
 	char @N;
 	select
-		case IDDesc[Node[P].ID].ValueClass = vcDict:
+		case IDDesc[Node[P].ID].ValueClass == vcDict:
 			@N = @DictGetName(Node[P].Value);
-		case IDDesc[Node[P].ID].ValueClass = vcChar:
+		case IDDesc[Node[P].ID].ValueClass == vcChar:
 			@N = @Char[Node[P].Value];
 		default:
 			@N = @str(Node[P].Value);
@@ -268,7 +268,7 @@ void EmitTree(word P; int Pad; char @LinePrefix)
 		EmitString(" "); EmitNodeType(P);
 		EmitTree(Node[P].pLeft , Pad + 1, @LinePrefix);
 
-		if RightList = 0 then
+		if RightList == 0 then
 			EmitTree(Node[P].pRight, Pad + 1, @LinePrefix);
 			exit;
 		end
@@ -297,7 +297,7 @@ void EmitFunctionTrees()
 	word I = 0;
 	while I < nDict do
 		select
-			case Dict[I].Class = cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
+			case Dict[I].Class == cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
 				EmitNL();
 				EmitString(@LinePrefix);
 				EmitString("== ");
@@ -331,7 +331,7 @@ void EmitIncludeList()
 	word i = 0;
 	while i < nDict do
 		select
-		case Dict[i].Class = cFILE:
+		case Dict[i].Class == cFILE:
 			EmitStringNL(@DictGetName(i));
 		end:select
 		inc i;

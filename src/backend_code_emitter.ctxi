@@ -63,7 +63,7 @@ word Code1(word pPrimary)
 	Buff[0] = #0;
 
 	word IncID=Node[pPrimary].ID;
-	if IncID=iINC | IncID=iDEC then
+	if IncID==iINC | IncID==iDEC then
 		fEAX=RegA;
 		pPrimary = Node[pPrimary].pLeft;
 	end
@@ -81,12 +81,12 @@ word Code1(word pPrimary)
 		select
 		case P1>=nNODE:
 			select
-			case IncID=iINC | IncID=iDEC:
-				if IX=RegB then
+			case IncID==iINC | IncID==iDEC:
+				if IX==RegB then
 					StopAnNodeInternalCodegen(pPrimary);
 				end:if
 
-				if IncID=iINC then
+				if IncID==iINC then
 					strcpy(@Buff,"inc     ");
 				else
 					strcpy(@Buff,"dec     ");
@@ -94,9 +94,9 @@ word Code1(word pPrimary)
 
 				word Size=Dict[pType].Value;
 				select
-				case Size=1:
+				case Size==1:
 					strcat(@Buff,"byte  ");     // FASM
-				case Size=4:
+				case Size==4:
 					strcat(@Buff,"dword ");     // FASM
 				default:
 					StopAnNodeInternalCodegen(pPrimary);
@@ -108,9 +108,9 @@ word Code1(word pPrimary)
 				word Size = SizeOfType(pType, 0);
 
 				select
-				case Size=1:
+				case Size==1:
 					strcpy(@Buff,"mov     byte  ");     // FASM
-				case Size=4:
+				case Size==4:
 					strcpy(@Buff,"mov     dword ");     // FASM
 				default:
 					strcpy(@Buff,"lea     EDI,  ");
@@ -121,9 +121,9 @@ word Code1(word pPrimary)
 				select
 				case fEAX!=RegA:
 					select
-					case Size=1:
+					case Size==1:
 						Emit(@strcat(@Buff,", AL"));
-					case Size=4:
+					case Size==4:
 						Emit(@strcat(@Buff,", EAX"));
 
 					default:
@@ -131,12 +131,12 @@ word Code1(word pPrimary)
 						Emit(@Buff);
 					end:select
 
-				case IX=RegA:
+				case IX==RegA:
 					select
-					case Size=1:
+					case Size==1:
 						Emit("pop     EBX");
 						Emit(@strcat(@Buff,", BL"));
-					case Size=4:
+					case Size==4:
 						Emit("pop     EBX");
 						Emit(@strcat(@Buff,", EBX"));
 					default:
@@ -144,12 +144,12 @@ word Code1(word pPrimary)
 						Emit(@Buff);
 					end:select
 
-				case IX=RegB:
+				case IX==RegB:
 					select
-					case Size=1:
+					case Size==1:
 						Emit("pop     EAX");
 						Emit(@strcat(@Buff,", AL"));
-					case Size=4:
+					case Size==4:
 						Emit("pop     EAX");
 						Emit(@strcat(@Buff,", EAX"));
 					default:
@@ -167,33 +167,33 @@ word Code1(word pPrimary)
 
 			exit;
 
-		case Node[P1].ID=iLOAD:
+		case Node[P1].ID==iLOAD:
 			word Size = SizeOfType(pType, 0);
 
 			select
-			case Size=1:
-				if fEAX=RegA then
+			case Size==1:
+				if fEAX==RegA then
 					strcpy(@Buff,"mov     AL,   byte  ");     // FASM
 				else
 					strcpy(@Buff,"mov     BL,   byte  ");     // FASM
 				end:if
 
-			case Size=4:
-				if fEAX=RegA then
+			case Size==4:
+				if fEAX==RegA then
 					strcpy(@Buff,"mov     EAX,  dword ");     // FASM
 				else
 					strcpy(@Buff,"mov     EBX,  dword ");     // FASM
 				end:if
 
 			default:
-				if fEAX=RegA then
+				if fEAX==RegA then
 					strcpy(@Buff,"lea     EAX,  ");
 				else
 					strcpy(@Buff,"lea     EBX,  ");
 				end:if
 			end:select
 
-			if IX=RegNone & ID=iCALL then
+			if IX==RegNone & ID==iCALL then
 				null;
 			else
 				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
@@ -201,40 +201,40 @@ word Code1(word pPrimary)
 
 			return pType;
 
-		case Node[P1].ID=iLPTR:
-			if fEAX!=RegA | IX=RegB then
+		case Node[P1].ID==iLPTR:
+			if fEAX!=RegA | IX==RegB then
 				StopAnNodeInternalCodegen(P1);
 			end:if
 
 			if IX!=RegNone then
 				select
-				case ID=iDATA:
+				case ID==iDATA:
 					Emit(@strcat(@strcpy(@Buff,"add     EAX,  @@DATA+"),@str(Ofs)));
-				case ID=iPARM:
+				case ID==iPARM:
 					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX+"),@str(Ofs)),"]"));
-				case ID=iLOCAL:
+				case ID==iLOCAL:
 					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX-"),@str(Ofs)),"]"));
-				case ID=iSTRING:
+				case ID==iSTRING:
 					char @s = "@@ROLITERALS+";
-					when RO = 0:
+					when RO == 0:
 						@s = "@@RWLITERALS+";
 					Emit(@strcat(@strcat(@strcpy(@Buff,"add     EAX,  "), @s),@str(Ofs)));
-				case ID=iREF & Ofs!=0:
+				case ID==iREF & Ofs!=0:
 					Emit(@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
 					StopAnNodeInternalCodegen(P1);
 				end:select
 			else
 				select
-				case ID=iDATA:
+				case ID==iDATA:
 					Emit(@strcat(@strcpy(@Buff,"mov     EAX,  @@DATA+"),@str(Ofs)));
-				case ID=iPARM:
+				case ID==iPARM:
 					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+"),@str(Ofs)),"]"));
-				case ID=iLOCAL:
+				case ID==iLOCAL:
 					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP-"),@str(Ofs)),"]"));
-				case ID=iSTRING:
+				case ID==iSTRING:
 					char @s = "@@ROLITERALS+";
-					when RO = 0:
+					when RO == 0:
 						@s = "@@RWLITERALS+";
 					Emit(@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  "), @s),@str(Ofs)));
 				case ID!=iCALL:
@@ -244,7 +244,7 @@ word Code1(word pPrimary)
 
 			return nDICT;
 
-		case Node[P1].ID=iCALL:
+		case Node[P1].ID==iCALL:
 			if fEAX!=RegA then
 				Emit("push    EAX");
 				fEAX=RegA;
@@ -254,7 +254,7 @@ word Code1(word pPrimary)
 				_Code(Node[P1].pLeft,0,0,0);
 			end:if
 
-			if Dict[Node[P1].Value].Sub=sSYS then
+			if Dict[Node[P1].Value].Sub==sSYS then
 				Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Value)),"]"));
 			else
 				EmitLine(0,
@@ -266,7 +266,7 @@ word Code1(word pPrimary)
 			ID =iCALL;
 			Ofs=    0;
 
-		case Node[P1].ID=iCALL2:
+		case Node[P1].ID==iCALL2:
 			if fEAX!=RegA then
 				Emit("push    EAX");
 				fEAX=RegA;
@@ -287,19 +287,19 @@ word Code1(word pPrimary)
 			ID   =iCALL;
 			Ofs  =    0;
 
-		case Node[P1].ID=iINDEX:
+		case Node[P1].ID==iINDEX:
 
 			word  C   = 0;
 			word  N   = 0;
 			word  IX1 = RegNone;
 			word fIX  = 1;
 			do
-				if Node[Node[P1].pLeft].ID=iWORD then
+				if Node[Node[P1].pLeft].ID==iWORD then
 					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
 					N = N * Node[P1].Value;
 				else
 					select
-					case IX1=RegB:
+					case IX1==RegB:
 						if fEAX!=RegA then
 							if IX!=0 then
 								StopAnNodeInternalCodegen(P1);
@@ -325,7 +325,7 @@ word Code1(word pPrimary)
 
 						IX1=RegA;
 
-					case IX1=RegA:
+					case IX1==RegA:
 						if fEAX!=RegA | IX!=RegNone then
 							StopAnNodeInternalCodegen(P1);
 						end
@@ -334,7 +334,7 @@ word Code1(word pPrimary)
 
 						_Code(Node[P1].pLeft,0,0,0);
 
-						if fEAX=RegA then
+						if fEAX==RegA then
 							Emit("pop     EBX");
 							Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
 						else
@@ -345,8 +345,8 @@ word Code1(word pPrimary)
 
 						fEAX=RegA;
 
-					case IX=RegB:
-						if fEAX=RegA then
+					case IX==RegB:
+						if fEAX==RegA then
 							StopAnNodeInternalCodegen(P1);
 						end:if
 
@@ -360,7 +360,7 @@ word Code1(word pPrimary)
 
 						IX1=RegA;
 
-					case IX=RegA:
+					case IX==RegA:
 						if fEAX!=RegA then
 							StopAnNodeInternalCodegen(P1);
 						end:if
@@ -369,7 +369,7 @@ word Code1(word pPrimary)
 
 						_Code(Node[P1].pLeft,0,0,0);
 
-						if fEAX=RegA then
+						if fEAX==RegA then
 							fIX=0;
 							IX1=RegA;
 						else
@@ -381,7 +381,7 @@ word Code1(word pPrimary)
 					default:
 						_Code(Node[P1].pLeft,0,0,0);
 
-						if fEAX=RegA then
+						if fEAX==RegA then
 							IX1=RegA;
 						else
 							IX1=RegB;
@@ -419,14 +419,14 @@ word Code1(word pPrimary)
 
 				if IX!=RegNone then
 					select
-					case IX1=RegB:
-						if IX!=RegNone | fIX=0 then
+					case IX1==RegB:
+						if IX!=RegNone | fIX==0 then
 							StopInternalCodegen();
 						end:if
 
 						Emit("add     EAX,  EBX");
 
-					case IX1=RegA:
+					case IX1==RegA:
 						if fIX!=0 then
 							StopInternalCodegen();
 						end
@@ -444,8 +444,8 @@ word Code1(word pPrimary)
 				end:if
 			end:if
 
-		case Node[P1].ID=iADDR:
-			if T_IsPtr(pType) = 0 then
+		case Node[P1].ID==iADDR:
+			if T_IsPtr(pType) == 0 then
 				StopAnNodeInternalCodegen(P1);
 			end:if
 
@@ -455,7 +455,7 @@ word Code1(word pPrimary)
 				word Size = SizeOfType(pType, 0);
 
 				select
-				case IX=RegB:
+				case IX==RegB:
 					if fEAX!=RegA then
 						Emit("push    EAX");
 					end:if
@@ -464,14 +464,14 @@ word Code1(word pPrimary)
 					IX  =RegA;
 					fEAX=RegB;
 
-				case IX=RegA:
+				case IX==RegA:
 					fEAX=RegB;
 				end:select
 
 				_Code(Node[P1].pLeft,0,0,0);
 
 				Emit_IMUL_Reg_Const(fEAX, 4, Size);
-				if fEAX=RegA then
+				if fEAX==RegA then
 					if IX!=RegNone then
 						Emit("pop     EBX");
 						IX=RegB;
@@ -481,7 +481,7 @@ word Code1(word pPrimary)
 					strcpy(@Buff,"add     EBX,  dword ");     // FASM
 				end:if
 			else
-				if fEAX=RegA then
+				if fEAX==RegA then
 					strcpy(@Buff,"mov     EAX,  dword ");     // FASM
 				else
 					strcpy(@Buff,"mov     EBX,  dword ");     // FASM
@@ -490,41 +490,41 @@ word Code1(word pPrimary)
 
 			if IX!=RegNone then
 				char RX[4];
-				if IX=RegA then
+				if IX==RegA then
 					strcpy(@RX,"EAX");
 				else
 					strcpy(@RX,"EBX");
 				end:if
 
 				select
-				case ID=iDATA:
+				case ID==iDATA:
 					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
-				case ID=iPARM:
+				case ID==iPARM:
 					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
-				case ID=iLOCAL:
+				case ID==iLOCAL:
 					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
-				case ID=iREF:
+				case ID==iREF:
 					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
 				default:
 					StopAnNodeInternalCodegen(P1);
 				end:select
 			else
 				select
-				case ID=iDATA:
+				case ID==iDATA:
 					Emit(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]")); // FASM
-				case ID=iPARM:
+				case ID==iPARM:
 					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
-				case ID=iLOCAL:
+				case ID==iLOCAL:
 					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
 				//TODO Пpовеpить!
-				case ID=iCALL:
+				case ID==iCALL:
 					null;
 				default:
 					StopAnNodeInternalCodegen(P1);
 				end:select
 			end:if
 
-			if fEAX=RegA then
+			if fEAX==RegA then
 				IX=RegA;
 			else
 				if IX!=RegNone then
@@ -537,7 +537,7 @@ word Code1(word pPrimary)
 			ID =iREF;
 			Ofs=   0;
 
-		case Node[P1].ID=iFIELD:
+		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
 
 		default:
@@ -567,17 +567,17 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	word fSwap=0;
 	word pType;
 	select
-	case Node[Node[P].pRight].ID=iCHAR | Node[Node[P].pRight].ID=iWORD | Node[Node[P].pRight].ID=iINT:
+	case Node[Node[P].pRight].ID==iCHAR | Node[Node[P].pRight].ID==iWORD | Node[Node[P].pRight].ID==iINT:
 		pType=_Code(Node[P].pLeft,0,0,0);
 		fSwap=2;
 
-	case Node[Node[P].pLeft].ID=iCHAR | Node[Node[P].pLeft].ID=iWORD | Node[Node[P].pLeft].ID=iINT:
+	case Node[Node[P].pLeft].ID==iCHAR | Node[Node[P].pLeft].ID==iWORD | Node[Node[P].pLeft].ID==iINT:
 		_Code(Node[P].pRight,0,0,0);
 		fEAX =RegB;
 		pType=_Code(Node[P].pLeft,0,0,0);
 		fSwap=1;
 
-	case Node[Node[Node[P].pLeft].pLeft].ID=iLOAD:
+	case Node[Node[Node[P].pLeft].pLeft].ID==iLOAD:
 		_Code(Node[P].pRight,0,0,0);
 		fEAX =RegB;
 		pType=_Code(Node[P].pLeft,0,0,0);
@@ -587,7 +587,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		pType=_Code(Node[P].pLeft,0,0,0);
 		fEAX =RegB;
 		_Code(Node[P].pRight,0,0,0);
-		if fEAX=RegA then
+		if fEAX==RegA then
 			Emit("pop     EBX");
 			fSwap=1;
 		end
@@ -595,7 +595,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	word ID=Node[P].ID;
 	select
-	case fSwap=1:
+	case fSwap==1:
 		switch ID of
 		case iLT: ID=iGT;
 		case iLE: ID=iGE;
@@ -606,7 +606,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
               Emit("xchg    EAX,  EBX");
 		end:switch
 
-	case fSwap=2:
+	case fSwap==2:
 		switch ID of
 		case iMUL, iDIV, iMOD:
 			fEAX =RegB;
@@ -624,17 +624,17 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	select
 	case iLT<=ID & ID<=iGT:
 		select
-		case Size=1:
+		case Size==1:
 			select
-			case fSwap=2:
+			case fSwap==2:
 				Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
 			default:
 				Emit("cmp     AL,   BL");
 			end
 
-		case Size=4:
+		case Size==4:
 			select
-			case fSwap=2:
+			case fSwap==2:
 				Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
 			default:
 				Emit("cmp     EAX,  EBX");
@@ -644,7 +644,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			StopInternalCodegen();
 		end:select
 
-		if T=0 then
+		if T==0 then
 			switch ID of
 			case iLT: ID=iGE;
 			case iLE: ID=iGT;
@@ -660,13 +660,13 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
             F=0;
 		end:if
 
-		if T=0 | F!=0 then
+		if T==0 | F!=0 then
 			StopInternalCodegen();
 		end
 
 		char@ BranchCondition = "";
 		select
-		case pType=st_int:
+		case pType==st_int:
 			switch ID of
 			case iLT: @BranchCondition = "l ";
 			case iLE: @BranchCondition = "le";
@@ -694,28 +694,28 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 		return nDICT;
 
-	case ID=iBIT_OR:
+	case ID==iBIT_OR:
 		strcpy(@Buff,"or      ");
 
-	case ID=iBIT_XOR:
+	case ID==iBIT_XOR:
 		strcpy(@Buff,"xor     ");
 
-	case ID=iBIT_AND:
+	case ID==iBIT_AND:
 		strcpy(@Buff,"and     ");
 
-	case ID=iADD:
+	case ID==iADD:
 		strcpy(@Buff,"add     ");
 
-	case ID=iSUB:
+	case ID==iSUB:
 		strcpy(@Buff,"sub     ");
 
-	case ID=iMUL:
+	case ID==iMUL:
 		select
-		case pType=st_byte:
+		case pType==st_byte:
 			Emit("mul     BL");
-		case pType=st_word:
+		case pType==st_word:
 			Emit("mul     EBX");
-		case pType=st_int:
+		case pType==st_int:
 			Emit("imul    EBX");
 		default:
 			StopInternalCodegen();
@@ -723,15 +723,15 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 		return pType;
 
-	case ID=iDIV:
+	case ID==iDIV:
 		select
-		case pType=st_byte:
+		case pType==st_byte:
 			Emit("xor     AH,   AH");
 			Emit("div     BL");
-		case pType=st_word:
+		case pType==st_word:
 			Emit("xor     EDX,  EDX");
 			Emit("div     EBX");
-		case pType=st_int:
+		case pType==st_int:
 			Emit("xor     EDX,  EDX");
 			Emit("idiv    EBX");
 		default:
@@ -740,13 +740,13 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 		return pType;
 
-	case ID=iMOD:
+	case ID==iMOD:
 		select
-		case pType=st_byte:
+		case pType==st_byte:
 			Emit("xor     AH,   AH");
 			Emit("div     BL");
 			Emit("xchg    AL,   AH");
-		case pType=st_word:
+		case pType==st_word:
 			Emit("xor     EDX,  EDX");
 			Emit("div     EBX");
 			Emit("xchg    EAX,  EDX");
@@ -761,17 +761,17 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	end:select
 
 	select
-	case Size=1:
+	case Size==1:
 		select
-		case fSwap=2:
+		case fSwap==2:
 			Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
 		default:
 			Emit(@strcat(@Buff,"AL,   BL"));
 		end:select
 
-	case Size=4:
+	case Size==4:
 		select
-		case fSwap=2:
+		case fSwap==2:
 			Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
 		default:
 			Emit(@strcat(@Buff,"EAX,  EBX"));
@@ -804,20 +804,20 @@ word Code(word P; word F; word T; word M)
 	Buff[0] = #0;
 
 	when M != 0: /* M может быть установлено только когда F или T установлены */
-		when T = 0 & F = 0:
+		when T == 0 & F == 0:
 			StopInternalCodegen();
 
 	when T != 0 & F != 0: /* T и F не могут быть установлены в не 0 одновременно. */
 		StopInternalCodegen();
 
 	if T != 0 | F != 0 then
-		when NodeTypeIs(P, st_bool) = 0: /* T и F имеют смысл только для булевых вычислений. */
+		when NodeTypeIs(P, st_bool) == 0: /* T и F имеют смысл только для булевых вычислений. */
 			StopInternalCodegen();
 
 		switch Node[P].ID of
 		case iBOOL:
 			select
-			case Node[P].Value = 0 & F != 0:
+			case Node[P].Value == 0 & F != 0:
 				EmitJumpToLabel(F);
 			case Node[P].Value != 0 & T != 0:
 				EmitJumpToLabel(T);
@@ -890,40 +890,40 @@ word Code(word P; word F; word T; word M)
 			word pTypeTo = Node[P].pType;
 
 			select
-			case pTypeFrom = nDICT:
+			case pTypeFrom == nDICT:
 				null; /* FIXME: should trigger internal error */
 				//StopAnNodeInternalCodegen(P);
-			case pTypeFrom = st_void:
+			case pTypeFrom == st_void:
 				StopAnNodeInternalCodegen(P);
-			case pTypeTo = st_void:
+			case pTypeTo == st_void:
 				StopAnNodeInternalCodegen(P);
-			case pTypeTo = pTypeFrom:
+			case pTypeTo == pTypeFrom:
 				null;
-			case pTypeTo=st_char & pTypeFrom=st_byte:
+			case pTypeTo==st_char & pTypeFrom==st_byte:
 				null;
-			case pTypeTo=st_char & pTypeFrom=st_word:
+			case pTypeTo==st_char & pTypeFrom==st_word:
 				null;
-			case pTypeTo=st_char & pTypeFrom=st_int:
+			case pTypeTo==st_char & pTypeFrom==st_int:
 				null;
-			case pTypeTo=st_byte & pTypeFrom=st_char:
+			case pTypeTo==st_byte & pTypeFrom==st_char:
 				null;
-			case pTypeTo=st_byte & pTypeFrom=st_int:
+			case pTypeTo==st_byte & pTypeFrom==st_int:
 				null;
-			case pTypeTo=st_byte & pTypeFrom=st_word:
+			case pTypeTo==st_byte & pTypeFrom==st_word:
 				null;
-			case pTypeTo=st_word & pTypeFrom=st_char:
+			case pTypeTo==st_word & pTypeFrom==st_char:
 				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo=st_word & pTypeFrom=st_byte:
+			case pTypeTo==st_word & pTypeFrom==st_byte:
 				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo=st_word & pTypeFrom=st_int:
+			case pTypeTo==st_word & pTypeFrom==st_int:
 				null;
-			case pTypeTo=st_int & pTypeFrom=st_char:
+			case pTypeTo==st_int & pTypeFrom==st_char:
 				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo=st_int & pTypeFrom=st_byte:
+			case pTypeTo==st_int & pTypeFrom==st_byte:
 				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo=st_int & pTypeFrom=st_word:
+			case pTypeTo==st_int & pTypeFrom==st_word:
 				null;
-			case T_IsPtr(pTypeTo) = 1 & T_IsPtr(pTypeFrom) = 1:
+			case T_IsPtr(pTypeTo) == 1 & T_IsPtr(pTypeFrom) == 1:
 				null;
 			default:
 				StopAnNodeInternalCodegen(P);
@@ -938,7 +938,7 @@ word Code(word P; word F; word T; word M)
 			return pType;
 
 		case iNEG:
-			if Node[Node[P].pLeft].ID=iWORD then
+			if Node[Node[P].pLeft].ID==iWORD then
 				Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
 				return st_int;
 			end
@@ -1023,7 +1023,7 @@ word EmitFunctions(char @Buff)
 	word I = 0;
 	while I < nDict do
 		select
-			case Dict[I].Class = cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
+			case Dict[I].Class == cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
 				EmitStringNL("");
 				strcpy(@Buff,"## ");
 				if Dict[I].Sub != sMAIN then
@@ -1060,15 +1060,15 @@ word EmitFunctions(char @Buff)
 					end:if
 				end:if
 
-				if Dict[I].Sub = sMAIN then
+				if Dict[I].Sub == sMAIN then
 					word  J = 0;
 					while J < nDict do
-						if Dict[J].Class = cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
+						if Dict[J].Class == cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
 							if Node[Dict[J].pNode].ID != iASSIGN then
 								StopInternalCodegen();
 							end:if
-							if StaticDataIsZeroed = 0
-							 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) = 0 then
+							if StaticDataIsZeroed == 0
+							 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == 0 then
 								Code(Dict[J].pNode, 0, 0, 0);
 							end:if
 						end:if
@@ -1115,10 +1115,10 @@ word EmitSection_Code(char @Buff)
 	EmitStringNL("");
 
 	select
-		case TargetFileFormat = tPE:
+		case TargetFileFormat == tPE:
 			EmitStringNL("section ~".code~" code readable executable");
 
-		case TargetFileFormat = tELF:
+		case TargetFileFormat == tELF:
 			EmitStringNL("segment readable executable");
 
 		default:

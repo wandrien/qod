@@ -42,7 +42,7 @@ void DeclStruct(char @Buff)
         Dict[pStruct].Class = cTYPE;
         Dict[pStruct].Sub = sSTRUCT;
 
-        if strcmp(@Scan(@Buff),";")=0 then
+        if strcmp(@Scan(@Buff),";")==0 then
           Stop(@eNOTAVAIL);
         end
 
@@ -58,19 +58,19 @@ void DeclStruct(char @Buff)
 
           do
             word  nPtr=0;
-            while strcmp(@Scan(@Buff),"@")=0 do
+            while strcmp(@Scan(@Buff),"@")==0 do
               inc nPtr;
             end
 
-            if pType=st_void & nPtr<1 then
+            if pType==st_void & nPtr<1 then
               Stop(@eNOVOID);
             end
 
-            if pType=pStruct & nPtr<1 then
+            if pType==pStruct & nPtr<1 then
               Stop(@eNODATA);
             end
 
-            if Dict[pType].Sub=sFUNCTYPE & nPtr<1 then
+            if Dict[pType].Sub==sFUNCTYPE & nPtr<1 then
               Stop(@eNOVAL);
             end
 
@@ -85,12 +85,12 @@ void DeclStruct(char @Buff)
             Dict[F].nIndx = Tabl(@Scan(@Buff));
             DictAddToNamespace(F, pStruct);
 
-            if strcmp(@Buff,";") =0 then
+            if strcmp(@Buff,";") == 0 then
               Scan(@Buff);
               exit;
             end
 
-            if strcmp(@Buff,"end")=0 then
+            if strcmp(@Buff,"end") == 0 then
               exit;
             end
 
@@ -99,7 +99,7 @@ void DeclStruct(char @Buff)
             end
           end
 
-          if strcmp(@Buff,"end")=0 then
+          if strcmp(@Buff,"end") == 0 then
             exit;
           end
         end
@@ -139,12 +139,12 @@ void DeclFunc1(char @Buff; word a)
 	Scan(@Buff);
 
 	select
-		case strcmp(@Buff,";")=0: /* Прототип. */
+		case strcmp(@Buff,";")==0: /* Прототип. */
 			Stop(@eNOTAVAIL);
 
-		case strcmp(@Buff,"external")=0: /* Внешняя функция. */
+		case strcmp(@Buff,"external")==0: /* Внешняя функция. */
 			select
-				case TargetFileFormat = tPE:
+				case TargetFileFormat == tPE:
 					null;
 				default:
 					Stop(@eNOTALLOWED);
@@ -167,7 +167,7 @@ void DeclFunc1(char @Buff; word a)
 				объявленное имя делаем алиасом для библиотечного имени.
 				FIXME: Переделать! Библиотечное имя не должно присутствовать в пространстве имён модуля.
 			*/
-			if strcmp(@Scan(@Buff),".")=0 then
+			if strcmp(@Scan(@Buff),".")==0 then
 				if Find(@Scan(@Buff)) < nDict then
 					Stop(@eDUPLICATE);
 				end:if
@@ -239,7 +239,7 @@ void DeclVarFunc(char @Buff)
 	end
 
 	/* Функтор-тип. */
-	if strcmp(@Scan(@Buff),"function")=0 then
+	if strcmp(@Scan(@Buff),"function")==0 then
 		DeclVarFuncType(@Buff, pPrefixType);
 		return;
 	end
@@ -262,8 +262,8 @@ void DeclVarFunc(char @Buff)
 		Scan(@Buff);
 
 		/* Функция. */
-		if strcmp(@Buff,"(")=0 then
-			if FirstName = 0 then
+		if strcmp(@Buff,"(")==0 then
+			if FirstName == 0 then
 				Stop(@eNOFUNCTION);
 			end
 			DeclFunc1(@Buff, D);
@@ -272,11 +272,11 @@ void DeclVarFunc(char @Buff)
 
 		FirstName = 0;
 
-		if Dict[D].pType = st_void then
+		if Dict[D].pType == st_void then
 			Stop(@eNOVOID);
 		end
 
-		if Dict[Dict[D].pType].Sub = sFUNCTYPE then
+		if Dict[Dict[D].pType].Sub == sFUNCTYPE then
 			Stop(@eNOVAL);
 		end
 
@@ -284,7 +284,7 @@ void DeclVarFunc(char @Buff)
 		Dict[D].nIndx = Tabl(@Buff);
 		Dict[D].pNode =nNODE;
 
-		if strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0 then
+		if strcmp(@Buff,"=")==0 | strcmp(@Buff,":=")==0 then
 			if Dict[D].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end
@@ -308,7 +308,7 @@ void DeclVarFunc(char @Buff)
 
 		end
 
-		if strcmp(@Buff,";") =0 then
+		if strcmp(@Buff,";")==0 then
 			exit;
 		end
 
@@ -340,20 +340,20 @@ word DeclDefine(char @Buff)
 
 	Scan(@Buff);
 	select
-		case nPtr=0:
+		case nPtr==0:
 
 			word P = Expr(PRIO_ZERO, @Buff);
 
 			select
-				case Node[P].ID=iWORD:
+				case Node[P].ID==iWORD:
 					Dict[D].pType=st_word;
 					Dict[D].Value=Node[P].Value;
 
-				case Node[P].ID=iINT:
+				case Node[P].ID==iINT:
 					Dict[D].pType=st_int;
 					Dict[D].Value=Node[P].Value;
 
-				case Node[P].ID=iCHAR:
+				case Node[P].ID==iCHAR:
 					Dict[D].pType=st_char;
 					Dict[D].Value=Node[P].Value;
 
@@ -361,7 +361,7 @@ word DeclDefine(char @Buff)
 					Stop(@eTYPE);
 			end:select
 
-			if strcmp(@Buff,";")=0 then
+			if strcmp(@Buff,";")==0 then
 				Scan(@Buff);
 			end:if
 
@@ -434,24 +434,24 @@ void Parse()
 	do
 		word R = 0;
 		select
-		case strcmp(@Buff,"begin")=0:         // Главная функция
+		case strcmp(@Buff,"begin")==0:         // Главная функция
 			DeclMainFunc(@Buff);
 			exit;
-		case strcmp(@Buff,"include")=0:       // Включаемый файл
+		case strcmp(@Buff,"include")==0:       // Включаемый файл
 			R = DeclInclude(@Buff);
-		case strcmp(@Buff,"define")=0:        // Константа
+		case strcmp(@Buff,"define")==0:        // Константа
 			R = DeclDefine(@Buff);
-		case strcmp(@Buff,"struct")=0:        // Стpуктуpа
+		case strcmp(@Buff,"struct")==0:        // Стpуктуpа
 			DeclStruct(@Buff);
-		case strcmp(@Buff,"synonym")=0:       // Синоним
+		case strcmp(@Buff,"synonym")==0:       // Синоним
 			DeclSynonym(@Buff);
-		case strcmp(@Buff,"$context2")=0:
+		case strcmp(@Buff,"$context2")==0:
 			null;
-		default:                              // Пеpеменная, функция, ...
+		default:                               // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select
 
-		if R = 0 then
+		if R == 0 then
 			Scan(@Buff);
 		end
 

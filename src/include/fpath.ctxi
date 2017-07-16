@@ -28,7 +28,7 @@ char@ fpath_p_dir_separators; /* Все распознаваемые нами с
 
 word fpath_first_part(char@ S)
 	word L = strlen(@S);
-	if L = 0 then
+	if L == 0 then
 		/* FIXME: тут должен быть ассерт. */
 		return 0;
 	end:if
@@ -37,7 +37,7 @@ word fpath_first_part(char@ S)
 	
 	do
 		word P1 = str_find_chars_from(@S, @fpath_p_dir_separators, P); /*  Ищем следующий разделитель. */
-		if P1 = L then /* Если конец строки, заканчиваем. */
+		if P1 == L then /* Если конец строки, заканчиваем. */
 			return P;
 		end:if
 
@@ -62,13 +62,13 @@ end
 
 word fpath_last_part(char@ S)
 	word L = strlen(@S);
-	if L = 0 then
+	if L == 0 then
 		/* FIXME: тут должен быть ассерт. */
 		return 0;
 	end:if
 
 	/* Частный случай для строки из одного символа, поскольку в цикле строка "/" не обработается корректно. */
-	if L = 1 then
+	if L == 1 then
 		if str_has_char(@fpath_p_dir_separators, S[0]) != 0 then /* Корневой каталог... */
 			return 1;
 		else
@@ -80,7 +80,7 @@ word fpath_last_part(char@ S)
 	word P1;
 	do
 		P1 = str_rfind_chars_from(@S, @fpath_p_dir_separators, P); /*  Ищем следующий разделитель. */
-		if P = INDEX_INVALID then /* Если всю строку просканировали, заканчиваем. */
+		if P == INDEX_INVALID then /* Если всю строку просканировали, заканчиваем. */
 			return 0;
 		end:if
 		
@@ -109,7 +109,7 @@ char @fpath_cat(char @Dst, @Src)
 	/* Присобачиваем разделитель, если его еще нет в конце строки @Dst. */
 	word L = strlen(@Dst);
 	if L > 1 then
-		if str_has_char(@fpath_p_dir_separators, Dst[L - 1]) = 0 then
+		if str_has_char(@fpath_p_dir_separators, Dst[L - 1]) == 0 then
 			strcat(@Dst, @fpath_p_dir_separator);
 		end:if
 	end:if
@@ -130,7 +130,7 @@ char @fpathn_cat(char @Dst, @Src; word Size)
 	/* Присобачиваем разделитель, если его еще нет в конце строки @Dst. */
 	word L = strlen(@Dst);
 	if L > 1 then
-		if str_has_char(@fpath_p_dir_separators, Dst[L - 1]) = 0 then
+		if str_has_char(@fpath_p_dir_separators, Dst[L - 1]) == 0 then
 			strn_cat(@Dst, @fpath_p_dir_separator, Size);
 		end:if
 	end:if

@@ -13,10 +13,10 @@ char@ PHO_RegName(word Reg)
 	char @S;
 
 	select
-	case Reg = 0: @S = "EAX";
-	case Reg = 1: @S = "EBX";
-	case Reg = 2: @S = "ECX";
-	case Reg = 3: @S = "EDX";
+	case Reg == 0: @S = "EAX";
+	case Reg == 1: @S = "EBX";
+	case Reg == 2: @S = "ECX";
+	case Reg == 3: @S = "EDX";
 	default:
 		StopInternal();
 	end:select
@@ -68,7 +68,7 @@ word PHO_RegContainsConst(word R; word Data)
 	if R >= PHO_REGS then
 		StopInternal();
 	end:if
-	if PHO_ValidRegConst[R] != 0 & PHO_RegConst[R] = Data then
+	if PHO_ValidRegConst[R] != 0 & PHO_RegConst[R] == Data then
 		return 1;
 	end:if
 	return 0;
@@ -109,18 +109,18 @@ char@ PHO_EncodeReg(word Reg; word Mask)
 	char @S;
 
 	select
-	case r = 0 & m = 0xFFFF_FFFF: @S = "EAX";
-	case r = 1 & m = 0xFFFF_FFFF: @S = "EBX";
-	case r = 2 & m = 0xFFFF_FFFF: @S = "ECX";
-	case r = 3 & m = 0xFFFF_FFFF: @S = "EDX";
-	case r = 0 & m = 0x0000_FFFF: @S = "AX" ;
-	case r = 1 & m = 0x0000_FFFF: @S = "BX" ;
-	case r = 2 & m = 0x0000_FFFF: @S = "CX" ;
-	case r = 3 & m = 0x0000_FFFF: @S = "DX" ;
-	case r = 0 & m = 0x0000_00FF: @S = "AL" ;
-	case r = 1 & m = 0x0000_00FF: @S = "BL" ;
-	case r = 2 & m = 0x0000_00FF: @S = "CL" ;
-	case r = 3 & m = 0x0000_00FF: @S = "DL" ;
+	case r == 0 & m == 0xFFFF_FFFF: @S = "EAX";
+	case r == 1 & m == 0xFFFF_FFFF: @S = "EBX";
+	case r == 2 & m == 0xFFFF_FFFF: @S = "ECX";
+	case r == 3 & m == 0xFFFF_FFFF: @S = "EDX";
+	case r == 0 & m == 0x0000_FFFF: @S = "AX" ;
+	case r == 1 & m == 0x0000_FFFF: @S = "BX" ;
+	case r == 2 & m == 0x0000_FFFF: @S = "CX" ;
+	case r == 3 & m == 0x0000_FFFF: @S = "DX" ;
+	case r == 0 & m == 0x0000_00FF: @S = "AL" ;
+	case r == 1 & m == 0x0000_00FF: @S = "BL" ;
+	case r == 2 & m == 0x0000_00FF: @S = "CL" ;
+	case r == 3 & m == 0x0000_00FF: @S = "DL" ;
 /*
 	case str_has_prefix(@S, "AH" ) != 0: StopInternal();
 	case str_has_prefix(@S, "BH" ) != 0: StopInternal();
@@ -183,12 +183,12 @@ char PHO_Buff[256];
 
 char@ PHO_Optimize_(char @Inst)
 
-	if PHOptimization = 0 then
+	if PHOptimization == 0 then
 		return @Inst;
 	end:if
 
 	/* Для пустой строки ничего не делаем. */
-	if strlen(@Inst[str_skip_chars(@Inst, " ~t")]) = 0 then
+	if strlen(@Inst[str_skip_chars(@Inst, " ~t")]) == 0 then
 		return @Inst;
 	end:if
 
@@ -211,12 +211,12 @@ char@ PHO_Optimize_(char @Inst)
 	end:if
 
 	/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
-	if str_has_prefix(@Inst, "mov") = 0
-	 & str_has_prefix(@Inst, "add") = 0
-	 & str_has_prefix(@Inst, "sub") = 0
-	 & str_has_prefix(@Inst, "and") = 0
-	 & str_has_prefix(@Inst, "or ") = 0
-	 & str_has_prefix(@Inst, "xor") = 0 then
+	if str_has_prefix(@Inst, "mov") == 0
+	 & str_has_prefix(@Inst, "add") == 0
+	 & str_has_prefix(@Inst, "sub") == 0
+	 & str_has_prefix(@Inst, "and") == 0
+	 & str_has_prefix(@Inst, "or ") == 0
+	 & str_has_prefix(@Inst, "xor") == 0 then
 		PHO_InvalidateRegs();
 		return @Inst;
 	end:if
@@ -230,7 +230,7 @@ char@ PHO_Optimize_(char @Inst)
 	/* Если регистр не распознан, ничего не делаем, т.к. значение отслеживаемых регистров не меняется. */
 	word Reg1;
 	word Mask1;
-	if PHO_DecodeReg(@s, @Reg1, @Mask1) = 0 then
+	if PHO_DecodeReg(@s, @Reg1, @Mask1) == 0 then
 		return @Inst;
 	end:if
 
@@ -254,7 +254,7 @@ char@ PHO_Optimize_(char @Inst)
 	if PHO_DecodeReg(@s, @Reg2, @Mask2) != 0 then
 
 		/* Обработка случая обнуления через XOR. */
-		if Reg1 = Reg2 & Mask1 = Mask2 & Mask1 = 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") != 0 then
+		if Reg1 == Reg2 & Mask1 == Mask2 & Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") != 0 then
 			if PHO_RegContainsConst(Reg1, 0) != 0 then
 				return "";
 			else
@@ -264,7 +264,7 @@ char@ PHO_Optimize_(char @Inst)
 		end:if
 
 		/* Если значение второго регистра нам неизвестно, инвалидируем значение для первого. */
-		if PHO_RegContainsAConst(Reg2) = 0 then
+		if PHO_RegContainsAConst(Reg2) == 0 then
 			PHO_InvalidateReg(Reg1);
 			return @Inst;
 		end:if
@@ -276,7 +276,7 @@ char@ PHO_Optimize_(char @Inst)
 		/* FIXME: не использовать здесь is_digit и val, поскольку они предназначены для распознавания символов и чисел входного языка транслятора, а не языка ассемблера. */
 
 		/* Если не число, инвалидируем значение изменямого регистра. */
-		if isdigit(s[0]) = 0 then
+		if isdigit(s[0]) == 0 then
 			PHO_InvalidateReg(Reg1);
 			return @Inst;
 		end:if
@@ -286,7 +286,7 @@ char@ PHO_Optimize_(char @Inst)
 
 
 	/* Вариант - загрузка полного значения регистра. */
-	if Mask1 = 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") != 0 then
+	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") != 0 then
 
 		word RegC = PHO_FindRegWithConst(Const2);
 
@@ -309,14 +309,14 @@ char@ PHO_Optimize_(char @Inst)
 			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
 			//strcat(@PHO_Buff, ";-;-;");
 
-		case (Const2 & 1) = 0 & PHO_RegContainsConst(Reg1, Const2 / 2) != 0:
+		case (Const2 & 1) == 0 & PHO_RegContainsConst(Reg1, Const2 / 2) != 0:
 			strcpy(@PHO_Buff, "add     ");
 			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
 			strcat(@PHO_Buff, ", ");
 			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
 			//strcat(@PHO_Buff, ";-;-;");
 
-		case Const2 = 0:
+		case Const2 == 0:
 			strcpy(@PHO_Buff, "xor     ");
 			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
 			strcat(@PHO_Buff, ", ");
@@ -337,7 +337,7 @@ char@ PHO_Optimize_(char @Inst)
 	end:if
 
 	/* Для всех прочих вариантов необходимо знать значение в Reg1. */
-	if PHO_RegContainsAConst(Reg1) = 0 then
+	if PHO_RegContainsAConst(Reg1) == 0 then
 		PHO_InvalidateReg(Reg1);
 		return @Inst;
 	end:if
@@ -367,7 +367,7 @@ char@ PHO_Optimize_(char @Inst)
 
 	Result = (Result & Mask1) | (Const1 & (Mask1 ^ 0xFFFF_FFFF));
 
-	if Result = Const1 then
+	if Result == Const1 then
 		return "";
 	end:if
 
@@ -379,7 +379,7 @@ end
 
 char@ PHO_Optimize(char @Inst)
 	char @NewInst = @PHO_Optimize_(@Inst);
-	if str_eq(@NewInst, @Inst) = 0 then
+	if str_eq(@NewInst, @Inst) == 0 then
 		char Buff[nBUFF];
 		strcat(@strcat(@strcat(@strcat(@strcpy(@Buff, "PHO: Instruction: ("), @Inst), ") -> ("), @NewInst), ")");
 		_EmitLine(0, "", @Buff);
