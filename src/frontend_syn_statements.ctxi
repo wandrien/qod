@@ -182,16 +182,16 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 			word EXPR = Expr(PRIO_ZERO, @Scan(@Buff));
 
 			select
-			case pType = st_char:
+			case pType == st_char:
 				when Node[EXPR].ID != iCHAR:
 					Stop(@eTYPE);
-			case pType = st_byte:
+			case pType == st_byte:
 				when Node[EXPR].ID != iWORD:
 					Stop(@eTYPE);
-			case pType = st_word:
+			case pType == st_word:
 				when Node[EXPR].ID != iWORD:
 					Stop(@eTYPE);
-			case pType = st_int:
+			case pType == st_int:
 				when Node[EXPR].ID != iWORD & Node[EXPR].ID != iINT:
 					Stop(@eTYPE);
 			default:
@@ -201,8 +201,8 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do
 				word  VALUE_I = Node[CASE_I].pLeft;
-				while VALUE_I < nNode & Node[VALUE_I].ID = iVALUE do
-					if Node[Node[VALUE_I].pLeft].Value = Node[EXPR].Value then
+				while VALUE_I < nNode & Node[VALUE_I].ID == iVALUE do
+					if Node[Node[VALUE_I].pLeft].Value == Node[EXPR].Value then
 						Stop(@eDUPCASE);
 					end:if
 
@@ -461,11 +461,11 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 //do
 
 		word  nPtr=ReadPtrs(@Scan(@Buff));
-		if pType=st_void & nPtr<1 then
+		if pType==st_void & nPtr<1 then
 			Stop(@eNOVOID);
 		end:if
 
-		if Dict[pType].Sub=sFUNCTYPE & nPtr<1 then
+		if Dict[pType].Sub==sFUNCTYPE & nPtr<1 then
 			Stop(@eNOVAL);
 		end:if
 
@@ -590,7 +590,7 @@ word Ctrl(char @Buff)
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
 	end:select
 
-	if SkipFinalScan = 0 then
+	if SkipFinalScan == 0 then
 		Scan (@Buff);
 	end
 
