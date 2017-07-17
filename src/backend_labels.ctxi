@@ -234,7 +234,7 @@ word AssignLabels_Data()
 		select
 		case Dict[I].Class == cDATA & Dict[I].Used != 0:
 			Dict[I].Value = D;
-			word Size = SizeOfType(Dict[I].pType, Dict[I].nIndx);
+			word Size = SizeOfType(Dict[I].pType, T_ArrayGetSizeOr0(Dict[I].pType));
 			D = D + DefaultStaticAlign(Size);
 		end:select
 
@@ -261,7 +261,7 @@ void AssignLabels_Struct()
 				when Dict[P].Class != cFIELD:
 					StopInternal();
 				Dict[P].Value = D1;
-				D1 = D1 + SizeOfType(Dict[P].pType, Dict[P].nIndx);
+				D1 = D1 + SizeOfType(Dict[P].pType, T_ArrayGetSizeOr0(Dict[P].pType));
 
 				P = Dict[P].pNext;
 			end:while

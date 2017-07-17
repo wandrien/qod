@@ -230,7 +230,7 @@ void AssignStringOffsets()
 	word I = 0;
 	while I < nDict do
 		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
-			word len = Dict[I].nIndx;
+			word len = Dict[I].nLiteralSize;
 			Dict[I].Value = data_len;
 			data_len = data_len + len;
 		end:if
@@ -254,7 +254,7 @@ void EmitSection_Data_Strings(char @Buff)
 	word I = 0;
 	while I < nDict do
 		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
-			word len = Dict[I].nIndx;
+			word len = Dict[I].nLiteralSize;
 			if Dict[I].Value != data_len then
 				StopInternalCodegen();
 			end:if

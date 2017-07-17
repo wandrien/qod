@@ -539,6 +539,9 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
+			nIndx = T_ArrayGetSizeOr0(pType);
+			when T_IsArray(pType) != 0:
+				pType = T_ArrayDeref(pType);
 
 		default:
 			StopAnNodeInternalCodegen(P1);
@@ -958,10 +961,10 @@ word Code(word P; word F; word T; word M)
 		  end
 
 		  word pType = Node[P].pType;
-		  word Size  = SizeOfType(pType, 0);
+		  word Size  = SizeOfType(pType, Node[Node[P].pLeft].Value);
 
 		  AllocatedFrameSize =
-			  AllocatedFrameSize + DefaultInStackAlign(Node[Node[P].pLeft].Value*Size);
+			  AllocatedFrameSize + DefaultInStackAlign(Size);
 
 		  Local[nLocal].pType=pType;
 		  Local[nLocal].Value=AllocatedFrameSize;
@@ -1043,7 +1046,7 @@ word EmitFunctions(char @Buff)
 				word pARG = Dict[pARGS].pFirst;
 				while pARG < nDICT do
 					Dict[pARG].Value = S1 + 8;
-					S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, Dict[pARG].nIndx));
+					S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, T_ArrayGetSizeOr0(Dict[pARG].pType)));
 					pARG = Dict[pARG].pNext;
 				end:while
 

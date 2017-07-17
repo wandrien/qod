@@ -32,10 +32,10 @@ word SizeOfType(word pType; word nIndx)
 	when Dict[pType].Class != cTYPE:
 		StopInternal();
 
-	S = Dict[pType].Value;
+	S = T_SizeOf(pType);
 
-	when nIndx > 0:
-		S = nIndx * S;
+/*	when nIndx > 0:
+		S = nIndx * S;*/
 
 	return S;
 end
@@ -53,7 +53,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 	select
 		case ID == iDATA:
 			pType = Dict[Node[P].Value].pType;
-			nIndx = Dict[Node[P].Value].nIndx;
+			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
 			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
 
@@ -61,13 +61,13 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 			when Dict[Node[P].Value].Class != cARG:
 				StopInternal();
 			pType = Dict[Node[P].Value].pType;
-			nIndx = Dict[Node[P].Value].nIndx;
+			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
 			Ofs   = Dict[Node[P].Value].Value;
 			RO    = 0;
 
 		case ID == iLOCAL:
 			pType = Local[Node[P].Value].pType;
-			nIndx = Local[Node[P].Value].nIndx;
+			//nIndx = T_ArrayGetSizeOr0(Local[Node[P].Value].pType);
 			Ofs   = Local[Node[P].Value].Value;
 			RO    = 0;
 
@@ -80,6 +80,13 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 		default:
 			StopInternal();
       end
+
+	nIndx = 0;
+	if pType < nDICT then
+		nIndx = T_ArrayGetSizeOr0(pType);
+		when T_IsArray(pType) != 0:
+			pType = T_ArrayDeref(pType);
+	end:if
 
 	return ID;
 end

@@ -483,11 +483,12 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		Local[nLocal].Name2=SaveString0(@Buff);
 		Local[nLocal].pType=T_nPtrTo(nPtr, pType);
-		Local[nLocal].nIndx= Tabl(@Scan(@Buff));
+		Local[nLocal].pType=Tabl_(@Scan(@Buff), Local[nLocal].pType);
+		//Local[nLocal].nIndx= Tabl(@Scan(@Buff));
 
 		word  N=1;
-		if Local[nLocal].nIndx > 0 then
-			N = Local[nLocal].nIndx;
+		if T_IsArray(Local[nLocal].pType) != 0 then
+			N = T_ArrayGetSize(Local[nLocal].pType);
 		end
 
 		word P4=Peek();
@@ -501,9 +502,9 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P4].Value = N;
 
 		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
-			if Local[nLocal].nIndx > 0 then
+			/*if Local[nLocal].nIndx > 0 then
 				Stop(@eNOTAVAIL);
-			end:if
+			end:if*/
 
 			word P5=Peek();
 			Node[P4].ID    =iASSIGN;

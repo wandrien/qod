@@ -173,7 +173,7 @@ void EmitType_(word T)
 	select
 	case T >= nDict:
 		EmitString("INVALID_DICT");
-	case T_IsPtr(T) = 1 :
+	case T_IsPtr(T) == 1 :
 		EmitString("PTR ");
 		EmitType_(T_DerefPtr(T));
 	default:

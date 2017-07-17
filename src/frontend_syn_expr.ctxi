@@ -101,6 +101,14 @@ word Tabl(char @Buff)
 	return nIndx;
 end
 
+word Tabl_(char @Buff; word T)
+	word S = Tabl(@Buff);
+	if S > 0 then
+		return T_Array(T, S);
+	end:if
+	return T;
+end
+
 /*****************************************************************************/
 
 /* Читает строковой литерал и создаёт синтаксический узел для него. */
@@ -270,8 +278,6 @@ word Primary(word Prty; char @Buff)
 
 	nPtr = ReadPtrs(@Buff);
 
-	word nIndx=0;
-
 	if Flag=0 then /* Это строка? */
 		if strcmp(@Buff,"~"")=0 then
 			if nPtr>0 then
@@ -292,7 +298,6 @@ word Primary(word Prty; char @Buff)
 			Node[P1].ID    =iLOCAL;
 			Node[P1].Value = I;
 			pType          = Local[I].pType;
-			nIndx          = Local[I].nIndx;
 			Flag           = 1;
 		end:if
 	end:if
@@ -377,8 +382,6 @@ word Primary(word Prty; char @Buff)
 
 					return P1;
 				end:if
-			else
-				nIndx            = Dict[I].nIndx;
 			end:if
 
 		case Dict[I].Class=cTYPE: /* Тип данных? */
@@ -426,12 +429,12 @@ word Primary(word Prty; char @Buff)
 
 	do
 		Scan(@Buff);
-		if strcmp(@Buff,"[")=0 & nIndx > 0 then /* Индексация массива. */
+		if strcmp(@Buff,"[")==0 & T_IsArray(pType) != 0 then /* Индексация массива. */
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
-			Node[P3].Value= nIndx;
+			Node[P3].Value= T_ArrayGetSize(pType);
 			Node[P3].pLeft= _Expr(PRIO_ZERO, @Scan(@Buff));
-			nIndx = 0;
+			pType = T_ArrayDeref(pType);
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
@@ -512,7 +515,6 @@ word Primary(word Prty; char @Buff)
 
 			word pType0     =pType;
 			pType           = Dict[pType0].pType;
-			nIndx           = 0;
 			Call            = 1;
 
 			P1 = P4;
@@ -551,7 +553,6 @@ word Primary(word Prty; char @Buff)
 			Node[P3].ID   =iFIELD;
 			Node[P3].Value= F;
 			pType         = Dict[F].pType;
-			nIndx         = Dict[F].nIndx;
 			Call          = 0;
 
 			P2 = P3;

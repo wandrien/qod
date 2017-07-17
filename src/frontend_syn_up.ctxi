@@ -82,7 +82,8 @@ void DeclStruct(char @Buff)
             DictSetName(F, @Buff);
             Dict[F].Class = cFIELD;
             Dict[F].pType = T_nPtrTo(nPtr, pType);
-            Dict[F].nIndx = Tabl(@Scan(@Buff));
+            //Dict[F].nIndx = Tabl(@Scan(@Buff));
+            Dict[F].pType = Tabl_(@Scan(@Buff), Dict[F].pType);
             DictAddToNamespace(F, pStruct);
 
             if str_eq(@Buff,";") then
@@ -281,13 +282,14 @@ void DeclVarFunc(char @Buff)
 		end
 
 		Dict[D]. Class=cDATA;
-		Dict[D].nIndx = Tabl(@Buff);
+		//Dict[D].nIndx = Tabl(@Buff);
+		Dict[D].pType = Tabl_(@Buff, Dict[D].pType);
 		Dict[D].pNode =nNODE;
 
 		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
-			if Dict[D].nIndx > 0 then
+			/*if Dict[D].nIndx > 0 then
 				Stop(@eNOTAVAIL);
-			end
+			end*/
 
 			word P1=Peek();
 			word P2=Peek();
