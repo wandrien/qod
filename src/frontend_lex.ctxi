@@ -107,7 +107,7 @@ void ScanString(word D)
 
 	Dict[D].pType = T_PtrTo(st_char);
 	Dict[D].Stack = SaveString(@Buff, i);
-	Dict[D].nIndx = i;
+	Dict[D].nLiteralSize = i;
 
 end
 
