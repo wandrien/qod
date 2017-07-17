@@ -445,8 +445,12 @@ void Parse()
 			DeclStruct(@Buff);
 		case str_eq(@Buff,"synonym"):       // Синоним
 			DeclSynonym(@Buff);
-		case str_eq(@Buff,"$context2"):
+		case str_eq(@Buff,"$qod.strong"):
+			Stop(@eQODSTRONGNOTIMPL);
+		case str_eq(@Buff,"$qod.strong.transitional"):
 			null;
+		case str_eq(@Buff,"$context2"):
+			Warn(@wDEPRECATED);
 		default:                            // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select

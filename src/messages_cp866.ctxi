@@ -52,6 +52,7 @@ define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе ко
 
 define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
+define @eQODSTRONGNOTIMPL "$qod.strong: не реализовано"
 
 define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
 define @wGLOBALVARUNUSED ": глобальная переменная не используется"     // a global variable is never used
