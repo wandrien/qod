@@ -83,7 +83,7 @@ word Code1(word pPrimary)
 			select
 			case IncID==iINC | IncID==iDEC:
 				if IX==RegB then
-					StopAtNodeInternalCodegen(pPrimary);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:if
 
 				if IncID==iINC then
@@ -99,7 +99,7 @@ word Code1(word pPrimary)
 				case Size==4:
 					strcat(@Buff,"dword ");     // FASM
 				default:
-					StopAtNodeInternalCodegen(pPrimary);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:select
 
 				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
@@ -203,7 +203,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iLPTR:
 			if fEAX!=RegA | IX==RegB then
-				StopAtNodeInternalCodegen(P1);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 			end:if
 
 			if IX!=RegNone then
@@ -222,7 +222,7 @@ word Code1(word pPrimary)
 				case ID==iREF & Ofs!=0:
 					Emit(@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
-					StopAtNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			else
 				select
@@ -238,7 +238,7 @@ word Code1(word pPrimary)
 						@s = "@@RWLITERALS+";
 					Emit(@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  "), @s),@str(Ofs)));
 				case ID!=iCALL:
-					StopAtNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			end:if
 
@@ -302,13 +302,13 @@ word Code1(word pPrimary)
 					case IX1==RegB:
 						if fEAX!=RegA then
 							if IX!=0 then
-								StopAtNodeInternalCodegen(P1);
+								StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 							end:if
 
 							fEAX=RegA;
 						else
 							if IX!=RegA then
-								StopAtNodeInternalCodegen(P1);
+								StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 							end:if
 
 							fIX=0;
@@ -327,7 +327,7 @@ word Code1(word pPrimary)
 
 					case IX1==RegA:
 						if fEAX!=RegA | IX!=RegNone then
-							StopAtNodeInternalCodegen(P1);
+							StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 						end
 
 						fEAX=RegB;
@@ -347,7 +347,7 @@ word Code1(word pPrimary)
 
 					case IX==RegB:
 						if fEAX==RegA then
-							StopAtNodeInternalCodegen(P1);
+							StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 						end:if
 
 						Emit("push    EAX");
@@ -362,7 +362,7 @@ word Code1(word pPrimary)
 
 					case IX==RegA:
 						if fEAX!=RegA then
-							StopAtNodeInternalCodegen(P1);
+							StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 						end:if
 
 						fEAX=RegB;
@@ -421,14 +421,14 @@ word Code1(word pPrimary)
 					select
 					case IX1==RegB:
 						if IX!=RegNone | fIX==0 then
-							StopInternalCodegen();
+							StopInternalCodegen(__FILE__, __LINE__);
 						end:if
 
 						Emit("add     EAX,  EBX");
 
 					case IX1==RegA:
 						if fIX!=0 then
-							StopInternalCodegen();
+							StopInternalCodegen(__FILE__, __LINE__);
 						end
 
 						Emit("pop     EBX");
@@ -437,7 +437,7 @@ word Code1(word pPrimary)
 						IX=RegA;
 
 					default:
-						StopInternalCodegen();
+						StopInternalCodegen(__FILE__, __LINE__);
 					end:select
 				else
 					IX=IX1;
@@ -446,7 +446,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iADDR:
 			if T_IsPtr(pType) == 0 then
-				StopAtNodeInternalCodegen(P1);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 			end:if
 
 			pType = T_DerefPtr(pType);
@@ -506,7 +506,7 @@ word Code1(word pPrimary)
 				case ID==iREF:
 					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
 				default:
-					StopAtNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			else
 				select
@@ -520,7 +520,7 @@ word Code1(word pPrimary)
 				case ID==iCALL:
 					null;
 				default:
-					StopAtNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			end:if
 
@@ -544,7 +544,7 @@ word Code1(word pPrimary)
 				pType = T_ArrayDeref(pType);
 
 		default:
-			StopAtNodeInternalCodegen(P1);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:select
 
 		P1=Node[P1].pRight;
@@ -644,7 +644,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			end
 
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
 		if T==0 then
@@ -656,7 +656,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			case iGE: ID=iLT;
 			case iGT: ID=iLE;
 			default:
-				StopInternalCodegen();
+				StopInternalCodegen(__FILE__, __LINE__);
             end:switch
 
             T=F;
@@ -664,7 +664,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		end:if
 
 		if T==0 | F!=0 then
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end
 
 		char@ BranchCondition = "";
@@ -678,7 +678,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			case iGE: @BranchCondition = "ge";
 			case iGT: @BranchCondition = "g ";
 			default:
-                  StopInternalCodegen();
+                  StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 
 		default:
@@ -690,7 +690,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			case iGE: @BranchCondition = "ae";
 			case iGT: @BranchCondition = "a ";
 			default:
-                  StopInternalCodegen();
+                  StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 		end:select
 		EmitBranchToLabel(@BranchCondition, T);
@@ -721,7 +721,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		case pType==st_int:
 			Emit("imul    EBX");
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
 		return pType;
@@ -738,7 +738,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			Emit("xor     EDX,  EDX");
 			Emit("idiv    EBX");
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
 		return pType;
@@ -754,13 +754,13 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			Emit("div     EBX");
 			Emit("xchg    EAX,  EDX");
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
 		return pType;
 
 	default:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 	end:select
 
 	select
@@ -781,7 +781,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		end:select
 
 	default:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 	end:select
 
 	return pType;
@@ -808,14 +808,14 @@ word Code(word P; word F; word T; word M)
 
 	when M != 0: /* M может быть установлено только когда F или T установлены */
 		when T == 0 & F == 0:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 
 	when T != 0 & F != 0: /* T и F не могут быть установлены в не 0 одновременно. */
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 
 	if T != 0 | F != 0 then
 		when NodeTypeIs(P, st_bool) == 0: /* T и F имеют смысл только для булевых вычислений. */
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 
 		switch Node[P].ID of
 		case iBOOL:
@@ -856,7 +856,7 @@ word Code(word P; word F; word T; word M)
 			end:select
 
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	else
 		switch Node[P].ID of
@@ -895,11 +895,11 @@ word Code(word P; word F; word T; word M)
 			select
 			case pTypeFrom == nDICT:
 				null; /* FIXME: should trigger internal error */
-				//StopAtNodeInternalCodegen(P);
+				//StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			case pTypeFrom == st_void:
-				StopAtNodeInternalCodegen(P);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			case pTypeTo == st_void:
-				StopAtNodeInternalCodegen(P);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			case pTypeTo == pTypeFrom:
 				null;
 			case pTypeTo==st_char & pTypeFrom==st_byte:
@@ -929,7 +929,7 @@ word Code(word P; word F; word T; word M)
 			case T_IsPtr(pTypeTo) == 1 & T_IsPtr(pTypeFrom) == 1:
 				null;
 			default:
-				StopAtNodeInternalCodegen(P);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end
 			return pTypeTo;
 
@@ -1004,7 +1004,7 @@ word Code(word P; word F; word T; word M)
 		case iEMPTY:
 			null;
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 
 	end:if
@@ -1042,7 +1042,7 @@ word EmitFunctions(char @Buff)
 
 				word pARGS = FindInNamespace("args", I);
 				when pARGS >= nDICT:
-					StopInternalCodegen();
+					StopInternalCodegen(__FILE__, __LINE__);
 				word pARG = Dict[pARGS].pFirst;
 				while pARG < nDICT do
 					Dict[pARG].Label = S1 + 8;
@@ -1068,7 +1068,7 @@ word EmitFunctions(char @Buff)
 					while J < nDict do
 						if Dict[J].Class == cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
 							if Node[Dict[J].pNode].ID != iASSIGN then
-								StopInternalCodegen();
+								StopInternalCodegen(__FILE__, __LINE__);
 							end:if
 							if StaticDataIsZeroed == 0
 							 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == 0 then
@@ -1125,7 +1125,7 @@ word EmitSection_Code(char @Buff)
 			EmitStringNL("segment readable executable");
 
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 	end
 
 	EmitROData();

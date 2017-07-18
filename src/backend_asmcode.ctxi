@@ -30,30 +30,30 @@ char @CodeReg(char @Buff; word Reg; word RegMode)
 			case 1: @R = " AL";
 			case 2: @R = " AX";
 			case 4: @R = "EAX";
-			default: StopInternalCodegen();
+			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	case RegB:
 		switch RegMode of
 			case 1: @R = " BL";
 			case 2: @R = " BX";
 			case 4: @R = "EBX";
-			default: StopInternalCodegen();
+			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	case RegC:
 		switch RegMode of
 			case 1: @R = " CL";
 			case 2: @R = " CX";
 			case 4: @R = "ECX";
-			default: StopInternalCodegen();
+			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	case RegD:
 		switch RegMode of
 			case 1: @R = " DL";
 			case 2: @R = " DX";
 			case 4: @R = "EDX";
-			default: StopInternalCodegen();
+			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
-	default: StopInternalCodegen();
+	default: StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
 
 	strcat(@Buff, @R);
@@ -178,7 +178,7 @@ void CodeData_FIELD(word @P1, @pType, @ID, @Ofs)
 	word F = Node[P1].Value;
 
 	when Dict[F].Class != cFIELD:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 
 	pType = Dict[F].pType;
 	if ID != iLOCAL then
@@ -210,7 +210,7 @@ char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 		case ID==iREF:
 			strcat3(@Buff,"[",@RX,"+");
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 	else
 		select
@@ -221,7 +221,7 @@ char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 		case ID==iLOCAL:
 			strcat(@Buff,"[EBP-");
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 	end:if
 
@@ -249,7 +249,7 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 	case Value>1:
 		CodeCmdRegConst(@Buff, "imul", Reg, RegMode, Value);
 	case Value<1:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 	end:select
 
 	Emit(@Buff);

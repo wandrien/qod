@@ -33,17 +33,24 @@ end
 
 /*****************************************************************************/
 
-void StopAtNodeInternalCodegen(word P)
+void StopAtNodeInternalCodegen(char @File; word Line; word P)
 	CloseOutput();
+
+	char Buff[nBUFF];
+	strcpy(@Buff, @eINTERNAL_CODEGEN);
+	strcat(@Buff, @File);
+	strcat(@Buff, ":");
+	strcat(@Buff, @str(Line));
+
 	if P < nNODE then
-		StopAt(@Node[P].SourceLocation, @eINTERNAL_CODEGEN);
+		StopAt(@Node[P].SourceLocation, @Buff);
 	else
-		StopAt(NULL, @eINTERNAL_CODEGEN);
+		StopAt(NULL, @Buff);
 	end
 end
 
-void StopInternalCodegen()
-	StopAtNodeInternalCodegen(nNODE);
+void StopInternalCodegen(char @File; word Line)
+	StopAtNodeInternalCodegen(@File, Line, nNODE);
 end
 
 /*****************************************************************************/

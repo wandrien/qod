@@ -168,7 +168,7 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 
 		if Size!=1 & Size!=4 then
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:if
 	end:if
 
@@ -183,7 +183,7 @@ word Code_RETURN(word P; char @Buff)
 			Emit("xor     EBX,  EBX");
 			Emit("int     80H");
 		default:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 	else
 		if EmitLeaveInstruction != 0 then
@@ -221,14 +221,14 @@ word Code_SELECT(word P; char @Buff)
 	word CASE = Node[P].pLeft;
 	while CASE < nNODE do
 		when Node[CASE].ID != iCASE:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 
 		word COND = Node[CASE].pLeft;
 		word BODY = Node[COND].pRight;
 
 		when Node[BODY].ID != iBODY
 		|    Node[COND].ID != iCOND:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 
 		if Node[COND].pLeft < nNODE then
 			_Code(Node[COND].pLeft,LabelResolve(CASE, lCASEBODYEND),0,LabelResolve(CASE, lCASEBODY));
@@ -284,7 +284,7 @@ word Code_SWITCH(word P; char @Buff)
 
 	word COND = Node[P].pLeft;
 	when Node[COND].ID != iCOND:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 
 	fEAX = RegA;
 	word pType = _Code(Node[COND].pLeft,0,0,0);
@@ -298,7 +298,7 @@ word Code_SWITCH(word P; char @Buff)
 	word  CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
 		when Node[CASE_I].ID != iCASE:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 
 		word  VALUE_I = Node[CASE_I].pLeft;
 		while VALUE_I < nNode do
@@ -338,7 +338,7 @@ word Code_SWITCH(word P; char @Buff)
 			case iBODY:
 				null;
 			default:
-				StopInternalCodegen();
+				StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 			VALUE_I = Node[VALUE_I].pRight;
 		end:while
@@ -351,7 +351,7 @@ word Code_SWITCH(word P; char @Buff)
 	CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
 		when Node[CASE_I].ID != iCASE:
-			StopInternalCodegen();
+			StopInternalCodegen(__FILE__, __LINE__);
 
 		word  VALUE_I = Node[CASE_I].pLeft;
 		while VALUE_I < nNode do
@@ -363,7 +363,7 @@ word Code_SWITCH(word P; char @Buff)
 				Code_Block(Node[VALUE_I].pLeft);
 				EmitJumpToLabel(LabelResolve(P, lEXIT));
 			default:
-				StopInternalCodegen();
+				StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 			VALUE_I = Node[VALUE_I].pRight;
 		end:while
@@ -397,7 +397,7 @@ word Code_WHILE(word P; char @Buff)
 
 	when Node[BODY].ID != iBODY
 	|    Node[COND].ID != iCOND:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 
 	EmitLabel(LabelResolve(P, lCONTINUE));
 
@@ -436,7 +436,7 @@ word Code_REPEAT(word P; char @Buff)
 
 	when Node[BODY].ID != iBODY
 	|    Node[COND].ID != iCOND:
-		StopInternalCodegen();
+		StopInternalCodegen(__FILE__, __LINE__);
 
 
 	EmitLabel(LabelResolve(P, lLOOPBODY));

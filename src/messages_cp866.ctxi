@@ -41,7 +41,7 @@ define @eDIVZERO         "Попытка деления на ноль"                     // Divisi
 define @eNOTALLOWED      "Недопустимо"                                 // Not allowed
 define @eNOTAVAIL        "Не реализовано"                              // Feature not implemented
 define @eINTERNAL        "Внутренняя ошибка: "                         // Internal error
-define @eINTERNAL_CODEGEN "Внутренняя ошибка в генераторе кода"        // Internal error
+define @eINTERNAL_CODEGEN "Внутренняя ошибка в генераторе кода: "      // Internal error
 define @eWRITEERR        "Ошибка записи"                               // Write error
 define @eFNAMEEXP        "Пропушено имя файла"                         // File name expected
 define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote expected
