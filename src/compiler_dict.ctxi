@@ -469,22 +469,27 @@ end
 
 /*****************************************************************************/
 
-void DefineWord(char @Name; word Value)
+word DefineInteger(char @Name; word Type; word Value)
 	if Find(@Name) < nDict then
 		StopInternal();
 	end
+
+	when T_IsInteger(Type) == 0:
+		StopInternal();
 
 	word D = DictAlloc();
 	DictSetName(D, @Name);
 	Dict[D].Class = cLITERAL;
 	Dict[D].RO = 1;
-	Dict[D].pType = st_word;
+	Dict[D].pType = Type;
 	Dict[D].LiteralValue = Value;
+
+	return D;
 end
 
 /*****************************************************************************/
 
-void DefineString(char @Name; char @Value)
+word DefineString(char @Name; char @Value)
 	if Find(@Name) < nDict then
 		StopInternal();
 	end
@@ -498,6 +503,8 @@ void DefineString(char @Name; char @Value)
 	Dict[D].pType = T_PtrTo(st_char);
 	Dict[D].LiteralValue = SaveString(@Value, i);
 	Dict[D].nLiteralSize = i;
+
+	return D;
 end
 
 /*****************************************************************************/
