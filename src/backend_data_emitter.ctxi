@@ -206,7 +206,7 @@ void EmitROData()
 				word len = Dict[I].nLiteralSize;
 				if len == curr_len | curr_len == -1 then
 					EmitByteReset();
-					Dict[I].Value = EmitRODataFragment(Dict[I].Stack, len);
+					Dict[I].Value = EmitRODataFragment(Dict[I].LiteralValue, len);
 				end
 				if next_len < len & len < curr_len then
 					next_len = len;
@@ -262,7 +262,7 @@ void EmitSection_Data_Strings(char @Buff)
 			EmitByteReset();
 			word J = 0;
 			while J < len do
-				EmitByte(Char[Dict[I].Stack + J]);
+				EmitByte(Char[Dict[I].LiteralValue + J]);
 				inc J;
 			end:while
 		end:if

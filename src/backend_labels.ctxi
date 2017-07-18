@@ -281,7 +281,7 @@ void AssignLabels_Func()
       case Dict[I].Class==cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
         Dict [I].Value = NewLabel();
 
-        Dict [I].Stack=Enum(Dict[I].pNode,1);
+        Dict [I].StackSize=Enum(Dict[I].pNode,1);
     end
 
     inc I;
