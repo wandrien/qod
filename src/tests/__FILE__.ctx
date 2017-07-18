@@ -1,0 +1,22 @@
+// TEST: should_print 'tests/__FILE__.ctx tests/__FILE__.ctx tests/__FILE__.ctx '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+void f1()
+	puts(__FILE__); puts(" ");
+end
+
+char@ f2()
+	return __FILE__;
+end
+
+void foo()
+	puts(__FILE__); puts(" ");
+	f1();
+	puts(@f2()); puts(" ");
+end
+
+begin
+	foo();
+end
