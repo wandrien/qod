@@ -260,6 +260,15 @@ end
 
 word Primary(word Prty; char @Buff)
 
+	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
+		word P1 = Peek();
+		Node[P1].ID    = iWORD;
+		Node[P1].Value = CurrentFileInfo.Line;
+		Node[P1].pType = st_word;
+		Scan(@Buff);
+		return P1;
+	end
+
 	if isdigit(Buff)!=0 then /* Число. */
 		word P1 = Peek();
 		Node[P1].ID    = iWORD;
@@ -277,6 +286,16 @@ word Primary(word Prty; char @Buff)
 	word P1;
 
 	nPtr = ReadPtrs(@Buff);
+
+	if Flag=0 then /* Это имя текущего файла? */
+		if str_eq(@Buff,"__FILE__") then
+			if nPtr>0 then
+				Stop(@eSTRING);
+			end
+			StopInternal(); /* FIXME: еще не реализовано */
+			Flag  = 1;
+		end:if
+	end:if
 
 	if Flag=0 then /* Это строка? */
 		if strcmp(@Buff,"~"")=0 then

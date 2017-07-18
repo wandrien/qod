@@ -122,6 +122,8 @@ void InitFrontEnd()
 	Word("when");
 	Word("false");
 	Word("true");
+	Word("__FILE__");
+	Word("__LINE__");
 
 	st_void = Base("void", 0);
 	st_char = Base("char", 1);
