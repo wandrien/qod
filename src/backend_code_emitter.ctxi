@@ -83,7 +83,7 @@ word Code1(word pPrimary)
 			select
 			case IncID==iINC | IncID==iDEC:
 				if IX==RegB then
-					StopAnNodeInternalCodegen(pPrimary);
+					StopAtNodeInternalCodegen(pPrimary);
 				end:if
 
 				if IncID==iINC then
@@ -99,7 +99,7 @@ word Code1(word pPrimary)
 				case Size==4:
 					strcat(@Buff,"dword ");     // FASM
 				default:
-					StopAnNodeInternalCodegen(pPrimary);
+					StopAtNodeInternalCodegen(pPrimary);
 				end:select
 
 				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
@@ -203,7 +203,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iLPTR:
 			if fEAX!=RegA | IX==RegB then
-				StopAnNodeInternalCodegen(P1);
+				StopAtNodeInternalCodegen(P1);
 			end:if
 
 			if IX!=RegNone then
@@ -222,7 +222,7 @@ word Code1(word pPrimary)
 				case ID==iREF & Ofs!=0:
 					Emit(@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
-					StopAnNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(P1);
 				end:select
 			else
 				select
@@ -238,7 +238,7 @@ word Code1(word pPrimary)
 						@s = "@@RWLITERALS+";
 					Emit(@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  "), @s),@str(Ofs)));
 				case ID!=iCALL:
-					StopAnNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(P1);
 				end:select
 			end:if
 
@@ -302,13 +302,13 @@ word Code1(word pPrimary)
 					case IX1==RegB:
 						if fEAX!=RegA then
 							if IX!=0 then
-								StopAnNodeInternalCodegen(P1);
+								StopAtNodeInternalCodegen(P1);
 							end:if
 
 							fEAX=RegA;
 						else
 							if IX!=RegA then
-								StopAnNodeInternalCodegen(P1);
+								StopAtNodeInternalCodegen(P1);
 							end:if
 
 							fIX=0;
@@ -327,7 +327,7 @@ word Code1(word pPrimary)
 
 					case IX1==RegA:
 						if fEAX!=RegA | IX!=RegNone then
-							StopAnNodeInternalCodegen(P1);
+							StopAtNodeInternalCodegen(P1);
 						end
 
 						fEAX=RegB;
@@ -347,7 +347,7 @@ word Code1(word pPrimary)
 
 					case IX==RegB:
 						if fEAX==RegA then
-							StopAnNodeInternalCodegen(P1);
+							StopAtNodeInternalCodegen(P1);
 						end:if
 
 						Emit("push    EAX");
@@ -362,7 +362,7 @@ word Code1(word pPrimary)
 
 					case IX==RegA:
 						if fEAX!=RegA then
-							StopAnNodeInternalCodegen(P1);
+							StopAtNodeInternalCodegen(P1);
 						end:if
 
 						fEAX=RegB;
@@ -446,7 +446,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iADDR:
 			if T_IsPtr(pType) == 0 then
-				StopAnNodeInternalCodegen(P1);
+				StopAtNodeInternalCodegen(P1);
 			end:if
 
 			pType = T_DerefPtr(pType);
@@ -506,7 +506,7 @@ word Code1(word pPrimary)
 				case ID==iREF:
 					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
 				default:
-					StopAnNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(P1);
 				end:select
 			else
 				select
@@ -520,7 +520,7 @@ word Code1(word pPrimary)
 				case ID==iCALL:
 					null;
 				default:
-					StopAnNodeInternalCodegen(P1);
+					StopAtNodeInternalCodegen(P1);
 				end:select
 			end:if
 
@@ -544,7 +544,7 @@ word Code1(word pPrimary)
 				pType = T_ArrayDeref(pType);
 
 		default:
-			StopAnNodeInternalCodegen(P1);
+			StopAtNodeInternalCodegen(P1);
 		end:select
 
 		P1=Node[P1].pRight;
@@ -895,11 +895,11 @@ word Code(word P; word F; word T; word M)
 			select
 			case pTypeFrom == nDICT:
 				null; /* FIXME: should trigger internal error */
-				//StopAnNodeInternalCodegen(P);
+				//StopAtNodeInternalCodegen(P);
 			case pTypeFrom == st_void:
-				StopAnNodeInternalCodegen(P);
+				StopAtNodeInternalCodegen(P);
 			case pTypeTo == st_void:
-				StopAnNodeInternalCodegen(P);
+				StopAtNodeInternalCodegen(P);
 			case pTypeTo == pTypeFrom:
 				null;
 			case pTypeTo==st_char & pTypeFrom==st_byte:
@@ -929,7 +929,7 @@ word Code(word P; word F; word T; word M)
 			case T_IsPtr(pTypeTo) == 1 & T_IsPtr(pTypeFrom) == 1:
 				null;
 			default:
-				StopAnNodeInternalCodegen(P);
+				StopAtNodeInternalCodegen(P);
 			end
 			return pTypeTo;
 

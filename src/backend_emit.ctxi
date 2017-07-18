@@ -33,7 +33,7 @@ end
 
 /*****************************************************************************/
 
-void StopAnNodeInternalCodegen(word P)
+void StopAtNodeInternalCodegen(word P)
 	CloseOutput();
 	if P < nNODE then
 		StopAt(@Node[P].SourceLocation, @eINTERNAL_CODEGEN);
@@ -43,7 +43,7 @@ void StopAnNodeInternalCodegen(word P)
 end
 
 void StopInternalCodegen()
-	StopAnNodeInternalCodegen(nNODE);
+	StopAtNodeInternalCodegen(nNODE);
 end
 
 /*****************************************************************************/
