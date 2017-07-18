@@ -1,14 +1,16 @@
 $comment DOCUMENTATION ********************************************************
 
-word str_eq(char @S1; char @S2);
-word str_ne(char @S1; char @S2);
-/* FIXME: должны возвращать bool, когда он у нас появится. */
+bool str_eq(char @S1; char @S2);
+Возвращает true, если строки @S1 и @S2 равны, и false в противном случае.
 
-word str_has_prefix(char @S; char @Prefix);
-Возвращает ненулевое значение, если строка @Prefix является префиксом строки @S и ноль в противном случае.
+bool str_ne(char @S1; char @S2);
+Возвращает true, если строки @S1 и @S2 не равны, и false в противном случае.
 
-word str_has_suffix(char @S; char @Suffix);
-Возвращает ненулевое значение, если строка @Suffix является суффиксом строки @S и ноль в противном случае.
+bool str_has_prefix(char @S; char @Prefix);
+Возвращает true, если строка @Prefix является префиксом строки @S, и false в противном случае.
+
+bool str_has_suffix(char @S; char @Suffix);
+Возвращает true значение, если строка @Suffix является суффиксом строки @S, и false в противном случае.
 
 ***************************************************************** DOCUMENTATION
 
