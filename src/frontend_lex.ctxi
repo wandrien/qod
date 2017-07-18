@@ -210,7 +210,7 @@ end
 
 void RegisterDigraph(char@ Name)
 	if strlen(@Name) != 2 then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	strcpy(@Digraphs[nDigraph].Name, @Name);
@@ -228,11 +228,11 @@ end
 
 void RegisterComment(char@ Prefix; char@ Suffix)
 	if strlen(@Prefix) >= nCOMMENT_AFFIX then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	if strlen(@Suffix) >= nCOMMENT_AFFIX then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	strcpy(@Comments[nComment].Prefix, @Prefix);

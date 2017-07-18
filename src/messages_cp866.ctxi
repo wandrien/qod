@@ -40,7 +40,7 @@ define @eCALCERR         "Ошибка в константном выражении"              // Error 
 define @eDIVZERO         "Попытка деления на ноль"                     // Division by zero
 define @eNOTALLOWED      "Недопустимо"                                 // Not allowed
 define @eNOTAVAIL        "Не реализовано"                              // Feature not implemented
-define @eINTERNAL        "Внутренняя ошибка"                           // Internal error
+define @eINTERNAL        "Внутренняя ошибка: "                         // Internal error
 define @eINTERNAL_CODEGEN "Внутренняя ошибка в генераторе кода"        // Internal error
 define @eWRITEERR        "Ошибка записи"                               // Write error
 define @eFNAMEEXP        "Пропушено имя файла"                         // File name expected

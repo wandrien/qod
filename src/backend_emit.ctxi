@@ -52,7 +52,7 @@ end
 void EmitChar(char C)
 
 	if nText > nTEXT then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	if nText == nTEXT then
@@ -150,7 +150,7 @@ end
 /*****************************************************************************/
 
 void EmitLabel(word Label)
-	when Label == 0: StopInternal();
+	when Label == 0: StopInternal(__FILE__, __LINE__);
 	EmitLine(Label, "", NULL);
 end
 

@@ -30,7 +30,7 @@ word LabelResolve(word N; word Name)
 	word L = Node[N].pLabel;
 	do
 		when L == 0 | L >= nLabel:
-			StopInternal();
+			StopInternal(__FILE__, __LINE__);
 		when Label[L].Name == Name:
 			exit;
 		L = Label[L].pNext;
@@ -119,7 +119,7 @@ word     Enum(word P; word Flag)
             word  CASE = Node[P].pLeft;
             while CASE < nNODE do
                 when Node[CASE].ID != iCASE:
-                    StopInternal();
+                    StopInternal(__FILE__, __LINE__);
 
                 LabelAllocate(CASE, lCASEBODY);
                 LabelAllocate(CASE, lCASEBODYEND);
@@ -129,7 +129,7 @@ word     Enum(word P; word Flag)
 
                 when Node[BODY].ID != iBODY
                 |    Node[COND].ID != iCOND:
-                    StopInternal();
+                    StopInternal(__FILE__, __LINE__);
 
                 Enum(Node[COND].pLeft,0);
 
@@ -147,14 +147,14 @@ word     Enum(word P; word Flag)
 
 			word COND = Node[P].pLeft;
 			when Node[COND].ID != iCOND:
-				StopInternal();
+				StopInternal(__FILE__, __LINE__);
 
 			Enum(Node[COND].pLeft,0);
 
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do
 				when Node[CASE_I].ID != iCASE:
-					StopInternal();
+					StopInternal(__FILE__, __LINE__);
 
 				LabelAllocate(CASE_I, lCASEBODY);
 
@@ -163,7 +163,7 @@ word     Enum(word P; word Flag)
 					when Node[VALUE_I].ID != iVALUE
 					&    Node[VALUE_I].ID != iDEFAULT
 					&    Node[VALUE_I].ID != iBODY:
-						StopInternal();
+						StopInternal(__FILE__, __LINE__);
 					if Node[VALUE_I].ID == iBODY then
 						word V=Enum(Node[VALUE_I].pLeft,1);
 						if M<S+V then
@@ -181,7 +181,7 @@ word     Enum(word P; word Flag)
             word COND = Node[BODY].pRight;
             when Node[BODY].ID != iBODY
             |    Node[COND].ID != iCOND:
-                StopInternal();
+                StopInternal(__FILE__, __LINE__);
 
             LabelAllocate(P, lLOOPBODY);
             LabelAllocate(P, lCONTINUE);
@@ -259,7 +259,7 @@ void AssignLabels_Struct()
 			word P = Dict[I].pFirst;
 			while P < nDICT do
 				when Dict[P].Class != cFIELD:
-					StopInternal();
+					StopInternal(__FILE__, __LINE__);
 				Dict[P].Label = D1;
 				D1 = D1 + SizeOfType(Dict[P].pType, T_ArrayGetSizeOr0(Dict[P].pType));
 

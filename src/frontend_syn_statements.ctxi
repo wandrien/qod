@@ -38,7 +38,7 @@ word EndOf(char @Buff, @A1, @A2)
 			SkipScan = 1;
 		end
 	else
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	return SkipScan;
@@ -339,7 +339,7 @@ void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
 
 	when Node[pLoop].ID != iWHILE
 	&    Node[pLoop].ID != iREPEAT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	Node[P1].ID = iCONTINUE;
 	Node[P1].Value = pLoop;
@@ -355,7 +355,7 @@ void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
 
 	when Node[pLoop].ID != iWHILE
 	&    Node[pLoop].ID != iREPEAT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	Node[P1].ID = iEXIT;
 	Node[P1].Value = pLoop;

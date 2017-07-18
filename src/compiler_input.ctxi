@@ -54,7 +54,7 @@ void PopCurrentFile()
 	close(hText);
 
 	when nFile < 1:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	ShowParseProgress(1);
 	close(hText);
@@ -86,7 +86,7 @@ char Read()
 	while pText >= nText do
 
 		when pText > nText:
-			StopInternal();
+			StopInternal(__FILE__, __LINE__);
 
 		if Flag = 0 then
 			nText = pFile + read(hText, @Text[pFile], nTEXT);
@@ -126,7 +126,7 @@ end
 */
 void Next()
 	when AlreadyOnNext != 0:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	AlreadyOnNext = 1;
 

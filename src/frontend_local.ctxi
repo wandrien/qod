@@ -1,7 +1,7 @@
 
 char @LocalGetName(word I)
 	when I >= nLocal:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	return @Char[Local[I].Name2];
 end
 
@@ -19,7 +19,7 @@ end
 word ResolveParm(char @Name)
 	word pARGS = FindInNamespace("args", pFunc);
 	when pARGS >= nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	return FindInNamespace(@Name, pARGS);
 end
 

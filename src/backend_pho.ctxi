@@ -18,7 +18,7 @@ char@ PHO_RegName(word Reg)
 	case Reg == 2: @S = "ECX";
 	case Reg == 3: @S = "EDX";
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 	return @S;
@@ -28,7 +28,7 @@ end
 
 void PHO_InvalidateReg(word R)
 	if R >= PHO_REGS then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:if
 
 	if PHO_ValidRegConst[R] != 0 then
@@ -54,7 +54,7 @@ end
 
 word PHO_RegContainsAConst(word R)
 	if R >= PHO_REGS then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:if
 	if PHO_ValidRegConst[R] != 0 then
 		return 1;
@@ -66,7 +66,7 @@ end
 
 word PHO_RegContainsConst(word R; word Data)
 	if R >= PHO_REGS then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:if
 	if PHO_ValidRegConst[R] != 0 & PHO_RegConst[R] == Data then
 		return 1;
@@ -91,7 +91,7 @@ end
 
 void PHO_RegLoadConst(word R; word Data)
 	if R >= PHO_REGS then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:if
 	PHO_ValidRegConst[R] = 1;
 	PHO_RegConst[R] = Data;
@@ -122,13 +122,13 @@ char@ PHO_EncodeReg(word Reg; word Mask)
 	case r == 2 & m == 0x0000_00FF: @S = "CL" ;
 	case r == 3 & m == 0x0000_00FF: @S = "DL" ;
 /*
-	case str_has_prefix(@S, "AH" ) != 0: StopInternal();
-	case str_has_prefix(@S, "BH" ) != 0: StopInternal();
-	case str_has_prefix(@S, "CH" ) != 0: StopInternal();
-	case str_has_prefix(@S, "DH" ) != 0: StopInternal();
+	case str_has_prefix(@S, "AH" ) != 0: StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "BH" ) != 0: StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "CH" ) != 0: StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "DH" ) != 0: StopInternal(__FILE__, __LINE__);
 */
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 	return @S;
@@ -162,10 +162,10 @@ word PHO_DecodeReg(char @S; word @Reg; word @Mask)
 	case str_has_prefix(@S, "BL" ): r = 1; m = 0x0000_00FF;
 	case str_has_prefix(@S, "CL" ): r = 2; m = 0x0000_00FF;
 	case str_has_prefix(@S, "DL" ): r = 3; m = 0x0000_00FF;
-	case str_has_prefix(@S, "AH" ): StopInternal();
-	case str_has_prefix(@S, "BH" ): StopInternal();
-	case str_has_prefix(@S, "CH" ): StopInternal();
-	case str_has_prefix(@S, "DH" ): StopInternal();
+	case str_has_prefix(@S, "AH" ): StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "BH" ): StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "CH" ): StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "DH" ): StopInternal(__FILE__, __LINE__);
 	default:
 		return 0;
 	end:select
@@ -239,7 +239,7 @@ char@ PHO_Optimize_(char @Inst)
 
 	/* Если нет запятой, неизвестная или неверно сформированная команда. */
 	if s[0] != ',' then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:if
 
 	@s = @s[1];                          /* Пропуск запятой. */
@@ -362,7 +362,7 @@ char@ PHO_Optimize_(char @Inst)
 	case str_has_prefix(@Inst, "xor"):
 		Result = Const1 ^ Const2;
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 	Result = (Result & Mask1) | (Const1 & (Mask1 ^ 0xFFFF_FFFF));

@@ -30,7 +30,7 @@ word SizeOfType(word pType; word nIndx)
 
 	word S = 0;
 	when Dict[pType].Class != cTYPE:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	S = T_SizeOf(pType);
 
@@ -59,7 +59,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 
 		case ID == iPARM:
 			when Dict[Node[P].Value].Class != cARG:
-				StopInternal();
+				StopInternal(__FILE__, __LINE__);
 			pType = Dict[Node[P].Value].pType;
 			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
 			Ofs   = Dict[Node[P].Value].Label;
@@ -78,7 +78,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 			RO    = Dict[Node[P].Value].RO;
 
 		default:
-			StopInternal();
+			StopInternal(__FILE__, __LINE__);
       end
 
 	nIndx = 0;

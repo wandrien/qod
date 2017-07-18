@@ -118,7 +118,7 @@ void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
                 end
 
               default:
-                StopInternal();
+                StopInternal(__FILE__, __LINE__);
             end
           end
         end

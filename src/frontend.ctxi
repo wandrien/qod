@@ -150,7 +150,7 @@ void InitFrontEnd()
 	case TargetFileFormat == tELF:
 		DefineString("__TRANSLATOR_TARGET__", "i386-linux-elf");
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 	strcat(@Text,"  ");

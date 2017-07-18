@@ -248,7 +248,7 @@ end
 void ParseCallArgs(word pFunc; word @P7; char @Buff)
 	word pARGS = FindInNamespace("args", pFunc);
 	when pARGS >= nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	word pARG = Dict[pARGS].pFirst;
 
 	while pARG < nDICT do
@@ -391,7 +391,7 @@ word Primary(word Prty; char @Buff)
 				end
 				pType          = st_char;
 			default:
-				StopInternal();
+				StopInternal(__FILE__, __LINE__);
 			end:select
 
 			//pType          = Dict[I].pType;
@@ -589,7 +589,7 @@ word Primary(word Prty; char @Buff)
 			when F >= nDICT:
 				Stop(@eUNDECLARED);
 			when Dict[F].Class != cFIELD:
-				StopInternal();
+				StopInternal(__FILE__, __LINE__);
 
 			word P3=Peek();
 			Node[P3].ID   =iFIELD;
@@ -753,7 +753,7 @@ void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 		CTE2(@P1, @pType, @P2, @pType2, @ID);
 
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 end
@@ -799,7 +799,7 @@ word ExprBinOp(word P1; word O; char @Buff)
 	word pType;
 
 	if P1 >= nNODE then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	else
 		pType = Node[P1].pType;
 		Node[P2].pLeft  = P1;
@@ -873,7 +873,7 @@ word ExprLitChar(word P_; word O; char @Buff)
 		end
 		Next();
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 	Scan(@Buff);

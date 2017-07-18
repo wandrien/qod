@@ -140,7 +140,7 @@ void Translate()
 	case TargetFileFormat == tELF:
 		EmitStringNL("format  ELF executable");
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 
 	word T=0;
@@ -172,7 +172,7 @@ char@ GetArg(word I; char@ ErrMsg)
 
 	if I >= Argc then
 		if @ErrMsg == NULL then
-			StopInternal();
+			StopInternal(__FILE__, __LINE__);
 		else
 			Stop(@ErrMsg);
 		end
@@ -202,7 +202,7 @@ void SetupTarget(char@ Target)
 		TargetFileFormat = tPE;
 		TargetMode = mGUI;
 	default:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end:select
 end
 

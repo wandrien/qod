@@ -82,7 +82,7 @@ end
 word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Handler)
 
 	if strlen(@Name) >= OPERATOR_NAME_SIZE then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	word i = 0;
@@ -99,7 +99,7 @@ word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Han
 		inc i;
 	end:while
 
-	StopInternal();
+	StopInternal(__FILE__, __LINE__);
 end
 
 /*****************************************************************************/

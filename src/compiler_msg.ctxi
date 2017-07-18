@@ -47,8 +47,13 @@ void Stop(char @Msg)
 	StopAt(NULL, @Msg);
 end
 
-void StopInternal()
-	Stop(@eINTERNAL);
+void StopInternal(char @File; word Line)
+	char Buff[nBUFF];
+	strcpy(@Buff, @eINTERNAL);
+	strcat(@Buff, @File);
+	strcat(@Buff, ":");
+	strcat(@Buff, @str(Line));
+	Stop(@Buff);
 end
 
 void StopMemory()

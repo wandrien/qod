@@ -31,7 +31,7 @@ end
 void DictSetName(word D; char@ Name)
 
 	when D >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	Dict[D].Name2    = SaveString0(@Name);
 	Dict[D].NameHash = str_hash(@Name);
@@ -42,7 +42,7 @@ end
 char @DictGetName(word D)
 
 	when D >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	return @Char[Dict[D].Name2];
 end
@@ -77,20 +77,20 @@ end
 */
 word FindInNamespace(char @Name; word pNamespace)
 	when pNamespace >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	word hash = str_hash(@Name);
 	word P = Dict[pNamespace].pFirst;
 	while P < nDict do
 		when Dict[P].pNamespace != pNamespace:
-			StopInternal();
+			StopInternal(__FILE__, __LINE__);
 		if Dict[P].NameHash = hash
 		&  strcmp(@DictGetName(P), @Name) = 0
 		&  Dict[P].Class != cFILE then
 			while Dict[P].Class = cNAME do
 				P = Dict[P].pType;
 				when P >= nDict:
-					StopInternal();
+					StopInternal(__FILE__, __LINE__);
 			end
 			exit;
 		end
@@ -117,7 +117,7 @@ word Find(char @Name)
 			while Dict[P].Class = cNAME do
 				P = Dict[P].pType;
 				when P >= nDict:
-					StopInternal();
+					StopInternal(__FILE__, __LINE__);
 			end
 			exit;
 		end
@@ -152,17 +152,17 @@ end
 
 word DictAddToNamespace(word P; word pNamespace)
 	when P >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when pNamespace >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[P].pNamespace != nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[P].pNext != nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[pNamespace].pFirst != nDICT & Dict[pNamespace].pLast = nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[pNamespace].pFirst = nDICT & Dict[pNamespace].pLast != nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	Dict[P].pNamespace = pNamespace;
 	if Dict[pNamespace].pLast < nDICT then
@@ -200,10 +200,10 @@ end
 word DictDupLiteral(word D1)
 
 	when D1 >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when Dict[D1].Class != cLITERAL:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	word D2 = DictAlloc();
 	DictSetName(D2, "");
@@ -221,7 +221,7 @@ end
 
 word T_IsUnsigned(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when T = st_byte | T = st_word:
 		return 1;
@@ -230,7 +230,7 @@ end
 
 word T_IsSigned(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when T = st_int:
 		return 1;
@@ -239,7 +239,7 @@ end
 
 word T_IsInteger(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when T_IsUnsigned(T) = 1 | T_IsSigned(T) = 1:
 		return 1;
@@ -250,10 +250,10 @@ end
 
 word T_SizeOf(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when Dict[T].Class != cTYPE:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when Dict[T].Sub = sARRAY:
 		return Dict[T].TypeSize * T_SizeOf(Dict[T].pType);
@@ -264,7 +264,7 @@ end
 /*****************************************************************************/
 word T_IsArray(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sARRAY:
 		return 1;
 	return 0;
@@ -272,15 +272,15 @@ end
 
 word T_ArrayDeref(word T)
 	when T_IsArray(T) = 0:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	return Dict[T].pType;
 end
 
 word T_ArrayGetSize(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class != cTYPE | Dict[T].Sub != sARRAY:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	return Dict[T].TypeSize;
 end
 
@@ -315,7 +315,7 @@ end
 
 word T_IsPtr(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class = cTYPE & Dict[T].Sub = sPTR:
 		return 1;
 	return 0;
@@ -329,15 +329,15 @@ end
 
 word T_DerefPtr(word T)
 	when T_IsPtr(T) = 0:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	return Dict[T].pType;
 end
 
 word T_PtrTo(word T)
 	when T >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class != cTYPE:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	if T_IsArray(T) != 0 then
 		T = T_ArrayDeref(T);
@@ -371,10 +371,10 @@ end
 */
 word T_IsFuctTypesIdentical(word T1; word T2)
 	when T1 >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when T2 >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when T1 = T2:
 		return 1;
@@ -391,7 +391,7 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 	word pARGS1 = FindInNamespace("args", T1);
 	word pARGS2 = FindInNamespace("args", T2);
 	when pARGS1 >= nDICT | pARGS2 >= nDICT:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	word P1 = Dict[pARGS1].pFirst;
 	word P2 = Dict[pARGS2].pFirst;
@@ -416,9 +416,9 @@ end
 word T_FuncTypeForFunction(word F)
 
 	when F >= nDict:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	when Dict[F].Class != cFUNC:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	when Dict[F].tCachedFuncTypeOfMe < nDict:
 		return Dict[F].tCachedFuncTypeOfMe;
@@ -471,11 +471,11 @@ end
 
 word DefineInteger(char @Name; word Type; word Value)
 	if Find(@Name) < nDict then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	when T_IsInteger(Type) == 0:
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 
 	word D = DictAlloc();
 	DictSetName(D, @Name);
@@ -491,7 +491,7 @@ end
 
 word DefineString(char @Name; char @Value)
 	if Find(@Name) < nDict then
-		StopInternal();
+		StopInternal(__FILE__, __LINE__);
 	end
 
 	word i = strlen(@Value) + 1;
