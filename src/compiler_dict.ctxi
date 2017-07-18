@@ -499,7 +499,7 @@ void DefineString(char @Name; char @Value)
 	Dict[D].RO = 1;
 	Dict[D].pType = T_PtrTo(st_char);
 	Dict[D].Stack = SaveString(@Value, i);
-	//Dict[D].nIndx = i;
+	Dict[D].nLiteralSize = i;
 end
 
 /*****************************************************************************/
