@@ -189,9 +189,9 @@ end
 word Base(char @Name; word Size)
 	word p = DictAlloc();
 	DictSetName(p, @Name);
-	Dict[p].Class = cTYPE;
-	Dict[p].Sub   = sBASE;
-	Dict[p].Value = Size;
+	Dict[p].Class    = cTYPE;
+	Dict[p].Sub      = sBASE;
+	Dict[p].TypeSize = Size;
 	return p;
 end
 
@@ -209,10 +209,9 @@ word DictDupLiteral(word D1)
 	DictSetName(D2, "");
 	Dict[D2].Class = Dict[D1].Class;
 	Dict[D2].Sub   = Dict[D1].Sub;
+	Dict[D2].RO    = Dict[D1].RO;
 	Dict[D2].pType = Dict[D1].pType;
 	Dict[D2].nLiteralSize = Dict[D1].nLiteralSize;
-	Dict[D2].RO    = Dict[D1].RO;
-	Dict[D2].Value = Dict[D1].Value;
 	Dict[D2].LiteralValue = Dict[D1].LiteralValue;
 
 	return D2;
@@ -257,9 +256,9 @@ word T_SizeOf(word T)
 		StopInternal();
 
 	when Dict[T].Sub = sARRAY:
-		return Dict[T].Value * T_SizeOf(Dict[T].pType);
+		return Dict[T].TypeSize * T_SizeOf(Dict[T].pType);
 
-	return Dict[T].Value;
+	return Dict[T].TypeSize;
 end
 
 /*****************************************************************************/
@@ -282,7 +281,7 @@ word T_ArrayGetSize(word T)
 		StopInternal();
 	when Dict[T].Class != cTYPE | Dict[T].Sub != sARRAY:
 		StopInternal();
-	return Dict[T].Value;
+	return Dict[T].TypeSize;
 end
 
 word T_ArrayGetSizeOr0(word T)
@@ -305,10 +304,10 @@ word T_Array(word T; word S)
 	end:while
 
 	P = DictAlloc();
-	Dict[P].Class = cTYPE;
-	Dict[P].Sub = sARRAY;
-	Dict[P].pType = T;
-	Dict[P].Value = S;
+	Dict[P].Class    = cTYPE;
+	Dict[P].Sub      = sARRAY;
+	Dict[P].pType    = T;
+	Dict[P].TypeSize = S;
 	return P;
 end
 
@@ -346,10 +345,10 @@ word T_PtrTo(word T)
 
 	if Dict[T].tCachedPtrToMe >= nDICT then
 		word PTR = DictAlloc();
-		Dict[PTR].Class = cTYPE;
-		Dict[PTR].Sub   = sPTR;
-		Dict[PTR].Value = target_size_of_pointer;
-		Dict[PTR].pType = T;
+		Dict[PTR].Class    = cTYPE;
+		Dict[PTR].Sub      = sPTR;
+		Dict[PTR].TypeSize = target_size_of_pointer;
+		Dict[PTR].pType    = T;
 		Dict[T].tCachedPtrToMe = PTR;
 	end
 
@@ -480,7 +479,7 @@ void DefineWord(char @Name; word Value)
 	Dict[D].Class = cLITERAL;
 	Dict[D].RO = 1;
 	Dict[D].pType = st_word;
-	Dict[D].Value = Value;
+	Dict[D].LiteralValue = Value;
 end
 
 /*****************************************************************************/
@@ -579,8 +578,8 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	strcat(@B, @s_CLASS);
 	strcat(@B, " ");
 	strcat(@B, @s_SUB);
-	strcat(@B, ", Value = ");
-	strcat(@B, @str(Dict[I].Value));
+/*	strcat(@B, ", Value = ");
+	strcat(@B, @str(Dict[I].Value));*/
 	strcat(@B, ", pType = ");
 	strcat(@B, @str(Dict[I].pType));
 

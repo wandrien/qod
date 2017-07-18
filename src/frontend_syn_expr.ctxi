@@ -344,17 +344,17 @@ word Primary(word Prty; char @Buff)
 			select
 			case Dict[I].pType=st_word:
 				Node[P1].ID    =iWORD;
-				Node[P1].Value = Dict[I].Value;
+				Node[P1].Value = Dict[I].LiteralValue;
 				pType          = Dict[I].pType;
 
 			case Dict[I].pType=st_int:
 				Node[P1].ID    =iINT;
-				Node[P1].Value = Dict[I].Value;
+				Node[P1].Value = Dict[I].LiteralValue;
 				pType          = Dict[I].pType;
 
 			case Dict[I].pType=st_char:
 				Node[P1].ID    =iCHAR;
-				Node[P1].Value = Dict[I].Value;
+				Node[P1].Value = Dict[I].LiteralValue;
 				pType          = Dict[I].pType;
 
 			case Dict[I].pType=T_PtrTo(st_char):

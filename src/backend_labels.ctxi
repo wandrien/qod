@@ -233,7 +233,7 @@ word AssignLabels_Data()
 	while I < nDict do
 		select
 		case Dict[I].Class == cDATA & Dict[I].Used != 0:
-			Dict[I].Value = D;
+			Dict[I].Label = D;
 			word Size = SizeOfType(Dict[I].pType, T_ArrayGetSizeOr0(Dict[I].pType));
 			D = D + DefaultStaticAlign(Size);
 		end:select
@@ -260,13 +260,13 @@ void AssignLabels_Struct()
 			while P < nDICT do
 				when Dict[P].Class != cFIELD:
 					StopInternal();
-				Dict[P].Value = D1;
+				Dict[P].Label = D1;
 				D1 = D1 + SizeOfType(Dict[P].pType, T_ArrayGetSizeOr0(Dict[P].pType));
 
 				P = Dict[P].pNext;
 			end:while
 
-			Dict[I].Value = D1;
+			Dict[I].TypeSize = D1;
 		end:select
 		inc I;
 	end:while
@@ -279,8 +279,7 @@ void AssignLabels_Func()
   while I<nDict do
     select
       case Dict[I].Class==cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
-        Dict [I].Value = NewLabel();
-
+        Dict [I].Label = NewLabel();
         Dict [I].StackSize=Enum(Dict[I].pNode,1);
     end
 
@@ -300,11 +299,11 @@ void AssignLabels_FuncExternal()
         if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
           word Label = NewLabel();
           if Dict[I].Used==0 then
-            Dict[I].Value = Label;
-            Dict[I].Used =1;
+            Dict[I].Label = Label;
+            Dict[I].Used = 1;
           end
 
-          Dict [J].Value = Label;
+          Dict[J].Label = Label;
         end
 
         inc J;

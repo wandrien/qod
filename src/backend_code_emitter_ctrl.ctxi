@@ -137,7 +137,7 @@ word Code_PUSH(word P; char @Buff)
 
 	word Size = target_size_of_pointer;
 	if pType<nDICT then
-		Size=Dict[pType].Value;
+		Size=SizeOfType(pType, 0);
 	end
 
 	select
@@ -164,7 +164,7 @@ word Code_RETURN(word P; char @Buff)
 		word pType=_Code(Node[P].pLeft,0,0,0);
 		word  Size=4;
 		if pType<nDICT then
-			Size=Dict[pType].Value;
+			Size=SizeOfType(pType, 0);
 		end:if
 
 		if Size!=1 & Size!=4 then
@@ -177,7 +177,7 @@ word Code_RETURN(word P; char @Buff)
 		case TargetFileFormat == tPE:
 			Emit("xor     EAX,  EAX");
 			Emit("push    EAX");
-			Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Value)),"]"));
+			Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Label)),"]"));
 		case TargetFileFormat == tELF:
 			Emit("mov     EAX,  1");
 			Emit("xor     EBX,  EBX");

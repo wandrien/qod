@@ -54,7 +54,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 		case ID == iDATA:
 			pType = Dict[Node[P].Value].pType;
 			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
-			Ofs   = Dict[Node[P].Value].Value;
+			Ofs   = Dict[Node[P].Value].Label;
 			RO    = 0;
 
 		case ID == iPARM:
@@ -62,7 +62,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 				StopInternal();
 			pType = Dict[Node[P].Value].pType;
 			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
-			Ofs   = Dict[Node[P].Value].Value;
+			Ofs   = Dict[Node[P].Value].Label;
 			RO    = 0;
 
 		case ID == iLOCAL:
@@ -74,7 +74,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 		case ID == iSTRING:
 			nIndx = 0;
 			pType = Dict[Node[P].Value].pType;
-			Ofs   = Dict[Node[P].Value].Value;
+			Ofs   = Dict[Node[P].Value].Label;
 			RO    = Dict[Node[P].Value].RO;
 
 		default:

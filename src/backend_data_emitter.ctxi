@@ -206,7 +206,7 @@ void EmitROData()
 				word len = Dict[I].nLiteralSize;
 				if len == curr_len | curr_len == -1 then
 					EmitByteReset();
-					Dict[I].Value = EmitRODataFragment(Dict[I].LiteralValue, len);
+					Dict[I].Label = EmitRODataFragment(Dict[I].LiteralValue, len);
 				end
 				if next_len < len & len < curr_len then
 					next_len = len;
@@ -231,7 +231,7 @@ void AssignStringOffsets()
 	while I < nDict do
 		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 			word len = Dict[I].nLiteralSize;
-			Dict[I].Value = data_len;
+			Dict[I].Label = data_len;
 			data_len = data_len + len;
 		end:if
 		inc I;
@@ -255,7 +255,7 @@ void EmitSection_Data_Strings(char @Buff)
 	while I < nDict do
 		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 			word len = Dict[I].nLiteralSize;
-			if Dict[I].Value != data_len then
+			if Dict[I].Label != data_len then
 				StopInternalCodegen();
 			end:if
 			data_len = data_len + len;
@@ -324,7 +324,7 @@ void EmitPEImport(char @Buff)
 			strcpy(@Buff, "dd      0, 0, 0, RVA @");
 			strcat(@Buff, @str(Label));
 			strcat(@Buff, ", RVA @");
-			strcat(@Buff, @str(Dict[I].Value));
+			strcat(@Buff, @str(Dict[I].Label));
 			Emit(@Buff);
 
 		end:if
@@ -352,7 +352,7 @@ void EmitPEImport(char @Buff)
 					when FirstLabel + LabelCount != Label: StopInternalCodegen();
 
 					strcpy(@Buff, "@");
-					strcat(@Buff, @str(Dict[J].Value));
+					strcat(@Buff, @str(Dict[J].Label));
 					strcat(@Buff, "  dd      RVA @");
 					strcat(@Buff, @str(Label));
 					EmitStringNL(@Buff);

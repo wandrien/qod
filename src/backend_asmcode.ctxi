@@ -67,7 +67,7 @@ end
 char @CodeLabel(char @Buff; word Label)
 
 	strcat(@Buff, " @");
-	strcat(@Buff, @str(Dict[Label].Value));
+	strcat(@Buff, @str(Dict[Label].Label));
 	return @Buff;
 end
 
@@ -182,9 +182,9 @@ void CodeData_FIELD(word @P1, @pType, @ID, @Ofs)
 
 	pType = Dict[F].pType;
 	if ID != iLOCAL then
-		Ofs = Ofs + Dict[F].Value;
+		Ofs = Ofs + Dict[F].Label;
 	else
-		Ofs = Ofs - Dict[F].Value;
+		Ofs = Ofs - Dict[F].Label;
 	end
 end
 

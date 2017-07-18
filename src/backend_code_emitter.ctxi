@@ -92,7 +92,7 @@ word Code1(word pPrimary)
 					strcpy(@Buff,"dec     ");
 				end:if
 
-				word Size=Dict[pType].Value;
+				word Size=SizeOfType(pType, 0);
 				select
 				case Size==1:
 					strcat(@Buff,"byte  ");     // FASM
@@ -255,10 +255,10 @@ word Code1(word pPrimary)
 			end:if
 
 			if Dict[Node[P1].Value].Sub==sSYS then
-				Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Value)),"]"));
+				Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Label)),"]"));
 			else
 				EmitLine(0,
-					@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Value)),
+					@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Label)),
 					@DictGetName(Node[P1].Value)
 					);
 			end:if
@@ -621,7 +621,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	word Size=4;
 	if pType<nDICT then
-		Size=Dict[pType].Value;
+		Size=SizeOfType(pType, 0);
 	end
 
 	select
@@ -935,7 +935,7 @@ word Code(word P; word F; word T; word M)
 
 		case iBIT_NOT:
 			word pType = Code(Node[P].pLeft, 0, 0, 0);
-			word  Size = Dict[pType].Value;
+			word  Size = SizeOfType(pType, 0);
 			Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
 
 			return pType;
@@ -1033,10 +1033,10 @@ word EmitFunctions(char @Buff)
 					strcat(@Buff, @DictGetName(I));
 				else
 					strcat(@Buff, "<begin>");
-					S = Dict[I].Value;
+					S = Dict[I].Label;
 				end:if
 				strcat(@Buff," ##");
-				EmitLine(Dict[I].Value, "", @Buff);
+				EmitLine(Dict[I].Label, "", @Buff);
 
 				word S1 = 0;
 
@@ -1045,7 +1045,7 @@ word EmitFunctions(char @Buff)
 					StopInternalCodegen();
 				word pARG = Dict[pARGS].pFirst;
 				while pARG < nDICT do
-					Dict[pARG].Value = S1 + 8;
+					Dict[pARG].Label = S1 + 8;
 					S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, T_ArrayGetSizeOr0(Dict[pARG].pType)));
 					pARG = Dict[pARG].pNext;
 				end:while
