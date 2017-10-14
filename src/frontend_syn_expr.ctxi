@@ -7,7 +7,7 @@
 
 /* Парсинг строки в целое число по указанному основанию. */
 word val2(char @Str; word Base)
-	if Str[0] = #0 then
+	if Str[0] == #0 then
 		Stop(@eMALFORMEDINT);
 	end
 
@@ -20,7 +20,7 @@ word val2(char @Str; word Base)
 	word Value = 0;
 	while Str[i] != #0 do
 
-		while Str[i] = '_' do
+		while Str[i] == '_' do
 			inc i;
 		end
 
@@ -62,11 +62,11 @@ word val(char @Buff)
 		Base = 16;
 		P    = 2;
 	/* Символ $ не найден - десятичное. */
-	case Buff[k] = #0:
+	case Buff[k] == #0:
 		Base = 10;
 		P    = 0;
 	/* Символ $ в начале строки - шестнадцатиричное. */
-	case k = 0:
+	case k == 0:
 		Warn(@wDEPRECATED);
 		Base = 16;
 		P    = 1;
@@ -85,7 +85,7 @@ end
 
 word Tabl(char @Buff)
 	word nIndx = 0;
-	if strcmp(@Buff,"[")=0 then
+	if strcmp(@Buff,"[") == 0 then
 		word P = _Expr(PRIO_ZERO, @Scan(@Buff));
 
 		when Node[P].ID!=iWORD:
@@ -153,7 +153,7 @@ end
 
 word ReadPtrs(char @Buff)
 	word nPtr=0;
-	while strcmp(@Buff,"@")=0 do
+	while strcmp(@Buff,"@") == 0 do
 		inc nPtr;
 		Scan(@Buff);
 	end
@@ -178,9 +178,9 @@ void FuncArgs(char @Buff; word pFunc)
 			Scan(@Buff);
 			word  nPtr=ReadPtrs(@Buff);
 
-			when pType=st_void & nPtr<1:
+			when pType == st_void & nPtr<1:
 				Stop(@eNOVOID);
-			when Dict[pType].Sub=sFUNCTYPE & nPtr<1:
+			when Dict[pType].Sub == sFUNCTYPE & nPtr<1:
 				Stop(@eNOVAL);
 
 			word pARG = FindInNamespace(@Buff, pARGS);
@@ -198,9 +198,9 @@ void FuncArgs(char @Buff; word pFunc)
 		end
 
 		if strcmp(@Buff,")")!=0 then
-			when strcmp(@Buff,";")!=0:
+			when strcmp(@Buff,";") != 0:
 				Stop(@eSEMICOLONEXP);
-			when strcmp(@Scan(@Buff),")")=0:
+			when strcmp(@Scan(@Buff),")") == 0:
 				Stop(@eTYPEEXP);
 		end
 
@@ -307,7 +307,7 @@ word Primary(word Prty; char @Buff)
 
 	nPtr = ReadPtrs(@Buff);
 
-	if Flag=0 then /* Это имя текущего файла? */
+	if Flag == 0 then /* Это имя текущего файла? */
 		if str_eq(@Buff,"__FILE__") then
 			if nPtr>0 then
 				Stop(@eSTRING);
@@ -320,8 +320,8 @@ word Primary(word Prty; char @Buff)
 		end:if
 	end:if
 
-	if Flag=0 then /* Это строка? */
-		if strcmp(@Buff,"~"")=0 then
+	if Flag == 0 then /* Это строка? */
+		if strcmp(@Buff,"~"") == 0 then
 			if nPtr>0 then
 				Stop(@eSTRING);
 			end
@@ -333,7 +333,7 @@ word Primary(word Prty; char @Buff)
 		end:if
 	end:if
 
-	if Flag=0 then /* Это локальная переменная? */
+	if Flag == 0 then /* Это локальная переменная? */
 		word I = ResolveLocal(@Buff);
 		if I < nLOCAL then
 			P1=Peek();
@@ -344,7 +344,7 @@ word Primary(word Prty; char @Buff)
 		end:if
 	end:if
 
-	if Flag=0 then /* Это параметр функции? */
+	if Flag == 0 then /* Это параметр функции? */
 		word I = ResolveParm(@Buff);
 		if I < nDICT then
 			P1=Peek();
@@ -355,32 +355,32 @@ word Primary(word Prty; char @Buff)
 		end:if
 	end:if
 
-	if Flag=0 then /* Значит это глобальное имя. */
+	if Flag == 0 then /* Значит это глобальное имя. */
 		word I=Find(@Buff);
 		if I>=nDict then
 			Stop(@eUNDECLARED);
 		end:if
 
 		select
-		case Dict[I].Class=cLITERAL: /* Именованный литерал? */
+		case Dict[I].Class == cLITERAL: /* Именованный литерал? */
 			P1=Peek();
 			select
-			case Dict[I].pType=st_word:
+			case Dict[I].pType == st_word:
 				Node[P1].ID    =iWORD;
 				Node[P1].Value = Dict[I].LiteralValue;
 				pType          = Dict[I].pType;
 
-			case Dict[I].pType=st_int:
+			case Dict[I].pType == st_int:
 				Node[P1].ID    =iINT;
 				Node[P1].Value = Dict[I].LiteralValue;
 				pType          = Dict[I].pType;
 
-			case Dict[I].pType=st_char:
+			case Dict[I].pType == st_char:
 				Node[P1].ID    =iCHAR;
 				Node[P1].Value = Dict[I].LiteralValue;
 				pType          = Dict[I].pType;
 
-			case Dict[I].pType=T_PtrTo(st_char):
+			case Dict[I].pType == T_PtrTo(st_char):
 				Node[P1].ID    =iSTRING;
 				if ROStrings != 0 then
 					Node[P1].Value = I;
@@ -396,14 +396,14 @@ word Primary(word Prty; char @Buff)
 
 			//pType          = Dict[I].pType;
 
-		case Dict[I].Class=cDATA | Dict[I].Class=cFUNC: /* Глобальная переменная/функция? */
+		case Dict[I].Class == cDATA | Dict[I].Class == cFUNC: /* Глобальная переменная/функция? */
 			P1=Peek();
 			Node[P1].ID    =iDATA;
 			Node[P1].Value = I;
 			pType          = Dict[I].pType;
 
-			if Dict[I].Class=cFUNC then
-				if strcmp(@Scan(@Buff),"(")=0 then
+			if Dict[I].Class == cFUNC then
+				if strcmp(@Scan(@Buff),"(") == 0 then
 					word P2=Peek();
 					Node[P1].pLeft = P2;
 					Node[P2].ID    =iCALL;
@@ -426,7 +426,7 @@ word Primary(word Prty; char @Buff)
 				end:if
 			end:if
 
-		case Dict[I].Class=cTYPE: /* Тип данных? */
+		case Dict[I].Class == cTYPE: /* Тип данных? */
 			if Prty < PRIO_LVALUE then
 				if strcmp(@Scan(@Buff),"(")!=0 then
 					Stop(@eBRACKETEXP);
@@ -438,7 +438,7 @@ word Primary(word Prty; char @Buff)
 					Stop(@eBRACKETEXP);
 				end:if
 
-				if CanExplicitCast(I, Node[P1].pType) = 0 then
+				if CanExplicitCast(I, Node[P1].pType) == 0 then
 					Stop(@eTYPE);
 				end:if
 
@@ -490,8 +490,8 @@ word Primary(word Prty; char @Buff)
 			Scan(@Buff);
 		end:if
 
-		while strcmp(@Buff,"[")=0 do /* Индексация указателя. */
-			if T_IsPtr(pType) = 0 then
+		while strcmp(@Buff,"[") == 0 do /* Индексация указателя. */
+			if T_IsPtr(pType) == 0 then
 				Stop(@eNOADDR);
 			end:if
 
@@ -515,9 +515,9 @@ word Primary(word Prty; char @Buff)
 		end:while
 
 		select
-		case strcmp(@Buff,"(")=0: /* Вызов функтора. */
+		case strcmp(@Buff,"(") == 0: /* Вызов функтора. */
 
-			while T_IsPtr(pType) = 1 do
+			while T_IsPtr(pType) == 1 do
 				word P3=Peek();
 				Node[P3].ID   =iADDR;
 
@@ -562,9 +562,9 @@ word Primary(word Prty; char @Buff)
 			P1 = P4;
 			@P2=@Node[P5].pRight;
 
-		case strcmp(@Buff,".")=0: /* Обращение к полю структуры. */
+		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры. */
 
-			while T_IsPtr(pType) = 1 do
+			while T_IsPtr(pType) == 1 do
 				word P3=Peek();
 				Node[P3].ID   =iADDR;
 
@@ -606,18 +606,18 @@ word Primary(word Prty; char @Buff)
 	end:do
 
 	if Prty >= PRIO_LVALUE & strcmp(@Buff,"=")!=0 & strcmp(@Buff,":=")!=0 then
-		if Call=0 | nPtr>0 then
+		if Call == 0 | nPtr > 0 then
 			Stop(@eASSIGNEXP);
 		end:if
 
-		while T_IsPtr(pType) = 1 do
+		while T_IsPtr(pType) == 1 do
 			pType = T_DerefPtr(pType);
 		end:while
 	end:if
 
 	word pTypeDeref = pType;
 	word nPtr1 = 0;
-	while T_IsPtr(pTypeDeref) = 1 do
+	while T_IsPtr(pTypeDeref) == 1 do
 		inc nPtr1;
 		pTypeDeref = T_DerefPtr(pTypeDeref);
 	end:while
@@ -636,10 +636,10 @@ word Primary(word Prty; char @Buff)
 		end:if
 	else
 		if (nPtr>nPtr1)
-		 | (Node[P1].ID=iCHAR)
-		 | (Node[P1].ID=iWORD)
-		 | (Node[P1].ID=iSTRING)
-		 | (nPtr>=nPtr1 & Call!=0 & (strcmp(@Buff,"=")=0 | strcmp(@Buff,":=")=0)) then
+		 | (Node[P1].ID == iCHAR)
+		 | (Node[P1].ID == iWORD)
+		 | (Node[P1].ID == iSTRING)
+		 | (nPtr>=nPtr1 & Call!=0 & (strcmp(@Buff,"=") == 0 | strcmp(@Buff,":=") == 0)) then
 			Stop(@eNOADDR);
 		end:if
 	end:if
@@ -666,31 +666,31 @@ end
 
 void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 
-	if T_IsPtr(pType) = 0 & T_IsPtr(pType2) = 0 then /* Преобразование целочисленных типов к одному типу. */
+	if T_IsPtr(pType) == 0 & T_IsPtr(pType2) == 0 then /* Преобразование целочисленных типов к одному типу. */
 		select
 
-		case pType = pType2:
+		case pType == pType2:
 			null;
 
-		case pType=st_byte & pType2=st_word:
+		case pType == st_byte & pType2 == st_word:
 			AddCast(pType2, @Node[P2].pLeft);
 			pType=pType2;
 
-		case pType=st_byte & pType2=st_int:
+		case pType == st_byte & pType2 == st_int:
 			AddCast(pType2, @Node[P2].pLeft);
 			pType=pType2;
 
-		case pType=st_word & pType2=st_byte:
+		case pType == st_word & pType2 == st_byte:
 			AddCast(pType, @Node[P2].pRight);
 
-		case pType=st_word & pType2=st_int:
+		case pType == st_word & pType2 == st_int:
 			AddCast(pType2, @Node[P2].pLeft);
 			pType=pType2;
 
-		case pType=st_int & pType2=st_byte:
+		case pType == st_int & pType2 == st_byte:
 			AddCast(pType, @Node[P2].pRight);
 
-		case pType=st_int & pType2=st_word:
+		case pType == st_int & pType2 == st_word:
 			AddCast(pType, @Node[P2].pRight);
 
 		default:
@@ -702,33 +702,33 @@ void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 		Stop(@eTYPE);
 
 	select
-	case T_IsPtr(pType) = 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
+	case T_IsPtr(pType) == 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
 		if ID!=iEQ & ID!=iNE then
 			Stop(@eTYPE);
 		end
 		pType = st_bool;
 
-	case ID=iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
+	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
 		select
-		case pType=st_byte | pType=st_word:
+		case pType == st_byte | pType == st_word:
 			Node[P2].ID=iBIT_OR;
 		case pType != st_bool:
 			Stop(@eTYPE);
 		end
 
-	case ID=iXOR: /* Аналогично предыдущему. */
+	case ID == iXOR: /* Аналогично предыдущему. */
 		select
-		case pType=st_byte | pType=st_word:
+		case pType == st_byte | pType == st_word:
 			Node[P2].ID=iBIT_XOR;
-		case pType = st_bool:
+		case pType == st_bool:
 			Stop(@eXORNOTIMPL);
 		default:
 			Stop(@eTYPE);
 		end
 
-	case ID=iAND: /* Аналогично предыдущему. */
+	case ID == iAND: /* Аналогично предыдущему. */
 		select
-			case pType=st_byte | pType=st_word:
+		case pType == st_byte | pType == st_word:
 			Node[P2].ID=iBIT_AND;
 		case pType != st_bool:
 			Stop(@eTYPE);
@@ -746,7 +746,7 @@ void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 		end
 		CTE1(@P1, @pType, @P2, @pType2, @ID);
 
-	case ID=iMOD:
+	case ID == iMOD:
 		if pType!=st_byte & pType!=st_word then
 			Stop(@eTYPE);
 		end
@@ -766,7 +766,7 @@ word Expr(word Prio; char @Buff)
 	word O;
 
 	O = FindOperator(@Buff, Prio, OPERATOR_UPRE);
-	if O = OPERATOR_INVALID then
+	if O == OPERATOR_INVALID then
 		P1 = Primary(Prio, @Buff);
 	else
 		P1 = Operator[O].Handler(nNODE, O, @Buff);
@@ -774,7 +774,7 @@ word Expr(word Prio; char @Buff)
 
 	do
 		O = FindOperator(@Buff, Prio, OPERATOR_BLEFT);
-		if O = OPERATOR_INVALID then
+		if O == OPERATOR_INVALID then
 			exit;
 		end
 
@@ -853,7 +853,7 @@ word ExprLitChar(word P_; word O; char @Buff)
 	word P1=Peek();
 
 	select
-	case strcmp(@Buff,"#")=0: /* Символ в #-виде. */
+	case strcmp(@Buff,"#") == 0: /* Символ в #-виде. */
 		word N=val(@Scan(@Buff));
 		if   N>255 then
 			Stop(@eOVERFLOW);
@@ -863,7 +863,7 @@ word ExprLitChar(word P_; word O; char @Buff)
 		Node[P1].Value = N;
 		Node[P1].pType = st_char;
 
-	case strcmp(@Buff,"'")=0: /* Символ. */
+	case strcmp(@Buff,"'") == 0: /* Символ. */
 		Node[P1].ID    =iCHAR;
 		Node[P1].Value = word(ScanChar());
 		Node[P1].pType = st_char;
@@ -917,12 +917,12 @@ word ExprNOT(word P_; word O; char @Buff)
 	word pType = Node[P2].pType;
 
 	select
-	case pType=st_byte | pType=st_word:
+	case pType == st_byte | pType == st_word:
 		P1=Peek();
 		Node[P1].ID    =iBIT_NOT;
 		Node[P1].pLeft = P2;
 
-	case pType = st_bool:
+	case pType == st_bool:
 		P1 = Not(P2);
 
 	default:
@@ -946,7 +946,7 @@ word ExprNEG(word P_; word O; char @Buff)
 	word pType = Node[Node[P1].pLeft].pType;
 
 	select
-	case Node[Node[P1].pLeft].ID=iWORD:
+	case Node[Node[P1].pLeft].ID==iWORD:
 		if Node[Node[P1].pLeft].Value>0x80000000 then
 			Stop(@eCALCERR);
 		end
@@ -961,7 +961,7 @@ word ExprNEG(word P_; word O; char @Buff)
 			pType         = st_word;
 		end:if
 
-	case Node[P1].ID=iINT:
+	case Node[P1].ID==iINT:
 		Node[P1].ID   =iWORD;
 		Node[P1].Value=-Node[Node[P1].pLeft].Value;
 		pType         = st_word;
