@@ -938,40 +938,26 @@ end
 
 word ExprNEG(word P_; word O; char @Buff)
 
-	word P1;
+	word pLeft = _Expr(Operator[O].Prio, @Scan(@Buff));
 
-	P1=Peek();
+	word P1 = Peek();
 	Node[P1].ID    = iNEG;
-	Node[P1].pLeft = _Expr(Operator[O].Prio, @Scan(@Buff));
-	word pType = Node[Node[P1].pLeft].pType;
+	Node[P1].pLeft = pLeft;
+	Node[P1].pType = st_int;
 
 	select
-	case Node[Node[P1].pLeft].ID==iWORD:
-		if Node[Node[P1].pLeft].Value>0x80000000 then
+	case Node[pLeft].ID == iWORD | Node[pLeft].ID == iINT:
+		if Node[pLeft].ID == iWORD & Node[pLeft].Value > 0x80000000 then
 			Stop(@eCALCERR);
 		end
 
-		if Node[Node[P1].pLeft].Value!=0 then
-			Node[P1].ID   =iINT;
-			Node[P1].Value=-Node[Node[P1].pLeft].Value;
-			pType         = st_int;
-		else
-			Node[P1].ID   =iWORD;
-			Node[P1].Value= 0;
-			pType         = st_word;
-		end:if
-
-	case Node[P1].ID==iINT:
-		Node[P1].ID   =iWORD;
-		Node[P1].Value=-Node[Node[P1].pLeft].Value;
-		pType         = st_word;
+		Node[P1].ID   =iINT;
+		Node[P1].Value=-Node[pLeft].Value;
 
 	default:
 		ImplicitCast(st_int, @Node[P1].pLeft);
-		pType         = st_int;
-	end:select
 
-	Node[P1].pType = pType;
+	end:select
 
 	return P1;
 
