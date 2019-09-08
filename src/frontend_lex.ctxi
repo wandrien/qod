@@ -53,10 +53,10 @@ char ScanChar()
 
 	Ch = Read();
 	select
-		case Ch='n': Ch='~n';
-		case Ch='r': Ch='~r';
-		case Ch='t': Ch='~t';
-		case Ch='0': Ch='~0';
+		case Ch == 'n': Ch = '~n';
+		case Ch == 'r': Ch = '~r';
+		case Ch == 't': Ch = '~t';
+		case Ch == '0': Ch = '~0';
 	end
 	Next();
 
@@ -75,8 +75,8 @@ void ScanString(word D)
 	word i = 0;
 	do
 
-		while Read()!='"' do
-			if Read() = '~r' | Read() = '~n' then
+		while Read() != '"' do
+			if Read() == '~r' | Read() == '~n' then
 				Stop(@eQUOTEXP);
 			end
 
@@ -146,7 +146,7 @@ char @Scan1(char @Buff)
 
 	word i = 0;
 	while i < nDigraph do
-		if Buff[0] = Digraphs[i].Name[0] & Read() = Digraphs[i].Name[1] then
+		if Buff[0] == Digraphs[i].Name[0] & Read() == Digraphs[i].Name[1] then
 			Next();
 			return @strcpy(@Buff, @Digraphs[i].Name);
 		end:if
@@ -168,23 +168,23 @@ char@ Scan(char@ Buff)
 
 		char@ Suffix = NULL; /* Признак конца комментария. */
 
-		if @HereCommentPrefix != NULL & strcmp(@Buff, @HereCommentPrefix) = 0 then
+		if @HereCommentPrefix != NULL & strcmp(@Buff, @HereCommentPrefix) == 0 then
 			SkipWhitespaces();
-			if strlen(@ScanAlphaNum(@Buff)) = 0 then
+			if strlen(@ScanAlphaNum(@Buff)) == 0 then
 				Stop(@eEXPECTED);
 			end
 			@Suffix = @Buff;
 		else
 			word i = 0;
 			while i < nComment do
-				if strcmp(@Buff, @Comments[i].Prefix) = 0 then
+				if strcmp(@Buff, @Comments[i].Prefix) == 0 then
 					@Suffix = @Comments[i].Suffix;
 				end:if
 				inc i;
 			end:while
 		end:if
 
-		if @Suffix = NULL then
+		if @Suffix == NULL then
 			exit;
 		end:if
 
@@ -193,9 +193,9 @@ char@ Scan(char@ Buff)
 		word k = 0;
 		while k < suffix_len do
 			select
-			case Suffix[k] = Read():
+			case Suffix[k] == Read():
 				inc k;
-			case Suffix[0] = Read():
+			case Suffix[0] == Read():
 				k = 1;
 			default:
 				k = 0;

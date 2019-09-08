@@ -10,41 +10,41 @@
 
 void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
 
-        if ID=iDIV then
-          if Node[Node[P2].pRight].ID=iWORD then
-            if NodeGetImmediateValue(Node[P2].pRight)=0 then
+        if ID == iDIV then
+          if Node[Node[P2].pRight].ID == iWORD then
+            if NodeGetImmediateValue(Node[P2].pRight) == 0 then
               Stop(@eDIVZERO);
             end
           end
         end
 
-        if Node[Node[P2].pLeft].ID=iWORD | Node[Node[P2].pLeft].ID=iINT then
-          if Node[Node[P2].pRight].ID=iWORD | Node[Node[P2].pRight].ID=iINT then
+        if Node[Node[P2].pLeft].ID == iWORD | Node[Node[P2].pLeft].ID == iINT then
+          if Node[Node[P2].pRight].ID == iWORD | Node[Node[P2].pRight].ID == iINT then
             select
-              case ID=iADD | ID=iSUB:
-                if Node[Node[P2].pRight].ID=iINT then
+              case ID == iADD | ID == iSUB:
+                if Node[Node[P2].pRight].ID == iINT then
                   Node[Node[P2].pRight].ID   =iWORD;
                   Node[Node[P2].pRight].Value=-Node[Node[P2].pRight].Value;
 
-                  if ID=iADD then
+                  if ID == iADD then
                     ID=iSUB;
                   else
                     ID=iADD;
                   end
                 end
 
-              case ID=iMUL | ID=iDIV:
-                if Node[Node[P2].pLeft].ID=iINT then
+              case ID == iMUL | ID == iDIV:
+                if Node[Node[P2].pLeft].ID == iINT then
                 //Node[Node[P2].pLeft].ID    =iWORD;
                   Node[Node[P2].pLeft].Value =-Node[Node[P2].pLeft] .Value;
                 end
 
-                if Node[Node[P2].pRight].ID=iINT then
+                if Node[Node[P2].pRight].ID == iINT then
                 //Node[Node[P2].pRight].ID   =iWORD;
                   Node[Node[P2].pRight].Value=-Node[Node[P2].pRight].Value;
                 end
 
-                if Node[Node[P2].pLeft].ID=Node[Node[P2].pRight].ID then
+                if Node[Node[P2].pLeft].ID == Node[Node[P2].pRight].ID then
                   Node[P2].ID=iWORD;
                 else
                   Node[P2].ID=iINT;
@@ -52,8 +52,8 @@ void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
             end
 
             select
-              case ID=iADD:
-                if Node[Node[P2].pLeft].ID=iWORD then
+              case ID == iADD:
+                if Node[Node[P2].pLeft].ID == iWORD then
                   Node[P2].ID   =iWORD;
                   Node[P2].Value= Node[Node[P2].pLeft].Value+Node[Node[P2].pRight].Value;
                 else
@@ -68,8 +68,8 @@ void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
                   end
                 end
 
-              case ID=iSUB:
-                if Node[Node[P2].pLeft].ID=iWORD then
+              case ID == iSUB:
+                if Node[Node[P2].pLeft].ID == iWORD then
                   if Node[Node[P2].pLeft].Value<Node[Node[P2].pRight].Value then
                     Node[P2].ID   =iINT;
                     Node[P2].Value= Node[Node[P2].pRight].Value-Node[Node[P2].pLeft].Value;
@@ -91,10 +91,10 @@ void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
                   Node[P2].Value=-Node[P2].Value;
                 end
 
-              case ID=iMUL:
+              case ID == iMUL:
                 Node[P2].Value=Node[Node[P2].pLeft].Value*Node[Node[P2].pRight].Value;
 
-                if Node[P2].ID=iINT then
+                if Node[P2].ID == iINT then
                   if Node[P2].Value>0x80000000 then // !!!
                     Stop(@eCALCERR);
                   end
@@ -102,11 +102,11 @@ void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
                   Node[P2].Value=0xFFFFFFFF-Node[P2].Value+1;
                 end
 
-              case ID=iDIV:
+              case ID == iDIV:
                 Node[P2].Value=Node[Node[P2].pLeft].Value/Node[Node[P2].pRight].Value;
 
                 if Node[P2].Value!=0 then
-                  if Node[P2].ID=iINT then
+                  if Node[P2].ID == iINT then
                     if Node[P2].Value>0x80000000 then // !!!
                       Stop(@eCALCERR);
                     end
@@ -129,13 +129,13 @@ end
 
 void CTE2(word @P1, @pType; word @P2, @pType2; word @ID)
 
-        if Node[Node[P2].pRight].ID=iWORD then
-          if Node[Node[P2].pRight].Value=0 then
+        if Node[Node[P2].pRight].ID == iWORD then
+          if Node[Node[P2].pRight].Value == 0 then
             Stop(@eCALCERR);
           end
         end
 
-        if Node[Node[P2].pLeft].ID=iWORD & Node[Node[P2].pRight].ID=iWORD then
+        if Node[Node[P2].pLeft].ID == iWORD & Node[Node[P2].pRight].ID == iWORD then
           Node[P2].ID   =iWORD;
           Node[P2].Value= Node[Node[P2].pLeft].Value%Node[Node[P2].pRight].Value;
         end

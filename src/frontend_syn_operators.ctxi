@@ -55,7 +55,7 @@ end
 /* Сортировка операций по приоритету для алгоритма поиска. */
 void SortOperators()
 
-	if NeedToSortOperators = 0 then
+	if NeedToSortOperators == 0 then
 		return;
 	end:if
 
@@ -87,7 +87,7 @@ word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Han
 
 	word i = 0;
 	while i < nOPERATOR do
-		if Operator[i].Name[0] = #0 then
+		if Operator[i].Name[0] == #0 then
 			strcpy(@Operator[i].Name, @Name);
 			Operator[i].Prio = Prio;
 			Operator[i].Mode = Mode;
@@ -114,7 +114,7 @@ word FindOperator(char@ Name; word Prio; word ModeMask)
 	word i = 0;
 	while i < nOPERATOR do
 		if Operator[i].Prio > Prio then
-			if ((Operator[i].Mode & ModeMask) != 0) & (strcmp(@Operator[i].Name, @Name) = 0) then
+			if ((Operator[i].Mode & ModeMask) != 0) & (strcmp(@Operator[i].Name, @Name) == 0) then
 				return i;
 			end:if
 		end:if

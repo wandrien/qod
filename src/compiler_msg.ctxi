@@ -33,7 +33,7 @@ end
 
 
 void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
-	when @SourceLocation = NULL:
+	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
 	puts("~r");
 	PutLocation(@SourceLocation);
@@ -62,11 +62,11 @@ end
 
 void ShowParseProgress(word nl)
 
-	if show_parse_progress = 0 then
+	if show_parse_progress == 0 then
 		return;
 	end:if
 
-	if @CurrentFileInfo.FileName = NULL then
+	if @CurrentFileInfo.FileName == NULL then
 		return;
 	end:if
 

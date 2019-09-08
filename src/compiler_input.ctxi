@@ -88,7 +88,7 @@ char Read()
 		when pText > nText:
 			StopInternal(__FILE__, __LINE__);
 
-		if Flag = 0 then
+		if Flag == 0 then
 			nText = pFile + read(hText, @Text[pFile], nTEXT);
 			pText = pFile;
 			BeforeFirstFile = 0;
@@ -104,8 +104,8 @@ char Read()
 	end:while
 
 	char r = Text[pText];
-	if BeforeFirstFile = 0 & a != 0 & r = '~n' then
-		if  CurrentFileInfo.Line % 50 = 0 then
+	if BeforeFirstFile == 0 & a != 0 & r == '~n' then
+		if  CurrentFileInfo.Line % 50 == 0 then
 			ShowParseProgress(0);
 		end
 
@@ -130,7 +130,7 @@ void Next()
 
 	AlreadyOnNext = 1;
 
-	when BeforeFirstFile = 0:
+	when BeforeFirstFile == 0:
 		inc CurrentFileInfo.Column;
 
 	inc pText;
@@ -142,7 +142,7 @@ end
 void OpenInputFile(char @FileName)
 
 	word hFile=open(@FileName);
-	when is_handle_valid(hFile) = 0:
+	when is_handle_valid(hFile) == 0:
 		Stop(@eNOFILE);
 
 	hText = hFile;

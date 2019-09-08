@@ -7,7 +7,7 @@ define CHARID_WSPACE  3
 word charid_table[256];
 
 word is_charid(char c; word id)
-	if charid_table[word(c)] = id then
+	if charid_table[word(c)] == id then
 		return 1;
 	end:if
 	return 0;

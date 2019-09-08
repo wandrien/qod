@@ -21,7 +21,7 @@ char@ ResolveFileName(char@ Buff)
 			strn_cpy(@Fragment, @S, MAX_FPATH);
 			Fragment[Pos] = #0;
 			fpathn_cat(@FileName, @Fragment, MAX_FPATH);
-			if S[Pos] = #0 then
+			if S[Pos] == #0 then
 				exit;
 			end:if
 		end:if

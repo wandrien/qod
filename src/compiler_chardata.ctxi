@@ -43,7 +43,7 @@ word SaveString(char @Str; word Size)
 
 	end:while
 
-	if j = Size then
+	if j == Size then
 		return offset;
 	end
 

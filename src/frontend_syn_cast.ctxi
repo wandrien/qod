@@ -3,12 +3,12 @@
 
 word CanExplicitCast(word To; word From)
 
-	if(To=st_char & From=st_byte)
-	| (To=st_char & From=st_word)
-	| (To=st_char & From=st_int )
-	| (To=st_byte & From=st_char)
-	| (To=st_word & From=st_char)
-	| (To=st_int  & From=st_char) then
+	if(To == st_char & From == st_byte)
+	| (To == st_char & From == st_word)
+	| (To == st_char & From == st_int )
+	| (To == st_byte & From == st_char)
+	| (To == st_word & From == st_char)
+	| (To == st_int  & From == st_char) then
 		return 1;
 	end:if
 
@@ -20,7 +20,7 @@ end
 void AddCast(word pType1; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
-	if pType1=st_int & Node[P].ID=iWORD then
+	if pType1 == st_int & Node[P].ID == iWORD then
 		Node[P].ID=iINT;
 		return;
 	end
@@ -38,31 +38,31 @@ end
 word IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 
 	select
-	case pTypeFrom = pTypeTo:
+	case pTypeFrom == pTypeTo:
 		return 1;
-	case T_IsPtr(pTypeFrom) = 1 & T_IsPtr(pTypeTo) = 1:
-		when pTypeFrom = T_PtrTo(st_void):
+	case T_IsPtr(pTypeFrom) == 1 & T_IsPtr(pTypeTo) == 1:
+		when pTypeFrom == T_PtrTo(st_void):
 			return 1;
-		when pTypeTo = T_PtrTo(st_void):
+		when pTypeTo == T_PtrTo(st_void):
 			return 1;
 		word pTypeDerefFrom = T_DerefPtr(pTypeFrom);
 		word pTypeDerefTo = T_DerefPtr(pTypeTo);
-		when T_IsFuctTypesIdentical(pTypeDerefFrom, pTypeDerefTo) = 1:
+		when T_IsFuctTypesIdentical(pTypeDerefFrom, pTypeDerefTo) == 1:
 			return 1;
-	case T_IsInteger(pTypeFrom) = 1 & T_IsInteger(pTypeTo) = 1:
-		if T_IsSigned(pTypeFrom) = T_IsSigned(pTypeTo) then
+	case T_IsInteger(pTypeFrom) == 1 & T_IsInteger(pTypeTo) == 1:
+		if T_IsSigned(pTypeFrom) == T_IsSigned(pTypeTo) then
 			when T_SizeOf(pTypeFrom) <= T_SizeOf(pTypeTo):
 				return 1;
 		end:if
 
 		/* HACK: temporary rules to make self-compilation possible */
-		when pTypeFrom = st_word & pTypeTo = st_int:
+		when pTypeFrom == st_word & pTypeTo == st_int:
 			return 1;
 
-		when pTypeFrom = st_int & pTypeTo = st_word:
+		when pTypeFrom == st_int & pTypeTo == st_word:
 			return 1;
 
-		when pTypeFrom = st_word & pTypeTo = st_byte:
+		when pTypeFrom == st_word & pTypeTo == st_byte:
 			return 1;
 		/* END HACK */
 	end:select
@@ -73,7 +73,7 @@ end
 /*****************************************************************************/
 
 void ImplicitCast(word pTypeTo; word @P)
-	when IsImplicitCastPossible(Node[P].pType, pTypeTo) = 0:
+	when IsImplicitCastPossible(Node[P].pType, pTypeTo) == 0:
 		Stop(@eTYPE);
 
 	when Node[P].pType != pTypeTo:
