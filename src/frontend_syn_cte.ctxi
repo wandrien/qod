@@ -11,7 +11,7 @@
 void CTE1(word @P1, @pType; word @P2, @pType2; word @ID)
 
         if ID == iDIV then
-          if Node[Node[P2].pRight].ID == iWORD then
+          if NodeHasImmediateValue(Node[P2].pRight) != 0 then
             if NodeGetImmediateValue(Node[P2].pRight) == 0 then
               Stop(@eDIVZERO);
             end

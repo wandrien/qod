@@ -25,31 +25,32 @@ end
 
 /*****************************************************************************/
 
-word NodeGetImmediateValue(word P)
+word NodeHasImmediateValue(word P)
 
 	when P >= nNode:
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
 	case iCHAR, iWORD, iINT:
-		return Node[P].Value;
+		return 1;
 	end
+
+	return 0;
+end
+
+word NodeGetImmediateValue(word P)
+	when NodeHasImmediateValue(P) != 0:
+		return Node[P].Value;
 
 	StopInternal(__FILE__, __LINE__);
 	return 0;
 end
 
 void NodeSetImmediateValue(word P; word Value)
-
-	when P >= nNode:
-		StopInternal(__FILE__, __LINE__);
-
-	switch Node[P].ID of
-	case iCHAR, iWORD, iINT:
+	when NodeHasImmediateValue(P) != 0:
 		Node[P].Value = Value;
-	default:
-		StopInternal(__FILE__, __LINE__);
-	end
+
+	StopInternal(__FILE__, __LINE__);
 end
 
 /*****************************************************************************/
