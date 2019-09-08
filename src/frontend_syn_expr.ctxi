@@ -438,7 +438,7 @@ word Primary(word Prty; char @Buff)
 					Stop(@eBRACKETEXP);
 				end:if
 
-				if CanExplicitCast(I, Node[P1].pType) == 0 then
+				if IsExplicitCastPossible(Node[P1].pType, I) == 0 then
 					Stop(@eTYPE);
 				end:if
 

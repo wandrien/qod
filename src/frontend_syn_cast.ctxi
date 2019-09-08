@@ -1,22 +1,6 @@
 
 /*****************************************************************************/
 
-word CanExplicitCast(word To; word From)
-
-	if(To == st_char & From == st_byte)
-	| (To == st_char & From == st_word)
-	| (To == st_char & From == st_int )
-	| (To == st_byte & From == st_char)
-	| (To == st_word & From == st_char)
-	| (To == st_int  & From == st_char) then
-		return 1;
-	end:if
-
-	return 0;
-end
-
-/*****************************************************************************/
-
 void AddCast(word pType1; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
@@ -81,3 +65,19 @@ void ImplicitCast(word pTypeTo; word @P)
 end
 
 /*****************************************************************************/
+
+word IsExplicitCastPossible(word From; word To)
+	when IsImplicitCastPossible(From, To) == 1:
+		return 1;
+
+	when T_IsInteger(From) == 1 & T_IsInteger(To) == 1:
+		return 1;
+
+	when T_IsInteger(From) == 1 & To == st_char:
+		return 1;
+
+	when From == st_char & T_IsInteger(To) == 1:
+		return 1;
+
+	return 0;
+end
