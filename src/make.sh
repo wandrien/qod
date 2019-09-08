@@ -178,15 +178,22 @@ do_test_with_compiler ()
 	fi
 }
 
+_run_test ()
+{
+	do_test_with_compiler c "$@" \
+	&& do_test_with_compiler c_debug "$@" \
+	&& do_test_with_compiler c_size "$@"
+}
+
 do_test ()
 {
 	local test_name="$1"
-	if do_test_with_compiler b "$@" && do_test_with_compiler c "$@" ; then
+	if _run_test "$@" ; then
 		printf " => ${CODE_COLOR_GREEN}passed${CODE_COLOR_NOCOLOR} %s\n" "$test_name"
 	else
 		printf " => ${CODE_COLOR_RED}failed${CODE_COLOR_NOCOLOR} %s\n" "$test_name"
 		set -x
-		do_test_with_compiler b "$@" && do_test_with_compiler c "$@"
+		_run_test "$@"
 		set +x
 		exit 1
 	fi
