@@ -3,6 +3,13 @@
 set -e
 #set -x
 
+DEFAULT_WINE=""
+if which wine > /dev/null 2> /dev/null ; then
+	DEFAULT_WINE="wine"
+fi
+
+export WINE="${WINE-$DEFAULT_WINE}"
+
 mk()
 {
 	echo "    BUILD $4$5"
@@ -16,38 +23,106 @@ mk()
 	chmod a+x $4$5
 }
 
+stage_a()
+{
+	printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
+	mk ../precompiled/lcontext_c ctx4lnx    --linux out/ lcontext_a
+}
+
+stage_b()
+{
+	printf "=> ${CODE_COLOR_YELLOW}Stage B${CODE_COLOR_NOCOLOR}\n"
+	mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b
+	mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b_debug --optimize none
+	mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b_size  --optimize size
+	mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b.exe
+	mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b_debug.exe --optimize none
+	mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b_size.exe --optimize size
+}
+
+stage_c()
+{
+	printf "=> ${CODE_COLOR_YELLOW}Stage C${CODE_COLOR_NOCOLOR}\n"
+	mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c #--warn-unused-globals
+	mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_debug --optimize none
+	mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_size --optimize size
+	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c.exe #--warn-unused-globals
+	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
+	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_size.exe --optimize size
+
+	# Generated assembler listings for B and C stages should be identical.
+	diff out/.lcontext_b.asm           out/.lcontext_c.asm
+	diff out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
+	diff out/.lcontext_b_size.asm      out/.lcontext_c_size.asm
+	diff out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
+	diff out/.lcontext_b_debug.exe.asm out/.lcontext_c_debug.exe.asm
+	diff out/.lcontext_b_size.exe.asm  out/.lcontext_c_size.exe.asm
+
+	# The binaries should be identical too.
+	diff out/lcontext_b           out/lcontext_c
+	diff out/lcontext_b_debug     out/lcontext_c_debug
+	diff out/lcontext_b_size      out/lcontext_c_size
+
+	# Do not test PE files, since they differ in timestamp.
+	# FIXME: find a way to erase the timestamp
+	#diff out/lcontext_b.exe       out/lcontext_c.exe
+	#diff out/lcontext_b_debug.exe out/lcontext_c_debug.exe
+	#diff out/lcontext_b_size.exe  out/lcontext_c_size.exe
+}
+
+stage_d()
+{
+	if [ -z "$WINE" ] ;  then
+		printf "=> ${CODE_COLOR_YELLOW}Stage D: skipped${CODE_COLOR_NOCOLOR}\n"
+		return
+	fi
+
+	printf "=> ${CODE_COLOR_YELLOW}Stage D${CODE_COLOR_NOCOLOR}\n"
+	mk "$WINE out/lcontext_b.exe" ctx4lnx       --linux   out/ lcontext_d
+	mk "$WINE out/lcontext_b.exe" ctx4lnx       --linux   out/ lcontext_d_debug --optimize none
+	mk "$WINE out/lcontext_b.exe" ctx4lnx       --linux   out/ lcontext_d_size --optimize size
+	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d.exe
+	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d_debug.exe --optimize none
+	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d_size.exe --optimize size
+
+	# Generated assembler listings for B and D stages should be identical.
+	diff out/.lcontext_b.asm           out/.lcontext_d.asm
+	diff out/.lcontext_b_debug.asm     out/.lcontext_d_debug.asm
+	diff out/.lcontext_b_size.asm      out/.lcontext_d_size.asm
+	diff out/.lcontext_b.exe.asm       out/.lcontext_d.exe.asm
+	diff out/.lcontext_b_debug.exe.asm out/.lcontext_d_debug.exe.asm
+	diff out/.lcontext_b_size.exe.asm  out/.lcontext_d_size.exe.asm
+
+	# The binaries should be identical too.
+	diff out/lcontext_b           out/lcontext_d
+	diff out/lcontext_b_debug     out/lcontext_d_debug
+	diff out/lcontext_b_size      out/lcontext_d_size
+
+	# Do not test PE files, since they differ in timestamp.
+	# FIXME: find a way to erase the timestamp
+	#diff out/lcontext_b.exe       out/lcontext_d.exe
+	#diff out/lcontext_b_debug.exe out/lcontext_d_debug.exe
+	#diff out/lcontext_b_size.exe  out/lcontext_d_size.exe
+}
+
 mkdir -p out
 
 iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 
-printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
+printf "=> ${CODE_COLOR_YELLOW}INFO:${CODE_COLOR_NOCOLOR}\n"
+printf "\
+    The precompiled compiler is used to build A.
+    A is used to build B.
+    B is used to build C.
+    (OPTIONAL) The Windows version of B is also used to build D.
+    Building B, C and D all should produce the same result both
+    in the intermediate representation and the binary code.\n"
 
-mk ../precompiled/lcontext_c ctx4lnx    --linux out/ lcontext_a
+stage_a
+stage_b
+stage_c
+stage_d
 
-printf "=> ${CODE_COLOR_YELLOW}Stage B${CODE_COLOR_NOCOLOR}\n"
-mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b
-mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b_debug --optimize none
-mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b.exe
-mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b_debug.exe --optimize none
-
-printf "=> ${CODE_COLOR_YELLOW}Stage C${CODE_COLOR_NOCOLOR}\n"
-mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c #--warn-unused-globals
-mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_debug --optimize none
-mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c.exe #--warn-unused-globals
-mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
-
-# Generated assembler listings for B and C stages should be identical.
-diff out/.lcontext_b.asm           out/.lcontext_c.asm
-diff out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
-diff out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
-diff out/.lcontext_b_debug.exe.asm out/.lcontext_c_debug.exe.asm
-
-# The binaries should be identical too.
-diff out/lcontext_b           out/lcontext_c
-diff out/lcontext_b_debug     out/lcontext_c_debug
-# Do not test PE files, since they differ in timestamp.
-#diff out/lcontext_b.exe       out/lcontext_c.exe
-#diff out/lcontext_b_debug.exe out/lcontext_c_debug.exe
 
 printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
 
