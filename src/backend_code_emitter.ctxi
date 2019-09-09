@@ -1004,7 +1004,7 @@ word Code(word P; word F; word T; word M)
 		case iEMPTY:
 			null;
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:switch
 
 	end:if
