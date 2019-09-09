@@ -10,6 +10,8 @@ fi
 
 export WINE="${WINE-$DEFAULT_WINE}"
 
+export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-../precompiled/lcontext_c}"
+
 mk()
 {
 	echo "    BUILD $4$5"
@@ -26,7 +28,7 @@ mk()
 stage_a()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
-	mk ../precompiled/lcontext_c ctx4lnx    --linux out/ lcontext_a
+	mk $BOOTSTRAP_COMPILER ctx4lnx    --linux out/ lcontext_a
 }
 
 stage_b()
