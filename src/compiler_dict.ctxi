@@ -65,6 +65,7 @@ word DictAlloc()
 	Dict[r].pNext = nDICT;
 	Dict[r].pFirst = nDICT;
 	Dict[r].pLast = nDICT;
+	DictSetName(r, "<None>");
 
 	return r;
 end
@@ -364,6 +365,20 @@ word T_nPtrTo(word nPtr; word T)
 end
 
 /*****************************************************************************/
+
+word T_IsFunc(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+	when Dict[T].Class == cTYPE & Dict[T].Sub == sFUNCTYPE:
+		return 1;
+	return 0;
+end
+
+word T_FuncGetRetType(word T)
+	when T_IsFunc(T) == 0:
+		StopInternal(__FILE__, __LINE__);
+	return Dict[T].pType;
+end
 
 /*
 	Функция проверяет идентичность функциональных типов.
