@@ -125,12 +125,15 @@ void InitFrontEnd()
 	Word("__FILE__");
 	Word("__LINE__");
 
-	st_void = Base("void", 0);
-	st_char = Base("char", 1);
-	st_byte = Base("byte", 1);
-	st_word = Base("word", target_size_of_word);
-	st_int  = Base("int" , target_size_of_int);
-	st_bool = Base("bool", target_size_of_bool);
+	st_void = BaseType("void", sBASE_VOID, 0);
+	st_char = BaseType("char", sBASE_CHAR, 1);
+	st_byte = BaseType("byte", sBASE_UINT, 1);
+	st_word = BaseType("word", sBASE_UINT, target_size_of_word);
+	st_int  = BaseType("int" , sBASE_SINT, target_size_of_int);
+	st_bool = BaseType("bool", sBASE_BOOL, target_size_of_bool);
+	st_float = BaseType("float", sBASE_FLOAT, target_size_of_float);
+	st_double = BaseType("double", sBASE_FLOAT, target_size_of_double);
+	st_long_double = BaseType("long_double", sBASE_FLOAT, target_size_of_long_double);
 
 	RegisterOperators();
 

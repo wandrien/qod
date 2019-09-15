@@ -29,18 +29,27 @@ define  cARG        10 // Аргумент функции
 
 /*****************************************************************************/
 
-define  sBASE        0 // Базовый тип
-define  sSTRUCT      1 // Стpуктуpа
-define  sFUNCTYPE    2 // Функциональный тип
-//define  sCONST       3 // Константный подтип типа
-define  sPTR         4 // Указатель
-define  sARRAY       5 // Массив
+define  sNONE        0
+                       // Базовые типы:
+define  sBASE_VOID   1 // void
+define  sBASE_BOOL   2 // bool
+define  sBASE_CHAR   3 // Символьный тип
+define  sBASE_SINT   4 // Целое со знаком
+define  sBASE_UINT   5 // Целое без знака
+define  sBASE_FLOAT  6 // Число с плавающей точкой:
+define  sBASE_MAX    6 //
+                       // Производные типы
+define  sSTRUCT      7 // Стpуктуpа
+define  sFUNCTYPE    8 // Функциональный тип
+//define  sCONST       9 // Константный подтип типа
+define  sPTR        10 // Указатель
+define  sARRAY      11 // Массив
 
 /*****************************************************************************/
 
-define  sSYS         6 // Функция ОС
-define  sFUNC        7 // Функция пpогpаммы
-define  sMAIN        8 // Главная функция
+define  sSYS        12 // Функция ОС
+define  sFUNC       13 // Функция пpогpаммы
+define  sMAIN       14 // Главная функция
 
 /*****************************************************************************/
 

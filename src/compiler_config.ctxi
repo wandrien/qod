@@ -16,6 +16,9 @@ word target_size_of_bool    = 4;
 word target_size_of_int     = 4;
 word target_size_of_word    = 4;
 word target_size_of_pointer = 4;
+word target_size_of_float   = 4;
+word target_size_of_double  = 8;
+word target_size_of_long_double = 10;
 
 word target_default_stack_alignment = 4; /* Выравнивание переменных, размещаемых в стеке. */
 word target_default_static_alignment = 4; /* Выравнивание глобальных переменных. */

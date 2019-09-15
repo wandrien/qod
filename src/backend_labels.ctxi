@@ -88,7 +88,7 @@ void DoWarnUnusedGlobals()
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @wFUNCUNUSED);
 				Warn(@Buff);
-			case Dict[P].Class == cTYPE & Dict[P].Sub != sBASE:
+			case Dict[P].Class == cTYPE & Dict[P].Sub <= sBASE_MAX:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @wTYPEUNUSED);
 				Warn(@Buff);
