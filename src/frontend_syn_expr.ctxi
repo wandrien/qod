@@ -88,10 +88,29 @@ word Tabl(char @Buff)
 	if strcmp(@Buff,"[") == 0 then
 		word P = _Expr(PRIO_ZERO, @Scan(@Buff));
 
-		when Node[P].ID!=iWORD:
-			Stop(@eTYPE);
+		when T_IsInteger(Node[P].pType) != 1:
+			Stop(@eARR_SIZE_TYPE);
+
+		when NodeHasImmediateValue(P) != 1:
+			Stop(@eARR_SIZE_CONSTEXP);
 
 		nIndx = NodeGetImmediateValue(P);
+
+		when nIndx < 1:
+			Stop(@eARR_SIZE_LO_BOUND);
+
+		if T_IsSigned(Node[P].pType) == 1 then
+			int i = nIndx;
+			when i < 1:
+				Stop(@eARR_SIZE_LO_BOUND);
+		end
+
+		/*
+		TODO:
+		if nIndx > SIZE_MAX then
+			Stop(@eARR_SIZE_HI_BOUND);
+		end
+		*/
 
 		when strcmp(@Buff,"]")!=0:
 			Stop(@eBRACKETEXP);

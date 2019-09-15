@@ -23,6 +23,10 @@ define @eQUOTEXP         "Пропущена кавычка"                           // Quote 
 define @eSTRING          "Символ @ недопустим"                         // Illegal use of @
 define @eNOADDR          "Невозможно вычислить адрес"                  // Can't calculate address
 define @eOPERATOR        "Два оператора подряд"                        // Two operators togeter
+define @eARR_SIZE_TYPE   "Несоответствие типов: в качестве размера массива ожидается целое"
+define @eARR_SIZE_CONSTEXP "Выражение невычислимо на этапе компиляции: в качестве размера массива ожидается константное выражение"
+define @eARR_SIZE_LO_BOUND "В качестве размера массива ожидается значение больше нуля"
+define @eARR_SIZE_HI_BOUND "Размер массива превосходит максимально допустимое значение для целевой платформы"
 define @eTYPE            "Несоответствие типов"                        // Incompatible types
 define @eSWTYPE          "Требуется результат целого/символьного типа" // word/integer/char result required
 define @eCONSTEXP        "Требуется целая/символьная константа"        // word/integer/char constant required

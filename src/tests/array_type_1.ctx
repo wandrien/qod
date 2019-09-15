@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Выражение невычислимо на этапе компиляции: в качестве размера массива ожидается константное выражение'
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	word a = 5;
+	word x[a];
+end
