@@ -683,63 +683,76 @@ end
 
 /*****************************************************************************/
 
-void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
+void Cast2(word P_OP)
 
-	if T_IsPtr(pType) == 0 & T_IsPtr(pType2) == 0 then /* Преобразование целочисленных типов к одному типу. */
+	word ID = Node[P_OP].ID;
+
+	word P1 = Node[P_OP].pLeft;
+	word P2 = Node[P_OP].pRight;
+
+	word pType1 = Node[P1].pType;
+	word pType2 = Node[P2].pType;
+
+	word pTypeOp = pType1;
+
+	if T_IsPtr(pType1) == 0 & T_IsPtr(pType2) == 0 then /* Преобразование целочисленных типов к одному типу. */
 		select
 
-		case pType == pType2:
+		case pType1 == pType2:
 			null;
 
-		case pType == st_byte & pType2 == st_word:
-			AddCast(pType2, @Node[P2].pLeft);
-			pType=pType2;
+		case pType1 == st_byte & pType2 == st_word:
+			AddCast(pType2, @Node[P_OP].pLeft);
+			pTypeOp=pType2;
 
-		case pType == st_byte & pType2 == st_int:
-			AddCast(pType2, @Node[P2].pLeft);
-			pType=pType2;
+		case pType1 == st_byte & pType2 == st_int:
+			AddCast(pType2, @Node[P_OP].pLeft);
+			pTypeOp=pType2;
 
-		case pType == st_word & pType2 == st_byte:
-			AddCast(pType, @Node[P2].pRight);
+		case pType1 == st_word & pType2 == st_byte:
+			AddCast(pType1, @Node[P_OP].pRight);
+			pTypeOp=pType1;
 
-		case pType == st_word & pType2 == st_int:
-			AddCast(pType2, @Node[P2].pLeft);
-			pType=pType2;
+		case pType1 == st_word & pType2 == st_int:
+			AddCast(pType2, @Node[P_OP].pLeft);
+			pTypeOp=pType2;
 
-		case pType == st_int & pType2 == st_byte:
-			AddCast(pType, @Node[P2].pRight);
+		case pType1 == st_int & pType2 == st_byte:
+			AddCast(pType1, @Node[P_OP].pRight);
+			pTypeOp=pType1;
 
-		case pType == st_int & pType2 == st_word:
-			AddCast(pType, @Node[P2].pRight);
+		case pType1 == st_int & pType2 == st_word:
+			AddCast(pType1, @Node[P_OP].pRight);
+			pTypeOp=pType1;
 
 		default:
 			Stop(@eTYPE);
 		end:select
 	end:if
 
-	when T_IsPtr(pType) != T_IsPtr(pType2): /* Типы должны быть либо оба указатели, либо оба не указатели. */
+	when T_IsPtr(pType1) != T_IsPtr(pType2): /* Типы должны быть либо оба указатели, либо оба не указатели. */
 		Stop(@eTYPE);
 
 	select
-	case T_IsPtr(pType) == 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
+	case T_IsPtr(pType1) == 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
 		if ID!=iEQ & ID!=iNE then
 			Stop(@eTYPE);
 		end
-		pType = st_bool;
+		pTypeOp = st_bool;
 
 	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
 		select
-		case pType == st_byte | pType == st_word:
-			Node[P2].ID=iBIT_OR;
-		case pType != st_bool:
+		case pTypeOp == st_byte | pTypeOp == st_word:
+			Node[P_OP].ID=iBIT_OR;
+		case pTypeOp != st_bool:
 			Stop(@eTYPE);
 		end
 
 	case ID == iXOR: /* Аналогично предыдущему. */
 		select
-		case pType == st_byte | pType == st_word:
-			Node[P2].ID=iBIT_XOR;
-		case pType == st_bool:
+		case pTypeOp == st_byte | pTypeOp == st_word:
+			Node[P_OP].ID=iBIT_XOR;
+		case pTypeOp == st_bool:
 			Stop(@eXORNOTIMPL);
 		default:
 			Stop(@eTYPE);
@@ -747,33 +760,35 @@ void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 
 	case ID == iAND: /* Аналогично предыдущему. */
 		select
-		case pType == st_byte | pType == st_word:
-			Node[P2].ID=iBIT_AND;
-		case pType != st_bool:
+		case pTypeOp == st_byte | pTypeOp == st_word:
+			Node[P_OP].ID=iBIT_AND;
+		case pTypeOp != st_bool:
 			Stop(@eTYPE);
 		end
 
 	case iLT<=ID & ID<=iGT: /* Сравнения возможны только между целыми и символами (case с указателями был выше) */
-		if pType!=st_char & pType!=st_byte & pType!=st_word & pType!=st_int then
+		if pTypeOp!=st_char & pTypeOp!=st_byte & pTypeOp!=st_word & pTypeOp!=st_int then
 			Stop(@eTYPE);
 		end
-		pType = st_bool;
+		pTypeOp = st_bool;
 
 	case iADD<=ID & ID<=iDIV:
-		if pType!=st_byte & pType!=st_word & pType!=st_int then /* Арифметические операции только с целыми. */
+		if pTypeOp!=st_byte & pTypeOp!=st_word & pTypeOp!=st_int then /* Арифметические операции только с целыми. */
 			Stop(@eTYPE);
 		end
-		CTE(P2);
+		CTE(P_OP);
 
 	case ID == iMOD:
-		if pType!=st_byte & pType!=st_word then
+		if pTypeOp!=st_byte & pTypeOp!=st_word then
 			Stop(@eTYPE);
 		end
-		CTE(P2);
+		CTE(P_OP);
 
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
+
+	Node[P_OP].pType = pTypeOp;
 
 end
 
@@ -811,25 +826,19 @@ word ExprBinOp(word P1; word O; char @Buff)
 		Warn(@wDEPRECATED);
 	end:if
 
-	word P2 = Peek();
+	word P_OP = Peek();
 	word ID = Operator[O].ID;
-	Node[P2].ID = ID;
-
-	word pType;
+	Node[P_OP].ID = ID;
 
 	if P1 >= nNODE then
 		StopInternal(__FILE__, __LINE__);
 	else
-		pType = Node[P1].pType;
-		Node[P2].pLeft  = P1;
-		Node[P2].pRight = _Expr(Operator[O].Prio, @Scan(@Buff));
-		word pType2 = Node[Node[P2].pRight].pType;
-		Cast2(@P1, @pType, @P2, @pType2, @ID, @Buff);
+		Node[P_OP].pLeft  = P1;
+		Node[P_OP].pRight = _Expr(Operator[O].Prio, @Scan(@Buff));
+		Cast2(P_OP);
 	end:if
 
-	Node[P2].pType = pType;
-
-	return P2;
+	return P_OP;
 end
 
 /*****************************************************************************/
