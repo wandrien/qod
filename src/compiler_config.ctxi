@@ -13,7 +13,9 @@ word chardata_merge_len = 256;
 /* Характеристики целевой платформы. */
 
 word target_size_of_bool    = 4;
+word target_size_of_short   = 2;
 word target_size_of_int     = 4;
+word target_size_of_long    = 8;
 word target_size_of_word    = 4;
 word target_size_of_pointer = 4;
 word target_size_of_float   = 4;
