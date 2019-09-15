@@ -763,13 +763,13 @@ void Cast2(word @P1, @pType; word @P2, @pType2; word @ID; char @Buff)
 		if pType!=st_byte & pType!=st_word & pType!=st_int then /* Арифметические операции только с целыми. */
 			Stop(@eTYPE);
 		end
-		CTE(@P1, @pType, @P2, @pType2, @ID);
+		CTE(P2);
 
 	case ID == iMOD:
 		if pType!=st_byte & pType!=st_word then
 			Stop(@eTYPE);
 		end
-		CTE(@P1, @pType, @P2, @pType2, @ID);
+		CTE(P2);
 
 	default:
 		StopInternal(__FILE__, __LINE__);

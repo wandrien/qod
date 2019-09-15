@@ -7,10 +7,11 @@
 
 /*****************************************************************************/
 
-void CTE(word @P1, @pType; word @P2, @pType2; word @ID)
+void CTE(word P)
 
-	word pLeft = Node[P2].pLeft;
-	word pRight = Node[P2].pRight;
+	word ID = Node[P].ID;
+	word pLeft = Node[P].pLeft;
+	word pRight = Node[P].pRight;
 
 	if ID == iDIV | ID == iMOD then
 		if NodeHasImmediateValue(pRight) != 0 then
@@ -26,52 +27,52 @@ void CTE(word @P1, @pType; word @P2, @pType2; word @ID)
 	select
 	case ID == iADD:
 		if Node[pLeft].ID == iWORD then
-			Node[P2].ID    = iWORD;
-			Node[P2].Value = Node[pLeft].Value + Node[pRight].Value;
+			Node[P].ID    = iWORD;
+			Node[P].Value = Node[pLeft].Value + Node[pRight].Value;
 		end
 		if Node[pLeft].ID == iINT then
-			Node[P2].ID    = iINT;
+			Node[P].ID    = iINT;
 			int v1 = Node[pLeft].Value;
 			int v2 = Node[pRight].Value;
-			Node[P2].Value = v1 + v2;
+			Node[P].Value = v1 + v2;
 		end
 	case ID == iSUB:
 		if Node[pLeft].ID == iWORD then
-			Node[P2].ID    = iWORD;
-			Node[P2].Value = Node[pLeft].Value - Node[pRight].Value;
+			Node[P].ID    = iWORD;
+			Node[P].Value = Node[pLeft].Value - Node[pRight].Value;
 		end
 		if Node[pLeft].ID == iINT then
-			Node[P2].ID    = iINT;
+			Node[P].ID    = iINT;
 			int v1 = Node[pLeft].Value;
 			int v2 = Node[pRight].Value;
-			Node[P2].Value = v1 - v2;
+			Node[P].Value = v1 - v2;
 		end
 	case ID == iMUL:
 		if Node[pLeft].ID == iWORD then
-			Node[P2].ID    = iWORD;
-			Node[P2].Value = Node[pLeft].Value * Node[pRight].Value;
+			Node[P].ID    = iWORD;
+			Node[P].Value = Node[pLeft].Value * Node[pRight].Value;
 		end
 		if Node[pLeft].ID == iINT then
-			Node[P2].ID    = iINT;
+			Node[P].ID    = iINT;
 			int v1 = Node[pLeft].Value;
 			int v2 = Node[pRight].Value;
-			Node[P2].Value = v1 * v2;
+			Node[P].Value = v1 * v2;
 		end
 	case ID == iDIV:
 		if Node[pLeft].ID == iWORD then
-			Node[P2].ID    = iWORD;
-			Node[P2].Value = Node[pLeft].Value / Node[pRight].Value;
+			Node[P].ID    = iWORD;
+			Node[P].Value = Node[pLeft].Value / Node[pRight].Value;
 		end
 		if Node[pLeft].ID == iINT then
-			Node[P2].ID    = iINT;
+			Node[P].ID    = iINT;
 			int v1 = Node[pLeft].Value;
 			int v2 = Node[pRight].Value;
-			Node[P2].Value = v1 / v2;
+			Node[P].Value = v1 / v2;
 		end
 	case ID == iMOD:
 		if Node[pLeft].ID == iWORD then
-			Node[P2].ID    = iWORD;
-			Node[P2].Value = Node[pLeft].Value % Node[pRight].Value;
+			Node[P].ID    = iWORD;
+			Node[P].Value = Node[pLeft].Value % Node[pRight].Value;
 		end
 	end:select
 
