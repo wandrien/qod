@@ -147,32 +147,43 @@ do_test_with_compiler ()
 	local test_name="$1" ; shift
 	local condition="$1" ; shift
 
+	local stdout_log=tests/out/"$test_name"."$c".stdout
+	local stderr_log=tests/out/"$test_name"."$c".stderr
+
 	local COMPILER_FLAGS="`grep -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
 
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
 		if (mk out/lcontext_"$c" tests/"$test_name"\
 				--linux tests/out/ "$test_name" \
 				$COMPILER_FLAGS \
-				1> tests/out/"$test_name"."$c".stdout \
-				2> tests/out/"$test_name"."$c".stderr) ; then
+				1> "$stdout_log" \
+				2> "$stderr_log") ; then
+			$CAT_TEST_LOGS "$stdout_log"
+			$CAT_TEST_LOGS "$stderr_log"
 			return $failed
 		fi
-		if (cat tests/out/"$test_name"."$c".stdout tests/out/"$test_name"."$c".stderr | grep -q "$1") ; then
+		if (cat "$stdout_log" "$stderr_log" | grep -q "$1") ; then
 			return $passed
 		else
+			$CAT_TEST_LOGS "$stdout_log"
+			$CAT_TEST_LOGS "$stderr_log"
 			return $failed
 		fi
 	elif [ "x$condition" = "xshould_print" ] ; then
 		if ! (mk out/lcontext_"$c" tests/"$test_name"\
 				--linux tests/out/ "$test_name" \
 				$COMPILER_FLAGS \
-				1> tests/out/"$test_name"."$c".stdout \
-				2> tests/out/"$test_name"."$c".stderr) ; then
+				1> "$stdout_log" \
+				2> "$stderr_log") ; then
+			$CAT_TEST_LOGS "$stdout_log"
+			$CAT_TEST_LOGS "$stderr_log"
 			return $failed
 		fi
 		if [ "x`tests/out/"$test_name"`" = "x$1" ] ; then
 			return $passed
 		else
+			$CAT_TEST_LOGS "$stdout_log"
+			$CAT_TEST_LOGS "$stderr_log"
 			return $failed
 		fi
 	else
@@ -190,10 +201,12 @@ _run_test ()
 do_test ()
 {
 	local test_name="$1"
+	CAT_TEST_LOGS=true
 	if _run_test "$@" ; then
 		printf " => ${CODE_COLOR_GREEN}passed${CODE_COLOR_NOCOLOR} %s\n" "$test_name"
 	else
 		printf " => ${CODE_COLOR_RED}failed${CODE_COLOR_NOCOLOR} %s\n" "$test_name"
+		CAT_TEST_LOGS=cat
 		set -x
 		_run_test "$@"
 		set +x
