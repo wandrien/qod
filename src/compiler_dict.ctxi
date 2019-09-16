@@ -238,6 +238,53 @@ end
 
 /*****************************************************************************/
 
+word T_Equal(word T1, T2)
+	when T1 >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	when Dict[T1].Class != cTYPE:
+		StopInternal(__FILE__, __LINE__);
+
+	when T2 >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	when Dict[T2].Class != cTYPE:
+		StopInternal(__FILE__, __LINE__);
+
+	when T1 == T2:
+		return 1;
+
+	if Dict[T1].Sub == Dict[T2].Sub then
+		select
+		case Dict[T1].Sub == sBASE_UINT | Dict[T1].Sub == sBASE_SINT:
+			when Dict[T1].TypeSize == Dict[T2].TypeSize:
+				return 1;
+		end:select
+	end:if
+
+	return 0;
+end
+
+/*****************************************************************************/
+
+word T_IsChar(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_CHAR:
+		return 1;
+	return 0;
+end
+
+word T_IsBool(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_BOOL:
+		return 1;
+	return 0;
+end
+
 word T_IsUnsigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);

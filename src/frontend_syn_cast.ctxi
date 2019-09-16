@@ -6,6 +6,7 @@ void AddCast(word pType1; word @P)
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
 	if pType1 == st_int & Node[P].ID == iWORD then
 		Node[P].ID=iINT;
+		Node[P].pType = pType1;
 		return;
 	end
 
@@ -15,6 +16,13 @@ void AddCast(word pType1; word @P)
 	Node[P1].pLeft = P;
 
 	P = P1;
+end
+
+/*****************************************************************************/
+
+void AddImplicitCast(word pTypeTo; word @P)
+	when Node[P].pType != pTypeTo:
+		AddCast(pTypeTo, @P);
 end
 
 /*****************************************************************************/
@@ -60,8 +68,7 @@ void ImplicitCast(word pTypeTo; word @P)
 	when IsImplicitCastPossible(Node[P].pType, pTypeTo) == 0:
 		Stop(@eTYPE);
 
-	when Node[P].pType != pTypeTo:
-		AddCast(pTypeTo, @P);
+	AddImplicitCast(pTypeTo, @P);
 end
 
 /*****************************************************************************/

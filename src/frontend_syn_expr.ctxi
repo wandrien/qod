@@ -683,7 +683,98 @@ end
 
 /*****************************************************************************/
 
+word IntegerPromotion(word pType)
+	when T_SizeOf(pType) < T_SizeOf(st_int):
+			return st_int;
+	return pType;
+end
+
+void ApplyCommonType(word P_OP; word pType)
+	AddImplicitCast(pType, @Node[P_OP].pLeft);
+	AddImplicitCast(pType, @Node[P_OP].pRight);
+	Node[P_OP].pType = pType;
+end
+
+void ApplyUACCastsForIntegers(word P_OP)
+
+	/* Usual arithmetic conversions */
+
+	word P1 = Node[P_OP].pLeft;
+	word P2 = Node[P_OP].pRight;
+
+	word pType1 = Node[P1].pType;
+	word pType2 = Node[P2].pType;
+
+	/* Skip for non-integers. */
+	when T_IsInteger(pType1) == 0 | T_IsInteger(pType2) == 0:
+		return;
+
+	word do_integer_promotion = 0; /* TODO: disabled now; should be configurable from the sources */
+	word do_implicit_cast_uint_to_int = 1; /* HACK: temporary rules to make self-compilation possible */
+
+	if do_integer_promotion != 0 then
+		pType1 = IntegerPromotion(pType1);
+		pType2 = IntegerPromotion(pType2);
+		AddImplicitCast(pType1, @Node[P_OP].pLeft);
+		AddImplicitCast(pType2, @Node[P_OP].pRight);
+	end:if
+
+	/* Эквивалентные типы. */
+	if T_Equal(pType1, pType2) == 1 then
+		ApplyCommonType(P_OP, pType1);
+		return;
+	end:if
+
+	/* signed + signed OR unsigned + unsigned */
+	if T_IsSigned(pType1) == T_IsSigned(pType2) then
+		word rank1 = T_SizeOf(pType1);
+		word rank2 = T_SizeOf(pType2);
+		word pTargetType;
+		if rank1 > rank2 then
+			pTargetType = pType1;
+		else
+			pTargetType = pType2;
+		end
+		ApplyCommonType(P_OP, pTargetType);
+		return;
+	end:if
+
+	/* signed + unsigned */
+
+	word pTypeSigned;
+	word pTypeUnsigned;
+
+	select
+	case T_IsSigned(pType1) == 1 & T_IsUnsigned(pType2) == 1:
+		pTypeSigned = pType1;
+		pTypeUnsigned = pType2;
+	case T_IsSigned(pType2) == 1 & T_IsUnsigned(pType1) == 1:
+		pTypeSigned = pType2;
+		pTypeUnsigned = pType1;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+
+	word rankSigned = T_SizeOf(pTypeSigned);
+	word rankUnsigned = T_SizeOf(pTypeUnsigned);
+
+	if rankSigned > rankUnsigned then
+		word pTargetType = pTypeSigned;
+		ApplyCommonType(P_OP, pTypeSigned);
+		return;
+	end:if
+
+	if rankSigned == rankUnsigned & do_implicit_cast_uint_to_int == 1 then
+		word pTargetType = pTypeSigned;
+		ApplyCommonType(P_OP, pTypeSigned);
+		return;
+	end:if
+
+end
+
 void Cast2(word P_OP)
+
+	ApplyUACCastsForIntegers(P_OP);
 
 	word ID = Node[P_OP].ID;
 
@@ -695,43 +786,29 @@ void Cast2(word P_OP)
 
 	word pTypeOp = pType1;
 
-	if T_IsPtr(pType1) == 0 & T_IsPtr(pType2) == 0 then /* Преобразование целочисленных типов к одному типу. */
+	/* Допустимые сочетания операндов: */
+	select
+
+	/* Оба типа - указатели. */
+	case T_IsPtr(pType1) == 1 & T_IsPtr(pType2) == 1:
+		null;
+
+	/* С обеих сторон - один и тот же тип... */
+	case pType1 == pType2:
 		select
-
-		case pType1 == pType2:
+		case T_IsInteger(pType1) == 1: /* ...целочисленный */
 			null;
-
-		case pType1 == st_byte & pType2 == st_word:
-			AddCast(pType2, @Node[P_OP].pLeft);
-			pTypeOp=pType2;
-
-		case pType1 == st_byte & pType2 == st_int:
-			AddCast(pType2, @Node[P_OP].pLeft);
-			pTypeOp=pType2;
-
-		case pType1 == st_word & pType2 == st_byte:
-			AddCast(pType1, @Node[P_OP].pRight);
-			pTypeOp=pType1;
-
-		case pType1 == st_word & pType2 == st_int:
-			AddCast(pType2, @Node[P_OP].pLeft);
-			pTypeOp=pType2;
-
-		case pType1 == st_int & pType2 == st_byte:
-			AddCast(pType1, @Node[P_OP].pRight);
-			pTypeOp=pType1;
-
-		case pType1 == st_int & pType2 == st_word:
-			AddCast(pType1, @Node[P_OP].pRight);
-			pTypeOp=pType1;
-
+		case T_IsChar(pType1) == 1: /* ...символьный */
+			null;
+		case T_IsBool(pType1) == 1: /* ...булевый */
+			null;
 		default:
-			Stop(@eTYPE);
+			StopAt(@Node[P_OP].SourceLocation, @eTYPE);
 		end:select
-	end:if
 
-	when T_IsPtr(pType1) != T_IsPtr(pType2): /* Типы должны быть либо оба указатели, либо оба не указатели. */
-		Stop(@eTYPE);
+	default:
+		StopAt(@Node[P_OP].SourceLocation, @eTYPE);
+	end:select
 
 	select
 	case T_IsPtr(pType1) == 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
