@@ -1,5 +1,4 @@
 // TEST: compilation_should_fail 'Попытка деления на ноль'
-$context2
 
 begin
 	word a = 1;

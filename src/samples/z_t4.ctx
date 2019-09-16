@@ -1,12 +1,8 @@
-$context2
-
 include "../sys4win.ctxi"
 include "../include/hosted.ctxi"
 
 
 begin
-
-	puts("$context2");
 
 	word i = 0;
 	while i < 16000 do
