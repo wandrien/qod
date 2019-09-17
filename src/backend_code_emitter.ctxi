@@ -642,6 +642,29 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		Size=SizeOfType(pType, 0);
 	end
 
+	/* Оптимизация случая, когда можно использовать inc/dec вместо add/sub */
+	if fSwap == 2 & (ID == iADD | ID == iSUB) then
+
+		word Value = Node[pRight].Value;
+		when ID == iSUB:
+			Value = -Value;
+
+		select
+		case Value == 1 & Size == 4:
+			Emit("inc     EAX");
+			return pType;
+		case Value == -1 & Size == 4:
+			Emit("dec     EAX");
+			return pType;
+		case Value == 1 & Size == 1:
+			Emit("inc     AL");
+			return pType;
+		case Value == -1 & Size == 1:
+			Emit("dec     AL");
+			return pType;
+		end:select
+	end:if
+
 	select
 	case iLT<=ID & ID<=iGT:
 		select
