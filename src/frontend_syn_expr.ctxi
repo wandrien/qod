@@ -955,7 +955,7 @@ word ExprConstExpr(word P1; word O;  char @Buff)
 	case iCHAR, iWORD, iINT:
 		null;
 	default:
-		Stop(@eNOTACONSTEXPR);
+		Error(@eNOTACONSTEXPR);
 	end
 
 	return P2;
