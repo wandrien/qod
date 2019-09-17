@@ -172,25 +172,13 @@ word Code1(word pPrimary)
 
 			select
 			case Size==1:
-				if fEAX==RegA then
-					strcpy(@Buff,"mov     AL,   byte  ");     // FASM
-				else
-					strcpy(@Buff,"mov     BL,   byte  ");     // FASM
-				end:if
+				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, 1), ",   byte  ");
 
 			case Size==4:
-				if fEAX==RegA then
-					strcpy(@Buff,"mov     EAX,  dword ");     // FASM
-				else
-					strcpy(@Buff,"mov     EBX,  dword ");     // FASM
-				end:if
+				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, 4), ",   dword ");
 
 			default:
-				if fEAX==RegA then
-					strcpy(@Buff,"lea     EAX,  ");
-				else
-					strcpy(@Buff,"lea     EBX,  ");
-				end:if
+				strcpy3(@Buff, "lea     ", @CodeReg(NULL, fEAX, 4), ",  ");
 			end:select
 
 			if IX==RegNone & ID==iCALL then
@@ -498,24 +486,24 @@ word Code1(word pPrimary)
 
 				select
 				case ID==iDATA:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ofs),"]"));
 				case ID==iPARM:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ofs),"]"));
 				case ID==iLOCAL:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@RX),"-"),@str(Ofs)),"]"));
+					Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ofs),"]"));
 				case ID==iREF:
-					Emit(@strcat(@strcat(@strcat(@strcat(@strcat(@Buff,"["),@RX),"+"),@str(Ofs)),"]"));
+					Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ofs),"]"));
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			else
 				select
 				case ID==iDATA:
-					Emit(@strcat(@strcat(@strcat(@Buff,"[@@DATA+"),@str(Ofs)),"]")); // FASM
+					Emit(@strcat3(@Buff,"[@@DATA+",@str(Ofs),"]")); // FASM
 				case ID==iPARM:
-					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP+"),@str(Ofs)),"]"));
+					Emit(@strcat3(@Buff,"[EBP+",@str(Ofs),"]"));
 				case ID==iLOCAL:
-					Emit(@strcat(@strcat(@strcat(@Buff,"[EBP-"),@str(Ofs)),"]"));
+					Emit(@strcat3(@Buff,"[EBP-",@str(Ofs),"]"));
 				//TODO Пpовеpить!
 				case ID==iCALL:
 					null;

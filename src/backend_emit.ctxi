@@ -21,26 +21,25 @@ char @strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
 	return @Dst;
 end
 
-/*
 char @strcat2(char @Dst, @Src1, @Src2)
-	strcat(@strcat(@Dst, @Src1), @Src2);
+	str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2);
 	return @Dst;
 end
 
 char @strcat3(char @Dst, @Src1, @Src2, @Src3)
-	strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3);
+	str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3);
 	return @Dst;
 end
 
 char @strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
-	strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4);
+	str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4);
 	return @Dst;
 end
 
 char @strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
-	strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5);
+	str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5);
 	return @Dst;
-end*/
+end
 
 char @strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
 	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
