@@ -19,6 +19,9 @@ define RegD    4
 		1 - 8 бит
 		2 - 16 бит
 		4 - 32 бита
+
+	Если @Buff == NULL,
+		возвращает указатель на статическую строку с именем регистра.
 */
 char @CodeReg(char @Buff; word Reg; word RegMode)
 
@@ -56,9 +59,13 @@ char @CodeReg(char @Buff; word Reg; word RegMode)
 	default: StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
 
-	strcat(@Buff, @R);
+	if @Buff != NULL then
+		strcat(@Buff, @R);
+		return @Buff;
+	end:if
 
-	return @Buff;
+	return @R;
+
 end
 
 /*****************************************************************************/
@@ -192,40 +199,36 @@ end
 
 char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 
-	if IX!=0 then
-		char@ RX;
-		if IX==1 then
-			@RX = "EAX";
-		else
-			@RX = "EBX";
-		end
+	char@ Prefix = "";
 
-		select
-		case ID==iDATA:
-			strcat3(@Buff,"[@@DATA+",@RX,"+");
-		case ID==iPARM:
-			strcat3(@Buff,"[EBP+",@RX,"+");
-		case ID==iLOCAL:
-			strcat3(@Buff,"[EBP+",@RX,"-");
-		case ID==iREF:
-			strcat3(@Buff,"[",@RX,"+");
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-		end:select
-	else
-		select
-		case ID==iDATA:
-			strcat(@Buff,"[@@DATA+");
-		case ID==iPARM:
-			strcat(@Buff,"[EBP+");
-		case ID==iLOCAL:
-			strcat(@Buff,"[EBP-");
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-		end:select
-	end:if
+	char@ Plus_RX = "";
+	char@ RX = "";
 
-	strcat2(@Buff,@str(offset),"]");
+	char@ PlusOffset = "+";
+
+	if IX != RegNone then
+		@Plus_RX = "+";
+		@RX = @CodeReg(NULL, IX, 4);
+	end
+
+	select
+	case ID==iDATA:
+		@Prefix = "[@@DATA";
+	case ID==iPARM:
+		@Prefix = "[EBP";
+	case ID==iLOCAL:
+		@Prefix = "[EBP";
+		@PlusOffset = "-";
+	case ID==iREF:
+		when IX == RegNone:
+			StopInternalCodegen(__FILE__, __LINE__);
+		@Prefix = "[";
+		@Plus_RX = "";
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:select
+
+	strcat6(@Buff, @Prefix, @Plus_RX, @RX, @PlusOffset, @str(offset), "]");
 
 	return @Buff;
 end

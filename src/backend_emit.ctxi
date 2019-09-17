@@ -193,6 +193,13 @@ void strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
 	strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4);
 end
 
+void strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
+	strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5);
+end
+
+void strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
+	strcat(@strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
+end
 
 /*****************************************************************************/
 
