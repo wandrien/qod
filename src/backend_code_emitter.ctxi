@@ -543,6 +543,27 @@ end
 
 /*****************************************************************************/
 
+word NodeCanBeEncodedAsImm(word P)
+	word ID=Node[P].ID;
+	switch ID of
+	case iCHAR, iWORD, iINT:
+		return 1;
+	default:
+		return 0;
+	end:switch
+end
+
+word IsOperationCommutative(word ID)
+	switch ID of
+	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iEQ, iNE:
+		return 1;
+	default:
+		return 0;
+	end:switch
+end
+
+/*****************************************************************************/
+
 word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	Buff[0] = #0;
 
@@ -555,29 +576,38 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		fEAX=RegA;
 	end
 
+	word pLeft = Node[P].pLeft;
+	word pRight = Node[P].pRight;
+
+	if NodeCanBeEncodedAsImm(pLeft) != 0 & IsOperationCommutative(Node[P].ID) != 0 then
+		word tmp = pLeft;
+		pLeft = pRight;
+		pRight = tmp;
+	end:if
+
 	word fSwap=0;
 	word pType;
 	select
-	case Node[Node[P].pRight].ID==iCHAR | Node[Node[P].pRight].ID==iWORD | Node[Node[P].pRight].ID==iINT:
-		pType=_Code(Node[P].pLeft,0,0,0);
+	case NodeCanBeEncodedAsImm(pRight) != 0:
+		pType=_Code(pLeft,0,0,0);
 		fSwap=2;
 
-	case Node[Node[P].pLeft].ID==iCHAR | Node[Node[P].pLeft].ID==iWORD | Node[Node[P].pLeft].ID==iINT:
-		_Code(Node[P].pRight,0,0,0);
+	case NodeCanBeEncodedAsImm(pLeft) != 0:
+		_Code(pRight,0,0,0);
 		fEAX =RegB;
-		pType=_Code(Node[P].pLeft,0,0,0);
+		pType=_Code(pLeft,0,0,0);
 		fSwap=1;
 
-	case Node[Node[Node[P].pLeft].pLeft].ID==iLOAD:
-		_Code(Node[P].pRight,0,0,0);
+	case Node[Node[pLeft].pLeft].ID==iLOAD:
+		_Code(pRight,0,0,0);
 		fEAX =RegB;
-		pType=_Code(Node[P].pLeft,0,0,0);
+		pType=_Code(pLeft,0,0,0);
 		fSwap=1;
 
 	default:
-		pType=_Code(Node[P].pLeft,0,0,0);
+		pType=_Code(pLeft,0,0,0);
 		fEAX =RegB;
-		_Code(Node[P].pRight,0,0,0);
+		_Code(pRight,0,0,0);
 		if fEAX==RegA then
 			Emit("pop     EBX");
 			fSwap=1;
@@ -601,7 +631,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		switch ID of
 		case iMUL, iDIV, iMOD:
 			fEAX =RegB;
-			_Code(Node[P].pRight,0,0,0);
+			_Code(pRight,0,0,0);
 		end:switch
 	end:select
 
@@ -618,7 +648,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		case Size==1:
 			select
 			case fSwap==2:
-				Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[Node[P].pRight].Value)));
+				Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[pRight].Value)));
 			default:
 				Emit("cmp     AL,   BL");
 			end
@@ -626,7 +656,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		case Size==4:
 			select
 			case fSwap==2:
-				Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[Node[P].pRight].Value)));
+				Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[pRight].Value)));
 			default:
 				Emit("cmp     EAX,  EBX");
 			end
@@ -755,7 +785,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case Size==1:
 		select
 		case fSwap==2:
-			Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[Node[P].pRight].Value)));
+			Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[pRight].Value)));
 		default:
 			Emit(@strcat(@Buff,"AL,   BL"));
 		end:select
@@ -763,7 +793,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case Size==4:
 		select
 		case fSwap==2:
-			Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[Node[P].pRight].Value)));
+			Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[pRight].Value)));
 		default:
 			Emit(@strcat(@Buff,"EAX,  EBX"));
 		end:select

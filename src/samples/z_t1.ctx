@@ -3,6 +3,7 @@ begin
 	word a;
 	word b;
 	word c;
+	word d;
 
 /*
 
@@ -53,4 +54,14 @@ begin
 	end
 
 	char CH = #0xFF;
+
+
+
+	a = a + b + c + d;
+	a = a + 1;
+	a = 1 + a;
+	a = 1 + a + b;
+	a = a + 1 + b;
+	a = a + b + 1;
+
 end
