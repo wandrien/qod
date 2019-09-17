@@ -7,6 +7,10 @@ SOURCELOCATION CurrentFileInfo;
 
 /*****************************************************************************/
 
+word HasErrors = 0;
+
+/*****************************************************************************/
+
 void PutLocation(SOURCELOCATION @SourceLocation)
 	if @SourceLocation != NULL & @SourceLocation.FileName != NULL then
 		puts(@SourceLocation.FileName);
@@ -18,28 +22,37 @@ void PutLocation(SOURCELOCATION @SourceLocation)
 	end:if
 end
 
-
-void WarnAt(SOURCELOCATION @SourceLocation; char @Msg)
+void PutMessage(SOURCELOCATION @SourceLocation; char @MsgType; char @Msg)
 	puts("~r");
 	PutLocation(@SourceLocation);
-	puts(@msgWARNING);
+	puts(@MsgType);
 	puts(@Msg);
 	puts("~r~n");
+end
+
+void WarnAt(SOURCELOCATION @SourceLocation; char @Msg)
+	PutMessage(@SourceLocation, @msgWARNING, @Msg);
 end
 
 void Warn(char @Msg)
 	WarnAt(@CurrentFileInfo, @Msg);
 end
 
+void ErrorAt(SOURCELOCATION @SourceLocation; char @Msg)
+	when @SourceLocation == NULL:
+		@SourceLocation = @CurrentFileInfo;
+	PutMessage(@SourceLocation, @msgERROR, @Msg);
+	HasErrors = 1;
+end
+
+void Error(char @Msg)
+	ErrorAt(NULL, @Msg);
+end
 
 void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
-	puts("~r");
-	PutLocation(@SourceLocation);
-	puts(@msgERROR);
-	puts(@Msg);
-	puts("~r~n");
+	PutMessage(@SourceLocation, @msgERROR, @Msg);
 	halt(1);
 end
 

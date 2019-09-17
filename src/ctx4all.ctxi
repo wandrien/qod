@@ -118,6 +118,10 @@ void Translate()
 		CloseOutput();
 	end:if
 
+	/* Остановка при отложенных ошибках *****************************/
+	when HasErrors != 0:
+		halt(1);
+
 	/* Генерация кода *****************************/
 
 	OpenOutput(@OutputFile);

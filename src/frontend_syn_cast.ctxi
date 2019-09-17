@@ -1,6 +1,18 @@
 
 /*****************************************************************************/
 
+void AddFakeCast(word pType1; word @P)
+
+	word P1 = Peek();
+	Node[P1].ID    = iFAKE_CAST;
+	Node[P1].pType = pType1;
+	Node[P1].pLeft = P;
+
+	P = P1;
+end
+
+/*****************************************************************************/
+
 void AddCast(word pType1; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */

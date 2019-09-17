@@ -121,7 +121,9 @@ define  iBOOL       57
 
 define  iNOT        58
 
-define  iID_COUNT   59
+define  iFAKE_CAST  59 // Fake cast to mask a semantic error while parsing
+
+define  iID_COUNT   60
 
 /*****************************************************************************/
 

@@ -16,7 +16,9 @@ void CTE(word P)
 	if ID == iDIV | ID == iMOD then
 		if NodeHasImmediateValue(pRight) != 0 then
 			if NodeGetImmediateValue(pRight) == 0 then
-				Stop(@eDIVZERO);
+				Error(@eDIVZERO);
+				AddFakeCast(Node[pRight].pType, @Node[P].pRight);
+				pRight = Node[P].pRight;
 			end
 		end
 	end

@@ -104,3 +104,14 @@ end
 
 /*****************************************************************************/
 
+void WarnAtNode(word P; char @Msg)
+	WarnAt(@Node[P].SourceLocation, @eTYPE);
+end
+
+void ErrorAtNode(word P; char @Msg)
+	ErrorAt(@Node[P].SourceLocation, @eTYPE);
+end
+
+void StopAtNode(word P; char @Msg)
+	StopAt(@Node[P].SourceLocation, @eTYPE);
+end
