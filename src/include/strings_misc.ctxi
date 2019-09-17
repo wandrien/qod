@@ -38,6 +38,24 @@ end
 
 /*****************************************************************************/
 
+char istr_return_buff[40];
+
+char @istr(int Value)
+	if Value == -2147483648 then
+		return "-2147483648";
+	end:if
+
+	if Value >= 0 then
+		return @str2(Value, 10);
+	end:if
+
+	istr_return_buff[0] = '-';
+	strcpy(@istr_return_buff[1], @str2(-Value, 10));
+	return @istr_return_buff;
+end
+
+/*****************************************************************************/
+
 word str_hash(char @S)
 	word  hash = 71;
 	word  i = 0;
