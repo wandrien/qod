@@ -20,8 +20,9 @@ mk()
 		--output $4.$5.asm \
 		--output-tree $4.$5.tree \
 		--output-include-list $4.$5.includes \
+		--emit-source-line-notes \
 		$6 $7 $8 && \
-    fasm  $4.$5.asm $4$5 >/dev/null && \
+    fasm -m 200000 $4.$5.asm $4$5 >/dev/null && \
 	chmod a+x $4$5
 }
 
