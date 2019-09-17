@@ -806,6 +806,8 @@ word Code(word P; word F; word T; word M)
 
 	Buff[0] = #0;
 
+	EmitWithSourceNote(NULL, P);
+
 	when M != 0: /* M может быть установлено только когда F или T установлены */
 		when T == 0 & F == 0:
 			StopInternalCodegen(__FILE__, __LINE__);

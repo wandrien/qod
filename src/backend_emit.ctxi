@@ -6,6 +6,49 @@
 
 /*****************************************************************************/
 
+char @strcpy2(char @Dst, @Src1, @Src2)
+	str_push(@str_push(@Dst, @Src1), @Src2);
+	return @Dst;
+end
+
+char @strcpy3(char @Dst, @Src1, @Src2, @Src3)
+	str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3);
+	return @Dst;
+end
+
+char @strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
+	str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4);
+	return @Dst;
+end
+
+/*
+char @strcat2(char @Dst, @Src1, @Src2)
+	strcat(@strcat(@Dst, @Src1), @Src2);
+	return @Dst;
+end
+
+char @strcat3(char @Dst, @Src1, @Src2, @Src3)
+	strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3);
+	return @Dst;
+end
+
+char @strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
+	strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4);
+	return @Dst;
+end
+
+char @strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
+	strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5);
+	return @Dst;
+end*/
+
+char @strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
+	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
+	return @Dst;
+end
+
+/*****************************************************************************/
+
 void FlushOutput()
 	if write(hText, @Text, nText) != nText then
 		Stop(@eWRITEERR);
@@ -169,45 +212,20 @@ end
 
 /*****************************************************************************/
 
-char @strcpy2(char @Dst, @Src1, @Src2)
-	str_push(@str_push(@Dst, @Src1), @Src2);
-	return @Dst;
-end
+SOURCELOCATION PrevSourceLocation;
 
-char @strcpy3(char @Dst, @Src1, @Src2, @Src3)
-	str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3);
-	return @Dst;
-end
-
-char @strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
-	str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4);
-	return @Dst;
-end
-
-/*
-char @strcat2(char @Dst, @Src1, @Src2)
-	strcat(@strcat(@Dst, @Src1), @Src2);
-	return @Dst;
-end
-
-char @strcat3(char @Dst, @Src1, @Src2, @Src3)
-	strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3);
-	return @Dst;
-end
-
-char @strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
-	strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4);
-	return @Dst;
-end
-
-char @strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
-	strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5);
-	return @Dst;
-end*/
-
-char @strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
-	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
-	return @Dst;
+void EmitWithSourceNote(char @Inst; word P)
+	if P < nNODE & P > 0 & EmitSourceLineNotes != 0 then
+		char Buff[nBUFF];
+		SOURCELOCATION @SourceLocation = @Node[P].SourceLocation;
+		if @PrevSourceLocation.FileName != @SourceLocation.FileName |
+			PrevSourceLocation.Line != SourceLocation.Line then
+			strcpy4(@Buff, "#line ", @SourceLocation.FileName, ":", @str(SourceLocation.Line));
+			EmitLine(0, NULL, @Buff);
+			PrevSourceLocation = SourceLocation;
+		end:if
+	end:if
+	EmitLine(0, @Inst, NULL);
 end
 
 /*****************************************************************************/

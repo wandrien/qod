@@ -267,6 +267,8 @@ void __main()
 			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
 		case str_eq(@arg, "--warn-unused-globals" ):
 			WarnUnusedGlobals = 1;
+		case str_eq(@arg, "--emit-source-line-notes" ):
+			EmitSourceLineNotes = 1;
 		case str_has_prefix(@arg, "-"):
 			Stop(@eWRONGOPTION);
 		default:
