@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Попытка деления на ноль'
+
+begin
+	word a = 1;
+	word A1[a];
+	word A2["s"];
+	word b = a + A1;
+	word c = a / 0;
+end
