@@ -1,0 +1,16 @@
+// TEST: should_print '10 -10 -10 10 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	int a = 100;
+	int b = 10;
+	int c = -100;
+	int d = -10;
+
+	puts(@istr(a/b)); puts(" ");
+	puts(@istr(a/d)); puts(" ");
+	puts(@istr(c/b)); puts(" ");
+	puts(@istr(c/d)); puts(" ");
+end

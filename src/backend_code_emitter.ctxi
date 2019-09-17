@@ -767,7 +767,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			Emit("xor     EDX,  EDX");
 			Emit("div     EBX");
 		case pType==st_int:
-			Emit("xor     EDX,  EDX");
+			Emit("cdq");
 			Emit("idiv    EBX");
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
