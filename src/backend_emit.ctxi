@@ -169,36 +169,45 @@ end
 
 /*****************************************************************************/
 
-void strcpy2(char @Dst, @Src1, @Src2)
-	strcat(@strcpy(@Dst, @Src1), @Src2);
+char @strcpy2(char @Dst, @Src1, @Src2)
+	str_push(@str_push(@Dst, @Src1), @Src2);
+	return @Dst;
 end
 
-void strcpy3(char @Dst, @Src1, @Src2, @Src3)
-	strcat(@strcat(@strcpy(@Dst, @Src1), @Src2), @Src3);
+char @strcpy3(char @Dst, @Src1, @Src2, @Src3)
+	str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3);
+	return @Dst;
 end
 
-void strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
-	strcat(@strcat(@strcat(@strcpy(@Dst, @Src1), @Src2), @Src3), @Src4);
+char @strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
+	str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4);
+	return @Dst;
 end
 
-void strcat2(char @Dst, @Src1, @Src2)
+/*
+char @strcat2(char @Dst, @Src1, @Src2)
 	strcat(@strcat(@Dst, @Src1), @Src2);
+	return @Dst;
 end
 
-void strcat3(char @Dst, @Src1, @Src2, @Src3)
+char @strcat3(char @Dst, @Src1, @Src2, @Src3)
 	strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3);
+	return @Dst;
 end
 
-void strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
+char @strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
 	strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4);
+	return @Dst;
 end
 
-void strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
+char @strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
 	strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5);
-end
+	return @Dst;
+end*/
 
-void strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
-	strcat(@strcat(@strcat(@strcat(@strcat(@strcat(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
+char @strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
+	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
+	return @Dst;
 end
 
 /*****************************************************************************/

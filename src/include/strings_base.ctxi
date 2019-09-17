@@ -9,6 +9,9 @@ word strcmp(char @S1, @S2);
 char @strcpy(char @Dst, @Src);
 Копирует строку @Src в @Dst. Возвращает значение @Dst.
 
+char @str_push(char @Dst, @Src);
+Копирует строку @Src в @Dst. Возвращает указатель на нулевой символ в строке @Dst.
+
 char @strcat(char @Dst, @Src);
 Производит конкатенацию строк @Dst и @Src и помещает результат в @Dst.
 
@@ -61,6 +64,19 @@ char @strcpy(char @Dst, @Src)
 	Dst[i] = #0;
 
 	return @Dst;
+end
+
+/*****************************************************************************/
+
+char @str_push(char @Dst, @Src)
+	word i = 0;
+	while Src[i] != #0 do
+		Dst[i] = Src[i];
+		inc i;
+	end
+	Dst[i] = #0;
+
+	return @Dst[i];
 end
 
 /*****************************************************************************/
