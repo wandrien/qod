@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Выражение невычислимо на этапе компиляции: в качестве размера массива ожидается константное выражение'
+
+begin
+	word A1[10];
+	word a1 = const_expr(A1[0] + 1);
+	word a2 = const_expr(A1[0] + A1[1]);
+	word a3 = const_expr(1 / 0);
+	word A2[a3];
+end
