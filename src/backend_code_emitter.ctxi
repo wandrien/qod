@@ -667,26 +667,17 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	select
 	case iLT<=ID & ID<=iGT:
+
 		select
-		case Size==1:
-			select
-			case fSwap==2:
-				Emit(@strcat(@strcpy(@Buff,"cmp     AL,   "),@str(Node[pRight].Value)));
-			default:
-				Emit("cmp     AL,   BL");
-			end
-
-		case Size==4:
-			select
-			case fSwap==2:
-				Emit(@strcat(@strcpy(@Buff,"cmp     EAX,  "),@str(Node[pRight].Value)));
-			default:
-				Emit("cmp     EAX,  EBX");
-			end
-
+		case fSwap==2:
+			if (ID == iEQ | ID == iNE) & Node[pRight].Value == 0 then
+				Emit(@CodeCmdRegReg(@Buff, "test", RegA, Size, RegA, Size));
+			else
+				Emit(@CodeCmdRegConst(@Buff, "cmp", RegA, Size, Node[pRight].Value));
+			end:if
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-		end:select
+			Emit(@CodeCmdRegReg(@Buff, "cmp", RegA, Size, RegB, Size));
+		end
 
 		if T==0 then
 			switch ID of
