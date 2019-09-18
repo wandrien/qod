@@ -6,6 +6,7 @@ include "sys.ctxi"
 
 include "compiler_htl_defines.ctxi"
 include "compiler_htl_structs.ctxi"
+include "compiler_str.ctxi"
 include "compiler_config.ctxi"
 include "compiler_msg.ctxi"
 include "compiler_chardata.ctxi"

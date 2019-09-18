@@ -6,48 +6,6 @@
 
 /*****************************************************************************/
 
-char @strcpy2(char @Dst, @Src1, @Src2)
-	str_push(@str_push(@Dst, @Src1), @Src2);
-	return @Dst;
-end
-
-char @strcpy3(char @Dst, @Src1, @Src2, @Src3)
-	str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3);
-	return @Dst;
-end
-
-char @strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
-	str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4);
-	return @Dst;
-end
-
-char @strcat2(char @Dst, @Src1, @Src2)
-	str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2);
-	return @Dst;
-end
-
-char @strcat3(char @Dst, @Src1, @Src2, @Src3)
-	str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3);
-	return @Dst;
-end
-
-char @strcat4(char @Dst, @Src1, @Src2, @Src3, @Src4)
-	str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4);
-	return @Dst;
-end
-
-char @strcat5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
-	str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5);
-	return @Dst;
-end
-
-char @strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
-	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
-	return @Dst;
-end
-
-/*****************************************************************************/
-
 void FlushOutput()
 	if write(hText, @Text, nText) != nText then
 		Stop(@eWRITEERR);
