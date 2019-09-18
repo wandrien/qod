@@ -80,6 +80,18 @@ end
 
 /*****************************************************************************/
 
+/* Помещает в Buff обозначения регистра и преформатированного операнда. */
+char @CodeRegFmt(char @Buff; word Reg1; word RegMode1; char @Fmt2)
+
+	CodeReg(@Buff, Reg1, RegMode1);
+	strcat(@Buff, ",  ");
+	strcat(@Buff, @Fmt2);
+	return @Buff;
+
+end
+
+/*****************************************************************************/
+
 /* Помещает в Buff обозначения 2-х регистров. */
 char @CodeRegReg(char @Buff; word Reg1; word RegMode1; word Reg2; word RegMode2)
 
@@ -100,6 +112,23 @@ char @CodeRegConst(char @Buff; word Reg1; word RegMode1; word Value)
 	strcat(@Buff, @str(Value));
 	return @Buff;
 
+end
+
+/*****************************************************************************/
+
+/* Помещает в Buff код для операции регистра и преворматированного правого операнда. */
+char @CodeCmdRegFmt(char @Buff; char @Cmd; word Reg1; word RegMode1; char @Fmt2)
+
+	strcat(@Buff, @Cmd);
+	word cmd_len = strlen(@Cmd);
+	while cmd_len < 8 do
+		strcat(@Buff, " ");
+		inc cmd_len;
+	end
+
+	CodeRegFmt(@Buff, Reg1, RegMode1, @Fmt2);
+
+	return @Buff;
 end
 
 /*****************************************************************************/

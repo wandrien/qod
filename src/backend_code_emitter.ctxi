@@ -543,6 +543,99 @@ end
 
 /*****************************************************************************/
 
+word CodeAsMemoryOperand(char @Buff; word pPrimary)
+
+	word ID = Node[pPrimary].ID;
+
+	switch ID of
+	case iDATA, iPARM, iLOCAL, iSTRING:
+		null;
+	default:
+		return 0;
+	end:switch
+
+	word nIndx;
+	word pType;
+	word  Ofs;
+	word  RO;
+	ID=ExtractDataInfo(pPrimary, @pType, @nIndx, @Ofs, @RO);
+	word IX=RegNone;
+
+	word P1=Node[pPrimary].pLeft;
+	do
+
+		select
+		case P1>=nNODE:
+			return 0;
+
+		case Node[P1].ID==iLOAD:
+			word Size = SizeOfType(pType, 0);
+
+			select
+			case Size==1:
+				CodeDataIX_offset(@str_push(@Buff, "byte  "), ID, IX, Ofs);
+				return 1;
+
+			case Size==4:
+				CodeDataIX_offset(@str_push(@Buff, "dword "), ID, IX, Ofs);
+				return 1;
+
+			default:
+				return 0;
+			end:select
+
+		case Node[P1].ID==iINDEX:
+
+			word  C   = 0;
+			word  N   = 0;
+			do
+				if Node[Node[P1].pLeft].ID==iWORD then
+					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
+					N = N * Node[P1].Value;
+				else
+					return 0;
+				end:if
+
+				if Node[P1].pRight>=nNODE then
+					exit;
+				end:if
+
+				if Node[Node[P1].pRight].ID!=iINDEX then
+					exit;
+				end:if
+
+				P1  =Node[P1].pRight;
+			end:do
+
+			word Size = SizeOfType(pType, 0);
+
+			C = C * Size;
+
+			if ID != iLOCAL then
+				Ofs = Ofs + C;
+			else
+				Ofs = Ofs - C;
+			end
+
+		case Node[P1].ID==iFIELD:
+			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
+			nIndx = T_ArrayGetSizeOr0(pType);
+			when T_IsArray(pType) != 0:
+				pType = T_ArrayDeref(pType);
+
+		default:
+			return 0;
+		end:select
+
+		P1=Node[P1].pRight;
+	end:do
+
+	return 0;
+
+end
+
+/*****************************************************************************/
+
 word NodeCanBeEncodedAsImm(word P)
 	word ID=Node[P].ID;
 	switch ID of
@@ -562,7 +655,31 @@ word IsOperationCommutative(word ID)
 	end:switch
 end
 
+word IsOperationAllowsRightMemRef(word ID)
+	switch ID of
+	case
+		iBIT_OR,
+		iBIT_XOR,
+		iBIT_AND,
+		iADD,
+		iSUB,
+		iLT,
+		iLE,
+		iEQ,
+		iNE,
+		iGE,
+		iGT:
+		return 1;
+	default:
+		return 0;
+	end:switch
+end
+
 /*****************************************************************************/
+
+define operandOther  0
+define operandImm    1
+define operandMemRef 2
 
 word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	Buff[0] = #0;
@@ -585,12 +702,18 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		pRight = tmp;
 	end:if
 
+	char BuffRightOperand[nBUFF];
+	word rightOperand = operandOther;
 	word fSwap=0;
 	word pType;
 	select
 	case NodeCanBeEncodedAsImm(pRight) != 0:
 		pType=_Code(pLeft,0,0,0);
-		fSwap=2;
+		rightOperand = operandImm;
+
+	case IsOperationAllowsRightMemRef(Node[P].ID) != 0 & CodeAsMemoryOperand(@BuffRightOperand, pRight) != 0:
+		pType=_Code(pLeft,0,0,0);
+		rightOperand = operandMemRef;
 
 	case NodeCanBeEncodedAsImm(pLeft) != 0:
 		_Code(pRight,0,0,0);
@@ -627,9 +750,10 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
               Emit("xchg    EAX,  EBX");
 		end:switch
 
-	case fSwap==2:
+	case rightOperand != operandOther:
 		switch ID of
 		case iMUL, iDIV, iMOD:
+			rightOperand = operandOther;
 			fEAX =RegB;
 			_Code(pRight,0,0,0);
 		end:switch
@@ -643,7 +767,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	end
 
 	/* Оптимизация случая, когда можно использовать inc/dec вместо add/sub */
-	if fSwap == 2 & (ID == iADD | ID == iSUB) then
+	if rightOperand == operandImm & (ID == iADD | ID == iSUB) then
 
 		word Value = Node[pRight].Value;
 		when ID == iSUB:
@@ -669,14 +793,18 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case iLT<=ID & ID<=iGT:
 
 		select
-		case fSwap==2:
+		case rightOperand == operandImm:
 			if (ID == iEQ | ID == iNE) & Node[pRight].Value == 0 then
 				Emit(@CodeCmdRegReg(@Buff, "test", RegA, Size, RegA, Size));
 			else
 				Emit(@CodeCmdRegConst(@Buff, "cmp", RegA, Size, Node[pRight].Value));
 			end:if
-		default:
+		case rightOperand == operandMemRef:
+			Emit(@CodeCmdRegFmt(@Buff, "cmp", RegA, Size, @BuffRightOperand));
+		case rightOperand == operandOther:
 			Emit(@CodeCmdRegReg(@Buff, "cmp", RegA, Size, RegB, Size));
+		default:
+			StopInternalCodegen(__FILE__, __LINE__);
 		end
 
 		if T==0 then
@@ -798,18 +926,26 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	select
 	case Size==1:
 		select
-		case fSwap==2:
+		case rightOperand == operandImm:
 			Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[pRight].Value)));
-		default:
+		case rightOperand == operandMemRef:
+			Emit(@strcat2(@Buff,"AL,   ", @BuffRightOperand));
+		case rightOperand == operandOther:
 			Emit(@strcat(@Buff,"AL,   BL"));
+		default:
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
 	case Size==4:
 		select
-		case fSwap==2:
+		case rightOperand == operandImm:
 			Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[pRight].Value)));
-		default:
+		case rightOperand == operandMemRef:
+			Emit(@strcat2(@Buff,"EAX,  ", @BuffRightOperand));
+		case rightOperand == operandOther:
 			Emit(@strcat(@Buff,"EAX,  EBX"));
+		default:
+			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
 	default:
