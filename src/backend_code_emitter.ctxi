@@ -677,6 +677,35 @@ end
 
 /*****************************************************************************/
 
+word TryDropCastBeforeCmp(word P)
+
+	word ID = Node[P].ID;
+	word pLeft = Node[P].pLeft;
+	word pRight = Node[P].pRight;
+
+	when ID < iLT | iGT < ID:
+		return nNODE;
+
+	when Node[pRight].Value > 255: /* TODO: this case should be optimized out on the semantic analysis phase */
+		return nNODE;
+
+	when Node[pLeft].ID != iCAST:
+		return nNODE;
+
+	word pTypeFrom = Node[Node[pLeft].pLeft].pType;
+	word pTypeTo = Node[pLeft].pType;
+
+	when pTypeFrom != st_char & pTypeFrom != st_byte:
+		return nNODE;
+
+	when pTypeTo != st_word:
+		return nNODE;
+
+	return Node[pLeft].pLeft;
+end
+
+/*****************************************************************************/
+
 define operandOther  0
 define operandImm    1
 define operandMemRef 2
@@ -708,6 +737,10 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	word pType;
 	select
 	case NodeCanBeEncodedAsImm(pRight) != 0:
+		word pLeft2 = TryDropCastBeforeCmp(P);
+		when pLeft2 < nNODE:
+			pLeft = pLeft2;
+
 		pType=_Code(pLeft,0,0,0);
 		rightOperand = operandImm;
 
