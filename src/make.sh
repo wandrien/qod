@@ -12,6 +12,25 @@ export WINE="${WINE-$DEFAULT_WINE}"
 
 export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-../precompiled/lcontext_c}"
 
+crop_known_differencies()
+{
+	sed "s/; #line .*//" "$1" > "$1.cleared"
+}
+
+diff_pe()
+{
+	# Do not test PE files with diff, since they differ in timestamp.
+	# We check the number of differing bytes, and if we have too many of them,
+	# something's wrong.
+
+	diff_bytes="`(cmp -l "$1" "$2" || true) | wc -l`"
+	if [ "$diff_bytes" -lt 5 ] ; then
+		return 0
+	fi
+	set -x
+	cmp -l "$1" "$2"
+}
+
 mk()
 {
 	echo "    BUILD $4$5"
@@ -65,12 +84,9 @@ stage_c()
 	diff out/lcontext_b           out/lcontext_c
 	diff out/lcontext_b_debug     out/lcontext_c_debug
 	diff out/lcontext_b_size      out/lcontext_c_size
-
-	# Do not test PE files, since they differ in timestamp.
-	# FIXME: find a way to erase the timestamp
-	#diff out/lcontext_b.exe       out/lcontext_c.exe
-	#diff out/lcontext_b_debug.exe out/lcontext_c_debug.exe
-	#diff out/lcontext_b_size.exe  out/lcontext_c_size.exe
+	diff_pe out/lcontext_b.exe       out/lcontext_c.exe
+	diff_pe out/lcontext_b_debug.exe out/lcontext_c_debug.exe
+	diff_pe out/lcontext_b_size.exe  out/lcontext_c_size.exe
 }
 
 stage_d()
@@ -88,24 +104,38 @@ stage_d()
 	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d_debug.exe --optimize none
 	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d_size.exe --optimize size
 
+	# We have some minor differences between asm listings generated
+	# under different platforms, so we postprocess the listings now
+	# to delete those differences.
+	crop_known_differencies out/.lcontext_b.asm
+	crop_known_differencies out/.lcontext_b_debug.asm
+	crop_known_differencies out/.lcontext_b_size.asm
+	crop_known_differencies out/.lcontext_b.exe.asm
+	crop_known_differencies out/.lcontext_b_debug.exe.asm
+	crop_known_differencies out/.lcontext_b_size.exe.asm
+
+	crop_known_differencies out/.lcontext_d.asm
+	crop_known_differencies out/.lcontext_d_debug.asm
+	crop_known_differencies out/.lcontext_d_size.asm
+	crop_known_differencies out/.lcontext_d.exe.asm
+	crop_known_differencies out/.lcontext_d_debug.exe.asm
+	crop_known_differencies out/.lcontext_d_size.exe.asm
+
 	# Generated assembler listings for B and D stages should be identical.
-	diff out/.lcontext_b.asm           out/.lcontext_d.asm
-	diff out/.lcontext_b_debug.asm     out/.lcontext_d_debug.asm
-	diff out/.lcontext_b_size.asm      out/.lcontext_d_size.asm
-	diff out/.lcontext_b.exe.asm       out/.lcontext_d.exe.asm
-	diff out/.lcontext_b_debug.exe.asm out/.lcontext_d_debug.exe.asm
-	diff out/.lcontext_b_size.exe.asm  out/.lcontext_d_size.exe.asm
+	diff out/.lcontext_b.asm.cleared           out/.lcontext_d.asm.cleared
+	diff out/.lcontext_b_debug.asm.cleared     out/.lcontext_d_debug.asm.cleared
+	diff out/.lcontext_b_size.asm.cleared      out/.lcontext_d_size.asm.cleared
+	diff out/.lcontext_b.exe.asm.cleared       out/.lcontext_d.exe.asm.cleared
+	diff out/.lcontext_b_debug.exe.asm.cleared out/.lcontext_d_debug.exe.asm.cleared
+	diff out/.lcontext_b_size.exe.asm.cleared  out/.lcontext_d_size.exe.asm.cleared
 
 	# The binaries should be identical too.
 	diff out/lcontext_b           out/lcontext_d
 	diff out/lcontext_b_debug     out/lcontext_d_debug
 	diff out/lcontext_b_size      out/lcontext_d_size
-
-	# Do not test PE files, since they differ in timestamp.
-	# FIXME: find a way to erase the timestamp
-	#diff out/lcontext_b.exe       out/lcontext_d.exe
-	#diff out/lcontext_b_debug.exe out/lcontext_d_debug.exe
-	#diff out/lcontext_b_size.exe  out/lcontext_d_size.exe
+	diff_pe out/lcontext_b.exe       out/lcontext_d.exe
+	diff_pe out/lcontext_b_debug.exe out/lcontext_d_debug.exe
+	diff_pe out/lcontext_b_size.exe  out/lcontext_d_size.exe
 }
 
 mkdir -p out
