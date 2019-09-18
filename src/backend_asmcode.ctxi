@@ -265,6 +265,16 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 3);
 	case Value==16:
 		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 4);
+	case Value==32:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 5);
+	case Value==64:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 6);
+	case Value==128:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 7);
+	case Value==256:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 8);
+	case Value==512:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 9);
 	case Value>1:
 		CodeCmdRegConst(@Buff, "imul", Reg, RegMode, Value);
 	case Value<1:
