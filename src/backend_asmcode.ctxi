@@ -115,19 +115,30 @@ char @CodeRegConst(char @Buff; word Reg1; word RegMode1; word Value)
 end
 
 /*****************************************************************************/
+/* Помещает в Buff код для операции и добавляет отступ. */
+char @CodeCmd(char @Buff; char @Cmd)
 
-/* Помещает в Buff код для операции регистра и преворматированного правого операнда. */
-char @CodeCmdRegFmt(char @Buff; char @Cmd; word Reg1; word RegMode1; char @Fmt2)
-
-	strcat(@Buff, @Cmd);
+	word prefix_len = strlen(@Buff);
 	word cmd_len = strlen(@Cmd);
+
+	memcpy(@Buff[prefix_len], @Cmd, cmd_len);
+
 	while cmd_len < 8 do
-		strcat(@Buff, " ");
+		Buff[prefix_len + cmd_len] = ' ';
 		inc cmd_len;
 	end
 
-	CodeRegFmt(@Buff, Reg1, RegMode1, @Fmt2);
+	Buff[prefix_len + cmd_len] = #0;
 
+	return @Buff;
+end
+
+/*****************************************************************************/
+
+/* Помещает в Buff код для операции регистра и преворматированного правого операнда. */
+char @CodeCmdRegFmt(char @Buff; char @Cmd; word Reg1; word RegMode1; char @Fmt2)
+	CodeCmd(@Buff, @Cmd);
+	CodeRegFmt(@Buff, Reg1, RegMode1, @Fmt2);
 	return @Buff;
 end
 
@@ -135,16 +146,8 @@ end
 
 /* Помещает в Buff код для операции регистра и и регистра. */
 char @CodeCmdRegReg(char @Buff; char @Cmd; word Reg1; word RegMode1; word Reg2; word RegMode2)
-
-	strcat(@Buff, @Cmd);
-	word cmd_len = strlen(@Cmd);
-	while cmd_len < 8 do
-		strcat(@Buff, " ");
-		inc cmd_len;
-	end
-
+	CodeCmd(@Buff, @Cmd);
 	CodeRegReg(@Buff, Reg1, RegMode1, Reg2, RegMode2);
-
 	return @Buff;
 end
 
@@ -152,16 +155,8 @@ end
 
 /* Помещает в Buff код для операции регистра и константы. */
 char @CodeCmdRegConst(char @Buff; char @Cmd; word Reg; word RegMode; word Value)
-
-	strcat(@Buff, @Cmd);
-	word cmd_len = strlen(@Cmd);
-	while cmd_len < 8 do
-		strcat(@Buff, " ");
-		inc cmd_len;
-	end
-
+	CodeCmd(@Buff, @Cmd);
 	CodeRegConst(@Buff, Reg, RegMode, Value);
-
 	return @Buff;
 end
 
@@ -169,16 +164,8 @@ end
 
 /* Помещает в Buff код для операции с регистром. */
 char @CodeCmdReg(char @Buff; char @Cmd; word Reg; word RegMode)
-
-	strcat(@Buff, @Cmd);
-	word cmd_len = strlen(@Cmd);
-	while cmd_len < 8 do
-		strcat(@Buff, " ");
-		inc cmd_len;
-	end
-
+	CodeCmd(@Buff, @Cmd);
 	CodeReg(@Buff, Reg, RegMode);
-
 	return @Buff;
 end
 
