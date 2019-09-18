@@ -725,28 +725,105 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	word pLeft = Node[P].pLeft;
 	word pRight = Node[P].pRight;
 
-	if NodeCanBeEncodedAsImm(pLeft) != 0 & IsOperationCommutative(Node[P].ID) != 0 then
-		word tmp = pLeft;
-		pLeft = pRight;
-		pRight = tmp;
-	end:if
-
 	char BuffRightOperand[nBUFF];
 	word rightOperand = operandOther;
+
+	do
+		/*
+			The usual calculation scheme is:
+				RegA  <- LeftOperand
+				RegB  <- RightOperand
+				OP    RegA,  RegB
+
+			We can handle some special cases in a more efficient way:
+		*/
+
+		/*
+			## Immediate constant on the right.
+			Do:
+				RegA  <- LeftOperand
+				Op    RegA,  ImmValue
+			Instead of:
+				RegA  <- LeftOperand
+				mov   RegB,  ImmValue
+				Op    RegA,  RegB
+		*/
+		if NodeCanBeEncodedAsImm(pRight) != 0 then
+			rightOperand = operandImm;
+			exit;
+		end:if
+
+		/*
+			## Immediate constant on the left
+			   and the operation is commutative
+			   or can be calculated in the reverse order.
+			Do:
+				RegA  <- RightOperand
+				Op    RegA,  ImmValue
+			Instead of:
+				mov   RegA,  ImmValue
+				RegB  <- RightOperand
+				Op    RegA,  RegB
+		*/
+		if IsOperationCommutative(Node[P].ID) != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
+			word tmp = pLeft; pLeft = pRight; pRight = tmp;
+			rightOperand = operandImm;
+			exit;
+		end:if
+
+		if IsOperationAllowsRightMemRef(Node[P].ID) != 0 then
+
+			/*
+				## Simple memory reference on the right.
+				Do:
+					RegA  <- LeftOperand
+					Op    RegA,  [MemRef]
+				Instead of:
+					RegA  <- LeftOperand
+					mov   RegB, [MemRef]
+					Op    RegA, RegB
+			*/
+			if CodeAsMemoryOperand(@BuffRightOperand, pRight) != 0 then
+				rightOperand = operandMemRef;
+				exit;
+			end:if
+
+			/*
+				## Simple memory reference on the left
+				   and the operation is commutative
+				   or can be calculated in the reverse order.
+				Do:
+					RegA  <- RightOperand
+					Op    RegA,  [MemRef]
+				Instead of:
+					mov   RegA,  [MemRef]
+					RegB  <- RightOperand
+					Op    RegA,  RegB
+			*/
+			if IsOperationCommutative(Node[P].ID) != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
+				word tmp = pLeft; pLeft = pRight; pRight = tmp;
+				rightOperand = operandMemRef;
+				exit;
+			end:if
+
+		end:if
+
+		exit;
+	end:do
+
 	word fSwap=0;
 	word pType;
+
 	select
-	case NodeCanBeEncodedAsImm(pRight) != 0:
+	case rightOperand == operandImm:
 		word pLeft2 = TryDropCastBeforeCmp(P);
 		when pLeft2 < nNODE:
 			pLeft = pLeft2;
 
 		pType=_Code(pLeft,0,0,0);
-		rightOperand = operandImm;
 
-	case IsOperationAllowsRightMemRef(Node[P].ID) != 0 & CodeAsMemoryOperand(@BuffRightOperand, pRight) != 0:
+	case rightOperand == operandMemRef:
 		pType=_Code(pLeft,0,0,0);
-		rightOperand = operandMemRef;
 
 	case NodeCanBeEncodedAsImm(pLeft) != 0:
 		_Code(pRight,0,0,0);
