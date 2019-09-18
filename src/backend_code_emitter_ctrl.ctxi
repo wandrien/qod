@@ -88,12 +88,11 @@ word Code_PUSH(word P; char @Buff)
 			word  RO;
 			word ID=ExtractDataInfo(P1, @pType, @nIndx, @Ofs, @RO);
 
-			strcpy(@Buff, "push    ");
-
 			char @s = "dword @@ROLITERALS+";
 			when RO == 0:
 				@s = "dword @@RWLITERALS+";
-			Emit(@strcat(@strcat(@strcat(@Buff,@s),@str(Ofs)),""));
+
+			Emit(@strcpy3(@Buff, "push    ",@s,@str(Ofs)));
 
 			return nDICT;
 		end:if
@@ -146,11 +145,11 @@ word Code_PUSH(word P; char @Buff)
 	case Size==4:
 		Emit("push    EAX");
 	default:
-		Emit(@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(DefaultInStackAlign(Size))));
+		Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(DefaultInStackAlign(Size))));
 		Emit("mov     ESI,  EAX");
 		Emit("mov     EDI,  ESP");
 		Emit("cld");
-		Emit(@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+		Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
 		Emit("rep     movsb");
 	end:select
 end
@@ -177,7 +176,7 @@ word Code_RETURN(word P; char @Buff)
 		case TargetFileFormat == tPE:
 			Emit("xor     EAX,  EAX");
 			Emit("push    EAX");
-			Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Find("ExitProcess")].Label)),"]"));
+			Emit(@strcpy3(@Buff,"call   [@",@str(Dict[Find("ExitProcess")].Label),"]"));
 		case TargetFileFormat == tELF:
 			Emit("mov     EAX,  1");
 			Emit("xor     EBX,  EBX");
@@ -194,7 +193,7 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 
 		if ParmFrameSize > 0 then
-			Emit(@strcat(@strcpy(@Buff,"ret     "),@str(ParmFrameSize)));
+			Emit(@strcpy2(@Buff,"ret     ",@str(ParmFrameSize)));
 		else
 			Emit("ret");
 		end:if

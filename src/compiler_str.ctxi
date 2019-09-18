@@ -16,6 +16,11 @@ char @strcpy4(char @Dst, @Src1, @Src2, @Src3, @Src4)
 	return @Dst;
 end
 
+char @strcpy5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
+	str_push(@str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5);
+	return @Dst;
+end
+
 char @strcat2(char @Dst, @Src1, @Src2)
 	str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2);
 	return @Dst;

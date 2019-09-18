@@ -160,7 +160,7 @@ word Code1(word pPrimary)
 
 				if Size!=1 & Size!=4 then
 					Emit("cld");
-					Emit(@strcat(@strcpy(@Buff,"mov     ECX,  "),@str(Size)));
+					Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
 					Emit("rep     movsb");
 				end:if
 			end:select
@@ -197,34 +197,34 @@ word Code1(word pPrimary)
 			if IX!=RegNone then
 				select
 				case ID==iDATA:
-					Emit(@strcat(@strcpy(@Buff,"add     EAX,  @@DATA+"),@str(Ofs)));
+					Emit(@strcpy2(@Buff,"add     EAX,  @@DATA+",@str(Ofs)));
 				case ID==iPARM:
-					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX+"),@str(Ofs)),"]"));
+					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP+EAX+",@str(Ofs),"]"));
 				case ID==iLOCAL:
-					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+EAX-"),@str(Ofs)),"]"));
+					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP+EAX-",@str(Ofs),"]"));
 				case ID==iSTRING:
 					char @s = "@@ROLITERALS+";
 					when RO == 0:
 						@s = "@@RWLITERALS+";
-					Emit(@strcat(@strcat(@strcpy(@Buff,"add     EAX,  "), @s),@str(Ofs)));
+					Emit(@strcpy3(@Buff,"add     EAX,  ", @s,@str(Ofs)));
 				case ID==iREF & Ofs!=0:
-					Emit(@strcat(@strcpy(@Buff,"add     EAX,  "),@str(Ofs)));
+					Emit(@strcpy2(@Buff,"add     EAX,  ",@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			else
 				select
 				case ID==iDATA:
-					Emit(@strcat(@strcpy(@Buff,"mov     EAX,  @@DATA+"),@str(Ofs)));
+					Emit(@strcpy2(@Buff,"mov     EAX,  @@DATA+",@str(Ofs)));
 				case ID==iPARM:
-					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP+"),@str(Ofs)),"]"));
+					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP+",@str(Ofs),"]"));
 				case ID==iLOCAL:
-					Emit(@strcat(@strcat(@strcpy(@Buff,"lea     EAX,  [EBP-"),@str(Ofs)),"]"));
+					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP-",@str(Ofs),"]"));
 				case ID==iSTRING:
 					char @s = "@@ROLITERALS+";
 					when RO == 0:
 						@s = "@@RWLITERALS+";
-					Emit(@strcat(@strcat(@strcpy(@Buff,"mov     EAX,  "), @s),@str(Ofs)));
+					Emit(@strcpy3(@Buff,"mov     EAX,  ", @s,@str(Ofs)));
 				case ID!=iCALL:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
@@ -243,10 +243,10 @@ word Code1(word pPrimary)
 			end:if
 
 			if Dict[Node[P1].Value].Sub==sSYS then
-				Emit(@strcat(@strcat(@strcpy(@Buff,"call   [@"),@str(Dict[Node[P1].Value].Label)),"]"));
+				Emit(@strcpy3(@Buff,"call   [@",@str(Dict[Node[P1].Value].Label),"]"));
 			else
 				EmitLine(0,
-					@strcat(@strcpy(@Buff,"call    @"),@str(Dict[Node[P1].Value].Label)),
+					@strcpy2(@Buff,"call    @",@str(Dict[Node[P1].Value].Label)),
 					@DictGetName(Node[P1].Value)
 					);
 			end:if
@@ -308,7 +308,7 @@ word Code1(word pPrimary)
 						_Code(Node[P1].pLeft,0,0,0);
 
 						Emit("pop     EBX");
-						Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
+						Emit(@strcpy2(@Buff,"imul    EBX,  ",@str(N*Node[P1].Value)));
 						Emit("add     EAX,  EBX");
 
 						IX1=RegA;
@@ -324,9 +324,9 @@ word Code1(word pPrimary)
 
 						if fEAX==RegA then
 							Emit("pop     EBX");
-							Emit(@strcat(@strcpy(@Buff,"imul    EBX,  "),@str(N*Node[P1].Value)));
+							Emit(@strcpy2(@Buff,"imul    EBX,  ",@str(N*Node[P1].Value)));
 						else
-							Emit(@strcat(@strcpy(@Buff,"imul    EAX,  "),@str(N*Node[P1].Value)));
+							Emit(@strcpy2(@Buff,"imul    EAX,  ",@str(N*Node[P1].Value)));
 						end:if
 
 						Emit("add     EAX,  EBX");
@@ -1037,7 +1037,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case Size==1:
 		select
 		case rightOperand == operandImm:
-			Emit(@strcat(@strcat(@Buff,"AL,   "),@str(Node[pRight].Value)));
+			Emit(@strcat2(@Buff,"AL,   ",@str(Node[pRight].Value)));
 		case rightOperand == operandMemRef:
 			Emit(@strcat2(@Buff,"AL,   ", @BuffRightOperand));
 		case rightOperand == operandOther:
@@ -1049,7 +1049,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case Size==4:
 		select
 		case rightOperand == operandImm:
-			Emit(@strcat(@strcat(@Buff,"EAX,  "),@str(Node[pRight].Value)));
+			Emit(@strcat2(@Buff,"EAX,  ",@str(Node[pRight].Value)));
 		case rightOperand == operandMemRef:
 			Emit(@strcat2(@Buff,"EAX,  ", @BuffRightOperand));
 		case rightOperand == operandOther:
@@ -1263,7 +1263,7 @@ word Code(word P; word F; word T; word M)
 			Code(Node[P].pLeft, 0, 0, 0);
 
 		case iINLINE:
-			Emit(@strcat(@strcpy(@Buff,"db      0x"),@str2(Node[P].Value,16)));
+			Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));
 
 		case iPUSH:
 			Code_PUSH(P, @Buff);
@@ -1333,13 +1333,13 @@ word EmitFunctions(char @Buff)
 				PHO_InvalidateRegs();
 
 				if EmitEnterInstruction != 0 & Dict[I].StackSize > 0 then
-					Emit(@strcat(@strcat(@strcpy(@Buff,"enter   "),@str(Dict[I].StackSize)), ", 0"));
+					Emit(@strcpy3(@Buff,"enter   ",@str(Dict[I].StackSize), ", 0"));
 				else
 					Emit("push    EBP");
 					Emit("mov     EBP,  ESP");
 
 					if Dict[I].StackSize > 0 then
-						Emit(@strcat(@strcpy(@Buff,"sub     ESP,  "),@str(Dict[I].StackSize)));
+						Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(Dict[I].StackSize)));
 					end:if
 				end:if
 
