@@ -213,14 +213,37 @@ end
 
 /*****************************************************************************/
 
-char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
+/*
 
+iDATA:    [@@DATA + XI + offset]
+iPARM:    [EBP    + XI + offset]
+iLOCAL:   [EBP    + XI - offset]
+iREF:     [         XI - offset]
+
+*/
+
+char @CodeDataIX_offset(char @Buff; word Size; word ID; word IX; word offset)
+
+	char@ SizeMarker = "";
 	char@ Prefix = "";
 
 	char@ Plus_RX = "";
 	char@ RX = "";
 
 	char@ PlusOffset = "+";
+
+	select
+	case Size == 0:
+		@SizeMarker = "";
+	case Size == 1:
+		@SizeMarker = "byte  ";
+	case Size == 2:
+		@SizeMarker = "word  ";
+	case Size == 4:
+		@SizeMarker = "dword ";
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:select
 
 	if IX != RegNone then
 		@Plus_RX = "+";
@@ -244,11 +267,10 @@ char @CodeDataIX_offset(char @Buff; word ID; word IX; word offset)
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:select
 
-	strcat6(@Buff, @Prefix, @Plus_RX, @RX, @PlusOffset, @str(offset), "]");
+	strcat7(@Buff, @SizeMarker, @Prefix, @Plus_RX, @RX, @PlusOffset, @str(offset), "]");
 
 	return @Buff;
 end
-
 
 /*****************************************************************************/
 
@@ -283,6 +305,7 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 
 	Emit(@Buff);
 end
+
 
 /*****************************************************************************/
 

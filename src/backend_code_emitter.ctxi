@@ -94,29 +94,25 @@ word Code1(word pPrimary)
 
 				word Size=SizeOfType(pType, 0);
 				select
-				case Size==1:
-					strcat(@Buff,"byte  ");     // FASM
-				case Size==4:
-					strcat(@Buff,"dword ");     // FASM
+				case Size==1 | Size==4:
+					null;
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:select
 
-				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
+				Emit(@CodeDataIX_offset(@Buff, Size, ID, IX, Ofs));
 
 			case ID!=iCALL:
 				word Size = SizeOfType(pType, 0);
 
 				select
-				case Size==1:
-					strcpy(@Buff,"mov     byte  ");     // FASM
-				case Size==4:
-					strcpy(@Buff,"mov     dword ");     // FASM
+				case Size==1 | Size==4:
+					strcpy(@Buff,"mov     ");
+					CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 				default:
 					strcpy(@Buff,"lea     EDI,  ");
+					CodeDataIX_offset(@Buff, 0, ID, IX, Ofs);
 				end:select
-
-				CodeDataIX_offset(@Buff, ID, IX, Ofs);
 
 				select
 				case fEAX!=RegA:
@@ -168,24 +164,23 @@ word Code1(word pPrimary)
 			exit;
 
 		case Node[P1].ID==iLOAD:
+
+			if IX==RegNone & ID==iCALL then
+				return pType;
+			end:if
+
 			word Size = SizeOfType(pType, 0);
 
 			select
-			case Size==1:
-				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, 1), ",   byte  ");
-
-			case Size==4:
-				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, 4), ",   dword ");
-
+			case Size==1 | Size==4:
+				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, Size), ",   ");
+				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 			default:
 				strcpy3(@Buff, "lea     ", @CodeReg(NULL, fEAX, 4), ",  ");
+				CodeDataIX_offset(@Buff, 0, ID, IX, Ofs);
 			end:select
 
-			if IX==RegNone & ID==iCALL then
-				null;
-			else
-				Emit(@CodeDataIX_offset(@Buff, ID, IX, Ofs));
-			end:if
+			Emit(@Buff);
 
 			return pType;
 
@@ -572,12 +567,9 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 			word Size = SizeOfType(pType, 0);
 
 			select
-			case Size==1:
-				CodeDataIX_offset(@str_push(@Buff, "byte  "), ID, IX, Ofs);
-				return 1;
-
-			case Size==4:
-				CodeDataIX_offset(@str_push(@Buff, "dword "), ID, IX, Ofs);
+			case Size==1 | Size==4:
+				Buff[0] = #0;
+				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 				return 1;
 
 			default:

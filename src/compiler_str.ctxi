@@ -46,4 +46,9 @@ char @strcat6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
 	return @Dst;
 end
 
+char @strcat7(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6, @Src7)
+	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2), @Src3), @Src4), @Src5), @Src6), @Src7);
+	return @Dst;
+end
+
 /*****************************************************************************/
