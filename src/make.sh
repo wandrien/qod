@@ -8,7 +8,13 @@ if which wine > /dev/null 2> /dev/null ; then
 	DEFAULT_WINE="wine"
 fi
 
+DEFAULT_VALGRIND=""
+if which valgrind > /dev/null 2> /dev/null ; then
+	DEFAULT_VALGRIND="valgrind"
+fi
+
 export WINE="${WINE-$DEFAULT_WINE}"
+export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 
 export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-../precompiled/lcontext_c}"
 
@@ -256,6 +262,24 @@ do_tests ()
 	return 0
 }
 
+run_valgrind()
+{
+	if [ -z "$VALGRIND" ] ;  then
+		printf "=> ${CODE_COLOR_YELLOW}Running valgrind: skipped${CODE_COLOR_NOCOLOR}\n"
+		return
+	fi
+
+	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR}\n"
+	"$VALGRIND" --tool=callgrind \
+		--callgrind-out-file=callgrind.out.lcontext_c \
+		--dump-instr=yes \
+		out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.callgrind.asm
+
+	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
+	"$VALGRIND" --tool=memcheck \
+		out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.memcheck.asm
+}
+
 mkdir -p out
 
 iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
@@ -275,14 +299,5 @@ stage_c
 stage_d
 build_samples
 do_tests
-
-printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR}\n"
-valgrind --tool=callgrind \
-	--callgrind-out-file=callgrind.out.lcontext_c \
-	--dump-instr=yes \
-	out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.callgrind.asm
-
-printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
-valgrind --tool=memcheck \
-	out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.memcheck.asm
+run_valgrind
 
