@@ -147,37 +147,17 @@ stage_d()
 	diff_pe out/lcontext_b_size.exe  out/lcontext_d_size.exe
 }
 
-mkdir -p out
+build_samples()
+{
+	printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
 
-iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
-
-printf "=> ${CODE_COLOR_YELLOW}INFO:${CODE_COLOR_NOCOLOR}\n"
-printf "\
-    The precompiled compiler is used to build A.
-    A is used to build B.
-    B is used to build C.
-    (OPTIONAL) The Windows version of B is also used to build D.
-    Building B, C and D all should produce the same result both
-    in the intermediate representation and the binary code.\n"
-
-stage_a
-stage_b
-stage_c
-stage_d
-
-
-printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
-
-mk out/lcontext_c samples/z_t1  --win32-c out/ z_t1.exe
-mk out/lcontext_c samples/z_t2  --win32-w out/ z_t2.exe
-mk out/lcontext_c samples/z_t3  --win32-c out/ z_t3.exe
-mk out/lcontext_c samples/z_t4  --win32-c out/ z_t4.exe
-mk out/lcontext_c samples/z_t5  --win32-c out/ z_t5.exe
-mk out/lcontext_c samples/z_t6  --win32-c out/ z_t6.exe
-
-printf "=> ${CODE_COLOR_YELLOW}Running tests${CODE_COLOR_NOCOLOR}\n"
-
-mkdir -p tests/out
+	mk out/lcontext_c samples/z_t1  --win32-c out/ z_t1.exe
+	mk out/lcontext_c samples/z_t2  --win32-w out/ z_t2.exe
+	mk out/lcontext_c samples/z_t3  --win32-c out/ z_t3.exe
+	mk out/lcontext_c samples/z_t4  --win32-c out/ z_t4.exe
+	mk out/lcontext_c samples/z_t5  --win32-c out/ z_t5.exe
+	mk out/lcontext_c samples/z_t6  --win32-c out/ z_t6.exe
+}
 
 do_test_with_compiler ()
 {
@@ -256,6 +236,11 @@ do_test ()
 
 do_tests ()
 {
+	printf "=> ${CODE_COLOR_YELLOW}Running tests${CODE_COLOR_NOCOLOR}\n"
+
+	mkdir -p tests/out
+
+
 	some_failed=n
 	for f in `(cd tests && grep -l  -- 'TEST:' *.* )` ; do
 		local t="`basename -s .ctx  -- "$f"`"
@@ -271,6 +256,24 @@ do_tests ()
 	return 0
 }
 
+mkdir -p out
+
+iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
+
+printf "=> ${CODE_COLOR_YELLOW}INFO:${CODE_COLOR_NOCOLOR}\n"
+printf "\
+    The precompiled compiler is used to build A.
+    A is used to build B.
+    B is used to build C.
+    (OPTIONAL) The Windows version of B is also used to build D.
+    Building B, C and D all should produce the same result both
+    in the intermediate representation and the binary code.\n"
+
+stage_a
+stage_b
+stage_c
+stage_d
+build_samples
 do_tests
 
 printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR}\n"
