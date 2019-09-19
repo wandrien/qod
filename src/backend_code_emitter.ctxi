@@ -831,7 +831,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		pType=_Code(pLeft,0,0,0);
 		fSwap=1;
 
-	case Node[Node[pLeft].pLeft].ID==iLOAD:
+	case Node[Node[pLeft].pLeft].ID==iLOAD & Node[Node[pRight].pLeft].ID!=iLOAD:
 		_Code(pRight,0,0,0);
 		fEAX =RegB;
 		pType=_Code(pLeft,0,0,0);
