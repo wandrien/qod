@@ -23,6 +23,8 @@ diff_pe()
 	# We check the number of differing bytes, and if we have too many of them,
 	# something's wrong.
 
+	echo "    DIFF  $1 $2"
+
 	diff_bytes="`(cmp -l "$1" "$2" || true) | wc -l`"
 	if [ "$diff_bytes" -lt 5 ] ; then
 		return 0
@@ -30,6 +32,13 @@ diff_pe()
 	set -x
 	cmp -l "$1" "$2"
 }
+
+diff_plain()
+{
+	echo "    DIFF  $1 $2"
+	diff -u "$1" "$2"
+}
+
 
 mk()
 {
@@ -73,17 +82,17 @@ stage_c()
 	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_size.exe --optimize size
 
 	# Generated assembler listings for B and C stages should be identical.
-	diff out/.lcontext_b.asm           out/.lcontext_c.asm
-	diff out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
-	diff out/.lcontext_b_size.asm      out/.lcontext_c_size.asm
-	diff out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
-	diff out/.lcontext_b_debug.exe.asm out/.lcontext_c_debug.exe.asm
-	diff out/.lcontext_b_size.exe.asm  out/.lcontext_c_size.exe.asm
+	diff_plain out/.lcontext_b.asm           out/.lcontext_c.asm
+	diff_plain out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
+	diff_plain out/.lcontext_b_size.asm      out/.lcontext_c_size.asm
+	diff_plain out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
+	diff_plain out/.lcontext_b_debug.exe.asm out/.lcontext_c_debug.exe.asm
+	diff_plain out/.lcontext_b_size.exe.asm  out/.lcontext_c_size.exe.asm
 
 	# The binaries should be identical too.
-	diff out/lcontext_b           out/lcontext_c
-	diff out/lcontext_b_debug     out/lcontext_c_debug
-	diff out/lcontext_b_size      out/lcontext_c_size
+	diff_plain out/lcontext_b           out/lcontext_c
+	diff_plain out/lcontext_b_debug     out/lcontext_c_debug
+	diff_plain out/lcontext_b_size      out/lcontext_c_size
 	diff_pe out/lcontext_b.exe       out/lcontext_c.exe
 	diff_pe out/lcontext_b_debug.exe out/lcontext_c_debug.exe
 	diff_pe out/lcontext_b_size.exe  out/lcontext_c_size.exe
@@ -122,17 +131,17 @@ stage_d()
 	crop_known_differencies out/.lcontext_d_size.exe.asm
 
 	# Generated assembler listings for B and D stages should be identical.
-	diff out/.lcontext_b.asm.cleared           out/.lcontext_d.asm.cleared
-	diff out/.lcontext_b_debug.asm.cleared     out/.lcontext_d_debug.asm.cleared
-	diff out/.lcontext_b_size.asm.cleared      out/.lcontext_d_size.asm.cleared
-	diff out/.lcontext_b.exe.asm.cleared       out/.lcontext_d.exe.asm.cleared
-	diff out/.lcontext_b_debug.exe.asm.cleared out/.lcontext_d_debug.exe.asm.cleared
-	diff out/.lcontext_b_size.exe.asm.cleared  out/.lcontext_d_size.exe.asm.cleared
+	diff_plain out/.lcontext_b.asm.cleared           out/.lcontext_d.asm.cleared
+	diff_plain out/.lcontext_b_debug.asm.cleared     out/.lcontext_d_debug.asm.cleared
+	diff_plain out/.lcontext_b_size.asm.cleared      out/.lcontext_d_size.asm.cleared
+	diff_plain out/.lcontext_b.exe.asm.cleared       out/.lcontext_d.exe.asm.cleared
+	diff_plain out/.lcontext_b_debug.exe.asm.cleared out/.lcontext_d_debug.exe.asm.cleared
+	diff_plain out/.lcontext_b_size.exe.asm.cleared  out/.lcontext_d_size.exe.asm.cleared
 
 	# The binaries should be identical too.
-	diff out/lcontext_b           out/lcontext_d
-	diff out/lcontext_b_debug     out/lcontext_d_debug
-	diff out/lcontext_b_size      out/lcontext_d_size
+	diff_plain out/lcontext_b           out/lcontext_d
+	diff_plain out/lcontext_b_debug     out/lcontext_d_debug
+	diff_plain out/lcontext_b_size      out/lcontext_d_size
 	diff_pe out/lcontext_b.exe       out/lcontext_d.exe
 	diff_pe out/lcontext_b_debug.exe out/lcontext_d_debug.exe
 	diff_pe out/lcontext_b_size.exe  out/lcontext_d_size.exe
