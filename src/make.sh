@@ -256,11 +256,19 @@ do_test ()
 
 do_tests ()
 {
+	some_failed=n
 	for f in `(cd tests && grep -l  -- 'TEST:' *.* )` ; do
 		local t="`basename -s .ctx  -- "$f"`"
 		local c="`grep  -- 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
-		eval do_test $t $c
+		if ! (eval do_test $t $c) ; then
+			some_failed=y
+		fi
 	done
+
+	if [ "x$some_failed" = "xy" ] ; then
+		return 1
+	fi
+	return 0
 }
 
 do_tests
