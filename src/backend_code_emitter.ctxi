@@ -639,7 +639,7 @@ end
 word NodeCanBeEncodedAsImm(word P)
 	word ID=Node[P].ID;
 	switch ID of
-	case iCHAR, iWORD, iINT:
+	case iCHAR, iWORD, iINT, iNULL:
 		return 1;
 	default:
 		return 0;
