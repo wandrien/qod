@@ -706,7 +706,7 @@ end
 
 /*****************************************************************************/
 
-define operandOther  0
+define operandReg    0
 define operandImm    1
 define operandMemRef 2
 
@@ -726,7 +726,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	word pRight = Node[P].pRight;
 
 	char BuffRightOperand[nBUFF];
-	word rightOperand = operandOther;
+	word rightOperand = operandReg;
 
 	do
 		/*
@@ -860,10 +860,10 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
               Emit("xchg    EAX,  EBX");
 		end:switch
 
-	case rightOperand != operandOther:
+	case rightOperand != operandReg:
 		switch ID of
 		case iMUL, iDIV, iMOD:
-			rightOperand = operandOther;
+			rightOperand = operandReg;
 			fEAX =RegB;
 			_Code(pRight,0,0,0);
 		end:switch
@@ -911,7 +911,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			end:if
 		case rightOperand == operandMemRef:
 			Emit(@CodeCmdRegFmt(@Buff, "cmp", RegA, Size, @BuffRightOperand));
-		case rightOperand == operandOther:
+		case rightOperand == operandReg:
 			Emit(@CodeCmdRegReg(@Buff, "cmp", RegA, Size, RegB, Size));
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
@@ -1040,7 +1040,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			Emit(@strcat2(@Buff,"AL,   ",@str(Node[pRight].Value)));
 		case rightOperand == operandMemRef:
 			Emit(@strcat2(@Buff,"AL,   ", @BuffRightOperand));
-		case rightOperand == operandOther:
+		case rightOperand == operandReg:
 			Emit(@strcat(@Buff,"AL,   BL"));
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
@@ -1052,7 +1052,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			Emit(@strcat2(@Buff,"EAX,  ",@str(Node[pRight].Value)));
 		case rightOperand == operandMemRef:
 			Emit(@strcat2(@Buff,"EAX,  ", @BuffRightOperand));
-		case rightOperand == operandOther:
+		case rightOperand == operandReg:
 			Emit(@strcat(@Buff,"EAX,  EBX"));
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
