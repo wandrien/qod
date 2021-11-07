@@ -194,7 +194,9 @@ void EmitJumpToLabel(word Label)
 end
 
 void EmitBranchToLabel(char @Condition; word Label)
-	Emit(@strcpy4(@EmitTmpBuff, "j", @Condition, "     @", @str(Label)));
+	char @s = "";
+	when Condition[1] == #0: @s = " ";
+	Emit(@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(Label)));
 end
 
 /*****************************************************************************/

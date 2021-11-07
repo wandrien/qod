@@ -313,16 +313,16 @@ word Code_SWITCH(word P; char @Buff)
 
 				switch value of
 				case 1:
-					strcpy(@Buff, "dec    ");
+					strcpy(@Buff, "dec     ");
 					strcat(@Buff, @Reg);
 					Emit(@Buff);
 				case 2:
-					strcpy(@Buff, "dec    ");
+					strcpy(@Buff, "dec     ");
 					strcat(@Buff, @Reg);
 					Emit(@Buff);
 					Emit(@Buff);
 				default:
-					strcpy(@Buff, "sub    ");
+					strcpy(@Buff, "sub     ");
 					strcat(@Buff, @Reg);
 					strcat(@Buff, ", 0x");
 					strcat(@Buff, @str2(value, 16));
