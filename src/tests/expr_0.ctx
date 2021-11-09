@@ -1,0 +1,27 @@
+// TEST: should_print '500 500 0 205 600 1602 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	word v0 = 0;
+	word v1 = 1;
+	word v2 = 2;
+	word v3 = 3;
+	word v5 = 5;
+	word v100 = 100;
+	word v200 = 200;
+
+	word v500 = v2 * v100 + v3 * v100;
+
+	put_word(v500); puts(" ");
+	put_word((v2 * v100 + v3 * v100) ^ v0 ^ v0); puts(" ");
+	put_word(v500 - v100 * v5); puts(" ");
+
+	word v200_2 = 2 * v100 + v100 * 3 - (v5 + v3 + v2) * 10 - v200;
+
+	put_word(v200_2 + v5); puts(" ");
+
+	put_word((v200 - 100) * 10 - 100 - v200 - v100); puts(" ");
+	put_word((v500 * 2 + v2) + (v200 & v1) + (v200 - 100) * 10 - 100 - v200 - v100); puts(" ");
+end
