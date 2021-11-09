@@ -656,7 +656,7 @@ end
 
 word IsOperationCommutative(word ID)
 	switch ID of
-	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iEQ, iNE:
+	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iMUL, iEQ, iNE:
 		return 1;
 	default:
 		return 0;
@@ -664,6 +664,27 @@ word IsOperationCommutative(word ID)
 end
 
 word DoesOperationAllowRightMemRef(word ID)
+	switch ID of
+	case
+		iBIT_OR,
+		iBIT_XOR,
+		iBIT_AND,
+		iADD,
+		iSUB,
+		iMUL,
+		iLT,
+		iLE,
+		iEQ,
+		iNE,
+		iGE,
+		iGT:
+		return 1;
+	default:
+		return 0;
+	end:switch
+end
+
+word DoesOperationAllowRightImm(word ID)
 	switch ID of
 	case
 		iBIT_OR,
@@ -748,37 +769,41 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			We can handle some special cases in a more efficient way:
 		*/
 
-		/*
-			## Immediate constant on the right.
-			Do:
-				RegA  <- LeftOperand
-				Op    RegA,  ImmValue
-			Instead of:
-				RegA  <- LeftOperand
-				mov   RegB,  ImmValue
-				Op    RegA,  RegB
-		*/
-		if NodeCanBeEncodedAsImm(pRight) != 0 then
-			rightOperand = operandImm;
-			exit;
-		end:if
+		if DoesOperationAllowRightImm(Node[P].ID) != 0 then
 
-		/*
-			## Immediate constant on the left
-			   and the operation is commutative
-			   or can be calculated in the reverse order.
-			Do:
-				RegA  <- RightOperand
-				Op    RegA,  ImmValue
-			Instead of:
-				mov   RegA,  ImmValue
-				RegB  <- RightOperand
-				Op    RegA,  RegB
-		*/
-		if IsOperationCommutative(Node[P].ID) != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
-			word tmp = pLeft; pLeft = pRight; pRight = tmp;
-			rightOperand = operandImm;
-			exit;
+			/*
+				## Immediate constant on the right.
+				Do:
+					RegA  <- LeftOperand
+					Op    RegA,  ImmValue
+				Instead of:
+					RegA  <- LeftOperand
+					mov   RegB,  ImmValue
+					Op    RegA,  RegB
+			*/
+			if NodeCanBeEncodedAsImm(pRight) != 0 then
+				rightOperand = operandImm;
+				exit;
+			end:if
+
+			/*
+				## Immediate constant on the left
+				   and the operation is commutative
+				   or can be calculated in the reverse order.
+				Do:
+					RegA  <- RightOperand
+					Op    RegA,  ImmValue
+				Instead of:
+					mov   RegA,  ImmValue
+					RegB  <- RightOperand
+					Op    RegA,  RegB
+			*/
+			if IsOperationCommutative(Node[P].ID) != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
+				word tmp = pLeft; pLeft = pRight; pRight = tmp;
+				rightOperand = operandImm;
+				exit;
+			end:if
+
 		end:if
 
 		if DoesOperationAllowRightMemRef(Node[P].ID) != 0 then
@@ -871,15 +896,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		case iGT: ID=iLT;
 
 		case iSUB, iDIV, iMOD:
-              Emit("xchg    EAX,  EBX");
-		end:switch
-
-	case rightOperand != operandReg:
-		switch ID of
-		case iMUL, iDIV, iMOD:
-			rightOperand = operandReg;
-			fEAX =RegB;
-			_Code(pRight,0,0,0);
+			Emit("xchg    EAX,  EBX");
 		end:switch
 	end:select
 
@@ -962,7 +979,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			case iGE: @BranchCondition = "ge";
 			case iGT: @BranchCondition = "g ";
 			default:
-                  StopInternalCodegen(__FILE__, __LINE__);
+				StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 
 		default:
@@ -974,7 +991,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			case iGE: @BranchCondition = "ae";
 			case iGT: @BranchCondition = "a ";
 			default:
-                  StopInternalCodegen(__FILE__, __LINE__);
+				StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 		end:select
 		EmitBranchToLabel(@BranchCondition, T);
@@ -998,16 +1015,26 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	case ID==iMUL:
 		select
-		case pType==st_byte:
-			Emit("mul     BL");
-		case pType==st_word:
-			Emit("mul     EBX");
-		case pType==st_int:
-			Emit("imul    EBX");
+		case T_IsSigned(pType) != 0:
+			strcpy(@Buff,"imul    ");
+		case T_IsUnsigned(pType) != 0:
+			strcpy(@Buff,"mul     ");
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
+		select
+		case rightOperand == operandImm:
+			StopInternalCodegen(__FILE__, __LINE__);
+		case rightOperand == operandMemRef:
+			strcat(@Buff,@BuffRightOperand);
+		case rightOperand == operandReg:
+			CodeReg(@Buff, RegB, Size);
+		default:
+			StopInternalCodegen(__FILE__, __LINE__);
+		end:select
+
+		Emit(@Buff);
 		return pType;
 
 	case ID==iDIV:
