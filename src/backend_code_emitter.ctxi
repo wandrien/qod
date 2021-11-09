@@ -7,7 +7,23 @@
 
 word ParmFrameSize; /* Размер фрейма стека, освобождаемого при выходе из функции. */
 word AllocatedFrameSize; /* Текущий размер фрейма стека, задействованный под локальные переменные. */
-word fEAX;  /* Маркер активного регистра. (Cуть этого хака более ясна его автору - Хохлову, нежели мне. VU) */
+
+/*
+Active register.
+
+When entering a function for generating code for an operation:
+
+ * If fEAX == RegA, the caller expects the result to be places in RegA.
+   The code may use both RegA and RegB and should return the result in RegA.
+
+ * If fEAX == RegB, the caller expects the result to be places in RegB.
+   RegA is used by the caller to store a value.
+   The code either returns the result in RegB and keeps the value of RegA untouched.
+   Or stores RegA on the stack, sets fEAX = RegA and return the result in RegA.
+   In the latter case, the caller normally pops the value from the stack to RegB,
+   and does the calculation with the swapped arguments.
+*/
+word fEAX;
 
 /*****************************************************************************/
 
@@ -647,7 +663,7 @@ word IsOperationCommutative(word ID)
 	end:switch
 end
 
-word IsOperationAllowsRightMemRef(word ID)
+word DoesOperationAllowRightMemRef(word ID)
 	switch ID of
 	case
 		iBIT_OR,
@@ -706,11 +722,13 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	Buff[0] = #0;
 
 	if iLT<=Node[P].ID & Node[P].ID<=iGT then
+		/* These operations don't return the result in any register,
+		instead a conditional jump is the result. So we can reset fEAX freely. */
 		fEAX=RegA;
 	end
 
 	if fEAX!=RegA then
-		Emit("push    EAX");
+		EmitLine(0, "push    EAX", "saved in CodeBinOp");
 		fEAX=RegA;
 	end
 
@@ -763,7 +781,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			exit;
 		end:if
 
-		if IsOperationAllowsRightMemRef(Node[P].ID) != 0 then
+		if DoesOperationAllowRightMemRef(Node[P].ID) != 0 then
 
 			/*
 				## Simple memory reference on the right.
@@ -822,19 +840,23 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		fEAX =RegB;
 		pType=_Code(pLeft,0,0,0);
 		fSwap=1;
+		when fEAX != RegB:
+			StopInternalCodegen(__FILE__, __LINE__);
 
 	case Node[Node[pLeft].pLeft].ID==iLOAD & Node[Node[pRight].pLeft].ID!=iLOAD:
 		_Code(pRight,0,0,0);
 		fEAX =RegB;
 		pType=_Code(pLeft,0,0,0);
 		fSwap=1;
+		when fEAX != RegB:
+			StopInternalCodegen(__FILE__, __LINE__);
 
 	default:
 		pType=_Code(pLeft,0,0,0);
 		fEAX =RegB;
 		_Code(pRight,0,0,0);
 		if fEAX==RegA then
-			Emit("pop     EBX");
+			EmitLine(0, "pop     EBX", "restored in CodeBinOp");
 			fSwap=1;
 		end
 	end:select
