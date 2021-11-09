@@ -616,7 +616,7 @@ word Primary(word Prty; char @Buff)
 
 			word F = FindInNamespace(@Buff, pType);
 			when F >= nDICT:
-				Stop(@eUNDECLARED);
+				Stop(@eUNDECLARED_FIELD);
 			when Dict[F].Class != cFIELD:
 				StopInternal(__FILE__, __LINE__);
 
