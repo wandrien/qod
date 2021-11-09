@@ -125,6 +125,8 @@ void Translate()
 
 	/* Генерация кода *****************************/
 
+	PrepareMulTricks();
+
 	OpenOutput(@OutputFile);
 
 	if OutputTreeFile_Done == 0

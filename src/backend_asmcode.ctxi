@@ -274,6 +274,46 @@ end
 
 /*****************************************************************************/
 
+char @CodeMemRef_Reg_Mult_Reg_Offset(char @Buff; word Size; word Reg1; word Reg2; word RegMode; word Mult; int Offset)
+
+	char@ SizeMarker = "";
+	select
+	case Size == 0:
+		@SizeMarker = "";
+	case Size == 1:
+		@SizeMarker = "byte  ";
+	case Size == 2:
+		@SizeMarker = "word  ";
+	case Size == 4:
+		@SizeMarker = "dword ";
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:select
+
+	strcat3(@Buff, @SizeMarker, "[", @CodeReg(NULL, Reg1, RegMode));
+
+	if Mult > 1 then
+		strcat2(@Buff, "*", @str(Mult));
+	end:if
+
+	if Reg2 != RegNone then
+		strcat2(@Buff, "+", @CodeReg(NULL, Reg2, RegMode));
+	end:if
+
+	select
+	case Offset > 0:
+		strcat2(@Buff, "+", @str(Offset));
+	case Offset < 0:
+		strcat2(@Buff, "-", @str(-Offset));
+	end:select
+
+	strcat(@Buff, "]");
+
+	return @Buff;
+end
+
+/*****************************************************************************/
+
 void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 	char Buff[nBUFF];
 	Buff[0] = #0;

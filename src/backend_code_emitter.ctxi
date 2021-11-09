@@ -735,6 +735,46 @@ end
 
 /*****************************************************************************/
 
+word TryCodeFastMult(char @Buff; word P; word F; word T; word M)
+	when Node[P].ID != iMUL:
+		return nDICT;
+
+	word pType = Node[P].pType;
+	word Size = SizeOfType(pType, 0);
+
+	when Size != 4:
+		return nDICT;
+
+	word pLeft = Node[P].pLeft;
+	word pRight = Node[P].pRight;
+
+	select
+	case NodeCanBeEncodedAsImm(pRight) != 0:
+		null;
+	case NodeCanBeEncodedAsImm(pLeft) != 0:
+		word tmp = pLeft; pLeft = pRight; pRight = tmp;
+	default:
+		return nDICT;
+	end:select
+
+	word RightValue = Node[pRight].Value;
+	word nMulTrick = FindMulTrick(RightValue);
+	when nMulTrick >= nMUL_TRICKS:
+		return nDICT;
+
+	word pType2=_Code(pLeft,0,0,0);
+
+	when pType != pType2:
+		StopInternalCodegen(__FILE__, __LINE__);
+
+	word done = Emit_MUL_Reg_Const(fEAX, Size, RightValue);
+	when done == 0:
+		StopInternalCodegen(__FILE__, __LINE__);
+	return pType;
+end
+
+/*****************************************************************************/
+
 define operandReg    0
 define operandImm    1
 define operandMemRef 2
@@ -747,6 +787,14 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		instead a conditional jump is the result. So we can reset fEAX freely. */
 		fEAX=RegA;
 	end
+
+	do
+		word pType = TryCodeFastMult(@Buff,P,0,0,0);
+		when pType < nDICT:
+			return pType;
+		exit;
+	end:do
+
 
 	if fEAX!=RegA then
 		EmitLine(0, "push    EAX", "saved in CodeBinOp");

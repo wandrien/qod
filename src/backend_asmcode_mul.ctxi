@@ -1,0 +1,171 @@
+
+/*****************************************************************************/
+
+struct MUL_TRICKS
+	word Value;
+	word Multipliers[3];
+	word PowerOfTwo;
+end
+
+define nMUL_TRICKS 40
+
+MUL_TRICKS MulTricks[nMUL_TRICKS];
+word      nMulTricks;
+
+/*****************************************************************************/
+
+word FindMulTrick(word Value)
+	word n = 0;
+	while n < nMulTricks do
+		when MulTricks[n].Value == Value:
+			return n;
+		inc n;
+	end:while
+	return nMUL_TRICKS;
+end
+
+/*****************************************************************************/
+
+void PrepareBaseMulTrick(word Multiplier; word PowerOfTwo)
+	when nMulTricks >= nMUL_TRICKS:
+		StopInternalCodegen(__FILE__, __LINE__);
+
+	if PowerOfTwo > 0 then
+		word p = PowerOfTwo;
+		/* FIXME: the language doesn't support bit shift operators */
+		Multiplier = 2;
+		while p > 1 do
+			Multiplier = Multiplier * Multiplier;
+			dec p;
+		end:while
+	end:if
+
+	MulTricks[nMulTricks].Value = Multiplier;
+	MulTricks[nMulTricks].Multipliers[0] = Multiplier;
+	MulTricks[nMulTricks].Multipliers[1] = 0;
+	MulTricks[nMulTricks].Multipliers[2] = 0;
+	MulTricks[nMulTricks].PowerOfTwo = PowerOfTwo;
+
+	inc nMulTricks;
+end
+
+void PrepareDoubleMulTrick(word Multiplier1, Multiplier2)
+	when nMulTricks >= nMUL_TRICKS:
+		StopInternalCodegen(__FILE__, __LINE__);
+
+	word Value = Multiplier1 * Multiplier2;
+
+	when FindMulTrick(Value) < nMUL_TRICKS:
+		return;
+
+	MulTricks[nMulTricks].Value = Value;
+	MulTricks[nMulTricks].Multipliers[0] = Multiplier1;
+	MulTricks[nMulTricks].Multipliers[1] = Multiplier2;
+	MulTricks[nMulTricks].Multipliers[2] = 0;
+	MulTricks[nMulTricks].PowerOfTwo = 0;
+
+	inc nMulTricks;
+end
+
+void PrepareMulTricks()
+	nMulTricks = 0;
+
+	PrepareBaseMulTrick(3, 0);
+	PrepareBaseMulTrick(5, 0);
+	PrepareBaseMulTrick(9, 0);
+
+	PrepareBaseMulTrick(0, 1);
+	PrepareBaseMulTrick(0, 2);
+	PrepareBaseMulTrick(0, 3);
+	PrepareBaseMulTrick(0, 4);
+	PrepareBaseMulTrick(0, 5);
+	PrepareBaseMulTrick(0, 6);
+	PrepareBaseMulTrick(0, 7);
+	PrepareBaseMulTrick(0, 8);
+	PrepareBaseMulTrick(0, 9);
+	PrepareBaseMulTrick(0, 10);
+	PrepareBaseMulTrick(0, 11);
+	PrepareBaseMulTrick(0, 12);
+
+	word nBaseTricks = nMulTricks;
+
+	word n1 = 0;
+	while n1 < nBaseTricks do
+		word n2 = 0;
+		while n2 < nBaseTricks do
+			if MulTricks[n1].PowerOfTwo > 0 & MulTricks[n2].PowerOfTwo > 0 then
+				null;
+			else
+				PrepareDoubleMulTrick(MulTricks[n1].Value, MulTricks[n2].Value);
+			end:if
+			inc n2;
+		end:while
+		inc n1;
+	end:while
+
+end
+
+/*****************************************************************************/
+
+void Emit_Trick_MUL_Reg_Const(word Reg; word RegMode; word Value)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+
+	switch Value of
+	case 3, 5, 9:
+		word Mult = Value - 1;
+		strcpy(@Buff, "lea     ");
+		strcat(@Buff, @CodeReg(NULL, Reg, RegMode));
+		strcat(@Buff, ",  ");
+		CodeMemRef_Reg_Mult_Reg_Offset(@Buff, 0, Reg, Reg, RegMode, Mult, 0);
+	case 2:
+		CodeCmdRegReg(@Buff, "add", Reg, RegMode, Reg, RegMode);
+	case 4:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 2);
+	case 8:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 3);
+	case 16:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 4);
+	case 32:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 5);
+	case 64:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 6);
+	case 128:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 7);
+	case 256:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 8);
+	case 512:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 9);
+	case 1024:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 10);
+	case 2048:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 11);
+	case 4096:
+		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 12);
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:switch
+
+	Emit(@Buff);
+end
+
+/*****************************************************************************/
+
+word Emit_MUL_Reg_Const(word Reg; word RegMode; word Value)
+	word n = FindMulTrick(Value);
+	when n >= nMUL_TRICKS:
+		return 0;
+
+	word i = 0;
+	do
+		word@ Mults = @MulTricks[n].Multipliers;
+		word Mult = Mults[i];
+		when Mult == 0:
+			return 1;
+		Emit_Trick_MUL_Reg_Const(Reg, RegMode, Mult);
+		inc i;
+	end
+
+end
+
+/*****************************************************************************/
