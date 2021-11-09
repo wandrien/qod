@@ -471,11 +471,11 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		word I = ResolveLocal(@Buff);
 		when I < nLOCAL:
-			Stop(@eDUPLICATE);
+			StopWithSubject(@eDUPLICATE, @Buff);
 
 		I = ResolveParm(@Buff);
 		when I < nDICT:
-			Stop(@eDUPLICATE);
+			StopWithSubject(@eDUPLICATE, @Buff);
 
 		if nLocal>=nLOCAL then
 			StopMemory();

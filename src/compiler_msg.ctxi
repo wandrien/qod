@@ -60,6 +60,14 @@ void Stop(char @Msg)
 	StopAt(NULL, @Msg);
 end
 
+void StopWithSubject(char @Msg; char @Subject)
+	char Buff[nBUFF];
+	strcpy(@Buff, @Msg);
+	strcat(@Buff, ": ");
+	strcat(@Buff, @Subject);
+	Stop(@Buff);
+end
+
 void StopInternal(char @File; word Line)
 	char Buff[nBUFF];
 	strcpy(@Buff, @eINTERNAL);

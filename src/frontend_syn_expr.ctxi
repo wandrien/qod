@@ -212,7 +212,7 @@ void FuncArgs(char @Buff; word pFunc)
 
 			word pARG = FindInNamespace(@Buff, pARGS);
 			when pARG < nDICT:
-				Stop(@eDUPLICATE);
+				StopWithSubject(@eDUPLICATE, @Buff);
 
 			pARG = DictAlloc();
 			DictSetName(pARG, @Buff);
@@ -385,7 +385,7 @@ word Primary(word Prty; char @Buff)
 	if Flag == 0 then /* Значит это глобальное имя. */
 		word I=Find(@Buff);
 		if I>=nDict then
-			Stop(@eUNDECLARED);
+			StopWithSubject(@eUNDECLARED, @Buff);
 		end:if
 
 		select
@@ -616,7 +616,7 @@ word Primary(word Prty; char @Buff)
 
 			word F = FindInNamespace(@Buff, pType);
 			when F >= nDICT:
-				Stop(@eUNDECLARED_FIELD);
+				StopWithSubject(@eUNDECLARED_FIELD, @Buff);
 			when Dict[F].Class != cFIELD:
 				StopInternal(__FILE__, __LINE__);
 

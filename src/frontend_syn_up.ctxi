@@ -34,7 +34,7 @@ void DeclStruct(char @Buff)
 
         word pType1 = Find(@Scan(@Buff));
         if pType1 < nDict then
-          Stop(@eDUPLICATE);
+          StopWithSubject(@eDUPLICATE, @Buff);
         end
 
         word pStruct = DictAlloc();
@@ -76,7 +76,7 @@ void DeclStruct(char @Buff)
 
             word F = FindInNamespace(@Buff, pStruct);
             when F < nDICT:
-              Stop(@eDUPLICATE);
+              StopWithSubject(@eDUPLICATE, @Buff);
 
             F = DictAlloc();
             DictSetName(F, @Buff);
@@ -112,7 +112,7 @@ end
 void DeclSynonym(char @Buff)
 
 	if Find(@Scan(@Buff)) < nDict then
-		Stop(@eDUPLICATE);
+		StopWithSubject(@eDUPLICATE, @Buff);
 	end
 
 	word D = DictAlloc();
@@ -170,7 +170,7 @@ void DeclFunc1(char @Buff; word a)
 			*/
 			if str_eq(@Scan(@Buff),".") then
 				if Find(@Scan(@Buff)) < nDict then
-					Stop(@eDUPLICATE);
+					StopWithSubject(@eDUPLICATE, @Buff);
 				end:if
 
 				word pAlias = DictAlloc();
@@ -208,7 +208,7 @@ void DeclVarFuncType(char @Buff; word pType)
 	word nPtr = ReadPtrs(@Buff);
 
 	if Find(@Buff) < nDict then
-		Stop(@eDUPLICATE);
+		StopWithSubject(@eDUPLICATE, @Buff);
 	end
 
 	word D = DictAlloc();
@@ -252,7 +252,7 @@ void DeclVarFunc(char @Buff)
 		word nPtr = ReadPtrs(@Buff);
 
 		if Find(@Buff) < nDict then
-			Stop(@eDUPLICATE);
+			StopWithSubject(@eDUPLICATE, @Buff);
 		end
 
 		word D = DictAlloc();
@@ -331,7 +331,7 @@ word DeclDefine(char @Buff)
 	word nPtr = ReadPtrs(@Scan(@Buff));
 
 	if Find(@Buff) < nDict then
-		Stop(@eDUPLICATE);
+		StopWithSubject(@eDUPLICATE, @Buff);
 	end
 
 	word D = DictAlloc();
