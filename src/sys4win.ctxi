@@ -1,8 +1,5 @@
 include "include/freestanding.ctxi"
-
-synonym  HANDLE  word
-synonym  DWORD   word
-synonym  BOOL    word
+include "sys4win_typedefs.ctxi"
 
 define FILE_SHARE_DELETE 0x00000004	
 define FILE_SHARE_READ   0x00000001	

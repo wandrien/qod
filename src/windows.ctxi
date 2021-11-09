@@ -1,3 +1,5 @@
+include "sys4win.ctxi"
+
 define   IDI_APPLICATION         0x00007F00                // default icon
 define   IDI_WINLOGO             0x00007F05
 
@@ -76,28 +78,6 @@ define   FALSE                           0
 define   TRUE                            1
 
 
-synonym  TCHAR                        char
-synonym  BYTE                         byte
-synonym  UINT                         word
-synonym  DWORD                        word
-synonym  HANDLE                       word
-synonym  HINSTANCE                    word
-synonym  HICON                        word
-synonym  HCURSOR                      word
-synonym  HBRUSH                       word
-synonym  HFONT                        word
-synonym  HGDIOBJ                      word
-synonym  HMENU                        word
-synonym  HWND                         word
-synonym  HDC                          word
-synonym  WPARAM                       word
-synonym  LPARAM                       word
-synonym  LONG                         word
-synonym  ATOM                         word
-synonym  BOOL                         word
-synonym  LRESULT                      word
-
-
 struct   POINT
   LONG     x;
   LONG     y;
@@ -164,37 +144,11 @@ struct   MSG
 end
 
 
-char    @GetCommandLine    ()                                external KERNEL32.GetCommandLineA;
-
 BOOL     GetEnvVariable    (char        @Name;
                             char        @Buff;
                             word         BuffLength)         external KERNEL32.GetEnvironmentVariableA;
 
 HANDLE   GetModuleHandle   (char        @ModuleName)         external KERNEL32.GetModuleHandleA;
-
-HANDLE   GetStdHandle      (DWORD        nStdHandle)         external KERNEL32;
-
-HANDLE   CreateFile        (char        @lpFileName;
-                            DWORD        dwDesiredAccess;
-                            DWORD        dwShareMode;
-                            void        @SecurityAttributes;
-                            DWORD        dwCreationDistribution;
-                            DWORD        dwFlagsAndAttributes;
-                            HANDLE       hTemplateFile)      external KERNEL32.CreateFileA;
-
-BOOL     ReadFile          (HANDLE       hFile;
-                            void        @Buff;
-                            DWORD        nNumberOfBytesToRead;
-                            DWORD       @lpNumberOfBytesRead;
-                            void        @lpOverlapped)       external KERNEL32;
-
-BOOL     WriteFile         (HANDLE       hFile;
-                            void        @Buff;
-                            DWORD        nNumberOfBytesToWrite;
-                            DWORD       @lpNumberOfBytesWritten;
-                            void        @lpOverlapped)       external KERNEL32;
-
-BOOL     CloseHandle       (HANDLE       hObject)            external KERNEL32;
 
 HICON    LoadIcon          (HINSTANCE    hInstance;
                             int          IconID)             external USER32.LoadIconA;

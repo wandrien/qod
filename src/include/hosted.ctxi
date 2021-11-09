@@ -2,3 +2,7 @@
 include "freestanding.ctxi"
 include "fpath.ctxi"
 
+
+void put_word(word i)
+	puts(@str(i));
+end
