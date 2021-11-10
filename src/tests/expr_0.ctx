@@ -1,4 +1,4 @@
-// TEST: should_print '100 200 300 400 1500 2000 8100 1827 500 500 0 205 600 1602 '
+// TEST: should_print '100 200 300 400 1500 2000 8100 1827 500 500 0 205 600 1602 50 '
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
@@ -34,4 +34,6 @@ begin
 
 	put_word((v200 - 100) * 10 - 100 - v200 - v100); puts(" ");
 	put_word((v500 * 2 + v2) + (v200 & v1) + (v200 - 100) * 10 - 100 - v200 - v100); puts(" ");
+
+	put_word(100 - (v5 * 10) + (v1 & 100)); puts(" ");
 end

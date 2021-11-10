@@ -385,3 +385,17 @@ char@ PHO_Optimize(char @Inst)
 end
 
 /*****************************************************************************/
+
+word PHO_EncodeRegContainingConst(char @Buff; word Const; word RegMode)
+	when RegMode != 4: /* FIXME: not implemented */
+		return 0;
+
+	word Reg = PHO_FindRegWithConst(Const);
+	when Reg == PHO_REG_INVALID:
+		return 0;
+
+	strcat(@Buff, @PHO_EncodeReg(Reg, 0xFFFF_FFFF));
+	return 1;
+end
+
+/*****************************************************************************/
