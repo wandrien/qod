@@ -1400,100 +1400,103 @@ end
 
 /*****************************************************************************/
 
-/* Формирует листинг кода функций. */
+void EmitFunction(char @Buff; word I)
+	EmitStringNL("");
+	strcpy(@Buff,"## ");
+	if Dict[I].Sub != sMAIN then
+		strcat(@Buff, @DictGetName(I));
+	else
+		strcat(@Buff, "<begin>");
+	end:if
+	strcat(@Buff," ##");
+	EmitLine(Dict[I].Label, "", @Buff);
+
+	word S1 = 0;
+
+	word pARGS = FindInNamespace("args", I);
+	when pARGS >= nDICT:
+		StopInternalCodegen(__FILE__, __LINE__);
+	word pARG = Dict[pARGS].pFirst;
+	while pARG < nDICT do
+		Dict[pARG].Label = S1 + 8;
+		S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, T_ArrayGetSizeOr0(Dict[pARG].pType)));
+		pARG = Dict[pARG].pNext;
+	end:while
+
+	PHO_InvalidateRegs();
+
+	if EmitEnterInstruction != 0 & Dict[I].StackSize > 0 then
+		Emit(@strcpy3(@Buff,"enter   ",@str(Dict[I].StackSize), ", 0"));
+	else
+		Emit("push    EBP");
+		Emit("mov     EBP,  ESP");
+
+		if Dict[I].StackSize > 0 then
+			Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(Dict[I].StackSize)));
+		end:if
+	end:if
+
+	if Dict[I].Sub == sMAIN then
+		word  J = 0;
+		while J < nDict do
+			if Dict[J].Class == cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
+				if Node[Dict[J].pNode].ID != iASSIGN then
+					StopInternalCodegen(__FILE__, __LINE__);
+				end:if
+				if StaticDataIsZeroed == 0
+				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == 0 then
+					Code(Dict[J].pNode, 0, 0, 0);
+				end:if
+			end:if
+
+			inc J;
+		end:while
+	end:if
+
+	pFunc = I;
+	ParmFrameSize = S1;
+	AllocatedFrameSize = 0;
+
+	CODEBLOCK CB;
+	Code_BeginBlock(@CB);
+
+	word  P = Dict[I].pNode;
+	word  ID;
+	while P < nNODE do
+		_Code(P, 0, 0, 0);
+		ID = Node[P].ID;
+		P  = Node[P].pRight;
+	end
+
+	if ID!=iRETURN then
+		word pRet = Peek();
+		Node[pRet].ID = iRETURN;
+		_Code(pRet, 0, 0, 0);
+	end
+
+	Code_EndBlock(@CB);
+end
+
+/*****************************************************************************/
+
 word EmitFunctions(char @Buff)
-
-	word S;
-
-	word pRet = Peek();
-	Node[pRet].ID = iRETURN;
-
+	word Start = 0;
 
 	word I = 0;
 	while I < nDict do
 		select
 			case Dict[I].Class == cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
-				EmitStringNL("");
-				strcpy(@Buff,"## ");
-				if Dict[I].Sub != sMAIN then
-					strcat(@Buff, @DictGetName(I));
-				else
-					strcat(@Buff, "<begin>");
-					S = Dict[I].Label;
-				end:if
-				strcat(@Buff," ##");
-				EmitLine(Dict[I].Label, "", @Buff);
-
-				word S1 = 0;
-
-				word pARGS = FindInNamespace("args", I);
-				when pARGS >= nDICT:
-					StopInternalCodegen(__FILE__, __LINE__);
-				word pARG = Dict[pARGS].pFirst;
-				while pARG < nDICT do
-					Dict[pARG].Label = S1 + 8;
-					S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, T_ArrayGetSizeOr0(Dict[pARG].pType)));
-					pARG = Dict[pARG].pNext;
-				end:while
-
-				PHO_InvalidateRegs();
-
-				if EmitEnterInstruction != 0 & Dict[I].StackSize > 0 then
-					Emit(@strcpy3(@Buff,"enter   ",@str(Dict[I].StackSize), ", 0"));
-				else
-					Emit("push    EBP");
-					Emit("mov     EBP,  ESP");
-
-					if Dict[I].StackSize > 0 then
-						Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(Dict[I].StackSize)));
-					end:if
-				end:if
-
-				if Dict[I].Sub == sMAIN then
-					word  J = 0;
-					while J < nDict do
-						if Dict[J].Class == cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
-							if Node[Dict[J].pNode].ID != iASSIGN then
-								StopInternalCodegen(__FILE__, __LINE__);
-							end:if
-							if StaticDataIsZeroed == 0
-							 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == 0 then
-								Code(Dict[J].pNode, 0, 0, 0);
-							end:if
-						end:if
-
-						inc J;
-					end:while
-				end:if
-
-				pFunc = I;
-				ParmFrameSize = S1;
-				AllocatedFrameSize = 0;
-
-				CODEBLOCK CB;
-				Code_BeginBlock(@CB);
-
-				word  P = Dict[I].pNode;
-				word  ID;
-				while P < nNODE do
-					_Code(P, 0, 0, 0);
-					ID = Node[P].ID;
-					P  = Node[P].pRight;
-				end
-
-				if ID!=iRETURN then
-					_Code(pRet, 0, 0, 0);
-				end
-
-				Code_EndBlock(@CB);
-
-		end // of select
-
+				when Dict[I].Sub == sMAIN:
+					Start = Dict[I].Label;
+				EmitFunction(@Buff, I);
+		end:select
 		inc I;
-	end // of while
+	end:while
 
-	return S;
+	when Start == 0:
+		StopInternalCodegen(__FILE__, __LINE__);
 
+	return Start;
 end
 
 /*****************************************************************************/
@@ -1516,9 +1519,9 @@ word EmitSection_Code(char @Buff)
 
 	EmitROData();
 
-	word S = EmitFunctions(@Buff);
+	word Start = EmitFunctions(@Buff);
 
-	return S;
+	return Start;
 
 end
 
