@@ -988,18 +988,32 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	end:select
 
-	select
-	case fSwap==1:
-		switch ID of
-		case iLT: ID=iGT;
-		case iLE: ID=iGE;
-		case iGE: ID=iLE;
-		case iGT: ID=iLT;
+	/* Check the cases for operands in swapped order: */
+	if fSwap==1 then
+		do
+			/* We can handle it by changing the operation ID */
+			word swappedID = IsOperationSwappable(ID);
+			if swappedID != 0 then
+				ID = swappedID;
+				exit;
+			end:if
 
-		case iSUB, iDIV, iMOD:
-			Emit("xchg    EAX,  EBX");
-		end:switch
-	end:select
+			/* We can handle it by swapping operands back. */
+			switch ID of
+			case iSUB, iDIV, iMOD:
+				Emit("xchg    EAX,  EBX");
+				exit;
+			end:switch
+
+			/* If the operation is commutative, we don't care about the order. */
+			when IsOperationCommutative(ID) != 0:
+				exit;
+
+			/* In other cases, swapped operands shouldn't happen. */
+			StopInternalCodegen(__FILE__, __LINE__);
+		end:do
+	end:if
+
 
 	word Size=4;
 	if pType<nDICT then
