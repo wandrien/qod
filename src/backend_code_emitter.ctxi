@@ -795,11 +795,13 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		exit;
 	end:do
 
-
-	if fEAX!=RegA then
-		EmitLine(0, "push    EAX", "saved in CodeBinOp");
-		fEAX=RegA;
-	end
+	switch Node[P].ID of
+	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
+		if fEAX!=RegA then
+			EmitLine(0, "push    EAX", "saved in CodeBinOp");
+			fEAX=RegA;
+		end
+	end:switch
 
 	word pLeft = Node[P].pLeft;
 	word pRight = Node[P].pRight;
@@ -894,6 +896,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		exit;
 	end:do
 
+	word rightReg = RegNone;
 	word fSwap=0;
 	word pType;
 
@@ -909,14 +912,27 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		pType=_Code(pLeft,0,0,0);
 
 	case NodeCanBeEncodedAsImm(pLeft) != 0:
+		if fEAX!=RegA then
+			EmitLine(0, "push    EAX", "saved in CodeBinOp");
+			fEAX=RegA;
+		end
+
 		_Code(pRight,0,0,0);
 		fEAX =RegB;
 		pType=_Code(pLeft,0,0,0);
 		fSwap=1;
 		when fEAX != RegB:
 			StopInternalCodegen(__FILE__, __LINE__);
+
+		fEAX = RegA;
+		rightReg = RegB;
 
 	case Node[Node[pLeft].pLeft].ID==iLOAD & Node[Node[pRight].pLeft].ID!=iLOAD:
+		if fEAX!=RegA then
+			EmitLine(0, "push    EAX", "saved in CodeBinOp");
+			fEAX=RegA;
+		end
+
 		_Code(pRight,0,0,0);
 		fEAX =RegB;
 		pType=_Code(pLeft,0,0,0);
@@ -924,7 +940,15 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		when fEAX != RegB:
 			StopInternalCodegen(__FILE__, __LINE__);
 
+		fEAX = RegA;
+		rightReg = RegB;
+
 	default:
+		if fEAX!=RegA then
+			EmitLine(0, "push    EAX", "saved in CodeBinOp");
+			fEAX=RegA;
+		end
+
 		pType=_Code(pLeft,0,0,0);
 		fEAX =RegB;
 		_Code(pRight,0,0,0);
@@ -932,6 +956,10 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			EmitLine(0, "pop     EBX", "restored in CodeBinOp");
 			fSwap=1;
 		end
+
+		fEAX = RegA;
+		rightReg = RegB;
+
 	end:select
 
 	word ID=Node[P].ID;
@@ -948,8 +976,6 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		end:switch
 	end:select
 
-	fEAX=RegA;
-
 	word Size=4;
 	if pType<nDICT then
 		Size=SizeOfType(pType, 0);
@@ -963,17 +989,11 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			Value = -Value;
 
 		select
-		case Value == 1 & Size == 4:
-			Emit("inc     EAX");
+		case Value == 1 & (Size == 4 | Size == 1):
+			Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
 			return pType;
-		case Value == -1 & Size == 4:
-			Emit("dec     EAX");
-			return pType;
-		case Value == 1 & Size == 1:
-			Emit("inc     AL");
-			return pType;
-		case Value == -1 & Size == 1:
-			Emit("dec     AL");
+		case Value == -1 & (Size == 4 | Size == 1):
+			Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
 			return pType;
 		end:select
 	end:if
@@ -984,14 +1004,14 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		select
 		case rightOperand == operandImm:
 			if (ID == iEQ | ID == iNE) & Node[pRight].Value == 0 then
-				Emit(@CodeCmdRegReg(@Buff, "test", RegA, Size, RegA, Size));
+				Emit(@CodeCmdRegReg(@Buff, "test", fEAX, Size, fEAX, Size));
 			else
-				Emit(@CodeCmdRegConst(@Buff, "cmp", RegA, Size, Node[pRight].Value));
+				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Node[pRight].Value));
 			end:if
 		case rightOperand == operandMemRef:
-			Emit(@CodeCmdRegFmt(@Buff, "cmp", RegA, Size, @BuffRightOperand));
+			Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
 		case rightOperand == operandReg:
-			Emit(@CodeCmdRegReg(@Buff, "cmp", RegA, Size, RegB, Size));
+			Emit(@CodeCmdRegReg(@Buff, "cmp", fEAX, Size, rightReg, Size));
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end
@@ -1077,7 +1097,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		case rightOperand == operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case rightOperand == operandReg:
-			CodeReg(@Buff, RegB, Size);
+			CodeReg(@Buff, rightReg, Size);
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
@@ -1123,30 +1143,18 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	end:select
 
 	select
-	case Size==1:
+	case Size==1 | Size==4:
 		select
 		case rightOperand == operandImm:
-			Emit(@strcat2(@Buff,"AL,   ",@str(Node[pRight].Value)));
+			CodeRegConst(@Buff, fEAX, Size, Node[pRight].Value);
 		case rightOperand == operandMemRef:
-			Emit(@strcat2(@Buff,"AL,   ", @BuffRightOperand));
+			CodeRegFmt(@Buff, fEAX, Size, @BuffRightOperand);
 		case rightOperand == operandReg:
-			Emit(@strcat(@Buff,"AL,   BL"));
+			CodeRegReg(@Buff, fEAX, Size, rightReg, Size);
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
-
-	case Size==4:
-		select
-		case rightOperand == operandImm:
-			Emit(@strcat2(@Buff,"EAX,  ",@str(Node[pRight].Value)));
-		case rightOperand == operandMemRef:
-			Emit(@strcat2(@Buff,"EAX,  ", @BuffRightOperand));
-		case rightOperand == operandReg:
-			Emit(@strcat(@Buff,"EAX,  EBX"));
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-		end:select
-
+		Emit(@Buff);
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:select

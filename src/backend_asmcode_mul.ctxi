@@ -158,6 +158,8 @@ word Emit_MUL_Reg_Const(word Reg; word RegMode; word Value)
 
 	word i = 0;
 	do
+		/* FIXME: causes internal error: */
+		// word Mult = MulTricks[n].Multipliers[i];
 		word@ Mults = @MulTricks[n].Multipliers;
 		word Mult = Mults[i];
 		when Mult == 0:
