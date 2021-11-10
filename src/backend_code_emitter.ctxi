@@ -871,6 +871,16 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 				exit;
 			end:if
 
+			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
+			word swappedID = IsOperationSwappable(ID);
+			if swappedID != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
+				word tmp = pLeft; pLeft = pRight; pRight = tmp;
+				rightOperand = operandImm;
+				ID = swappedID;
+				exit;
+			end:if
+
+
 		end:if
 
 		if DoesOperationAllowRightMemRef(ID) != 0 then
@@ -988,7 +998,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	end:select
 
-	/* Check the cases for operands in swapped order: */
+	/* Check the cases for the operands arrived in swapped order: */
 	if fSwap==1 then
 		do
 			/* We can handle it by changing the operation ID */
