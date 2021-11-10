@@ -83,6 +83,22 @@ end
 
 /*****************************************************************************/
 
+void EmitStringIgnoreNewLines(char @S)
+	word I = 0;
+	while S[I] != #0 do
+		char C = S[I];
+		switch C of
+		case '~r', '~n':
+			EmitChar(' ');
+		default:
+			EmitChar(C);
+		end:switch
+		inc I;
+	end
+end
+
+/*****************************************************************************/
+
 /* Вывести в листинг переход на новую линию. */
 void EmitNL()
 	EmitString("~r~n");
@@ -136,11 +152,23 @@ void EmitLine(word Label; char @Inst; char @Comment)
 	end:if
 
 	if Inst[0] != #0 then
-		while C < 8 do
-			EmitChar(' '); inc C;
-		end:while
-		EmitString(@Inst);
-		C = C + strlen(@Inst);
+		word I = 0;
+		while Inst[I] != #0 do
+			char Ch = Inst[I];
+
+			switch Ch of
+			case '~r', '~n':
+				C = 0;
+			default:
+				while C < 8 do
+					EmitChar(' '); inc C;
+				end:while
+				inc C;
+			end:switch
+
+			EmitChar(Ch);
+			inc I;
+		end
 	end:if
 
 	if Comment[0] != #0 then
@@ -148,7 +176,7 @@ void EmitLine(word Label; char @Inst; char @Comment)
 			EmitChar(' '); inc C;
 		end:while
 		EmitString(" ; ");
-		EmitString(@Comment);
+		EmitStringIgnoreNewLines(@Comment);
 	end:if
 
 	EmitNL();

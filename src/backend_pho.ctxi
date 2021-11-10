@@ -92,11 +92,14 @@ void PHO_RegLoadConst(word R; word Data)
 	if R >= PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
+
+	if (PHO_ValidRegConst[R] == 0) | (PHO_RegConst[R] != Data) then
+		char Buff[nBUFF];
+		_EmitLine(0, "", @strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data)));
+	end:if
+
 	PHO_ValidRegConst[R] = 1;
 	PHO_RegConst[R] = Data;
-
-	char Buff[nBUFF];
-	_EmitLine(0, "", @strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data)));
 end
 
 /*****************************************************************************/
@@ -176,6 +179,108 @@ word PHO_DecodeReg(char @S; word @Reg; word @Mask)
 end
 
 /*****************************************************************************/
+
+/* Returns 1 if replacement found and placed into Buff. */
+word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2)
+	word Reg1HasConst = PHO_RegContainsAConst(Reg1);
+	word Reg1Const = PHO_RegConst[Reg1];
+
+	/* Shortest options first. */
+	if Reg1HasConst != 0 then
+		select
+		case Reg1Const == Const2:
+			strcpy(@Buff, ""); /* 0 bytes */
+			return 1;
+		case Reg1Const == Const2 + 1:
+			strcpy(@Buff, "dec     "); /* 1 or 2 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			return 1;
+		case Reg1Const == Const2 - 1:
+			strcpy(@Buff, "inc     "); /* 1 or 2 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			return 1;
+		end:select
+	end:if
+
+	/* XOR is short and doesn't depend on other values, so it's a good choice */
+	if Const2 == 0 then
+		strcpy(@Buff, "xor     "); /* 2 bytes */
+		strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+		strcat(@Buff, ", ");
+		strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+		return 1;
+	end:if
+
+	/* Back to the options that depend on the previous value of the register */
+	if Reg1HasConst != 0 then
+		select
+		case Reg1Const == !Const2:
+			strcpy(@Buff, "not     "); /* 2 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			return 1;
+		case Reg1Const == -Const2:
+			strcpy(@Buff, "neg     "); /* 2 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			return 1;
+		case ((Const2 & 1) == 0) & (Reg1Const == (Const2 / 2)):
+			strcpy(@Buff, "add     "); /* 2 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			strcat(@Buff, ", ");
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			return 1;
+		end:select
+	end:if
+
+	/* Check if another register has the same constant. */
+	word RegC = PHO_FindRegWithConst(Const2);
+	if RegC != PHO_REG_INVALID then
+		strcpy(@Buff, "mov     "); /* 2 bytes */
+		strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+		strcat(@Buff, ", ");
+		strcat(@Buff, @PHO_EncodeReg(RegC, Mask1));
+		return 1;
+	end:if
+
+	/* Now check for Reg1 = Reg1 + <signed char>. This gives a 3-byte instuction. */
+	if Reg1HasConst != 0 then
+		/*
+			We trying to do <ADD reg, -diff> and <SUB reg, -diff> instead of
+			<ADD reg, +diff> and <SUB reg, +diff>, since the biggest negative value
+			is -128 and positive one is just 127.
+		*/
+		word Diff = Const2 - Reg1Const;
+		if Diff <= 128 then
+			strcpy(@Buff, "sub     "); /* 3 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			strcat(@Buff, ", -");
+			strcat(@Buff, @str(Diff));
+			return 1;
+		end:if
+
+		Diff = Reg1Const - Const2;
+		if Diff <= 128 then
+			strcpy(@Buff, "add     "); /* 3 bytes */
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			strcat(@Buff, ", -");
+			strcat(@Buff, @str(Diff));
+			return 1;
+		end:if
+	end:if
+
+	/* <PUSH imm> + <POP reg> takes 3 bytes for short imms. */
+	if EmitShortCode != 0 & Mask1 == 0xFFFF_FFFF then
+		if (Const2 <= 127) & (int(Const2) >= -128) then
+			strcpy(@Buff, "push    ");
+			strcat(@Buff, @str(Const2));
+			strcat(@Buff, "~r~n");
+			strcat(@Buff, "pop     ");
+			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
+			return 1;
+		end:if
+	end:if
+
+	return 0;
+end
 
 char PHO_Buff[256];
 
@@ -285,53 +390,12 @@ char@ PHO_Optimize_(char @Inst)
 
 	/* Вариант - загрузка полного значения регистра. */
 	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") then
-
-		word RegC = PHO_FindRegWithConst(Const2);
-
-		select
-		case PHO_RegContainsConst(Reg1, Const2) != 0:
-			return "";
-
-		case PHO_RegContainsConst(Reg1, Const2 + 1) != 0:
-			strcpy(@PHO_Buff, "dec     ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			//strcat(@PHO_Buff, ";-;-;");
-
-		case PHO_RegContainsConst(Reg1, Const2 - 1) != 0:
-			strcpy(@PHO_Buff, "inc     ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			//strcat(@PHO_Buff, ";-;-;");
-
-		case PHO_RegContainsConst(Reg1, -Const2) != 0:
-			strcpy(@PHO_Buff, "neg     ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			//strcat(@PHO_Buff, ";-;-;");
-
-		case (Const2 & 1) == 0 & PHO_RegContainsConst(Reg1, Const2 / 2) != 0:
-			strcpy(@PHO_Buff, "add     ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			strcat(@PHO_Buff, ", ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			//strcat(@PHO_Buff, ";-;-;");
-
-		case Const2 == 0:
-			strcpy(@PHO_Buff, "xor     ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			strcat(@PHO_Buff, ", ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-
-		case RegC != PHO_REG_INVALID:
-			strcpy(@PHO_Buff, "mov     ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(Reg1, Mask1));
-			strcat(@PHO_Buff, ", ");
-			strcat(@PHO_Buff, @PHO_EncodeReg(RegC, Mask1));
-		default:
-			PHO_RegLoadConst(Reg1, Const2);
-			return @Inst;
-		end:select
-
+		char @RetInst = @Inst;
+		PHO_Buff[0] = #0;
+		when PHO_Optimize_FindReplacement(@PHO_Buff, Reg1, Mask1, Const2) != 0:
+			@RetInst = @PHO_Buff;
 		PHO_RegLoadConst(Reg1, Const2);
-		return @PHO_Buff;
+		return @RetInst;
 	end:if
 
 	/* Для всех прочих вариантов необходимо знать значение в Reg1. */
