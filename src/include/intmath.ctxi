@@ -1,0 +1,13 @@
+
+word word_max(word a, b)
+	when a > b:
+		return a;
+	return b;
+end
+
+int int_max(int a, b)
+	when a > b:
+		return a;
+	return b;
+end
+

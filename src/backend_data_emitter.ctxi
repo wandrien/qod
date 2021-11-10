@@ -167,6 +167,8 @@ end
 */
 void EmitROData()
 
+	word RODataSize = 0;
+
 	int curr_len = -1;
 	int next_len = -1;
 	word I;
@@ -183,9 +185,7 @@ void EmitROData()
 		while I < nDict do
 			if Dict[I].Class == cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
 				word len = Dict[I].nLiteralSize;
-				if next_len < len then
-					next_len = len;
-				end
+				next_len = int_max(next_len, len);
 			end
 			inc I;
 		end
@@ -207,6 +207,7 @@ void EmitROData()
 				if len == curr_len | curr_len == -1 then
 					EmitByteReset();
 					Dict[I].Label = EmitRODataFragment(Dict[I].LiteralValue, len);
+					RODataSize = word_max(RODataSize, Dict[I].Label + len);
 				end
 				if next_len < len & len < curr_len then
 					next_len = len;
@@ -217,6 +218,9 @@ void EmitROData()
 	until next_len < 0;
 
 	EmitByteReset();
+
+	char Buff[nBUFF];
+	EmitLine(0, NULL, @strcpy2(@Buff, "ROLITERALS size: ", @str(RODataSize)));
 end
 
 /*****************************************************************************/
