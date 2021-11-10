@@ -654,6 +654,7 @@ word NodeCanBeEncodedAsImm(word P)
 	end:switch
 end
 
+/** Return non-zero if the operands can be swapped for no cost. */
 word IsOperationCommutative(word ID)
 	switch ID of
 	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iMUL, iEQ, iNE:
@@ -662,6 +663,20 @@ word IsOperationCommutative(word ID)
 		return 0;
 	end:switch
 end
+
+/** Return non-zero if the operands can be swapped for no cost, but we should change the operation ID as well.
+ Return the code of swapped operation.
+*/
+word IsOperationSwappable(word ID)
+	switch ID of
+	case iLT: return iGT;
+	case iLE: return iGE;
+	case iGE: return iLE;
+	case iGT: return iLT;
+	end:switch
+	return 0;
+end
+
 
 word DoesOperationAllowRightMemRef(word ID)
 	switch ID of
@@ -782,7 +797,9 @@ define operandMemRef 2
 word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	Buff[0] = #0;
 
-	if iLT<=Node[P].ID & Node[P].ID<=iGT then
+	word ID = Node[P].ID;
+
+	if iLT <= ID & ID <= iGT then
 		/* These operations don't return the result in any register,
 		instead a conditional jump is the result. So we can reset fEAX freely. */
 		fEAX=RegA;
@@ -795,7 +812,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		exit;
 	end:do
 
-	switch Node[P].ID of
+	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
 		if fEAX!=RegA then
 			EmitLine(0, "push    EAX", "saved in CodeBinOp");
@@ -819,7 +836,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			We can handle some special cases in a more efficient way:
 		*/
 
-		if DoesOperationAllowRightImm(Node[P].ID) != 0 then
+		if DoesOperationAllowRightImm(ID) != 0 then
 
 			/*
 				## Immediate constant on the right.
@@ -848,7 +865,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					RegB  <- RightOperand
 					Op    RegA,  RegB
 			*/
-			if IsOperationCommutative(Node[P].ID) != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
+			if IsOperationCommutative(ID) != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandImm;
 				exit;
@@ -856,7 +873,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 		end:if
 
-		if DoesOperationAllowRightMemRef(Node[P].ID) != 0 then
+		if DoesOperationAllowRightMemRef(ID) != 0 then
 
 			/*
 				## Simple memory reference on the right.
@@ -885,9 +902,18 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					RegB  <- RightOperand
 					Op    RegA,  RegB
 			*/
-			if IsOperationCommutative(Node[P].ID) != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
+			if IsOperationCommutative(ID) != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
+				exit;
+			end:if
+
+			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
+			word swappedID = IsOperationSwappable(ID);
+			if swappedID != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
+				word tmp = pLeft; pLeft = pRight; pRight = tmp;
+				rightOperand = operandMemRef;
+				ID = swappedID;
 				exit;
 			end:if
 
@@ -962,7 +988,6 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	end:select
 
-	word ID=Node[P].ID;
 	select
 	case fSwap==1:
 		switch ID of
