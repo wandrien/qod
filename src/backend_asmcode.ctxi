@@ -356,3 +356,31 @@ void Emit_Load_Constant(word Reg; word RegMode; word Value)
 end
 
 /*****************************************************************************/
+
+/** Returns nonzero if INC/DEC is preferred over ADD/SUB for the given register and the compilation options.
+  Returns 1 if a single INC/DEC is preferred over <ADD/SUB reg, 1>.
+  Returns 2 if a couple of INC/DEC is preferred over <ADD/SUB reg, 2>.
+*/
+word PreferIncDec(word Reg; word RegMode)
+	/* <INC AL> and <ADD AL, 1> have the same size */
+	when Reg == RegA & RegMode == 1:
+		return 0;
+
+	if EmitShortCode != 0 then /* We don't care about the speed */
+		word x86CodeMode = 4; /* FIXME: 4 for 32-bit code and 2 for 16-bit code */
+		when RegMode == x86CodeMode:
+			/* <ADD EAX, 1> takes 3 bytes and <INC EAX> takes just 1. So 2 INCs are okay, */
+			return 2;
+		return 1;
+	end:if
+
+	when SlowIncDec != 0: /* P4 not happy about INC/DEC. */
+		/* Details: https://github.com/dotnet/runtime/issues/7697 */
+		return 0;
+
+	/* INC/DEC seems to be ok, so use it, but we aren't crazy enoght about the code size to use double INC/DEC. */
+	return 1;
+end
+
+/*****************************************************************************/
+

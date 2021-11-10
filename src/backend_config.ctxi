@@ -51,6 +51,9 @@ word EmitEnterInstruction = 0;
 */
 word EmitLeaveInstruction = 0;
 
+word EmitShortCode = 0;
+word SlowIncDec = 0;
+
 /*****************************************************************************/
 
 /*

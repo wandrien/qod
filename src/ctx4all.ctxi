@@ -222,16 +222,19 @@ void SetupOptimization(char@ Mode)
 		PHOptimization  = 1;
 		EmitEnterInstruction = 1;
 		EmitLeaveInstruction = 1;
+		EmitShortCode = 1;
 	case str_eq(@Mode, "speed"):
 		RODataMergeMode = RODataMergeModeNormal;
 		PHOptimization  = 1;
 		EmitEnterInstruction = 0;
 		EmitLeaveInstruction = 1;
+		EmitShortCode = 0;
 	default:
 		RODataMergeMode = RODataMergeModeNone;
 		PHOptimization  = 0;
 		EmitEnterInstruction = 0;
 		EmitLeaveInstruction = 1;
+		EmitShortCode = 0;
 	end:select
 end
 

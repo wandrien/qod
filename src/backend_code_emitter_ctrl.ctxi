@@ -305,29 +305,34 @@ word Code_SWITCH(word P; char @Buff)
 			case iVALUE:
 				word value = Node[Node[VALUE_I].pLeft].Value - offset;
 
-				char@ Reg = "EAX";
-				if pType == st_char then
-					value = value & 0xFF;
-					@Reg = "AL";
-				end:if
-
-				switch value of
+				word Reg = RegA;
+				word Size = SizeOfType(pType, 0);
+				switch Size of
 				case 1:
-					strcpy(@Buff, "dec     ");
-					strcat(@Buff, @Reg);
-					Emit(@Buff);
+					value = value & 0xFF;
 				case 2:
-					strcpy(@Buff, "dec     ");
-					strcat(@Buff, @Reg);
+					value = value & 0xFFFF;
+				case 4:
+					null;
+				default:
+					StopInternalCodegen(__FILE__, __LINE__);
+				end:switch
+
+				Buff[0] = #0;
+				select
+				case value == 1 & PreferIncDec(Reg, Size) > 0:
+					Emit(@CodeCmdReg(@Buff, "dec", Reg, Size));
+				case value == 2 & PreferIncDec(Reg, Size) > 1:
+					Emit(@CodeCmdReg(@Buff, "dec", Reg, Size));
 					Emit(@Buff);
+				case value == -1 & PreferIncDec(Reg, Size) > 0:
+					Emit(@CodeCmdReg(@Buff, "inc", Reg, Size));
+				case value == -2 & PreferIncDec(Reg, Size) > 1:
+					Emit(@CodeCmdReg(@Buff, "inc", Reg, Size));
 					Emit(@Buff);
 				default:
-					strcpy(@Buff, "sub     ");
-					strcat(@Buff, @Reg);
-					strcat(@Buff, ", 0x");
-					strcat(@Buff, @str2(value, 16));
-					Emit(@Buff);
-				end:switch
+					Emit(@CodeCmdRegFmt(@Buff, "sub", Reg, Size, @str(value)));
+				end:select
 
 				offset = offset + value;
 
