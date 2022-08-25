@@ -100,5 +100,8 @@ word IsExplicitCastPossible(word From; word To)
 	when From == st_char & T_IsInteger(To) == 1:
 		return 1;
 
+	when T_IsPtr(From) == 1 & (To == st_intptr | To == st_uintptr):
+		return 1;
+
 	return 0;
 end

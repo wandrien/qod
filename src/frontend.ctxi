@@ -149,6 +149,9 @@ void InitFrontEnd()
 	st_uint64  = BaseType("uint64", sBASE_UINT, 8);
 	st_uint128 = BaseType("uint128", sBASE_UINT, 16);
 
+	st_intptr  = BaseType("intptr", sBASE_SINT, target_size_of_pointer);
+	st_uintptr = BaseType("uintptr", sBASE_UINT, target_size_of_pointer);
+
 	st_short   = BaseType("short" , sBASE_SINT, target_size_of_short);
 	st_ushort  = BaseType("ushort", sBASE_UINT, target_size_of_short);
 	st_int     = BaseType("int" , sBASE_SINT, target_size_of_int);

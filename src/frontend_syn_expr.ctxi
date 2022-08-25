@@ -854,14 +854,16 @@ void Cast2(word P_OP)
 			Stop(@eTYPE);
 		end
 
-	case iLT<=ID & ID<=iGT: /* Сравнения возможны только между целыми и символами (case с указателями был выше) */
-		if pTypeOp!=st_char & pTypeOp!=st_byte & pTypeOp!=st_word & pTypeOp!=st_int then
+	case iLT<=ID & ID<=iGT:
+		/* Сравнения возможны только между целыми и между символами (case с указателями был выше) */
+		if T_IsInteger(pTypeOp) != 1 & T_IsChar(pTypeOp) != 1 then
 			Stop(@eTYPE);
 		end
 		pTypeOp = st_bool;
 
 	case iADD<=ID & ID<=iDIV:
-		if pTypeOp!=st_byte & pTypeOp!=st_word & pTypeOp!=st_int then /* Арифметические операции только с целыми. */
+		/* Арифметические операции только с целыми. */
+		if T_IsInteger(pTypeOp) == 0 then
 			Stop(@eTYPE);
 		end
 		CTE(P_OP);

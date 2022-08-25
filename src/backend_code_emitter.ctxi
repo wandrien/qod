@@ -1348,6 +1348,8 @@ word Code(word P; word F; word T; word M)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			case pTypeTo == pTypeFrom:
 				null;
+			case T_Equal(pTypeTo, pTypeFrom) == 1:
+				null;
 			case pTypeTo==st_char & pTypeFrom==st_byte:
 				null;
 			case pTypeTo==st_char & pTypeFrom==st_word:
@@ -1373,6 +1375,8 @@ word Code(word P; word F; word T; word M)
 			case pTypeTo==st_int & pTypeFrom==st_word:
 				null;
 			case T_IsPtr(pTypeTo) == 1 & T_IsPtr(pTypeFrom) == 1:
+				null;
+			case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom) == 1:
 				null;
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
