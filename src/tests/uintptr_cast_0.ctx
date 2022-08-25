@@ -1,10 +1,12 @@
-// TEST: should_print '42 OK1 OK2 OK3 OK4 '
+// TEST: should_print '42 OK1 OK2 OK3 OK4 25 10 '
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
 
 word A = 42;
 word B = 0;
+
+char Arr[256];
 
 begin
 	word @p = @A;
@@ -28,4 +30,10 @@ begin
 	when b1 > a1:
 		puts("OK4 ");
 
+	uintptr arr0 = uintptr(@Arr[0]);
+	uintptr arr15 = uintptr(@Arr[15]);
+	uintptr arr25 = uintptr(@Arr[25]);
+
+	puts(@str(arr25 - arr0)); puts(" ");
+	puts(@str(arr25 - arr15)); puts(" ");
 end
