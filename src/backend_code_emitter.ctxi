@@ -1030,7 +1030,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		Size=SizeOfType(pType, 0);
 	end
 
-	/* Оптимизация случая, когда можно использовать inc/dec вместо add/sub */
+	/* Check if we can replace add/sub with inc/dec */
 	if rightOperand == operandImm & (ID == iADD | ID == iSUB) then
 
 		word Value = Node[pRight].Value;
@@ -1209,13 +1209,13 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			/*
 				XXX: The commented out code is mostly useless in the current implementation
 				I can't find any expression when that condition actually triggers.
-				May be useful  when a full-featured register allocation strategy will be implemented.
+				May be useful when a full-featured register allocation strategy will be implemented.
 			*/
 			/*if PHO_EncodeRegContainingConst(@BuffRightOperand, Node[pRight].Value, Size) != 0 then
 				CodeRegFmt(@Buff, fEAX, Size, @BuffRightOperand);
 			else*/
 				CodeRegConst(@Buff, fEAX, Size, Node[pRight].Value);
-			/*/end:if*/
+			/*end:if*/
 		case rightOperand == operandMemRef:
 			CodeRegFmt(@Buff, fEAX, Size, @BuffRightOperand);
 		case rightOperand == operandReg:
