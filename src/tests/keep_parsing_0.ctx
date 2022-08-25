@@ -2,8 +2,8 @@
 
 begin
 	word a = 1;
-	word A1[a];
-	word A2["s"];
-	word b = a + A1;
-	word c = a / 0;
+	word A1[a];      // error
+	word A2["s"];    // error
+	word b = a + A1; // error
+	word c = a / 0;  // error
 end
