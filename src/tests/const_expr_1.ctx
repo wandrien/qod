@@ -1,0 +1,19 @@
+// TEST: should_print '0 A 10 20 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	word zero = const_expr(word('0'));
+	word A = const_expr(word('A'));
+	putc(char(zero)); puts(" ");
+	putc(char(A)); puts(" ");
+
+	puts(@str(
+		const_expr(int(word(10)))
+	)); puts(" ");
+
+	puts(@str(
+		const_expr(int(int(char(char(20)))))
+	)); puts(" ");
+end

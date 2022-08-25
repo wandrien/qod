@@ -48,6 +48,11 @@ __Expr @_Expr;
 
 /*****************************************************************************/
 
+void function  __CTE(word P)
+__CTE @_CTE;
+
+/*****************************************************************************/
+
 word pFunc;
 word pLoop;
 
@@ -78,6 +83,7 @@ void InitFrontEnd()
 	@_Statements = @Statements;
 	@_Ctrl       = @Ctrl;
 	@_Expr       = @Expr;
+	@_CTE        = @CTE;
 
 	RegisterDigraph("!=");
 	RegisterDigraph("<=");
