@@ -189,7 +189,7 @@ word Code1(word pPrimary)
 
 			select
 			case Size==1 | Size==4:
-				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, Size), ",   ");
+				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, Size), ",  ");
 				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 			default:
 				strcpy3(@Buff, "lea     ", @CodeReg(NULL, fEAX, 4), ",  ");
