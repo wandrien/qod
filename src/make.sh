@@ -301,3 +301,38 @@ build_samples
 do_tests
 run_valgrind
 
+if [ "x$1" = "x--save-to-precompiled" ] ; then
+	printf "=> ${CODE_COLOR_YELLOW}Saving binaries:${CODE_COLOR_NOCOLOR}\n"
+	date_tag="`date -u +%F`"
+	rel_tag=1
+	save_dir=""
+	save_path=""
+	while true ; do
+		if [ "$rel_tag" = 1 ] ; then
+			save_dir="$date_tag"
+		else
+			save_dir="$date_tag-$rel_tag"
+		fi
+		save_path="../precompiled/$save_dir"
+		if [ ! -e "$save_path" ] ; then
+			break
+		fi
+		rel_tag=`expr $rel_tag + 1`
+	done
+
+	printf "    Target path: $save_path\n"
+
+	mkdir "$save_path"
+	cp -a \
+		out/lcontext_c \
+		out/lcontext_c_debug \
+		out/lcontext_c_debug.exe \
+		out/lcontext_c.exe \
+		"$save_path"
+	chmod a-x "$save_path"/*.exe
+
+	ln -sf "$save_dir/lcontext_c" "../precompiled/lcontext_c"
+
+	printf "    Binaries: `ls "$save_path" | tr "\n" " "`\n"
+fi
+
