@@ -26,18 +26,10 @@ end
 
 /*****************************************************************************/
 
-word SizeOfType(word pType; word nIndx)
-
-	word S = 0;
+word SizeOfType(word pType)
 	when Dict[pType].Class != cTYPE:
 		StopInternal(__FILE__, __LINE__);
-
-	S = T_SizeOf(pType);
-
-/*	when nIndx > 0:
-		S = nIndx * S;*/
-
-	return S;
+	return T_SizeOf(pType);
 end
 
 /*****************************************************************************/

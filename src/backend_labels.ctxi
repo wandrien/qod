@@ -195,7 +195,7 @@ word     Enum(word P; word Flag)
             end
 
           case Node[P].ID==iDEF_LOCAL:
-			word Size = SizeOfType(Node[P].pType, Node[Node[P].pLeft].Value);
+			word Size = SizeOfType(Node[P].pType);
 			S=S+DefaultInStackAlign(Size);
 
             if M<S then
@@ -234,7 +234,7 @@ word AssignLabels_Data()
 		select
 		case Dict[I].Class == cDATA & Dict[I].Used != 0:
 			Dict[I].Label = D;
-			word Size = SizeOfType(Dict[I].pType, T_ArrayGetSizeOr0(Dict[I].pType));
+			word Size = SizeOfType(Dict[I].pType);
 			D = D + DefaultStaticAlign(Size);
 		end:select
 
@@ -261,7 +261,7 @@ void AssignLabels_Struct()
 				when Dict[P].Class != cFIELD:
 					StopInternal(__FILE__, __LINE__);
 				Dict[P].Label = D1;
-				D1 = D1 + SizeOfType(Dict[P].pType, T_ArrayGetSizeOr0(Dict[P].pType));
+				D1 = D1 + SizeOfType(Dict[P].pType);
 
 				P = Dict[P].pNext;
 			end:while

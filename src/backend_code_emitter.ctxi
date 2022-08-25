@@ -108,7 +108,7 @@ word Code1(word pPrimary)
 					strcpy(@Buff,"dec     ");
 				end:if
 
-				word Size=SizeOfType(pType, 0);
+				word Size=SizeOfType(pType);
 				select
 				case Size==1 | Size==4:
 					null;
@@ -119,7 +119,7 @@ word Code1(word pPrimary)
 				Emit(@CodeDataIX_offset(@Buff, Size, ID, IX, Ofs));
 
 			case ID!=iCALL:
-				word Size = SizeOfType(pType, 0);
+				word Size = SizeOfType(pType);
 
 				select
 				case Size==1 | Size==4:
@@ -185,7 +185,7 @@ word Code1(word pPrimary)
 				return pType;
 			end:if
 
-			word Size = SizeOfType(pType, 0);
+			word Size = SizeOfType(pType);
 
 			select
 			case Size==1 | Size==4:
@@ -402,7 +402,7 @@ word Code1(word pPrimary)
 				P1  =Node[P1].pRight;
 			end:do
 
-			word Size = SizeOfType(pType, 0);
+			word Size = SizeOfType(pType);
 
 			C = C * Size;
 
@@ -451,7 +451,7 @@ word Code1(word pPrimary)
 			pType = T_DerefPtr(pType);
 
 			if Node[P1].pLeft<nNODE then
-				word Size = SizeOfType(pType, 0);
+				word Size = SizeOfType(pType);
 
 				select
 				case IX==RegB:
@@ -580,7 +580,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 			return 0;
 
 		case Node[P1].ID==iLOAD:
-			word Size = SizeOfType(pType, 0);
+			word Size = SizeOfType(pType);
 
 			select
 			case Size==1 | Size==4:
@@ -615,7 +615,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 				P1  =Node[P1].pRight;
 			end:do
 
-			word Size = SizeOfType(pType, 0);
+			word Size = SizeOfType(pType);
 
 			C = C * Size;
 
@@ -755,7 +755,7 @@ word TryCodeFastMult(char @Buff; word P; word F; word T; word M)
 		return nDICT;
 
 	word pType = Node[P].pType;
-	word Size = SizeOfType(pType, 0);
+	word Size = SizeOfType(pType);
 
 	when Size != 4:
 		return nDICT;
@@ -1027,7 +1027,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	word Size=4;
 	if pType<nDICT then
-		Size=SizeOfType(pType, 0);
+		Size=SizeOfType(pType);
 	end
 
 	/* Check if we can replace add/sub with inc/dec */
@@ -1385,7 +1385,7 @@ word Code(word P; word F; word T; word M)
 
 		case iBIT_NOT:
 			word pType = Code(Node[P].pLeft, 0, 0, 0);
-			word  Size = SizeOfType(pType, 0);
+			word  Size = SizeOfType(pType);
 			Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
 
 			return pType;
@@ -1411,7 +1411,7 @@ word Code(word P; word F; word T; word M)
 		  end
 
 		  word pType = Node[P].pType;
-		  word Size  = SizeOfType(pType, Node[Node[P].pLeft].Value);
+		  word Size  = SizeOfType(pType);
 
 		  AllocatedFrameSize =
 			  AllocatedFrameSize + DefaultInStackAlign(Size);
@@ -1483,7 +1483,7 @@ void EmitFunction(char @Buff; word I)
 	word pARG = Dict[pARGS].pFirst;
 	while pARG < nDICT do
 		Dict[pARG].Label = S1 + 8;
-		S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType, T_ArrayGetSizeOr0(Dict[pARG].pType)));
+		S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType));
 		pARG = Dict[pARG].pNext;
 	end:while
 

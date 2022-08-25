@@ -65,9 +65,7 @@ word Code_PUSH(word P; char @Buff)
 			word  RO;
 			word ID=ExtractDataInfo(P1, @pType, @nIndx, @Ofs, @RO);
 
-			/* FIXME: проверка pIndx >= nIndx не работает для локальных переменных, поскольку компилятор не сохраняет эту информацию >< */
-//			if pIndx >= nIndx & SizeOfType(pType, nPtr) == 4 then
-			if 1 >= 1 & SizeOfType(pType, nIndx) == 4 then
+			if SizeOfType(pType) == 4 then
 				strcpy(@Buff, "push    ");
 				Emit(@CodeDataIX_offset(@Buff, 4, ID, RegNone, Ofs));
 				return nDICT;
@@ -136,7 +134,7 @@ word Code_PUSH(word P; char @Buff)
 
 	word Size = target_size_of_pointer;
 	if pType<nDICT then
-		Size=SizeOfType(pType, 0);
+		Size=SizeOfType(pType);
 	end
 
 	select
@@ -163,7 +161,7 @@ word Code_RETURN(word P; char @Buff)
 		word pType=_Code(Node[P].pLeft,0,0,0);
 		word  Size=4;
 		if pType<nDICT then
-			Size=SizeOfType(pType, 0);
+			Size=SizeOfType(pType);
 		end:if
 
 		if Size!=1 & Size!=4 then
@@ -306,7 +304,7 @@ word Code_SWITCH(word P; char @Buff)
 				word value = Node[Node[VALUE_I].pLeft].Value - offset;
 
 				word Reg = RegA;
-				word Size = SizeOfType(pType, 0);
+				word Size = SizeOfType(pType);
 				switch Size of
 				case 1:
 					value = value & 0xFF;
