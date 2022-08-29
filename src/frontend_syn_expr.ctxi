@@ -473,6 +473,17 @@ word Primary(word Prty; char @Buff)
 				end:if
 
 				pType = Node[P1].pType;
+
+				/*
+					TODO:
+						Дальнейший код построения Primary портит дерево для iCAST.
+						Так что здесь мы выходим.
+						Сейчас iCAST поддерживается только для типов, для которых операции точки,
+						индексации массива и вызова функции не имеют смысла. Поэтому в любом случае
+						мы ничего не теряем.
+				*/
+				Scan(@Buff);
+				return P1;
 			else
 				if nPtr>0 then
 					Stop(@eUNDECLARED);
