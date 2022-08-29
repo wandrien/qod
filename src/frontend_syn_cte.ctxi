@@ -16,43 +16,43 @@ void CTE(word P)
 	if ID == iCAST then
 		select
 		case Node[pLeft].ID == iCHAR:
-			word Value = Node[pLeft].Value;
+			char Value = /*FIXME: reinterpret_cast here: */ char(Node[pLeft].Value);
 			select
 			case Node[P].pType == st_char:
 				Node[P].ID    = iCHAR;
-				Node[P].Value = Value;
+				Node[P].Value = word(char(Value));
 			case Node[P].pType == st_word:
 				Node[P].ID    = iWORD;
-				Node[P].Value = word( /*FIXME: reinterpret_cast here: */ char(Value));
+				Node[P].Value = word(Value);
 			case Node[P].pType == st_int:
 				Node[P].ID    = iINT;
-				Node[P].Value = int( /*FIXME: reinterpret_cast here: */ char(Value));
+				Node[P].Value = int(Value);
 			end:select
 		case Node[pLeft].ID == iWORD:
-			word Value = Node[pLeft].Value;
+			word Value = /*FIXME: reinterpret_cast here: */ word(Node[pLeft].Value);
 			select
 			case Node[P].pType == st_char:
 				Node[P].ID    = iCHAR;
-				Node[P].Value = Value;
+				Node[P].Value = word(char(Value));
 			case Node[P].pType == st_word:
 				Node[P].ID    = iWORD;
-				Node[P].Value = word( /*FIXME: reinterpret_cast here: */ char(Value));
+				Node[P].Value = word(Value);
 			case Node[P].pType == st_int:
 				Node[P].ID    = iINT;
-				Node[P].Value = int( /*FIXME: reinterpret_cast here: */ char(Value));
+				Node[P].Value = int(Value);
 			end:select
 		case Node[pLeft].ID == iINT:
-			word Value = Node[pLeft].Value;
+			int Value = /*FIXME: reinterpret_cast here: */ int(Node[pLeft].Value);
 			select
 			case Node[P].pType == st_char:
 				Node[P].ID    = iCHAR;
-				Node[P].Value = Value;
+				Node[P].Value = word(char(Value));
 			case Node[P].pType == st_word:
 				Node[P].ID    = iWORD;
-				Node[P].Value = word( /*FIXME: reinterpret_cast here: */ char(Value));
+				Node[P].Value = word(Value);
 			case Node[P].pType == st_int:
 				Node[P].ID    = iINT;
-				Node[P].Value = int( /*FIXME: reinterpret_cast here: */ char(Value));
+				Node[P].Value = int(Value);
 			end:select
 		end:select
 		return;
