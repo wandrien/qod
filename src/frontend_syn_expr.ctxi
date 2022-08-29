@@ -306,7 +306,6 @@ end
 /*****************************************************************************/
 
 word Primary(word Prty; char @Buff)
-
 	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
 		word P1 = Peek();
 		Node[P1].ID    = iWORD;
@@ -320,6 +319,32 @@ word Primary(word Prty; char @Buff)
 		word P1 = Peek();
 		Node[P1].ID    = iWORD;
 		Node[P1].Value = val (@Buff);
+		Node[P1].pType = st_word;
+		Scan(@Buff);
+		return P1;
+	end
+
+	if str_eq(@Buff,"sizeof") then /* sizeof(type) */
+		if strcmp(@Scan(@Buff),"(")!=0 then
+			Stop(@eBRACKETEXP);
+		end:if
+
+		Scan(@Buff);
+		word I=Find(@Buff);
+		if I>=nDict then
+			StopWithSubject(@eUNDECLARED, @Buff);
+		end:if
+
+		when Dict[I].Class != cTYPE:
+			StopWithSubject(@eNOTATYPE, @Buff);
+
+		if strcmp(@Scan(@Buff),")")!=0 then
+			Stop(@eBRACKETEXP);
+		end:if
+
+		word P1 = Peek();
+		Node[P1].ID    = iWORD;
+		Node[P1].Value = T_SizeOf(I);
 		Node[P1].pType = st_word;
 		Scan(@Buff);
 		return P1;
@@ -492,7 +517,7 @@ word Primary(word Prty; char @Buff)
 				return nNODE;
 			end:if
 		default:
-			Stop(@eUNDECLARED);
+			StopWithSubject(@eUNDECLARED, @Buff);
 		end:select
 	end:if
 

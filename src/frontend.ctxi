@@ -128,6 +128,7 @@ void InitFrontEnd()
 	Word("when");
 	Word("false");
 	Word("true");
+	Word("sizeof");
 	Word("__FILE__");
 	Word("__LINE__");
 

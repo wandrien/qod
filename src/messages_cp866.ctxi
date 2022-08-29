@@ -34,6 +34,7 @@ define @eCONSTEXP        "Требуется целая/символьная константа"        // word/i
 define @eDUPCASE         "Повтор варианта"                             // Duplicate case label
 define @eHEADEREXP       "Требуется ссылка на функцию"                 // Function reference required
 define @eTYPEEXP         "Пропущен идентификатор типа"                 // Type name expected
+define @eNOTATYPE        "Идентикатор не является типом"               // Not a data type
 define @eNOVOID          "Тип void недопустим"                         // Illegal use of void
 define @eNOVAL           "Требуется ссылка"                            // Reference required
 define @eNODATA          "Структура не определена"                     // Undefined structure

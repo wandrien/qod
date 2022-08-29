@@ -1,0 +1,11 @@
+// TEST: should_print '1 1 4 4 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	puts(@str(sizeof(char))); puts(" ");
+	puts(@str(sizeof(byte))); puts(" ");
+	puts(@str(sizeof(word))); puts(" ");
+	puts(@str(sizeof(int))); puts(" ");
+end

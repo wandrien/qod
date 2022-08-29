@@ -24,7 +24,7 @@ begin
 	when a1 == a2:
 		puts("OK2 ");
 
-	when b1 - a1 == 4: /* FIXME: use sizeof() */
+	when b1 - a1 == sizeof(word):
 		puts("OK3 ");
 
 	when b1 > a1:
