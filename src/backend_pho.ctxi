@@ -314,6 +314,7 @@ char@ PHO_Optimize_(char @Inst)
 	end:if
 
 	/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
+	/* FIXME: Add support of shl and shr */
 	if (!str_has_prefix(@Inst, "mov"))
 	 & (!str_has_prefix(@Inst, "add"))
 	 & (!str_has_prefix(@Inst, "sub"))
