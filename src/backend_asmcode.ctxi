@@ -218,7 +218,7 @@ end
 iDATA:    [@@DATA + XI + offset]
 iPARM:    [EBP    + XI + offset]
 iLOCAL:   [EBP    + XI - offset]
-iREF:     [         XI - offset]
+iREF:     [         XI + offset]
 
 */
 
