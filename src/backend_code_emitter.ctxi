@@ -84,11 +84,11 @@ word Code1(word pPrimary)
 		pPrimary = Node[pPrimary].pLeft;
 	end
 
-	word nIndx;
+	word nIndx__unused;
 	word pType;
 	word  Ofs;
 	word  RO;
-	word ID=ExtractDataInfo(pPrimary, @pType, @nIndx, @Ofs, @RO);
+	word ID=ExtractDataInfo(pPrimary, @pType, @nIndx__unused, @Ofs, @RO);
 	word IX=RegNone;
 
 	word P1=Node[pPrimary].pLeft;
@@ -538,7 +538,6 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
-			nIndx = T_ArrayGetSizeOr0(pType);
 			when T_IsArray(pType) != 0:
 				pType = T_ArrayDeref(pType);
 
