@@ -1,0 +1,6 @@
+// TEST: compilation_should_fail 'Операнд инкремента должен быть lvalue-выражением'
+
+begin
+    word a = 1;
+    inc (a + 1);
+end

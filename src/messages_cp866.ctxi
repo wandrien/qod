@@ -56,6 +56,10 @@ define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
 define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"
 
+define @eLVALUE_IN_ASSIGNMENT "Левая часть присваивания должна быть lvalue-выражением" // lvalue required as left operand of assignment
+define @eLVALUE_IN_INC   "Операнд инкремента должен быть lvalue-выражением" // lvalue required as increment operand
+//define @eLVALUE_IN_DEC   "Операнд декремента должен быть lvalue-выражением" // lvalue required as decrement operand
+
 define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
 define @eQODSTRONGNOTIMPL "$qod.strong: не реализовано"

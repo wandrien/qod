@@ -1,0 +1,7 @@
+// TEST: compilation_should_fail 'Левая часть присваивания должна быть lvalue-выражением'
+// EXPECTED-TO-FAIL: FIXME: Misrecognized as rvalue in the current partial implementation.
+
+begin
+    word a = 1;
+    @a = 2;
+end

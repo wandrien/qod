@@ -1,0 +1,6 @@
+// TEST: compilation_should_fail 'Левая часть присваивания должна быть lvalue-выражением'
+
+begin
+    word a = 1;
+    2 = a;
+end

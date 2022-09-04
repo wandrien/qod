@@ -1,0 +1,10 @@
+// TEST: compilation_should_fail 'Левая часть присваивания должна быть lvalue-выражением'
+
+word foo()
+    return 2;
+end
+
+begin
+    word a = 1;
+    foo = a;
+end

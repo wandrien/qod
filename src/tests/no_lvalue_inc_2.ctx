@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Операнд инкремента должен быть lvalue-выражением'
+
+word foo()
+    return 2;
+end
+
+begin
+    inc foo;
+end

@@ -1,0 +1,5 @@
+// TEST: compilation_should_fail 'Левая часть присваивания должна быть lvalue-выражением'
+
+begin
+    "abc" = "a";
+end

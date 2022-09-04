@@ -55,6 +55,53 @@ end
 
 /*****************************************************************************/
 
+bool NodeIsLValue(word P)
+	/*
+		FIXME: Incomplete implementation.
+		Сначала требуется избавиться от постфиксных деревьев в Primary.
+	*/
+	when P >= nNode:
+		StopInternal(__FILE__, __LINE__);
+
+	switch Node[P].ID of
+	case
+		iEMPTY,
+		iNULL,
+		iCHAR,
+		iWORD,
+		iINT,
+		iFUNC,
+		iSTRING,
+		iBIT_NOT,
+		iNEG,
+		iOR,
+		iXOR,
+		iEQV,
+		iAND,
+		iBIT_OR,
+		iBIT_XOR,
+		iBIT_AND,
+		iLT,
+		iLE,
+		iEQ,
+		iNE,
+		iGE,
+		iGT,
+		iADD,
+		iSUB,
+		iMUL,
+		iDIV,
+		iMOD,
+		iCAST,
+		iBOOL,
+		iNOT:
+		return false;
+	end
+	return true;
+end
+
+/*****************************************************************************/
+
 word NodeGetDict(word P)
 
 	when P >= nNode:
@@ -105,13 +152,13 @@ end
 /*****************************************************************************/
 
 void WarnAtNode(word P; char @Msg)
-	WarnAt(@Node[P].SourceLocation, @eTYPE);
+	WarnAt(@Node[P].SourceLocation, @Msg);
 end
 
 void ErrorAtNode(word P; char @Msg)
-	ErrorAt(@Node[P].SourceLocation, @eTYPE);
+	ErrorAt(@Node[P].SourceLocation, @Msg);
 end
 
 void StopAtNode(word P; char @Msg)
-	StopAt(@Node[P].SourceLocation, @eTYPE);
+	StopAt(@Node[P].SourceLocation, @Msg);
 end

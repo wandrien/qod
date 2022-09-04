@@ -466,8 +466,13 @@ word Primary(word Prty; char @Buff)
 
 					ParseCallArgs(I, @Node[P2].pLeft, @Buff);
 				else
-					if Prty >= PRIO_INC | nPtr!=1 then
-						Stop(@eNOADDR);
+					if nPtr != 1 then
+						when Prty == PRIO_INC:
+							Stop(@eLVALUE_IN_INC);
+						when Prty == PRIO_LVALUE:
+							Stop(@eLVALUE_IN_ASSIGNMENT);
+						when Prty >= PRIO_INC:
+							Stop(@eNOADDR);
 					end
 
 					Node[P1].ID    =iFUNC;
@@ -698,14 +703,6 @@ word Primary(word Prty; char @Buff)
 			Node[P4].ID=iLPTR;
 		else
 			Node[P4].ID=iLOAD;
-		end:if
-	else
-		if (nPtr>nPtr1)
-		 | (Node[P1].ID == iCHAR)
-		 | (Node[P1].ID == iWORD)
-		 | (Node[P1].ID == iSTRING)
-		 | (nPtr>=nPtr1 & Call!=0 & (strcmp(@Buff,"=") == 0 | strcmp(@Buff,":=") == 0)) then
-			Stop(@eNOADDR);
 		end:if
 	end:if
 

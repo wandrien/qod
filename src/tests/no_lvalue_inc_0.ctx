@@ -1,0 +1,5 @@
+// TEST: compilation_should_fail 'Операнд инкремента должен быть lvalue-выражением'
+
+begin
+    inc 2;
+end

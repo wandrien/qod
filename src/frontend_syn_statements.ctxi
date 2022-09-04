@@ -380,9 +380,14 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 		Stop(@eSEMICOLONEXP);
 	end
 
-	if pType!=st_byte & pType!=st_word & pType!=st_int then
-		Stop(@eTYPE);
-	end
+	select
+	case !NodeIsLValue(Node[P1].pLeft):
+		ErrorAtNode(P1, @eLVALUE_IN_INC);
+		AddFakeCast(st_word, @Node[P1].pLeft);
+	case pType!=st_byte & pType!=st_word & pType!=st_int:
+		ErrorAtNode(P1, @eTYPE);
+		AddFakeCast(st_word, @Node[P1].pLeft);
+	end:select
 
 end
 
@@ -449,6 +454,9 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P3].pLeft = P2;
 
 		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
+			if !NodeIsLValue(Node[P3].pLeft) then
+				Error(@eLVALUE_IN_ASSIGNMENT);
+			end:if
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 			ImplicitCast(Node[P2].pType, @Node[P3].pRight);
 		end:if
