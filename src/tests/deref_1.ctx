@@ -1,0 +1,21 @@
+// TEST: should_print '10 11 12 '
+// EXPECTED-TO-FAIL: FIXME: Wrong code generated
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+word arr1[10];
+
+word @ret_arr1()
+	return @arr1;
+end
+
+
+begin
+	ret_arr1()[0] = 10;
+	ret_arr1()[1] = 11;
+	ret_arr1()[2] = 12;
+	puts(@str(arr1[0])); puts(" ");
+	puts(@str(arr1[1])); puts(" ");
+	puts(@str(arr1[2])); puts(" ");
+end
