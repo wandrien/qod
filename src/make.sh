@@ -240,23 +240,62 @@ do_test ()
 	fi
 }
 
+concat_list()
+{
+	if [ -z "$1" ] ; then
+		printf "%s" "$3"
+	else
+		printf "%s%s%s" "$1$2$3"
+	fi
+}
+
+
 do_tests ()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Running tests${CODE_COLOR_NOCOLOR}\n"
 
 	mkdir -p tests/out
 
-
-	some_failed=n
+	passed_tests=
+	failed_tests=
+	expected_to_fail_tests=
+	passed_expected_to_fail_tests=
+	nr_passed=0
+	nr_failed=0
+	nr_expected_to_fail=0
+	nr_passed_expected_to_fail=0
 	for f in `(cd tests && grep -l  -- 'TEST:' *.* )` ; do
 		local t="`basename -s .ctx  -- "$f"`"
 		local c="`grep  -- 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
+		local expected_to_fail="`grep -- 'EXPECTED-TO-FAIL:' "tests/$f"`"
 		if ! (eval do_test $t $c) ; then
-			some_failed=y
+			if [ -z "$expected_to_fail" ] ; then
+				failed_tests="`concat_list "$failed_tests" ", " "$t"`"
+				nr_failed=`expr $nr_failed + 1`
+			else
+				expected_to_fail_tests="`concat_list "$expected_to_fail_tests" ", " "$t"`"
+				nr_expected_to_fail=`expr $nr_expected_to_fail + 1`
+			fi
+		else
+			if [ -z "$expected_to_fail" ] ; then
+				passed_tests="`concat_list "$passed_tests" ", " "$t"`"
+				nr_passed=`expr $nr_passed + 1`
+			else
+				passed_expected_to_fail_tests="`concat_list "$passed_expected_to_fail_tests" ", " "$t"`"
+				nr_passed_expected_to_fail=`expr $nr_passed_expected_to_fail + 1`
+			fi
 		fi
 	done
 
-	if [ "x$some_failed" = "xy" ] ; then
+	printf " ${CODE_COLOR_GREEN}Passed tests${CODE_COLOR_NOCOLOR}: %s\n" "$nr_passed"
+	if [ "$nr_expected_to_fail" -ne 0 ] ; then
+		printf " ${CODE_COLOR_YELLOW}Expected to fail${CODE_COLOR_NOCOLOR}: %s (%s)\n" "$nr_expected_to_fail" "$expected_to_fail_tests"
+	fi
+	if [ "$nr_passed_expected_to_fail" -ne 0 ] ; then
+		printf " ${CODE_COLOR_PURPLE}Expected to fail, but passed sucessfully${CODE_COLOR_NOCOLOR}: %s (%s)\n" "$nr_passed_expected_to_fail" "$passed_expected_to_fail_tests"
+	fi
+	if [ "$nr_failed" -ne 0 ] ; then
+		printf " ${CODE_COLOR_RED}Failed tests (regressions)${CODE_COLOR_NOCOLOR}: %s (%s)\n" "$nr_failed" "$failed_tests"
 		return 1
 	fi
 	return 0
