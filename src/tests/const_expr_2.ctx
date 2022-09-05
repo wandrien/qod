@@ -1,0 +1,11 @@
+// TEST: should_print '10 11 12 '
+// EXPECTED-TO-FAIL: FIXME: Not implemented
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	puts(@str(const_expr(byte(10)))); puts(" ");
+	puts(@str(const_expr(word(byte(11))))); puts(" ");
+	puts(@str(const_expr(int(word(byte(12)))))); puts(" ");
+end

@@ -1,0 +1,45 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 '
+// EXPECTED-TO-FAIL: FIXME: Not implemented
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+bool t()
+	return true;
+end
+
+bool f()
+	return false;
+end
+
+void foo()
+
+	if t() == t() then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if f() == f() then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if f() != t() then
+		puts("OK3 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if t() == f() then
+		puts("OOPS ");
+	else
+		puts("OK4 ");
+	end:if
+
+end
+
+begin
+	foo();
+end
