@@ -845,12 +845,6 @@ void Cast2(word P_OP)
 	/**************************************************************************/
 
 	select
-	case T_IsPtr(pType1) == 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
-		if ID!=iEQ & ID!=iNE then
-			Stop(@eTYPE);
-		end
-		pTypeOp = st_bool;
-
 	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
 		select
 		case pTypeOp == st_byte | pTypeOp == st_word:
@@ -878,10 +872,25 @@ void Cast2(word P_OP)
 		end
 
 	case iLT<=ID & ID<=iGT:
-		/* Сравнения возможны только между целыми и между символами (case с указателями был выше) */
-		if T_IsInteger(pTypeOp) != 1 & T_IsChar(pTypeOp) != 1 then
-			ErrorAtNode(P_OP, @eTYPE_COMP_OP);
-		end
+		if ID == iEQ | ID == iNE then
+			/* Сравнение равенство/неравенство... */
+			/* ...возможно только между целыми, булевыми, символами, указателями. */
+			if
+				T_IsInteger(pTypeOp) != 1 &
+				T_IsChar(pTypeOp) != 1 &
+				T_IsBool(pTypeOp) != 1 &
+				T_IsPtr(pTypeOp) != 1 then
+				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+			end
+		else
+			/* Сравнение больше/меньше */
+			/* ...возможно только между целыми, символами. */
+			if
+				T_IsInteger(pTypeOp) != 1 &
+				T_IsChar(pTypeOp) != 1 then
+				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+			end
+		end:if
 		pTypeOp = st_bool;
 
 	case iADD<=ID & ID<=iDIV:
