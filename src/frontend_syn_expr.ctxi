@@ -92,7 +92,7 @@ word Tabl(char @Buff)
 		case T_IsInteger(Node[P].pType) != 1:
 			Error(@eARR_SIZE_TYPE);
 			nIndx = 1;
-		case NodeHasImmediateValue(P) != 1:
+		case !NodeHasImmediateValue(P):
 			Error(@eARR_SIZE_CONSTEXP);
 			nIndx = 1;
 		default:

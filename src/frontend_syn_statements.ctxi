@@ -149,22 +149,22 @@ end
 
 /*****************************************************************************/
 
-word Statement_SWITCH_CheckCast(word pTargetType; word pLiteralType)
+bool Statement_SWITCH_CheckCast(word pTargetType; word pLiteralType)
 	select
 	case pTargetType == st_char:
 		when pLiteralType == st_char:
-			return 1;
+			return true;
 	case pTargetType == st_byte:
 		when pLiteralType == st_word:
-			return 1;
+			return true;
 	case pTargetType == st_word:
 		when pLiteralType == st_word:
-			return 1;
+			return true;
 	case pTargetType == st_int:
 		when pLiteralType == st_word | pLiteralType == st_int:
-			return 1;
+			return true;
 	end:select
-	return 0;
+	return false;
 end
 
 void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
@@ -199,10 +199,10 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		repeat
 			word EXPR = Expr(PRIO_ZERO, @Scan(@Buff));
 
-			when NodeHasImmediateValue(EXPR) == 0:
+			when !NodeHasImmediateValue(EXPR):
 				Stop(@eCONSTEXP);
 
-			when Statement_SWITCH_CheckCast(pType, Node[EXPR].pType) == 0:
+			when !Statement_SWITCH_CheckCast(pType, Node[EXPR].pType):
 				Stop(@eCONSTEXP);
 
 			word  CASE_I = Node[COND].pRight;

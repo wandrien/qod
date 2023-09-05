@@ -25,21 +25,21 @@ end
 
 /*****************************************************************************/
 
-word NodeHasImmediateValue(word P)
+bool NodeHasImmediateValue(word P)
 
 	when P >= nNode:
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
 	case iLITERAL:
-		return 1;
+		return true;
 	end
 
-	return 0;
+	return false;
 end
 
 word NodeGetImmediateValue(word P)
-	when NodeHasImmediateValue(P) != 0:
+	when NodeHasImmediateValue(P):
 		return Node[P].Value;
 
 	StopInternal(__FILE__, __LINE__);
@@ -47,7 +47,7 @@ word NodeGetImmediateValue(word P)
 end
 
 void NodeSetImmediateValue(word P; word Value)
-	when NodeHasImmediateValue(P) != 0:
+	when NodeHasImmediateValue(P):
 		Node[P].Value = Value;
 
 	StopInternal(__FILE__, __LINE__);
@@ -55,24 +55,23 @@ end
 
 /*****************************************************************************/
 
-word NodeIsLiteralChar(word P)
+bool NodeIsLiteralChar(word P)
 	when Node[P].ID == iLITERAL & Node[P].pType == st_char:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word NodeIsLiteralWord(word P)
+bool NodeIsLiteralWord(word P)
 	when Node[P].ID == iLITERAL & Node[P].pType == st_word:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word NodeIsLiteralInt(word P)
+bool NodeIsLiteralInt(word P)
 	when Node[P].ID == iLITERAL & Node[P].pType == st_int:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
-
 
 /*****************************************************************************/
 

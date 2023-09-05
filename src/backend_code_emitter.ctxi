@@ -293,7 +293,7 @@ word Code1(word pPrimary)
 			word  IX1 = RegNone;
 			word fIX  = 1;
 			do
-				if NodeIsLiteralWord(Node[P1].pLeft) == 1 then
+				if NodeIsLiteralWord(Node[P1].pLeft) then
 					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
 					N = N * Node[P1].Value;
 				else
@@ -596,7 +596,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 			word  C   = 0;
 			word  N   = 0;
 			do
-				if NodeIsLiteralWord(Node[P1].pLeft) == 1 then
+				if NodeIsLiteralWord(Node[P1].pLeft) then
 					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
 					N = N * Node[P1].Value;
 				else
@@ -643,30 +643,31 @@ end
 
 /*****************************************************************************/
 
-word NodeCanBeEncodedAsImm(word P)
+bool NodeCanBeEncodedAsImm(word P)
 	word ID=Node[P].ID;
 	switch ID of
 	case iLITERAL, iNULL:
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	end:switch
 end
 
-/** Return non-zero if the operands can be swapped for no cost. */
-word IsOperationCommutative(word ID)
+/** Returns true if the operands can be swapped for no cost. */
+bool IsOperationCommutative(word ID)
 	switch ID of
 	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iMUL, iEQ, iNE:
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	end:switch
 end
 
-/** Return non-zero if the operands can be swapped for no cost, but we should change the operation ID as well.
- Return the code of swapped operation.
+/** Checks if the operands can be swapped for no cost, but we should change the operation ID as well.
+    Returns the code of swapped operation, if the operation is swappable.
+    Returns zero otherwise.
 */
-word IsOperationSwappable(word ID)
+word CheckOperationSwappable(word ID)
 	switch ID of
 	case iLT: return iGT;
 	case iLE: return iGE;
@@ -676,8 +677,7 @@ word IsOperationSwappable(word ID)
 	return 0;
 end
 
-
-word DoesOperationAllowRightMemRef(word ID)
+bool DoesOperationAllowRightMemRef(word ID)
 	switch ID of
 	case
 		iBIT_OR,
@@ -692,13 +692,13 @@ word DoesOperationAllowRightMemRef(word ID)
 		iNE,
 		iGE,
 		iGT:
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	end:switch
 end
 
-word DoesOperationAllowRightImm(word ID)
+bool DoesOperationAllowRightImm(word ID)
 	switch ID of
 	case
 		iBIT_OR,
@@ -712,9 +712,9 @@ word DoesOperationAllowRightImm(word ID)
 		iNE,
 		iGE,
 		iGT:
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	end:switch
 end
 
@@ -763,9 +763,9 @@ word TryCodeFastMult(char @Buff; word P; word F; word T; word M)
 	word pRight = Node[P].pRight;
 
 	select
-	case NodeCanBeEncodedAsImm(pRight) != 0:
+	case NodeCanBeEncodedAsImm(pRight):
 		null;
-	case NodeCanBeEncodedAsImm(pLeft) != 0:
+	case NodeCanBeEncodedAsImm(pLeft):
 		word tmp = pLeft; pLeft = pRight; pRight = tmp;
 	default:
 		return nDICT;
@@ -835,7 +835,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			We can handle some special cases in a more efficient way:
 		*/
 
-		if DoesOperationAllowRightImm(ID) != 0 then
+		if DoesOperationAllowRightImm(ID) then
 
 			/*
 				## Immediate constant on the right.
@@ -847,7 +847,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					mov   RegB,  ImmValue
 					Op    RegA,  RegB
 			*/
-			if NodeCanBeEncodedAsImm(pRight) != 0 then
+			if NodeCanBeEncodedAsImm(pRight) then
 				rightOperand = operandImm;
 				exit;
 			end:if
@@ -864,15 +864,15 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					RegB  <- RightOperand
 					Op    RegA,  RegB
 			*/
-			if IsOperationCommutative(ID) != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
+			if IsOperationCommutative(ID) & NodeCanBeEncodedAsImm(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandImm;
 				exit;
 			end:if
 
 			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
-			word swappedID = IsOperationSwappable(ID);
-			if swappedID != 0 & NodeCanBeEncodedAsImm(pLeft) != 0 then
+			word swappedID = CheckOperationSwappable(ID);
+			if swappedID != 0 & NodeCanBeEncodedAsImm(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandImm;
 				ID = swappedID;
@@ -882,7 +882,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 		end:if
 
-		if DoesOperationAllowRightMemRef(ID) != 0 then
+		if DoesOperationAllowRightMemRef(ID) then
 
 			/*
 				## Simple memory reference on the right.
@@ -911,14 +911,14 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					RegB  <- RightOperand
 					Op    RegA,  RegB
 			*/
-			if IsOperationCommutative(ID) != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
+			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
 				exit;
 			end:if
 
 			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
-			word swappedID = IsOperationSwappable(ID);
+			word swappedID = CheckOperationSwappable(ID);
 			if swappedID != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
@@ -946,7 +946,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case rightOperand == operandMemRef:
 		pType=_Code(pLeft,0,0,0);
 
-	case NodeCanBeEncodedAsImm(pLeft) != 0:
+	case NodeCanBeEncodedAsImm(pLeft):
 		if fEAX!=RegA then
 			EmitLine(0, "push    EAX", "saved in CodeBinOp");
 			fEAX=RegA;
@@ -1001,7 +1001,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	if fSwap==1 then
 		do
 			/* We can handle it by changing the operation ID */
-			word swappedID = IsOperationSwappable(ID);
+			word swappedID = CheckOperationSwappable(ID);
 			if swappedID != 0 then
 				ID = swappedID;
 				exit;
@@ -1015,7 +1015,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			end:switch
 
 			/* If the operation is commutative, we don't care about the order. */
-			when IsOperationCommutative(ID) != 0:
+			when IsOperationCommutative(ID):
 				exit;
 
 			/* In other cases, swapped operands shouldn't happen. */
@@ -1382,7 +1382,7 @@ word Code(word P; word F; word T; word M)
 			return pType;
 
 		case iNEG:
-			if NodeIsLiteralWord(Node[P].pLeft) == 1 then
+			if NodeIsLiteralWord(Node[P].pLeft) then
 				Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
 				return st_int;
 			end
