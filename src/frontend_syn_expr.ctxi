@@ -15,6 +15,7 @@ word val2(char @Str; word Base)
 		Stop(@eINVALIDBASE);
 	end
 
+	bool Overflow = false;
 	word i = 0;
 
 	word Value = 0;
@@ -38,9 +39,14 @@ word val2(char @Str; word Base)
 			Stop(@eWRONGCHAR);
 		end:select
 
-		/* TODO: детектить переполнение. */
+		word NewValue = Value * Base + Digit;
 
-		Value = Value * Base + Digit;
+		if !Overflow & NewValue < Value then
+			Overflow = true;
+			Error(@eINTTOOBIG);
+		end:if
+
+		Value = NewValue;
 
 		inc i;
 	end:while

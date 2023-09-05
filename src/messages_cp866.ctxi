@@ -7,6 +7,7 @@ define @eNOMEMORY        "Недостаточно памяти"                         // Not en
 define @eWRONGCHAR       "Недопустимый символ в константе"             // Illegal character in const
 define @eOVERFLOW        "Константа слишком велика"                    // Too big number
 define @eLONGNAME        "Слишком длинный идентификатор"               // Name length too long
+define @eINTTOOBIG       "Слишком длинный целочисленный литерал"       // Integer literal too big
 define @eEXPECTED        "Пропущен идентификатор"                      // Identifier expected
 define @eUNDECLARED      "Идентификатор не описан"                     // undeclared identifier
 define @eUNDECLARED_FIELD "Структура не содержит такого элемента"      // Struct has no such member
