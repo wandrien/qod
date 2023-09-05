@@ -171,22 +171,22 @@ end
 
 /*****************************************************************************/
 
-word NodeTypeIs(word P; word T)
+bool NodeTypeIs(word P; word T)
 	when P >= nNode:
 		StopInternal(__FILE__, __LINE__);
 	when Node[P].pType == T:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
 /*****************************************************************************/
 
-word NodeTypeIsPointerTo(word P; word T)
+bool NodeTypeIsPointerTo(word P; word T)
 	when P >= nNode:
 		StopInternal(__FILE__, __LINE__);
 	when Node[P].pType == T_PtrTo(T):
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
 /*****************************************************************************/

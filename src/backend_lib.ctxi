@@ -85,12 +85,12 @@ end
 
 /*****************************************************************************/
 
-word NodeHasConst(word P; word Data)
+bool NodeHasConst(word P; word Data)
 	if (Node[P].ID == iNULL & Data == 0)
 	 | (Node[P].ID == iLITERAL & Node[P].Value == Data) then
-		return 1;
+		return true;
 	end:if
-	return 0;
+	return false;
 end
 
 /*****************************************************************************/

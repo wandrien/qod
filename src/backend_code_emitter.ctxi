@@ -1259,7 +1259,7 @@ word Code(word P; word F; word T; word M)
 		StopInternalCodegen(__FILE__, __LINE__);
 
 	if T != 0 | F != 0 then
-		when NodeTypeIs(P, st_bool) == 0: /* T и F имеют смысл только для булевых вычислений. */
+		when !NodeTypeIs(P, st_bool): /* T и F имеют смысл только для булевых вычислений. */
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		switch Node[P].ID of
@@ -1339,7 +1339,7 @@ word Code(word P; word F; word T; word M)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			case pTypeTo == pTypeFrom:
 				null;
-			case T_Equal(pTypeTo, pTypeFrom) == 1:
+			case T_Equal(pTypeTo, pTypeFrom):
 				null;
 			case pTypeTo==st_char & pTypeFrom==st_byte:
 				null;
@@ -1499,7 +1499,7 @@ void EmitFunction(char @Buff; word I)
 					StopInternalCodegen(__FILE__, __LINE__);
 				end:if
 				if StaticDataIsZeroed == 0
-				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == 0 then
+				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == false then
 					Code(Dict[J].pNode, 0, 0, 0);
 				end:if
 			end:if

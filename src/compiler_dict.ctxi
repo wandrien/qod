@@ -240,7 +240,7 @@ end
 
 /*****************************************************************************/
 
-word T_Equal(word T1, T2)
+bool T_Equal(word T1, T2)
 	when T1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
@@ -254,17 +254,17 @@ word T_Equal(word T1, T2)
 		StopInternal(__FILE__, __LINE__);
 
 	when T1 == T2:
-		return 1;
+		return true;
 
 	if Dict[T1].Sub == Dict[T2].Sub then
 		select
 		case Dict[T1].Sub == sBASE_UINT | Dict[T1].Sub == sBASE_SINT:
 			when Dict[T1].TypeSize == Dict[T2].TypeSize:
-				return 1;
+				return true;
 		end:select
 	end:if
 
-	return 0;
+	return false;
 end
 
 /*****************************************************************************/

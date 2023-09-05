@@ -40,45 +40,45 @@ end
 
 /*****************************************************************************/
 
-word IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
+bool IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 
 	select
 	case pTypeFrom == pTypeTo:
-		return 1;
+		return true;
 	case T_IsPtr(pTypeFrom) & T_IsPtr(pTypeTo):
 		when pTypeFrom == T_PtrTo(st_void):
-			return 1;
+			return true;
 		when pTypeTo == T_PtrTo(st_void):
-			return 1;
+			return true;
 		word pTypeDerefFrom = T_DerefPtr(pTypeFrom);
 		word pTypeDerefTo = T_DerefPtr(pTypeTo);
 		when T_IsFuctTypesIdentical(pTypeDerefFrom, pTypeDerefTo):
-			return 1;
+			return true;
 	case T_IsInteger(pTypeFrom) & T_IsInteger(pTypeTo):
 		if T_IsSigned(pTypeFrom) == T_IsSigned(pTypeTo) then
 			when T_SizeOf(pTypeFrom) <= T_SizeOf(pTypeTo):
-				return 1;
+				return true;
 		end:if
 
 		/* HACK: temporary rules to make self-compilation possible */
 		when pTypeFrom == st_word & pTypeTo == st_int:
-			return 1;
+			return true;
 
 		when pTypeFrom == st_int & pTypeTo == st_word:
-			return 1;
+			return true;
 
 		when pTypeFrom == st_word & pTypeTo == st_byte:
-			return 1;
+			return true;
 		/* END HACK */
 	end:select
 
-	return 0;
+	return false;
 end
 
 /*****************************************************************************/
 
 void ImplicitCast(word pTypeTo; word @P)
-	when IsImplicitCastPossible(Node[P].pType, pTypeTo) == 0:
+	when !IsImplicitCastPossible(Node[P].pType, pTypeTo):
 		Stop(@eTYPE);
 
 	AddImplicitCast(pTypeTo, @P);
@@ -86,21 +86,21 @@ end
 
 /*****************************************************************************/
 
-word IsExplicitCastPossible(word From; word To)
-	when IsImplicitCastPossible(From, To) == 1:
-		return 1;
+bool IsExplicitCastPossible(word From; word To)
+	when IsImplicitCastPossible(From, To):
+		return true;
 
 	when T_IsInteger(From) & T_IsInteger(To):
-		return 1;
+		return true;
 
 	when T_IsInteger(From) & (To == st_char):
-		return 1;
+		return true;
 
 	when (From == st_char) & T_IsInteger(To):
-		return 1;
+		return true;
 
 	when T_IsPtr(From) & (To == st_intptr | To == st_uintptr):
-		return 1;
+		return true;
 
-	return 0;
+	return false;
 end

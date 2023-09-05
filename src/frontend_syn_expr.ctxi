@@ -481,7 +481,7 @@ word Primary(word Prty; char @Buff)
 					Stop(@eBRACKETEXP);
 				end:if
 
-				if IsExplicitCastPossible(Node[P1].pType, I) != 0 then
+				if IsExplicitCastPossible(Node[P1].pType, I) then
 					AddCast(I, @P1);
 				else
 					AddFakeCast(I, @P1);
@@ -749,7 +749,7 @@ void ApplyUACCastsForIntegers(word P_OP)
 	end:if
 
 	/* Эквивалентные типы. */
-	if T_Equal(pType1, pType2) == 1 then
+	if T_Equal(pType1, pType2) then
 		ApplyCommonType(P_OP, pType1);
 		return;
 	end:if
