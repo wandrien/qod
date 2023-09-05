@@ -63,9 +63,13 @@ word val(char @Buff)
 
 	word k = str_find_chars(@Buff, "$");
 	select
-	/* Префиксы 0x - шестнадцатиричное. */
+	/* Префикс 0x - шестнадцатиричное. */
 	case str_has_prefix(@Buff, "0x"):
 		Base = 16;
+		P    = 2;
+	/* Префикс 0b - двоичное. */
+	case str_has_prefix(@Buff, "0b"):
+		Base = 2;
 		P    = 2;
 	/* Символ $ не найден - десятичное. */
 	case Buff[k] == #0:
