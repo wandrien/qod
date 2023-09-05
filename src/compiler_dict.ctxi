@@ -269,49 +269,49 @@ end
 
 /*****************************************************************************/
 
-word T_IsChar(word T)
+bool T_IsChar(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_CHAR:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word T_IsBool(word T)
+bool T_IsBool(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_BOOL:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word T_IsUnsigned(word T)
+bool T_IsUnsigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_UINT:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word T_IsSigned(word T)
+bool T_IsSigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_SINT:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word T_IsInteger(word T)
+bool T_IsInteger(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	when T_IsUnsigned(T) == 1 | T_IsSigned(T) == 1:
-		return 1;
-	return 0;
+	when T_IsUnsigned(T) | T_IsSigned(T):
+		return true;
+	return false;
 end
 
 /*****************************************************************************/
@@ -330,16 +330,16 @@ word T_SizeOf(word T)
 end
 
 /*****************************************************************************/
-word T_IsArray(word T)
+bool T_IsArray(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sARRAY:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
 word T_ArrayDeref(word T)
-	when T_IsArray(T) == 0:
+	when !T_IsArray(T):
 		StopInternal(__FILE__, __LINE__);
 	return Dict[T].pType;
 end
@@ -353,7 +353,7 @@ word T_ArrayGetSize(word T)
 end
 
 word T_ArrayGetSizeOr0(word T)
-	when T_IsArray(T) == 0:
+	when !T_IsArray(T):
 		return 0;
 	return T_ArrayGetSize(T);
 end
@@ -381,22 +381,22 @@ end
 
 /*****************************************************************************/
 
-word T_IsPtr(word T)
+bool T_IsPtr(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sPTR:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
-word T_IsPtrTo(word T; word T2)
-	when T_IsPtr(T) == 1 & Dict[T].pType == T2:
-		return 1;
-	return 0;
+bool T_IsPtrTo(word T; word T2)
+	when T_IsPtr(T) & (Dict[T].pType == T2):
+		return true;
+	return false;
 end
 
 word T_DerefPtr(word T)
-	when T_IsPtr(T) == 0:
+	when !T_IsPtr(T):
 		StopInternal(__FILE__, __LINE__);
 	return Dict[T].pType;
 end
@@ -407,7 +407,7 @@ word T_PtrTo(word T)
 	when Dict[T].Class != cTYPE:
 		StopInternal(__FILE__, __LINE__);
 
-	if T_IsArray(T) != 0 then
+	if T_IsArray(T) then
 		T = T_ArrayDeref(T);
 	end
 
@@ -433,16 +433,16 @@ end
 
 /*****************************************************************************/
 
-word T_IsFunc(word T)
+bool T_IsFunc(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class == cTYPE & Dict[T].Sub == sFUNCTYPE:
-		return 1;
-	return 0;
+		return true;
+	return false;
 end
 
 word T_FuncGetRetType(word T)
-	when T_IsFunc(T) == 0:
+	when !T_IsFunc(T):
 		StopInternal(__FILE__, __LINE__);
 	return Dict[T].pType;
 end
@@ -451,7 +451,7 @@ end
 	Функция проверяет идентичность функциональных типов.
 	Аргументами могут выступать функциональные типы, либо функции.
 */
-word T_IsFuctTypesIdentical(word T1; word T2)
+bool T_IsFuctTypesIdentical(word T1; word T2)
 	when T1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
@@ -459,16 +459,16 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 		StopInternal(__FILE__, __LINE__);
 
 	when T1 == T2:
-		return 1;
+		return true;
 
 	when !((Dict[T1].Class == cTYPE & Dict[T1].Sub == sFUNCTYPE) | (Dict[T1].Class == cFUNC)):
-		return 0;
+		return false;
 
 	when !((Dict[T2].Class == cTYPE & Dict[T2].Sub == sFUNCTYPE) | (Dict[T2].Class == cFUNC)):
-		return 0;
+		return false;
 
 	when Dict[T1].pType != Dict[T2].pType:
-		return 0;
+		return false;
 
 	word pARGS1 = FindInNamespace("args", T1);
 	word pARGS2 = FindInNamespace("args", T2);
@@ -479,7 +479,7 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 	word P2 = Dict[pARGS2].pFirst;
 	do
 		when P1 == nDICT & P2 == nDICT:
-			return 1;
+			return true;
 
 		when P1 == nDICT & P2 != nDICT:
 			exit;
@@ -492,7 +492,7 @@ word T_IsFuctTypesIdentical(word T1; word T2)
 		P2 = Dict[P2].pNext;
 	end:do
 
-	return 0;
+	return false;
 end
 
 word T_FuncTypeForFunction(word F)
@@ -511,7 +511,7 @@ word T_FuncTypeForFunction(word F)
 		 & Dict[P].Class == cTYPE
 		 & Dict[P].Sub == sFUNCTYPE
 		 & strcmp(@DictGetName(P), "") == 0
-		 & T_IsFuctTypesIdentical(F, P) == 1
+		 & T_IsFuctTypesIdentical(F, P) == true
 		 then
 			return P;
 		end:if
@@ -556,7 +556,7 @@ word DefineInteger(char @Name; word Type; word Value)
 		StopInternal(__FILE__, __LINE__);
 	end
 
-	when T_IsInteger(Type) == 0:
+	when !T_IsInteger(Type):
 		StopInternal(__FILE__, __LINE__);
 
 	word D = DictAlloc();

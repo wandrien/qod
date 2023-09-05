@@ -45,16 +45,16 @@ word IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 	select
 	case pTypeFrom == pTypeTo:
 		return 1;
-	case T_IsPtr(pTypeFrom) == 1 & T_IsPtr(pTypeTo) == 1:
+	case T_IsPtr(pTypeFrom) & T_IsPtr(pTypeTo):
 		when pTypeFrom == T_PtrTo(st_void):
 			return 1;
 		when pTypeTo == T_PtrTo(st_void):
 			return 1;
 		word pTypeDerefFrom = T_DerefPtr(pTypeFrom);
 		word pTypeDerefTo = T_DerefPtr(pTypeTo);
-		when T_IsFuctTypesIdentical(pTypeDerefFrom, pTypeDerefTo) == 1:
+		when T_IsFuctTypesIdentical(pTypeDerefFrom, pTypeDerefTo):
 			return 1;
-	case T_IsInteger(pTypeFrom) == 1 & T_IsInteger(pTypeTo) == 1:
+	case T_IsInteger(pTypeFrom) & T_IsInteger(pTypeTo):
 		if T_IsSigned(pTypeFrom) == T_IsSigned(pTypeTo) then
 			when T_SizeOf(pTypeFrom) <= T_SizeOf(pTypeTo):
 				return 1;
@@ -90,16 +90,16 @@ word IsExplicitCastPossible(word From; word To)
 	when IsImplicitCastPossible(From, To) == 1:
 		return 1;
 
-	when T_IsInteger(From) == 1 & T_IsInteger(To) == 1:
+	when T_IsInteger(From) & T_IsInteger(To):
 		return 1;
 
-	when T_IsInteger(From) == 1 & To == st_char:
+	when T_IsInteger(From) & (To == st_char):
 		return 1;
 
-	when From == st_char & T_IsInteger(To) == 1:
+	when (From == st_char) & T_IsInteger(To):
 		return 1;
 
-	when T_IsPtr(From) == 1 & (To == st_intptr | To == st_uintptr):
+	when T_IsPtr(From) & (To == st_intptr | To == st_uintptr):
 		return 1;
 
 	return 0;

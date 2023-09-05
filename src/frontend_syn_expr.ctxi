@@ -89,7 +89,7 @@ word Tabl(char @Buff)
 		word P = _Expr(PRIO_ZERO, @Scan(@Buff));
 
 		select
-		case T_IsInteger(Node[P].pType) != 1:
+		case !T_IsInteger(Node[P].pType):
 			Error(@eARR_SIZE_TYPE);
 			nIndx = 1;
 		case !NodeHasImmediateValue(P):
@@ -104,7 +104,7 @@ word Tabl(char @Buff)
 			nIndx = 1;
 		end
 
-		if T_IsSigned(Node[P].pType) == 1 then
+		if T_IsSigned(Node[P].pType) then
 			int i = nIndx;
 			if i < 1 then
 				Error(@eARR_SIZE_LO_BOUND);
@@ -527,7 +527,7 @@ word Primary(word Prty; char @Buff)
 
 	do
 		Scan(@Buff);
-		if strcmp(@Buff,"[")==0 & T_IsArray(pType) != 0 then /* Индексация массива. */
+		if strcmp(@Buff,"[")==0 & T_IsArray(pType) then /* Индексация массива. */
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
 			Node[P3].Value= T_ArrayGetSize(pType);
@@ -547,7 +547,7 @@ word Primary(word Prty; char @Buff)
 		end:if
 
 		while strcmp(@Buff,"[") == 0 do /* Индексация указателя. */
-			if T_IsPtr(pType) == 0 then
+			if !T_IsPtr(pType) then
 				Stop(@eNOADDR);
 			end:if
 
@@ -573,7 +573,7 @@ word Primary(word Prty; char @Buff)
 		select
 		case strcmp(@Buff,"(") == 0: /* Вызов функтора. */
 
-			while T_IsPtr(pType) == 1 do
+			while T_IsPtr(pType) do
 				word P3=Peek();
 				Node[P3].ID   =iADDR;
 
@@ -620,7 +620,7 @@ word Primary(word Prty; char @Buff)
 
 		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры. */
 
-			while T_IsPtr(pType) == 1 do
+			while T_IsPtr(pType) do
 				word P3=Peek();
 				Node[P3].ID   =iADDR;
 
@@ -666,14 +666,14 @@ word Primary(word Prty; char @Buff)
 			Stop(@eASSIGNEXP);
 		end:if
 
-		while T_IsPtr(pType) == 1 do
+		while T_IsPtr(pType) do
 			pType = T_DerefPtr(pType);
 		end:while
 	end:if
 
 	word pTypeDeref = pType;
 	word nPtr1 = 0;
-	while T_IsPtr(pTypeDeref) == 1 do
+	while T_IsPtr(pTypeDeref) do
 		inc nPtr1;
 		pTypeDeref = T_DerefPtr(pTypeDeref);
 	end:while
@@ -735,7 +735,7 @@ void ApplyUACCastsForIntegers(word P_OP)
 	word pType2 = Node[P2].pType;
 
 	/* Skip for non-integers. */
-	when T_IsInteger(pType1) == 0 | T_IsInteger(pType2) == 0:
+	when T_IsInteger(pType1) == false | T_IsInteger(pType2) == false:
 		return;
 
 	word do_integer_promotion = 0; /* TODO: disabled now; should be configurable from the sources */
@@ -774,10 +774,10 @@ void ApplyUACCastsForIntegers(word P_OP)
 	word pTypeUnsigned;
 
 	select
-	case T_IsSigned(pType1) == 1 & T_IsUnsigned(pType2) == 1:
+	case T_IsSigned(pType1) & T_IsUnsigned(pType2):
 		pTypeSigned = pType1;
 		pTypeUnsigned = pType2;
-	case T_IsSigned(pType2) == 1 & T_IsUnsigned(pType1) == 1:
+	case T_IsSigned(pType2) & T_IsUnsigned(pType1):
 		pTypeSigned = pType2;
 		pTypeUnsigned = pType1;
 	default:
@@ -821,17 +821,17 @@ void Cast2(word P_OP)
 	select
 
 	/* Оба типа - указатели. */
-	case T_IsPtr(pType1) == 1 & T_IsPtr(pType2) == 1:
+	case T_IsPtr(pType1) & T_IsPtr(pType2):
 		null;
 
 	/* С обеих сторон - один и тот же тип... */
 	case pType1 == pType2:
 		select
-		case T_IsInteger(pType1) == 1: /* ...целочисленный */
+		case T_IsInteger(pType1): /* ...целочисленный */
 			null;
-		case T_IsChar(pType1) == 1: /* ...символьный */
+		case T_IsChar(pType1): /* ...символьный */
 			null;
-		case T_IsBool(pType1) == 1: /* ...булевый */
+		case T_IsBool(pType1): /* ...булевый */
 			null;
 		default:
 			StopAtNode(P_OP, @eTYPE);
@@ -876,18 +876,18 @@ void Cast2(word P_OP)
 			/* Сравнение равенство/неравенство... */
 			/* ...возможно только между целыми, булевыми, символами, указателями. */
 			if
-				T_IsInteger(pTypeOp) != 1 &
-				T_IsChar(pTypeOp) != 1 &
-				T_IsBool(pTypeOp) != 1 &
-				T_IsPtr(pTypeOp) != 1 then
+				!T_IsInteger(pTypeOp) &
+				!T_IsChar(pTypeOp) &
+				!T_IsBool(pTypeOp) &
+				!T_IsPtr(pTypeOp) then
 				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
 			end
 		else
 			/* Сравнение больше/меньше */
 			/* ...возможно только между целыми, символами. */
 			if
-				T_IsInteger(pTypeOp) != 1 &
-				T_IsChar(pTypeOp) != 1 then
+				!T_IsInteger(pTypeOp) &
+				!T_IsChar(pTypeOp) then
 				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
 			end
 		end:if
@@ -895,7 +895,7 @@ void Cast2(word P_OP)
 
 	case iADD<=ID & ID<=iDIV:
 		/* Арифметические операции только с целыми. */
-		if T_IsInteger(pTypeOp) == 0 then
+		if !T_IsInteger(pTypeOp) then
 			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
 		end
 		CTE(P_OP);

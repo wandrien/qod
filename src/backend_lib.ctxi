@@ -76,7 +76,7 @@ word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
 	nIndx = 0;
 	if pType < nDICT then
 		nIndx = T_ArrayGetSizeOr0(pType);
-		when T_IsArray(pType) != 0:
+		when T_IsArray(pType):
 			pType = T_ArrayDeref(pType);
 	end:if
 

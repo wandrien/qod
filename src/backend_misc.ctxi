@@ -172,10 +172,10 @@ void EmitType_(word T)
 	select
 	case T >= nDict:
 		EmitString("INVALID_DICT");
-	case T_IsPtr(T) == 1 :
+	case T_IsPtr(T):
 		EmitString("PTR ");
 		EmitType_(T_DerefPtr(T));
-	case T_IsFunc(T) == 1:
+	case T_IsFunc(T):
 		EmitString("FUNC ");
 		EmitType_(T_FuncGetRetType(T));
 	default:

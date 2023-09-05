@@ -183,7 +183,7 @@ void EmitROData()
 	if RODataMergeMode == RODataMergeModeAgressive then
 		I = 0;
 		while I < nDict do
-			if Dict[I].Class == cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
+			if (Dict[I].Class == cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 				word len = Dict[I].nLiteralSize;
 				next_len = int_max(next_len, len);
 			end
@@ -202,7 +202,7 @@ void EmitROData()
 		next_len = -1;
 		I = 0;
 		while I < nDict do
-			if Dict[I].Class == cLITERAL & Dict[I].RO != 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
+			if (Dict[I].Class == cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 				word len = Dict[I].nLiteralSize;
 				if len == curr_len | curr_len == -1 then
 					EmitByteReset();
@@ -233,7 +233,7 @@ void AssignStringOffsets()
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
+		if (Dict[I].Class == cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 			word len = Dict[I].nLiteralSize;
 			Dict[I].Label = data_len;
 			data_len = data_len + len;
@@ -257,7 +257,7 @@ void EmitSection_Data_Strings(char @Buff)
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if Dict[I].Class == cLITERAL & Dict[I].RO == 0 & T_IsPtr(Dict[I].pType) == 1 & Dict[I].Used != 0 then
+		if (Dict[I].Class == cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 			word len = Dict[I].nLiteralSize;
 			if Dict[I].Label != data_len then
 				StopInternalCodegen(__FILE__, __LINE__);

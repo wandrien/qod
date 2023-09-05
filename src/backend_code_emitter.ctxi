@@ -444,7 +444,7 @@ word Code1(word pPrimary)
 			end:if
 
 		case Node[P1].ID==iADDR:
-			if T_IsPtr(pType) == 0 then
+			if !T_IsPtr(pType) then
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 			end:if
 
@@ -538,7 +538,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
-			when T_IsArray(pType) != 0:
+			when T_IsArray(pType):
 				pType = T_ArrayDeref(pType);
 
 		default:
@@ -627,7 +627,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
 			nIndx = T_ArrayGetSizeOr0(pType);
-			when T_IsArray(pType) != 0:
+			when T_IsArray(pType):
 				pType = T_ArrayDeref(pType);
 
 		default:
@@ -1142,9 +1142,9 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	case ID==iMUL:
 		select
-		case T_IsSigned(pType) != 0:
+		case T_IsSigned(pType):
 			strcpy(@Buff,"imul    ");
-		case T_IsUnsigned(pType) != 0:
+		case T_IsUnsigned(pType):
 			strcpy(@Buff,"mul     ");
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
@@ -1365,9 +1365,9 @@ word Code(word P; word F; word T; word M)
 				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
 			case pTypeTo==st_int & pTypeFrom==st_word:
 				null;
-			case T_IsPtr(pTypeTo) == 1 & T_IsPtr(pTypeFrom) == 1:
+			case T_IsPtr(pTypeTo) & T_IsPtr(pTypeFrom):
 				null;
-			case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom) == 1:
+			case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom):
 				null;
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
