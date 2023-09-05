@@ -347,17 +347,9 @@ word DeclDefine(char @Buff)
 			word P = Expr(PRIO_ZERO, @Buff);
 
 			select
-				case Node[P].ID==iWORD:
-					Dict[D].pType=st_word;
-					Dict[D].LiteralValue=Node[P].Value;
-
-				case Node[P].ID==iINT:
-					Dict[D].pType=st_int;
-					Dict[D].LiteralValue=Node[P].Value;
-
-				case Node[P].ID==iCHAR:
-					Dict[D].pType=st_char;
-					Dict[D].LiteralValue=Node[P].Value;
+				case Node[P].ID==iLITERAL:
+					Dict[D].pType = Node[P].pType;
+					Dict[D].LiteralValue = Node[P].Value;
 
 				default:
 					Stop(@eTYPE);

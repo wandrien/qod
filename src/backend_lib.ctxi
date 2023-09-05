@@ -87,10 +87,56 @@ end
 
 word NodeHasConst(word P; word Data)
 	if (Node[P].ID == iNULL & Data == 0)
-	 | ( (Node[P].ID == iWORD | Node[P].ID == iINT) & Node[P].Value == Data) then
+	 | (Node[P].ID == iLITERAL & Node[P].Value == Data) then
 		return 1;
 	end:if
 	return 0;
+end
+
+/*****************************************************************************/
+
+/*
+
+ID             Value Location                  LValue    Indirect
+iSTRING, RO=0: [@@RWLITERALS + XI + Offset]    Yes       Yes
+iSTRING, RO=1: [@@ROLITERALS + XI + Offset]    No        Yes
+iDATA:         [@@DATA       + XI + Offset]    Yes       Yes
+iPARM:         [EBP          + XI + Offset]    Yes       Yes
+iLOCAL:        [EBP          + XI - Offset]    Yes       Yes
+iREF:          [               XI + Offset]    Yes       Yes
+iREG                           XI + Offset     No        No
+iCONST                              Offset     No        No
+*/
+
+struct ValueRef
+	word ID;
+	word RO;
+	word pType;
+	word Size;
+	word Offset;
+	word XI;
+end
+
+bool ValueRef_IsLValue(ValueRef@ vref)
+	switch vref.ID of
+	case iSTRING:
+		when vref.RO == 0:
+			return true;
+		return false;
+	case iDATA, iPARM, iLOCAL, iREF:
+		return true;
+	case iREG, iCONST:
+		return false;
+	end:switch
+end
+
+bool ValueRef_IsIndirect(ValueRef@ vref)
+	switch vref.ID of
+	case iSTRING, iDATA, iPARM, iLOCAL, iREF:
+		return true;
+	case iREG, iCONST:
+		return false;
+	end:switch
 end
 
 /*****************************************************************************/

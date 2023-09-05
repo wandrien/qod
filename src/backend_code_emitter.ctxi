@@ -293,7 +293,7 @@ word Code1(word pPrimary)
 			word  IX1 = RegNone;
 			word fIX  = 1;
 			do
-				if Node[Node[P1].pLeft].ID==iWORD then
+				if NodeIsLiteralWord(Node[P1].pLeft) == 1 then
 					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
 					N = N * Node[P1].Value;
 				else
@@ -596,7 +596,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 			word  C   = 0;
 			word  N   = 0;
 			do
-				if Node[Node[P1].pLeft].ID==iWORD then
+				if NodeIsLiteralWord(Node[P1].pLeft) == 1 then
 					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
 					N = N * Node[P1].Value;
 				else
@@ -646,7 +646,7 @@ end
 word NodeCanBeEncodedAsImm(word P)
 	word ID=Node[P].ID;
 	switch ID of
-	case iCHAR, iWORD, iINT, iNULL:
+	case iLITERAL, iNULL:
 		return 1;
 	default:
 		return 0;
@@ -1313,17 +1313,9 @@ word Code(word P; word F; word T; word M)
 			Emit_Load_Constant(fEAX, 4, Node[P].Value);
 			return st_bool;
 
-		case iCHAR:
-			Emit_Load_Constant(fEAX, 1, Node[P].Value);
-			return st_char;
-
-		case iWORD:
-			Emit_Load_Constant(fEAX, 4, Node[P].Value);
-			return st_word;
-
-		case iINT:
-			Emit_Load_Constant(fEAX, 4, Node[P].Value);
-			return st_int;
+		case iLITERAL:
+			Emit_Load_Constant(fEAX, T_SizeOf(Node[P].pType), Node[P].Value);
+			return Node[P].pType;
 
 		case iFUNC:
 			CodeLoadLabel(@Buff, fEAX, Node[P].Value);
@@ -1390,7 +1382,7 @@ word Code(word P; word F; word T; word M)
 			return pType;
 
 		case iNEG:
-			if Node[Node[P].pLeft].ID==iWORD then
+			if NodeIsLiteralWord(Node[P].pLeft) == 1 then
 				Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
 				return st_int;
 			end

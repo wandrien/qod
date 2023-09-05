@@ -149,6 +149,24 @@ end
 
 /*****************************************************************************/
 
+word Statement_SWITCH_CheckCast(word pTargetType; word pLiteralType)
+	select
+	case pTargetType == st_char:
+		when pLiteralType == st_char:
+			return 1;
+	case pTargetType == st_byte:
+		when pLiteralType == st_word:
+			return 1;
+	case pTargetType == st_word:
+		when pLiteralType == st_word:
+			return 1;
+	case pTargetType == st_int:
+		when pLiteralType == st_word | pLiteralType == st_int:
+			return 1;
+	end:select
+	return 0;
+end
+
 void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[P1].ID = iSWITCH;
@@ -181,22 +199,11 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		repeat
 			word EXPR = Expr(PRIO_ZERO, @Scan(@Buff));
 
-			select
-			case pType == st_char:
-				when Node[EXPR].ID != iCHAR:
-					Stop(@eTYPE);
-			case pType == st_byte:
-				when Node[EXPR].ID != iWORD:
-					Stop(@eTYPE);
-			case pType == st_word:
-				when Node[EXPR].ID != iWORD:
-					Stop(@eTYPE);
-			case pType == st_int:
-				when Node[EXPR].ID != iWORD & Node[EXPR].ID != iINT:
-					Stop(@eTYPE);
-			default:
+			when NodeHasImmediateValue(EXPR) == 0:
 				Stop(@eCONSTEXP);
-			end:select
+
+			when Statement_SWITCH_CheckCast(pType, Node[EXPR].pType) == 0:
+				Stop(@eCONSTEXP);
 
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do

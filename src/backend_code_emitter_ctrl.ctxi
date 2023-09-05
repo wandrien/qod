@@ -107,7 +107,7 @@ word Code_PUSH(word P; char @Buff)
 			Emit(@Buff);
 			return nDICT;
 		end:if
-	case Node[P1].ID==iWORD | Node[P1].ID==iINT:
+	case NodeIsLiteralWord(P1) == 1 | NodeIsLiteralInt(P1) == 1:
 		word RegC = PHO_FindRegWithConst(Node[P1].Value);
 		if RegC != PHO_REG_INVALID then
 			strcpy(@Buff, "push    ");
@@ -118,7 +118,7 @@ word Code_PUSH(word P; char @Buff)
 	end:select
 
 	/* Оптимизация прямой загрузки числа. */
-	if (Node[P1].ID==iWORD | Node[P1].ID==iINT) & Node[P1].Value != 0 then
+	if (NodeIsLiteralWord(P1) == 1 | NodeIsLiteralInt(P1) == 1) & Node[P1].Value != 0 then
 
 		strcpy(@Buff, "push    dword ");
 		strcat(@Buff, @str(Node[Node[P].pLeft].Value));

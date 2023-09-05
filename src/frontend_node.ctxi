@@ -31,7 +31,7 @@ word NodeHasImmediateValue(word P)
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
-	case iCHAR, iWORD, iINT:
+	case iLITERAL:
 		return 1;
 	end
 
@@ -55,6 +55,47 @@ end
 
 /*****************************************************************************/
 
+word NodeIsLiteralChar(word P)
+	when Node[P].ID == iLITERAL & Node[P].pType == st_char:
+		return 1;
+	return 0;
+end
+
+word NodeIsLiteralWord(word P)
+	when Node[P].ID == iLITERAL & Node[P].pType == st_word:
+		return 1;
+	return 0;
+end
+
+word NodeIsLiteralInt(word P)
+	when Node[P].ID == iLITERAL & Node[P].pType == st_int:
+		return 1;
+	return 0;
+end
+
+
+/*****************************************************************************/
+
+void NodeAssignLiteral(word P; word pType; word Value)
+	Node[P].ID    = iLITERAL;
+	Node[P].pType = pType;
+	Node[P].Value = Value;
+end
+
+void NodeAssignChar(word P; word Value)
+	NodeAssignLiteral(P, st_char, Value);
+end
+
+void NodeAssignWord(word P; word Value)
+	NodeAssignLiteral(P, st_word, Value);
+end
+
+void NodeAssignInt(word P; int Value)
+	NodeAssignLiteral(P, st_int, Value);
+end
+
+/*****************************************************************************/
+
 bool NodeIsLValue(word P)
 	/*
 		FIXME: Incomplete implementation.
@@ -67,9 +108,7 @@ bool NodeIsLValue(word P)
 	case
 		iEMPTY,
 		iNULL,
-		iCHAR,
-		iWORD,
-		iINT,
+		iLITERAL,
 		iFUNC,
 		iSTRING,
 		iBIT_NOT,

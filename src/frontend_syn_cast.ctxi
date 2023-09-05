@@ -16,8 +16,7 @@ end
 void AddCast(word pType1; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
-	if pType1 == st_int & Node[P].ID == iWORD then
-		Node[P].ID=iINT;
+	if pType1 == st_int & Node[P].ID == iLITERAL & Node[P].pType == st_word then
 		Node[P].pType = pType1;
 		return;
 	end

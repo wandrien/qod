@@ -308,18 +308,14 @@ end
 word Primary(word Prty; char @Buff)
 	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
 		word P1 = Peek();
-		Node[P1].ID    = iWORD;
-		Node[P1].Value = CurrentFileInfo.Line;
-		Node[P1].pType = st_word;
+		NodeAssignWord(P1, CurrentFileInfo.Line);
 		Scan(@Buff);
 		return P1;
 	end
 
 	if isdigit(Buff)!=0 then /* Число. */
 		word P1 = Peek();
-		Node[P1].ID    = iWORD;
-		Node[P1].Value = val (@Buff);
-		Node[P1].pType = st_word;
+		NodeAssignWord(P1, val(@Buff));
 		Scan(@Buff);
 		return P1;
 	end
@@ -343,9 +339,7 @@ word Primary(word Prty; char @Buff)
 		end:if
 
 		word P1 = Peek();
-		Node[P1].ID    = iWORD;
-		Node[P1].Value = T_SizeOf(I);
-		Node[P1].pType = st_word;
+		NodeAssignWord(P1, T_SizeOf(I));
 		Scan(@Buff);
 		return P1;
 	end
@@ -417,20 +411,12 @@ word Primary(word Prty; char @Buff)
 		case Dict[I].Class == cLITERAL: /* Именованный литерал? */
 			P1=Peek();
 			select
-			case Dict[I].pType == st_word:
-				Node[P1].ID    =iWORD;
-				Node[P1].Value = Dict[I].LiteralValue;
-				pType          = Dict[I].pType;
-
-			case Dict[I].pType == st_int:
-				Node[P1].ID    =iINT;
-				Node[P1].Value = Dict[I].LiteralValue;
-				pType          = Dict[I].pType;
-
-			case Dict[I].pType == st_char:
-				Node[P1].ID    =iCHAR;
-				Node[P1].Value = Dict[I].LiteralValue;
-				pType          = Dict[I].pType;
+			case
+				(Dict[I].pType == st_word) |
+				(Dict[I].pType == st_int)  |
+				(Dict[I].pType == st_char) :
+				pType = Dict[I].pType;
+				NodeAssignLiteral(P1, pType, Dict[I].LiteralValue);
 
 			case Dict[I].pType == T_PtrTo(st_char):
 				Node[P1].ID    =iSTRING;
@@ -987,7 +973,7 @@ word ExprConstExpr(word P1; word O;  char @Buff)
 	word P2 = ExprParentheses(P1, O, @Buff);
 
 	switch Node[P2].ID of
-	case iCHAR, iWORD, iINT:
+	case iLITERAL:
 		null;
 	default:
 		Error(@eNOTACONSTEXPR);
@@ -1009,16 +995,10 @@ word ExprLitChar(word P_; word O; char @Buff)
 		if   N>255 then
 			Stop(@eOVERFLOW);
 		end
-
-		Node[P1].ID    =iCHAR;
-		Node[P1].Value = N;
-		Node[P1].pType = st_char;
+		NodeAssignChar(P1, N);
 
 	case strcmp(@Buff,"'") == 0: /* Символ. */
-		Node[P1].ID    =iCHAR;
-		Node[P1].Value = word(ScanChar());
-		Node[P1].pType = st_char;
-
+		NodeAssignChar(P1, word(ScanChar()));
 		if Read()!='~'' then
 			Stop(@eQUOTEXP);
 		end
@@ -1097,17 +1077,13 @@ word ExprNEG(word P_; word O; char @Buff)
 	Node[P1].pType = st_int;
 
 	select
-	case Node[pLeft].ID == iWORD | Node[pLeft].ID == iINT:
-		if Node[pLeft].ID == iWORD & Node[pLeft].Value > 0x80000000 then
+	case (Node[pLeft].ID == iLITERAL) & (Node[pLeft].pType == st_word | Node[pLeft].pType == st_int):
+		if Node[pLeft].pType == st_word & Node[pLeft].Value > 0x80000000 then
 			Stop(@eCALCERR);
 		end
-
-		Node[P1].ID   =iINT;
-		Node[P1].Value=-Node[pLeft].Value;
-
+		NodeAssignInt(P1, -Node[pLeft].Value);
 	default:
 		ImplicitCast(st_int, @Node[P1].pLeft);
-
 	end:select
 
 	return P1;
@@ -1143,8 +1119,8 @@ void RegisterOperators()
 	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0   , @ExprConstExpr);
 
-	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
-	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iCHAR, @ExprLitChar);
+	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
+	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
 	RegisterOperator("NULL" , PRIO_LITER, OPERATOR_UPRE , iNULL, @ExprLitNULL);
 	RegisterOperator("false", PRIO_LITER, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
 	RegisterOperator("true" , PRIO_LITER, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);

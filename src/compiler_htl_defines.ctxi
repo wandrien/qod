@@ -55,9 +55,9 @@ define  sMAIN       14 // Главная функция
 
 define  iEMPTY       0 // Пустой узел
 define  iNULL        1 // NULL
-define  iCHAR        2 // Символ
-define  iWORD        3 // Слово
-define  iINT         4 // Целое со знаком
+define  iLITERAL     2 // Литеральное значение
+//define  iUNUNSED3    3 //
+//define  iUNUNSED4    4 //
 define  iFUNC        5 // Ссылка на функцию
 define  iSTRING      6 // Ссылка на стpоку
 define  iDATA        7 // Глобальная пеpеменная
@@ -123,7 +123,10 @@ define  iNOT        58
 
 define  iFAKE_CAST  59 // Fake cast to mask a semantic error while parsing
 
-define  iID_COUNT   60
+define  iREG        60 // used in the backend for ValueRef's
+define  iCONST      61 // used in the backend for ValueRef's
+
+define  iID_COUNT   62
 
 /*****************************************************************************/
 
