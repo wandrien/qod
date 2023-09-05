@@ -390,7 +390,7 @@ word DeclInclude(char @Buff)
 		Buff[P]=Read();
 		inc  P;
 
-		if P>=nNAME then
+		if P >= nBUFF then
 			Stop(@eLONGNAME);
 		end
 

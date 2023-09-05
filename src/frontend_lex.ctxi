@@ -118,7 +118,7 @@ char@ ScanAlphaNum(char@ Buff)
 	while isalpha(Read()) != 0 | isdigit(Read()) != 0 do
 		Buff[P]=Read();
 		inc  P;
-		if   P >= nNAME then
+		if   P >= nBUFF then
 			Stop(@eLONGNAME);
 		end
 
