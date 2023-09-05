@@ -76,9 +76,11 @@ end
 /*****************************************************************************/
 
 void NodeAssignLiteral(word P; word pType; word Value)
-	Node[P].ID    = iLITERAL;
-	Node[P].pType = pType;
-	Node[P].Value = Value;
+	Node[P].ID     = iLITERAL;
+	Node[P].pType  = pType;
+	Node[P].Value  = Value;
+	Node[P].pLeft  = nNODE;
+	Node[P].pRight = nNODE;
 end
 
 void NodeAssignChar(word P; word Value)
