@@ -1,0 +1,32 @@
+
+bool foo(word a)
+	when a > 0:
+		return true;
+	return false;
+end
+
+bool bar(word a)
+	when a: // error
+		return true;
+
+	if 0 then // error
+		return true;
+	else
+		a = a + '0'; // error
+	end:if
+
+	select
+	case a + 1: // error
+		return true;
+	default:
+		a = a & "xxx"; // error
+	end:select
+
+	return false;
+end
+
+word f1(word a; word b)
+	when foo(a) == 1: // error
+		return b;
+	return b * 2;
+end

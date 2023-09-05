@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Попытка деления на ноль'
+
+include "keep_parsing_3.include1.ctxi"
+include "keep_parsing_3.include2.ctxi"
+include "keep_parsing_3.include3.ctxi"
+
+begin
+	word a = f1(0, 1) + f2(2) + f3(2);
+end

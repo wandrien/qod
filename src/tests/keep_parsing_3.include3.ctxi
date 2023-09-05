@@ -1,0 +1,4 @@
+
+word f3(word a)
+	return a / 0; // error
+end

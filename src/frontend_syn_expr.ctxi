@@ -815,6 +815,8 @@ void Cast2(word P_OP)
 
 	word pTypeOp = pType1;
 
+	/**************************************************************************/
+
 	/* Допустимые сочетания операндов: */
 	select
 
@@ -840,6 +842,8 @@ void Cast2(word P_OP)
 		ErrorAtNode(P_OP, @eTYPE);
 	end:select
 
+	/**************************************************************************/
+
 	select
 	case T_IsPtr(pType1) == 1: /* Между указателями возможны только операции сравнения на равенство и неравенство. */
 		if ID!=iEQ & ID!=iNE then
@@ -852,7 +856,7 @@ void Cast2(word P_OP)
 		case pTypeOp == st_byte | pTypeOp == st_word:
 			Node[P_OP].ID=iBIT_OR;
 		case pTypeOp != st_bool:
-			Stop(@eTYPE);
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
 	case ID == iXOR: /* Аналогично предыдущему. */
@@ -862,7 +866,7 @@ void Cast2(word P_OP)
 		case pTypeOp == st_bool:
 			Stop(@eXORNOTIMPL);
 		default:
-			Stop(@eTYPE);
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
 	case ID == iAND: /* Аналогично предыдущему. */
@@ -870,26 +874,26 @@ void Cast2(word P_OP)
 		case pTypeOp == st_byte | pTypeOp == st_word:
 			Node[P_OP].ID=iBIT_AND;
 		case pTypeOp != st_bool:
-			Stop(@eTYPE);
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
 	case iLT<=ID & ID<=iGT:
 		/* Сравнения возможны только между целыми и между символами (case с указателями был выше) */
 		if T_IsInteger(pTypeOp) != 1 & T_IsChar(pTypeOp) != 1 then
-			Stop(@eTYPE);
+			ErrorAtNode(P_OP, @eTYPE_COMP_OP);
 		end
 		pTypeOp = st_bool;
 
 	case iADD<=ID & ID<=iDIV:
 		/* Арифметические операции только с целыми. */
 		if T_IsInteger(pTypeOp) == 0 then
-			Stop(@eTYPE);
+			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
 		end
 		CTE(P_OP);
 
 	case ID == iMOD:
 		if pTypeOp!=st_byte & pTypeOp!=st_word then
-			Stop(@eTYPE);
+			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
 		end
 		CTE(P_OP);
 

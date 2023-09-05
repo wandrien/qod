@@ -90,7 +90,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 			end:if
 
 			if pType != st_bool then
-				Stop(@eTYPE);
+				ErrorAtNode(COND, @eTYPE_COND_EXPR);
 			end:if
 		else
 			if str_eq(@Else,"default") then
@@ -132,7 +132,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if pType != st_bool then
-		Stop(@eTYPE);
+		ErrorAtNode(COND, @eTYPE_COND_EXPR);
 	end:if
 
 	if str_ne(@Buff,":") then

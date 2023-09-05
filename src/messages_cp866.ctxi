@@ -29,6 +29,10 @@ define @eARR_SIZE_CONSTEXP "Выражение невычислимо на этапе компиляции: в качеств
 define @eARR_SIZE_LO_BOUND "В качестве размера массива ожидается значение больше нуля"
 define @eARR_SIZE_HI_BOUND "Размер массива превосходит максимально допустимое значение для целевой платформы"
 define @eTYPE            "Несоответствие типов"                        // Incompatible types
+define @eTYPE_COMP_OP    "Несоответствие типов в операции сравнения"   // Incompatible types in comparison operator
+define @eTYPE_LOGIC_OP   "Несоответствие типов в логической сравнения" // Incompatible types in logical operator
+define @eTYPE_ARITH_OP   "Несоответствие типов в арифметической операции" // Incompatible types in arithmetic operator
+define @eTYPE_COND_EXPR  "Несоответствие типов в условном выражении"   // Incompatible types in conditional expression
 define @eSWTYPE          "Требуется результат целого/символьного типа" // word/integer/char result required
 define @eCONSTEXP        "Требуется целая/символьная константа"        // word/integer/char constant required
 define @eDUPCASE         "Повтор варианта"                             // Duplicate case label
