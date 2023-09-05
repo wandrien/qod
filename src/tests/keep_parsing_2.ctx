@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Попытка деления на ноль'
+
+begin
+	word a;
+	word b;
+	0 = a;           // error
+	b = a + 1;
+	word c = a / 0;  // error
+end
