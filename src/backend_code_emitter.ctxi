@@ -1134,11 +1134,14 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 		select
 		case rightOperand == operandImm:
+			word Value = Node[pRight].Value;
 			select
-			case Node[pRight].Value == 0 & (ID == iEQ | ID == iNE):
+			case Value == 0 & (ID == iEQ | ID == iNE):
 				Emit(@CodeCmdRegReg(@Buff, "test", fEAX, Size, fEAX, Size));
-			case Node[pRight].Value == 1 & (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0:
+			case Value == 1 & (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0:
 				Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+			case Value == word(-1) & (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0:
+				Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
 			default:
 				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Node[pRight].Value));
 			end:select
