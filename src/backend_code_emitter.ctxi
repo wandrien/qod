@@ -553,7 +553,21 @@ end
 
 /*****************************************************************************/
 
-word CodeAsMemoryOperand(char @Buff; word pPrimary)
+bool CodeAsMemoryOperand(char @Buff; word pPrimary)
+
+	/*
+	TODO: Необходимо детектировать случай с операндом, обернутым в iCAST, который дает no-op:
+
+	;           (iCAST 0 <52 int>
+	;            (iLOCAL 4 <56 word>
+	;             (iFIELD cx <100000 INVALID_DICT>  0 (iLOAD 0 <100000 INVALID_DICT>  0  0))
+	;             0
+	;            )
+	;            0
+	;           )
+
+	Вероятно необходима вспомогательная функция IsCastNoOp(), либо устранение таких кастов на этапе оптимизации.
+	*/
 
 	word ID = Node[pPrimary].ID;
 
@@ -561,7 +575,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 	case iDATA, iPARM, iLOCAL, iSTRING:
 		null;
 	default:
-		return 0;
+		return false;
 	end:switch
 
 	word nIndx;
@@ -576,7 +590,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 
 		select
 		case P1>=nNODE:
-			return 0;
+			return false;
 
 		case Node[P1].ID==iLOAD:
 			word Size = SizeOfType(pType);
@@ -585,10 +599,10 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 			case Size==1 | Size==4:
 				Buff[0] = #0;
 				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
-				return 1;
+				return true;
 
 			default:
-				return 0;
+				return false;
 			end:select
 
 		case Node[P1].ID==iINDEX:
@@ -600,7 +614,7 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
 					N = N * Node[P1].Value;
 				else
-					return 0;
+					return false;
 				end:if
 
 				if Node[P1].pRight>=nNODE then
@@ -631,13 +645,13 @@ word CodeAsMemoryOperand(char @Buff; word pPrimary)
 				pType = T_ArrayDeref(pType);
 
 		default:
-			return 0;
+			return false;
 		end:select
 
 		P1=Node[P1].pRight;
 	end:do
 
-	return 0;
+	return false;
 
 end
 
@@ -716,6 +730,30 @@ bool DoesOperationAllowRightImm(word ID)
 	default:
 		return false;
 	end:switch
+end
+
+/** A heuristic to determine whether it might be advantageous to change the order in which operands are evaluated.
+    Returns NULL, if the operand evaluation should not be reordered.
+    Returns a string describing the reason of reordering (for debugging purposes),
+    if the operand evaluation should be reordered.
+*/
+char @CheckOperandReordering(word pLeft; word pRight)
+	when NodeCanBeEncodedAsImm(pRight):
+		return NULL;
+
+	char tmpBuff[nBUFF];
+	bool RightIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pRight);
+	when RightIsMemoryOperand:
+		return NULL;
+
+	when NodeCanBeEncodedAsImm(pLeft):
+		return "Imm on the left";
+
+	bool LeftIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pLeft);
+	when LeftIsMemoryOperand:
+		return "Memory operand on the left";
+
+	return NULL;
 end
 
 /*****************************************************************************/
@@ -879,7 +917,6 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 				exit;
 			end:if
 
-
 		end:if
 
 		if DoesOperationAllowRightMemRef(ID) then
@@ -894,7 +931,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					mov   RegB, [MemRef]
 					Op    RegA, RegB
 			*/
-			if CodeAsMemoryOperand(@BuffRightOperand, pRight) != 0 then
+			if CodeAsMemoryOperand(@BuffRightOperand, pRight) then
 				rightOperand = operandMemRef;
 				exit;
 			end:if
@@ -911,7 +948,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					RegB  <- RightOperand
 					Op    RegA,  RegB
 			*/
-			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
+			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
 				exit;
@@ -919,7 +956,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
 			word swappedID = CheckOperationSwappable(ID);
-			if swappedID != 0 & CodeAsMemoryOperand(@BuffRightOperand, pLeft) != 0 then
+			if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
 				ID = swappedID;
@@ -935,67 +972,57 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	word fSwap=0;
 	word pType;
 
-	select
-	case rightOperand == operandImm:
+	switch rightOperand of
+	case operandImm:
 		word pLeft2 = TryDropCastBeforeCmp(P);
 		when pLeft2 < nNODE:
 			pLeft = pLeft2;
 
 		pType=_Code(pLeft,0,0,0);
 
-	case rightOperand == operandMemRef:
+	case operandMemRef:
 		pType=_Code(pLeft,0,0,0);
 
-	case NodeCanBeEncodedAsImm(pLeft):
-		if fEAX!=RegA then
-			EmitLine(0, "push    EAX", "saved in CodeBinOp");
-			fEAX=RegA;
-		end
+	case operandReg:
+		char @reorderingReason = @CheckOperandReordering(pLeft, pRight);
+		if @reorderingReason != NULL then
+			EmitLine(0, "", "Reordering in CodeBinOp");
+			EmitLine(0, "", @reorderingReason);
+			if fEAX!=RegA then
+				EmitLine(0, "push    EAX", "saved in CodeBinOp");
+				fEAX=RegA;
+			end
 
-		_Code(pRight,0,0,0);
-		fEAX =RegB;
-		pType=_Code(pLeft,0,0,0);
-		fSwap=1;
-		when fEAX != RegB:
-			StopInternalCodegen(__FILE__, __LINE__);
+			_Code(pRight,0,0,0);
+			fEAX =RegB;
+			pType=_Code(pLeft,0,0,0);
+			fSwap=1;
+			when fEAX != RegB:
+				StopInternalCodegen(__FILE__, __LINE__);
 
-		fEAX = RegA;
-		rightReg = RegB;
+			fEAX = RegA;
+			rightReg = RegB;
+		else
+			if fEAX!=RegA then
+				EmitLine(0, "push    EAX", "saved in CodeBinOp");
+				fEAX=RegA;
+			end
 
-	case Node[Node[pLeft].pLeft].ID==iLOAD & Node[Node[pRight].pLeft].ID!=iLOAD:
-		if fEAX!=RegA then
-			EmitLine(0, "push    EAX", "saved in CodeBinOp");
-			fEAX=RegA;
-		end
+			pType=_Code(pLeft,0,0,0);
+			fEAX =RegB;
+			_Code(pRight,0,0,0);
+			if fEAX==RegA then
+				EmitLine(0, "pop     EBX", "restored in CodeBinOp");
+				fSwap=1;
+			end
 
-		_Code(pRight,0,0,0);
-		fEAX =RegB;
-		pType=_Code(pLeft,0,0,0);
-		fSwap=1;
-		when fEAX != RegB:
-			StopInternalCodegen(__FILE__, __LINE__);
-
-		fEAX = RegA;
-		rightReg = RegB;
+			fEAX = RegA;
+			rightReg = RegB;
+		end:if
 
 	default:
-		if fEAX!=RegA then
-			EmitLine(0, "push    EAX", "saved in CodeBinOp");
-			fEAX=RegA;
-		end
-
-		pType=_Code(pLeft,0,0,0);
-		fEAX =RegB;
-		_Code(pRight,0,0,0);
-		if fEAX==RegA then
-			EmitLine(0, "pop     EBX", "restored in CodeBinOp");
-			fSwap=1;
-		end
-
-		fEAX = RegA;
-		rightReg = RegB;
-
-	end:select
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:switch
 
 	/* Check the cases for the operands arrived in swapped order: */
 	if fSwap==1 then
