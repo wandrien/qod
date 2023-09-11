@@ -1039,6 +1039,7 @@ word ExprLitNULL(word P_; word O; char @Buff)
 	word P1=Peek();
 	Node[P1].ID = iNULL;
 	Node[P1].pType = T_PtrTo(st_void);
+	Node[P1].Value = 0;
 	Scan(@Buff);
 	return P1;
 end

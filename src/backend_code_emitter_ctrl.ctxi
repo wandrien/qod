@@ -81,34 +81,24 @@ word Code_PUSH(word P; char @Buff)
 		end:if
 	end:if
 
-	/* Оптимизация прямой загрузки числа из регистра. */
-	select
-	case Node[P1].ID==iNULL:
-		word RegC = PHO_FindRegWithConst(0);
-		if RegC != PHO_REG_INVALID then
-			strcpy(@Buff, "push    ");
-			strcat(@Buff, @PHO_EncodeReg(RegC, 0xFFFF_FFFF));
-			Emit(@Buff);
-			return nDICT;
-		end:if
-	case NodeIsLiteralWord(P1) | NodeIsLiteralInt(P1):
-		word RegC = PHO_FindRegWithConst(Node[P1].Value);
-		if RegC != PHO_REG_INVALID then
-			strcpy(@Buff, "push    ");
-			strcat(@Buff, @PHO_EncodeReg(RegC, 0xFFFF_FFFF));
-			Emit(@Buff);
-			return nDICT;
-		end:if
-	end:select
-
 	/* Оптимизация прямой загрузки числа. */
-	if (NodeIsLiteralWord(P1) | NodeIsLiteralInt(P1)) & Node[P1].Value != 0 then
+	if NodeCanBeEncodedAsImm(P1) & (T_SizeOf(Node[P1].pType) == 4) then
+		word Value = Node[P1].Value;
 
-		strcpy(@Buff, "push    dword ");
-		strcat(@Buff, @str(Node[Node[P].pLeft].Value));
-		Emit(@Buff);
+		/* Если какой-либо регистр уже содержит нужную константу... */
+		word Reg = PHO_FindRegWithConst(Value);
+		if Reg != PHO_REG_INVALID then
+			Emit(@strcpy2(@Buff, "push    ", @PHO_EncodeReg(Reg, 0xFFFF_FFFF)));
+			return nDICT;
+		end:if
 
-		return nDICT;
+		/* Прямая загрузка числа. Кроме значения 0. Для 0 используем общий алгоритм,
+		   который позволяет оптимизировать до xor.
+		*/
+		if Value != 0 then
+			Emit(@strcpy2(@Buff, "push    dword ", @str(Value)));
+			return nDICT;
+		end:if
 	end:if
 
 	/* Все остальные варианты... */

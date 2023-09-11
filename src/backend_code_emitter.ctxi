@@ -715,16 +715,6 @@ end
 
 /*****************************************************************************/
 
-bool NodeCanBeEncodedAsImm(word P)
-	word ID=Node[P].ID;
-	switch ID of
-	case iLITERAL, iNULL:
-		return true;
-	default:
-		return false;
-	end:switch
-end
-
 /** Returns true if the operands can be swapped for no cost. */
 bool IsOperationCommutative(word ID)
 	switch ID of

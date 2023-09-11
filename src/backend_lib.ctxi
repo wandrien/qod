@@ -89,6 +89,16 @@ bool NodeHasConst(word P; word Data)
 	return false;
 end
 
+bool NodeCanBeEncodedAsImm(word P)
+	word ID=Node[P].ID;
+	switch ID of
+	case iLITERAL, iNULL, iBOOL:
+		return true;
+	default:
+		return false;
+	end:switch
+end
+
 /*****************************************************************************/
 
 /*
