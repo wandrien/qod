@@ -49,29 +49,16 @@ word Code_PUSH(word P; char @Buff)
 		_Code(Node[P].pRight,0,0,0);
 	end
 
-	/* Оптимизация прямой загрузки значения из переменной. */
-
 	word P1 = Node[P].pLeft;
 
-	if Node[P1].ID==iDATA
-	 | Node[P1].ID==iPARM
-	 | Node[P1].ID==iLOCAL then
 
-		if Node[P1].pLeft < nNODE & Node[Node[P1].pLeft].ID==iLOAD then
-
-			word pType;
-			word  Ofs;
-			word  RO;
-			word ID=ExtractDataInfo(P1, @pType, @Ofs, @RO);
-
-			if SizeOfType(pType) == 4 then
-				strcpy(@Buff, "push    ");
-				Emit(@CodeDataIX_offset(@Buff, 4, ID, RegNone, Ofs));
-				return nDICT;
-			end:if
-		end:if
-	end:if
-
+	/* Оптимизация прямой загрузки значения из переменной. */
+	char BuffOperand[nBUFF];
+	word pOperandType;
+	if _CodeAsMemoryOperand(@BuffOperand, P1, @pOperandType) & (T_SizeOf(pOperandType) ==  4) then
+		Emit(@strcpy2(@Buff, "push    ", @BuffOperand));
+		return nDICT;
+	end
 
 	/* Оптимизация прямой загрузки указателя на строку. */
 	if Node[P1].ID==iSTRING then
@@ -93,7 +80,6 @@ word Code_PUSH(word P; char @Buff)
 			return nDICT;
 		end:if
 	end:if
-
 
 	/* Оптимизация прямой загрузки числа из регистра. */
 	select

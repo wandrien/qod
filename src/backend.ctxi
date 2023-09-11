@@ -4,6 +4,9 @@
 void function __EmitLine(word Label; char @Inst; char @Comment)
 __EmitLine @_EmitLine;
 
+bool function __CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
+__CodeAsMemoryOperand @_CodeAsMemoryOperand;
+
 include "backend_pho.ctxi"
 include "backend_lib.ctxi"
 include "backend_labels.ctxi"

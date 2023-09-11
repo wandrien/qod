@@ -64,6 +64,7 @@ char@ DefaultTarget;
 
 void Translate()
 	@_Code = @Code;
+	@_CodeAsMemoryOperand = @CodeAsMemoryOperand;
 	@_EmitLine = @EmitLine;
 	@_NodeMarkUsed = @NodeMarkUsed;
 
