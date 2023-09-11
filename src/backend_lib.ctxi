@@ -36,46 +36,42 @@ end
 
 /*
 	Распаковывает из узлов iDATA, iPARM, iLOCAL и iSTRING информацию об объекте.
-	(Ofs - смещение относительно специфичного источника (напр., для iDATA - смещение от начала секции данных и т.п.))
+	Offset - смещение относительно специфичного источника.
+	Напр., для iDATA - смещение от начала секции данных.
 */
-word ExtractDataInfo(word P, @pType, @nIndx, @Ofs, @RO)
+word ExtractDataInfo(word P, @pType, @Offset, @RO)
 
 	word ID = Node[P].ID;
+	word Value = Node[P].Value;
 
 	select
 		case ID == iDATA:
-			pType = Dict[Node[P].Value].pType;
-			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
-			Ofs   = Dict[Node[P].Value].Label;
-			RO    = 0;
+			pType  = Dict[Value].pType;
+			Offset = Dict[Value].Label;
+			RO     = 0;
 
 		case ID == iPARM:
-			when Dict[Node[P].Value].Class != cARG:
+			when Dict[Value].Class != cARG:
 				StopInternal(__FILE__, __LINE__);
-			pType = Dict[Node[P].Value].pType;
-			//nIndx = T_ArrayGetSizeOr0(Dict[Node[P].Value].pType);
-			Ofs   = Dict[Node[P].Value].Label;
-			RO    = 0;
+			pType  = Dict[Value].pType;
+			Offset = Dict[Value].Label;
+			RO     = 0;
 
 		case ID == iLOCAL:
-			pType = Local[Node[P].Value].pType;
-			//nIndx = T_ArrayGetSizeOr0(Local[Node[P].Value].pType);
-			Ofs   = Local[Node[P].Value].Value;
-			RO    = 0;
+			pType  = Local[Value].pType;
+			Offset = Local[Value].Value;
+			RO     = 0;
 
 		case ID == iSTRING:
-			nIndx = 0;
-			pType = Dict[Node[P].Value].pType;
-			Ofs   = Dict[Node[P].Value].Label;
-			RO    = Dict[Node[P].Value].RO;
+			pType  = Dict[Value].pType;
+			Offset = Dict[Value].Label;
+			RO     = Dict[Value].RO;
 
 		default:
 			StopInternal(__FILE__, __LINE__);
       end
 
-	nIndx = 0;
 	if pType < nDICT then
-		nIndx = T_ArrayGetSizeOr0(pType);
 		when T_IsArray(pType):
 			pType = T_ArrayDeref(pType);
 	end:if
@@ -138,6 +134,4 @@ bool ValueRef_IsIndirect(ValueRef@ vref)
 		return false;
 	end:switch
 end
-
-/*****************************************************************************/
 
