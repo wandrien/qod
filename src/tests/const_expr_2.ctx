@@ -1,5 +1,4 @@
-// TEST: should_print '10 11 12 '
-// EXPECTED-TO-FAIL: FIXME: Not implemented
+// TEST: should_print '10 11 12 254 30974 254 4294967294 '
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
@@ -8,4 +7,8 @@ begin
 	puts(@str(const_expr(byte(10)))); puts(" ");
 	puts(@str(const_expr(word(byte(11))))); puts(" ");
 	puts(@str(const_expr(int(word(byte(12)))))); puts(" ");
+	puts(@str(const_expr(byte(0x78FE)))); puts(" ");
+	puts(@str(const_expr(uint16(0x178FE)))); puts(" ");
+	puts(@str(const_expr(int(uint8(0xFE))))); puts(" ");
+	puts(@str(const_expr(int(int8(0xFE))))); puts(" ");
 end

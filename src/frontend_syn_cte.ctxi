@@ -7,59 +7,135 @@
 
 /*****************************************************************************/
 
+word MakeBitMaskFromSize(word Size)
+	switch Size of
+	case 1: return 0xFF;
+	case 2: return 0xFFFF;
+	case 4: return 0xFFFF_FFFF;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:switch
+end
+
+word MakeSignMaskFromSize(word Size)
+	switch Size of
+	case 1: return 0x80;
+	case 2: return 0x8000;
+	case 4: return 0x8000_0000;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:switch
+end
+
+word MakeSignExtension(word Value; word Size)
+	word SignMask = MakeSignMaskFromSize(Size);
+	word BitMask = MakeBitMaskFromSize(Size);
+	word SigExt = 0;
+	when (Value & SignMask) != 0:
+		SigExt = -1;
+	return (SigExt & (!BitMask)) | (Value & BitMask);
+end
+
+word word_min2(word a1; word a2)
+	when a1 < a2:
+		return a1;
+	return a2;
+end
+
+void CTE_Cast(word P)
+	word pLeft = Node[P].pLeft;
+
+	when Node[P].ID != iCAST:
+		return;
+
+	when Node[pLeft].ID != iLITERAL:
+		return;
+
+	word TypeTo   = Node[P].pType;
+	word TypeFrom = Node[pLeft].pType;
+	word Value    = Node[pLeft].Value;
+
+	word TypeTo_Real   = TypeTo;
+	word TypeFrom_Real = TypeFrom;
+
+	/*
+		Для анализа типов подменяем char на byte
+		При преобразовании char к целому - подменяем исходный тип char на byte перед преобразованием.
+	*/
+	if T_IsInteger(TypeTo) & TypeFrom == st_char then
+		TypeFrom = st_byte;
+	end:if
+	if T_IsInteger(TypeFrom) & TypeTo == st_char then
+		TypeTo = st_byte;
+	end:if
+
+	/* Идентичные типы - просто копируем литерал. */
+	if T_Equal(TypeTo, TypeFrom) then
+		NodeAssignLiteral(P, TypeTo_Real, Value);
+		return;
+	end:if
+
+	/*
+		Преобразование unsigned в unsigned.
+		Отбрасываем верхние биты.
+	*/
+	if T_IsUnsigned(TypeFrom) & T_IsUnsigned(TypeTo) then
+		word MinSize = word_min2(T_SizeOf(TypeTo), T_SizeOf(TypeFrom));
+		Value = Value & MakeBitMaskFromSize(MinSize);
+		NodeAssignLiteral(P, TypeTo_Real, Value);
+		return;
+	end:if
+
+	/*
+		Преобразование signed в unsigned.
+		Отбрасываем верхние биты.
+	*/
+	if T_IsSigned(TypeFrom) & T_IsUnsigned(TypeTo) then
+		Value = Value & MakeBitMaskFromSize(T_SizeOf(TypeTo));
+		NodeAssignLiteral(P, TypeTo_Real, Value);
+		return;
+	end:if
+
+	/*
+		Преобразование unsigned в signed.
+		Отбрасываем верхние биты, затем делаем расширение по знаку.
+	*/
+	if T_IsUnsigned(TypeFrom) & T_IsSigned(TypeTo) then
+		word Size = T_SizeOf(TypeTo);
+		Value = Value & MakeBitMaskFromSize(Size);
+		Value = MakeSignExtension(Value, Size);
+		NodeAssignLiteral(P, TypeTo_Real, Value);
+		return;
+	end:if
+
+	/*
+		Преобразование signed в signed.
+	*/
+	if T_IsSigned(TypeFrom) & T_IsSigned(TypeTo) then
+		/*
+			При преобразовании в более длинный тип можно оставить значение как есть,
+			так как signed число и так хранится с расширением по знаку на все старшие биты.
+
+			При преобразовании в более короткий тип:
+			* Либо результат укладывается в диапазон целевого типа, и тогда можно
+			использовать значение как есть.
+			* Либо результат не укладывается в диапазон целевого типа, и тогда результат
+			неопределён. Для этого случае мы просто делаем расширение по знаку для
+			целевого типа, чтобы численно результут укладывался в диапазон целевого типа.
+		*/
+		Value = MakeSignExtension(Value, T_SizeOf(TypeTo));
+		NodeAssignLiteral(P, TypeTo_Real, Value);
+		return;
+	end:if
+
+end
+
 void CTE(word P)
+	CTE_Cast(P);
 
 	word ID = Node[P].ID;
 	word pLeft = Node[P].pLeft;
 	word pRight = Node[P].pRight;
-
-	if ID == iCAST then
-		when Node[pLeft].ID != iLITERAL:
-			return;
-
-		select
-		case Node[pLeft].pType == st_char:
-			char Value = /*FIXME: reinterpret_cast here: */ char(Node[pLeft].Value);
-			select
-			case Node[P].pType == st_char:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = word(char(Value));
-			case Node[P].pType == st_word:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = word(Value);
-			case Node[P].pType == st_int:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = int(Value);
-			end:select
-		case Node[pLeft].pType == st_word:
-			word Value = /*FIXME: reinterpret_cast here: */ word(Node[pLeft].Value);
-			select
-			case Node[P].pType == st_char:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = word(char(Value));
-			case Node[P].pType == st_word:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = word(Value);
-			case Node[P].pType == st_int:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = int(Value);
-			end:select
-		case Node[pLeft].pType == st_int:
-			int Value = /*FIXME: reinterpret_cast here: */ int(Node[pLeft].Value);
-			select
-			case Node[P].pType == st_char:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = word(char(Value));
-			case Node[P].pType == st_word:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = word(Value);
-			case Node[P].pType == st_int:
-				Node[P].ID    = iLITERAL;
-				Node[P].Value = int(Value);
-			end:select
-		end:select
-		return;
-	end
 
 	if ID == iDIV | ID == iMOD then
 		if NodeHasImmediateValue(pRight) then
