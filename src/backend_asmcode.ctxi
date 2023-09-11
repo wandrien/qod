@@ -215,10 +215,10 @@ end
 
 /*
 
-iDATA:    [@@DATA + XI + offset]
-iPARM:    [EBP    + XI + offset]
-iLOCAL:   [EBP    + XI - offset]
-iREF:     [         XI + offset]
+iDATA:    [@@DATA + IX + offset]
+iPARM:    [EBP    + IX + offset]
+iLOCAL:   [EBP    + IX - offset]
+iREF:     [         IX + offset]
 
 */
 

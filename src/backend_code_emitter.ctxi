@@ -16,7 +16,7 @@ When entering a function for generating code for an operation:
  * If fEAX == RegA, the caller expects the result to be places in RegA.
    The code may use both RegA and RegB and should return the result in RegA.
 
- * If fEAX == RegB, the caller expects the result to be places in RegB.
+ * If fEAX == RegB, the caller expects the result to be placed in RegB.
    RegA is used by the caller to store a value.
    The code either returns the result in RegB and keeps the value of RegA untouched.
    Or stores RegA on the stack, sets fEAX = RegA and return the result in RegA.
