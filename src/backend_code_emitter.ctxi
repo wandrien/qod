@@ -553,25 +553,84 @@ end
 
 /*****************************************************************************/
 
-bool CodeAsMemoryOperand(char @Buff; word pPrimary)
+word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word @Complexity)
+	Complexity = 0;
 
-	/*
-	TODO: Необходимо детектировать случай с операндом, обернутым в iCAST, который дает no-op:
+	select
+	case pTypeFrom == nDICT:
+		null; /* FIXME: should trigger internal error */
+		//StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+	case pTypeFrom == st_void:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+	case pTypeTo == st_void:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+	case pTypeTo == pTypeFrom:
+		null;
+	case T_Equal(pTypeTo, pTypeFrom):
+		null;
+	case pTypeTo==st_char & pTypeFrom==st_byte:
+		null;
+	case pTypeTo==st_char & pTypeFrom==st_word:
+		null;
+	case pTypeTo==st_char & pTypeFrom==st_int:
+		null;
+	case pTypeTo==st_byte & pTypeFrom==st_char:
+		null;
+	case pTypeTo==st_byte & pTypeFrom==st_int:
+		null;
+	case pTypeTo==st_byte & pTypeFrom==st_word:
+		null;
+	case pTypeTo==st_word & pTypeFrom==st_char:
+		Complexity = 1;
+		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
+	case pTypeTo==st_word & pTypeFrom==st_byte:
+		Complexity = 1;
+		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
+	case pTypeTo==st_word & pTypeFrom==st_int:
+		null;
+	case pTypeTo==st_int & pTypeFrom==st_char:
+		Complexity = 1;
+		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
+	case pTypeTo==st_int & pTypeFrom==st_byte:
+		Complexity = 1;
+		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
+	case pTypeTo==st_int & pTypeFrom==st_word:
+		null;
+	case T_IsPtr(pTypeTo) & T_IsPtr(pTypeFrom):
+		null;
+	case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom):
+		null;
+	default:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+	end
 
-	;           (iCAST 0 <52 int>
-	;            (iLOCAL 4 <56 word>
-	;             (iFIELD cx <100000 INVALID_DICT>  0 (iLOAD 0 <100000 INVALID_DICT>  0  0))
-	;             0
-	;            )
-	;            0
-	;           )
+	return pTypeTo;
+end
 
-	Вероятно необходима вспомогательная функция IsCastNoOp(), либо устранение таких кастов на этапе оптимизации.
-	*/
+/*****************************************************************************/
 
+bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 	word ID = Node[pPrimary].ID;
 
 	switch ID of
+	case iCAST:
+		word pTypeFrom = nDICT;
+		word pTypeTo = Node[pPrimary].pType;
+		bool RecursiveResult = CodeAsMemoryOperand(@Buff, Node[pPrimary].pLeft, @pTypeFrom);
+		when !RecursiveResult:
+			return RecursiveResult;
+		word Complexity = 0;
+		char tmpBuff[nBUFF]; tmpBuff[0] = #0;
+		DisableEmit();
+		pTypeTo = Code_CAST(@tmpBuff, pPrimary, pTypeTo, pTypeFrom, RegA, @Complexity);
+		EnableEmit();
+		if Complexity == 0 then
+			when @pTypeFinal != NULL:
+				pTypeFinal = pTypeTo;
+			return RecursiveResult;
+		else
+			return false;
+		end:if
 	case iDATA, iPARM, iLOCAL, iSTRING:
 		null;
 	default:
@@ -599,6 +658,8 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary)
 			case Size==1 | Size==4:
 				Buff[0] = #0;
 				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
+				when @pTypeFinal != NULL:
+					pTypeFinal = pType;
 				return true;
 
 			default:
@@ -742,14 +803,14 @@ char @CheckOperandReordering(word pLeft; word pRight)
 		return NULL;
 
 	char tmpBuff[nBUFF];
-	bool RightIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pRight);
+	bool RightIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pRight, NULL);
 	when RightIsMemoryOperand:
 		return NULL;
 
 	when NodeCanBeEncodedAsImm(pLeft):
 		return "Imm on the left";
 
-	bool LeftIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pLeft);
+	bool LeftIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pLeft, NULL);
 	when LeftIsMemoryOperand:
 		return "Memory operand on the left";
 
@@ -931,7 +992,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					mov   RegB, [MemRef]
 					Op    RegA, RegB
 			*/
-			if CodeAsMemoryOperand(@BuffRightOperand, pRight) then
+			if CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL) then
 				rightOperand = operandMemRef;
 				exit;
 			end:if
@@ -948,7 +1009,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 					RegB  <- RightOperand
 					Op    RegA,  RegB
 			*/
-			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft) then
+			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
 				exit;
@@ -956,7 +1017,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
 			word swappedID = CheckOperationSwappable(ID);
-			if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft) then
+			if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				rightOperand = operandMemRef;
 				ID = swappedID;
@@ -1355,51 +1416,8 @@ word Code(word P; word F; word T; word M)
 		case iCAST:
 			word pTypeFrom = Code(Node[P].pLeft, 0, 0, 0);
 			word pTypeTo = Node[P].pType;
-
-			select
-			case pTypeFrom == nDICT:
-				null; /* FIXME: should trigger internal error */
-				//StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			case pTypeFrom == st_void:
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			case pTypeTo == st_void:
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			case pTypeTo == pTypeFrom:
-				null;
-			case T_Equal(pTypeTo, pTypeFrom):
-				null;
-			case pTypeTo==st_char & pTypeFrom==st_byte:
-				null;
-			case pTypeTo==st_char & pTypeFrom==st_word:
-				null;
-			case pTypeTo==st_char & pTypeFrom==st_int:
-				null;
-			case pTypeTo==st_byte & pTypeFrom==st_char:
-				null;
-			case pTypeTo==st_byte & pTypeFrom==st_int:
-				null;
-			case pTypeTo==st_byte & pTypeFrom==st_word:
-				null;
-			case pTypeTo==st_word & pTypeFrom==st_char:
-				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo==st_word & pTypeFrom==st_byte:
-				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo==st_word & pTypeFrom==st_int:
-				null;
-			case pTypeTo==st_int & pTypeFrom==st_char:
-				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo==st_int & pTypeFrom==st_byte:
-				Emit(@CodeCmdRegConst(@Buff, "and", fEAX, 4, 0xFF));
-			case pTypeTo==st_int & pTypeFrom==st_word:
-				null;
-			case T_IsPtr(pTypeTo) & T_IsPtr(pTypeFrom):
-				null;
-			case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom):
-				null;
-			default:
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			end
-			return pTypeTo;
+			word Complexity = 0;
+			return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, fEAX, @Complexity);
 
 		case iBIT_NOT:
 			word pType = Code(Node[P].pLeft, 0, 0, 0);

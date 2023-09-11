@@ -1,0 +1,18 @@
+// TEST: should_print '9950 100 '
+// COMPILER_FLAGS: --optimize speed
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+int f1(int a; int b; int c; int d)
+	return 10000 - (a * b) - (c * d);
+end
+
+int f2(int a; int b; int c; int d)
+	return 10000 / ((a * b) - (c * d));
+end
+
+begin
+	put_word(f1(4, 10, 2, 5)); puts(" ");
+	put_word(f2(11, 10, 2, 5)); puts(" ");
+end

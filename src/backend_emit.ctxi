@@ -55,8 +55,22 @@ end
 
 /*****************************************************************************/
 
+word EmitDisabled = 0;
+
+void DisableEmit()
+	inc EmitDisabled;
+end
+
+void EnableEmit()
+	dec EmitDisabled;
+end
+
+/*****************************************************************************/
+
 /* Вывести в листинг символ. */
 void EmitChar(char C)
+	when EmitDisabled > 0:
+		return;
 
 	if nText > nTEXT then
 		StopInternal(__FILE__, __LINE__);
@@ -74,6 +88,9 @@ end
 
 /* Вывести в листинг строку. */
 void EmitString(char @S)
+	when EmitDisabled > 0:
+		return;
+
 	word I = 0;
 	while S[I] != #0 do
 		EmitChar(S[I]);
@@ -84,6 +101,9 @@ end
 /*****************************************************************************/
 
 void EmitStringIgnoreNewLines(char @S)
+	when EmitDisabled > 0:
+		return;
+
 	word I = 0;
 	while S[I] != #0 do
 		char C = S[I];
@@ -114,12 +134,10 @@ end
 
 /*****************************************************************************/
 
-//word eax_is_zero = 0;
-
-/*****************************************************************************/
-
 /* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
 void EmitLine(word Label; char @Inst; char @Comment)
+	when EmitDisabled > 0:
+		return;
 
 	when @Inst == NULL:
 		@Inst = "";
