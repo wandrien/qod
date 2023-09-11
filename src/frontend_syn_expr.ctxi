@@ -1046,7 +1046,7 @@ end
 
 word ExprLitFALSE(word P_; word O; char @Buff)
 	word P1 = Peek();
-	Node[P1].ID    = iBOOL;
+	Node[P1].ID    = iLITERAL;
 	Node[P1].Value = 0;
 	Node[P1].pType = st_bool;
 	Scan(@Buff);
@@ -1055,7 +1055,7 @@ end
 
 word ExprLitTRUE(word P_; word O; char @Buff)
 	word P1 = Peek();
-	Node[P1].ID    = iBOOL;
+	Node[P1].ID    = iLITERAL;
 	Node[P1].Value = 1;
 	Node[P1].pType = st_bool;
 	Scan(@Buff);
@@ -1145,9 +1145,9 @@ void RegisterOperators()
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
 	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
-	RegisterOperator("NULL" , PRIO_LITER, OPERATOR_UPRE , iNULL, @ExprLitNULL);
-	RegisterOperator("false", PRIO_LITER, OPERATOR_UPRE , iBOOL, @ExprLitFALSE);
-	RegisterOperator("true" , PRIO_LITER, OPERATOR_UPRE , iBOOL, @ExprLitTRUE);
+	RegisterOperator("NULL" , PRIO_LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
+	RegisterOperator("false", PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitFALSE);
+	RegisterOperator("true" , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitTRUE);
 end
 
 /*****************************************************************************/

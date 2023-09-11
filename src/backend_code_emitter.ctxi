@@ -1338,7 +1338,7 @@ word Code(word P; word F; word T; word M)
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		switch Node[P].ID of
-		case iBOOL:
+		case iLITERAL:
 			select
 			case Node[P].Value == 0 & F != 0:
 				EmitJumpToLabel(F);
@@ -1383,10 +1383,6 @@ word Code(word P; word F; word T; word M)
 		case iNULL:
 			Emit_Load_Constant(fEAX, 4, 0);
 			return Node[P].pType;
-
-		case iBOOL:
-			Emit_Load_Constant(fEAX, 4, Node[P].Value);
-			return st_bool;
 
 		case iLITERAL:
 			Emit_Load_Constant(fEAX, T_SizeOf(Node[P].pType), Node[P].Value);

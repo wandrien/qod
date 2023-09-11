@@ -115,7 +115,7 @@ define  iCASE       54 // ветка select или switch
 define  iVALUE      55 //
 define  iDEFAULT    56 //
 
-define  iBOOL       57
+//define  iUNUNSED57  57 //
 
 define  iNOT        58
 

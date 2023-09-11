@@ -133,7 +133,6 @@ bool NodeIsLValue(word P)
 		iDIV,
 		iMOD,
 		iCAST,
-		iBOOL,
 		iNOT:
 		return false;
 	end

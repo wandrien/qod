@@ -92,7 +92,7 @@ end
 bool NodeCanBeEncodedAsImm(word P)
 	word ID=Node[P].ID;
 	switch ID of
-	case iLITERAL, iNULL, iBOOL:
+	case iLITERAL, iNULL:
 		return true;
 	default:
 		return false;

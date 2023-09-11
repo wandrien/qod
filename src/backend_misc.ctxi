@@ -68,7 +68,6 @@ void InitializeIDDesc()
 	InitIDDesc1(iEMPTY  , "iEMPTY"  );
 	InitIDDesc1(iNULL   , "iNULL"   );
 	InitIDDesc1(iLITERAL, "iLITERAL");
-	InitIDDesc1(iBOOL   , "iBOOL"   );
 	InitIDDesc2(iFUNC   , "iFUNC"   , vcDict, 0);
 	InitIDDesc1(iSTRING , "iSTRING" );
 	InitIDDesc2(iDATA   , "iDATA"   , vcDict, 0);
