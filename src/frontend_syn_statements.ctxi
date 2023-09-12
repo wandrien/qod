@@ -503,7 +503,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		word  N=1;
 		if T_IsArray(Local[nLocal].pType) then
-			N = T_ArrayGetSize(Local[nLocal].pType);
+			N = T_ArrayGetLen(Local[nLocal].pType);
 		end
 
 		word P4=Peek();

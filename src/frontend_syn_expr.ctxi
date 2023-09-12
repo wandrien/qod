@@ -540,7 +540,7 @@ word Primary(word Prty; char @Buff)
 		if strcmp(@Buff,"[")==0 & T_IsArray(pType) then /* Индексация массива. */
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
-			Node[P3].Value= T_ArrayGetSize(pType);
+			Node[P3].Value= T_ArrayGetLen(pType);
 			Node[P3].pLeft= _Expr(PRIO_ZERO, @Scan(@Buff));
 			pType = T_ArrayDeref(pType);
 

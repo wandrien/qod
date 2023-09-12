@@ -286,160 +286,23 @@ word Code1(word pPrimary)
 			Ofs  =    0;
 
 		case Node[P1].ID==iINDEX:
-
-			word  C   = 0;
-			word  N   = 0;
-			word  IX1 = RegNone;
-			word fIX  = 1;
-			do
-				if NodeIsLiteralWord(Node[P1].pLeft) then
-					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
-					N = N * Node[P1].Value;
-				else
-					select
-					case IX1==RegB:
-						if fEAX!=RegA then
-							if IX!=0 then
-								StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-							end:if
-
-							fEAX=RegA;
-						else
-							if IX!=RegA then
-								StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-							end:if
-
-							fIX=0;
-						end:if
-
-						Emit("push    EAX");
-						Emit("push    EBX");
-
-						_Code(Node[P1].pLeft,0,0,0);
-
-						Emit("pop     EBX");
-						Emit(@strcpy2(@Buff,"imul    EBX,  ",@str(N*Node[P1].Value)));
-						Emit("add     EAX,  EBX");
-
-						IX1=RegA;
-
-					case IX1==RegA:
-						if fEAX!=RegA | IX!=RegNone then
-							StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-						end
-
-						fEAX=RegB;
-
-						_Code(Node[P1].pLeft,0,0,0);
-
-						if fEAX==RegA then
-							Emit("pop     EBX");
-							Emit(@strcpy2(@Buff,"imul    EBX,  ",@str(N*Node[P1].Value)));
-						else
-							Emit(@strcpy2(@Buff,"imul    EAX,  ",@str(N*Node[P1].Value)));
-						end:if
-
-						Emit("add     EAX,  EBX");
-
-						fEAX=RegA;
-
-					case IX==RegB:
-						if fEAX==RegA then
-							StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-						end:if
-
-						Emit("push    EAX");
-						Emit("push    EBX");
-
-						fEAX=RegA;
-						fIX =0;
-
-						_Code(Node[P1].pLeft,0,0,0);
-
-						IX1=RegA;
-
-					case IX==RegA:
-						if fEAX!=RegA then
-							StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-						end:if
-
-						fEAX=RegB;
-
-						_Code(Node[P1].pLeft,0,0,0);
-
-						if fEAX==RegA then
-							fIX=0;
-							IX1=RegA;
-						else
-							IX1=RegB;
-						end:if
-
-						fEAX=RegA;
-
-					default:
-						_Code(Node[P1].pLeft,0,0,0);
-
-						if fEAX==RegA then
-							IX1=RegA;
-						else
-							IX1=RegB;
-						end:if
-					end:select
-
-					C=C*Node[P1].Value;
-					N=1;
-				end:if
-
-				if Node[P1].pRight>=nNODE then
-					exit;
-				end:if
-
-				if Node[Node[P1].pRight].ID!=iINDEX then
-					exit;
-				end:if
-
-				P1  =Node[P1].pRight;
-			end:do
-
 			word Size = SizeOfType(pType);
 
-			C = C * Size;
-
-			if ID != iLOCAL then
-				Ofs = Ofs + C;
-			else
-				Ofs = Ofs - C;
-			end
-
-			if IX1!=RegNone then
-				Size = Size * N;
-				Emit_IMUL_Reg_Const(IX1, 4, Size);
-
-				if IX!=RegNone then
-					select
-					case IX1==RegB:
-						if IX!=RegNone | fIX==0 then
-							StopInternalCodegen(__FILE__, __LINE__);
-						end:if
-
-						Emit("add     EAX,  EBX");
-
-					case IX1==RegA:
-						if fIX!=0 then
-							StopInternalCodegen(__FILE__, __LINE__);
-						end
-
-						Emit("pop     EBX");
-						Emit("add     EAX,  EBX");
-
-						IX=RegA;
-
-					default:
-						StopInternalCodegen(__FILE__, __LINE__);
-					end:select
+			if NodeIsLiteralWord(Node[P1].pLeft) then
+				word IndexingOffset = Size * Node[Node[P1].pLeft].Value;
+				if ID != iLOCAL then
+					Ofs = Ofs + IndexingOffset;
 				else
-					IX=IX1;
+					Ofs = Ofs - IndexingOffset;
+				end
+			else
+				_Code(Node[P1].pLeft,0,0,0);
+				if fEAX==RegA then
+					IX=RegA;
+				else
+					IX=RegB;
 				end:if
+				Emit_IMUL_Reg_Const(IX, 4, Size);
 			end:if
 
 		case Node[P1].ID==iADDR:

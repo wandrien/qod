@@ -344,7 +344,7 @@ word T_ArrayDeref(word T)
 	return Dict[T].pType;
 end
 
-word T_ArrayGetSize(word T)
+word T_ArrayGetLen(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[T].Class != cTYPE | Dict[T].Sub != sARRAY:
@@ -352,10 +352,10 @@ word T_ArrayGetSize(word T)
 	return Dict[T].TypeSize;
 end
 
-word T_ArrayGetSizeOr0(word T)
+word T_ArrayGetLenOr0(word T)
 	when !T_IsArray(T):
 		return 0;
-	return T_ArrayGetSize(T);
+	return T_ArrayGetLen(T);
 end
 
 
@@ -365,7 +365,7 @@ word T_Array(word T; word S)
 		if Dict[P].Class == cTYPE
 		 & Dict[P].Sub == sARRAY
 		 & Dict[P].pType == T
-		 & T_ArrayGetSize(P) == S then
+		 & T_ArrayGetLen(P) == S then
 			return P;
 		end:if
 		inc P;
