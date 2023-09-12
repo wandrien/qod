@@ -2,10 +2,11 @@
 
 /*****************************************************************************/
 
-define PHO_REG_INVALID 4
+define PHO_REG_INVALID 0
 define PHO_REGS 4
-word PHO_ValidRegConst[PHO_REGS];
-word PHO_RegConst[PHO_REGS];
+define PHO_FIRST_REG 1
+word PHO_ValidRegConst[PHO_REGS + 1];
+word PHO_RegConst[PHO_REGS + 1];
 
 /*****************************************************************************/
 
@@ -13,10 +14,10 @@ char@ PHO_RegName(word Reg)
 	char @S;
 
 	select
-	case Reg == 0: @S = "EAX";
-	case Reg == 1: @S = "EBX";
-	case Reg == 2: @S = "ECX";
-	case Reg == 3: @S = "EDX";
+	case Reg == 1: @S = "EAX";
+	case Reg == 2: @S = "EBX";
+	case Reg == 3: @S = "ECX";
+	case Reg == 4: @S = "EDX";
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
@@ -27,7 +28,7 @@ end
 /*****************************************************************************/
 
 void PHO_InvalidateReg(word R)
-	if R >= PHO_REGS then
+	if R >= (PHO_FIRST_REG + PHO_REGS) then
 		StopInternal(__FILE__, __LINE__);
 	end:if
 
@@ -42,8 +43,8 @@ end
 /*****************************************************************************/
 
 void PHO_InvalidateRegs()
-	word i = 0;
-	while i < PHO_REGS do
+	word i = PHO_FIRST_REG;
+	while i < PHO_FIRST_REG + PHO_REGS do
 		PHO_InvalidateReg(i);
 		inc i;
 	end:while
@@ -51,34 +52,34 @@ end
 
 /*****************************************************************************/
 
-word PHO_RegContainsAConst(word R)
+bool PHO_RegContainsAConst(word R)
 	if R >= PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
 	if PHO_ValidRegConst[R] != 0 then
-		return 1;
+		return true;
 	end:if
-	return 0;
+	return false;
 end
 
 /*****************************************************************************/
 
-word PHO_RegContainsConst(word R; word Data)
-	if R >= PHO_REGS then
+bool PHO_RegContainsConst(word R; word Data)
+	if R >= PHO_FIRST_REG + PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
 	if PHO_ValidRegConst[R] != 0 & PHO_RegConst[R] == Data then
-		return 1;
+		return true;
 	end:if
-	return 0;
+	return false;
 end
 
 /*****************************************************************************/
 
 word PHO_FindRegWithConst(word Data)
-	word i = 0;
-	while i < PHO_REGS do
-		if PHO_RegContainsConst(i, Data) != 0 then
+	word i = PHO_FIRST_REG;
+	while i < PHO_FIRST_REG + PHO_REGS do
+		if PHO_RegContainsConst(i, Data) then
 			return i;
 		end:if
 		inc i;
@@ -89,7 +90,7 @@ end
 /*****************************************************************************/
 
 void PHO_RegLoadConst(word R; word Data)
-	if R >= PHO_REGS then
+	if R >= PHO_FIRST_REG + PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
 
@@ -110,18 +111,18 @@ char@ PHO_EncodeReg(word Reg; word Mask)
 	char @S;
 
 	select
-	case r == 0 & m == 0xFFFF_FFFF: @S = "EAX";
-	case r == 1 & m == 0xFFFF_FFFF: @S = "EBX";
-	case r == 2 & m == 0xFFFF_FFFF: @S = "ECX";
-	case r == 3 & m == 0xFFFF_FFFF: @S = "EDX";
-	case r == 0 & m == 0x0000_FFFF: @S = "AX" ;
-	case r == 1 & m == 0x0000_FFFF: @S = "BX" ;
-	case r == 2 & m == 0x0000_FFFF: @S = "CX" ;
-	case r == 3 & m == 0x0000_FFFF: @S = "DX" ;
-	case r == 0 & m == 0x0000_00FF: @S = "AL" ;
-	case r == 1 & m == 0x0000_00FF: @S = "BL" ;
-	case r == 2 & m == 0x0000_00FF: @S = "CL" ;
-	case r == 3 & m == 0x0000_00FF: @S = "DL" ;
+	case r == 1 & m == 0xFFFF_FFFF: @S = "EAX";
+	case r == 2 & m == 0xFFFF_FFFF: @S = "EBX";
+	case r == 3 & m == 0xFFFF_FFFF: @S = "ECX";
+	case r == 4 & m == 0xFFFF_FFFF: @S = "EDX";
+	case r == 1 & m == 0x0000_FFFF: @S = "AX" ;
+	case r == 2 & m == 0x0000_FFFF: @S = "BX" ;
+	case r == 3 & m == 0x0000_FFFF: @S = "CX" ;
+	case r == 4 & m == 0x0000_FFFF: @S = "DX" ;
+	case r == 1 & m == 0x0000_00FF: @S = "AL" ;
+	case r == 2 & m == 0x0000_00FF: @S = "BL" ;
+	case r == 3 & m == 0x0000_00FF: @S = "CL" ;
+	case r == 4 & m == 0x0000_00FF: @S = "DL" ;
 /*
 	case str_has_prefix(@S, "AH" ) != 0: StopInternal(__FILE__, __LINE__);
 	case str_has_prefix(@S, "BH" ) != 0: StopInternal(__FILE__, __LINE__);
@@ -151,18 +152,18 @@ word PHO_DecodeReg(char @S; word @Reg; word @Mask)
 	word r, m;
 
 	select
-	case str_has_prefix(@S, "EAX"): r = 0; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "EBX"): r = 1; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "ECX"): r = 2; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "EDX"): r = 3; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "AX" ): r = 0; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "BX" ): r = 1; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "CX" ): r = 2; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "DX" ): r = 3; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "AL" ): r = 0; m = 0x0000_00FF;
-	case str_has_prefix(@S, "BL" ): r = 1; m = 0x0000_00FF;
-	case str_has_prefix(@S, "CL" ): r = 2; m = 0x0000_00FF;
-	case str_has_prefix(@S, "DL" ): r = 3; m = 0x0000_00FF;
+	case str_has_prefix(@S, "EAX"): r = 1; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "EBX"): r = 2; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "ECX"): r = 3; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "EDX"): r = 4; m = 0xFFFF_FFFF;
+	case str_has_prefix(@S, "AX" ): r = 1; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "BX" ): r = 2; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "CX" ): r = 3; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "DX" ): r = 4; m = 0x0000_FFFF;
+	case str_has_prefix(@S, "AL" ): r = 1; m = 0x0000_00FF;
+	case str_has_prefix(@S, "BL" ): r = 2; m = 0x0000_00FF;
+	case str_has_prefix(@S, "CL" ): r = 3; m = 0x0000_00FF;
+	case str_has_prefix(@S, "DL" ): r = 4; m = 0x0000_00FF;
 	case str_has_prefix(@S, "AH" ): StopInternal(__FILE__, __LINE__);
 	case str_has_prefix(@S, "BH" ): StopInternal(__FILE__, __LINE__);
 	case str_has_prefix(@S, "CH" ): StopInternal(__FILE__, __LINE__);
@@ -182,11 +183,11 @@ end
 
 /* Returns 1 if replacement found and placed into Buff. */
 word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2)
-	word Reg1HasConst = PHO_RegContainsAConst(Reg1);
+	bool Reg1HasConst = PHO_RegContainsAConst(Reg1);
 	word Reg1Const = PHO_RegConst[Reg1];
 
 	/* Shortest options first. */
-	if Reg1HasConst != 0 then
+	if Reg1HasConst then
 		select
 		case Reg1Const == Const2:
 			strcpy(@Buff, ""); /* 0 bytes */
@@ -212,7 +213,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	end:if
 
 	/* Back to the options that depend on the previous value of the register */
-	if Reg1HasConst != 0 then
+	if Reg1HasConst then
 		select
 		case Reg1Const == !Const2:
 			strcpy(@Buff, "not     "); /* 2 bytes */
@@ -242,7 +243,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	end:if
 
 	/* Now check for Reg1 = Reg1 + <signed char>. This gives a 3-byte instuction. */
-	if Reg1HasConst != 0 then
+	if Reg1HasConst then
 		/*
 			We trying to do <ADD reg, -diff> and <SUB reg, -diff> instead of
 			<ADD reg, +diff> and <SUB reg, +diff>, since the biggest negative value
@@ -359,7 +360,7 @@ char@ PHO_Optimize_(char @Inst)
 
 		/* Обработка случая обнуления через XOR. */
 		if Reg1 == Reg2 & Mask1 == Mask2 & Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") then
-			if PHO_RegContainsConst(Reg1, 0) != 0 then
+			if PHO_RegContainsConst(Reg1, 0) then
 				return "";
 			else
 				PHO_RegLoadConst(Reg1, 0);
@@ -368,7 +369,7 @@ char@ PHO_Optimize_(char @Inst)
 		end:if
 
 		/* Если значение второго регистра нам неизвестно, инвалидируем значение для первого. */
-		if PHO_RegContainsAConst(Reg2) == 0 then
+		if !PHO_RegContainsAConst(Reg2) then
 			PHO_InvalidateReg(Reg1);
 			return @Inst;
 		end:if
@@ -400,7 +401,7 @@ char@ PHO_Optimize_(char @Inst)
 	end:if
 
 	/* Для всех прочих вариантов необходимо знать значение в Reg1. */
-	if PHO_RegContainsAConst(Reg1) == 0 then
+	if !PHO_RegContainsAConst(Reg1) then
 		PHO_InvalidateReg(Reg1);
 		return @Inst;
 	end:if
