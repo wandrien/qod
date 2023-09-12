@@ -715,6 +715,87 @@ end
 
 /*****************************************************************************/
 
+bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
+	when NodeCanBeEncodedAsImm(P):
+		return true;
+
+	word ID = Node[P].ID;
+
+	switch ID of
+	case iADD, iBIT_OR, iBIT_XOR, iBIT_AND:
+		word pLeft = Node[P].pLeft;
+		word pRight = Node[P].pRight;
+		if
+			(CodeRequiresSingleRegister_(@tmpBuff, pLeft, @pTypeFinal)) &
+			(
+				NodeCanBeEncodedAsImm(pRight) |
+				CodeAsMemoryOperand(@tmpBuff, pRight, @pTypeFinal)
+			)
+		then
+			pTypeFinal = Node[P].pType;
+			return true;
+		end:if
+		if
+			(CodeRequiresSingleRegister_(@tmpBuff, pRight, @pTypeFinal)) &
+			(
+				NodeCanBeEncodedAsImm(pLeft) |
+				CodeAsMemoryOperand(@tmpBuff, pLeft, @pTypeFinal)
+			)
+		then
+			pTypeFinal = Node[P].pType;
+			return true;
+		end:if
+		return false;
+	case iSUB:
+		word pLeft = Node[P].pLeft;
+		word pRight = Node[P].pRight;
+		if
+			(CodeRequiresSingleRegister_(@tmpBuff, pLeft, @pTypeFinal)) &
+			(
+				NodeCanBeEncodedAsImm(pRight) |
+				CodeAsMemoryOperand(@tmpBuff, pRight, @pTypeFinal)
+			)
+		then
+			pTypeFinal = Node[P].pType;
+			return true;
+		end:if
+		return false;
+	case iBIT_NOT, iNEG:
+		return CodeRequiresSingleRegister_(@tmpBuff, Node[P].pLeft, @pTypeFinal);
+	case iCAST:
+		word pTypeFrom = nDICT;
+		word pTypeTo = Node[P].pType;
+		bool RecursiveResult = CodeRequiresSingleRegister_(@tmpBuff, Node[P].pLeft, @pTypeFrom);
+		when !RecursiveResult:
+			return RecursiveResult;
+		word Complexity = 0;
+		tmpBuff[0] = #0;
+		pTypeTo = Code_CAST(@tmpBuff, P, pTypeTo, pTypeFrom, RegA, @Complexity);
+		if Complexity < 2 then
+			when @pTypeFinal != NULL:
+				pTypeFinal = pTypeTo;
+			return RecursiveResult;
+		else
+			return false;
+		end:if
+	end:switch
+
+	return CodeAsMemoryOperand(@tmpBuff, P, @pTypeFinal);
+end
+
+bool CodeRequiresSingleRegister(word P)
+	bool Result;
+	word pTypeFinal;
+	char tmpBuff[nBUFF];
+	tmpBuff[0] = #0;
+	DisableEmit();
+	Result = CodeRequiresSingleRegister_(@tmpBuff, P, @pTypeFinal);
+	EnableEmit();
+	return Result;
+end
+
+/*****************************************************************************/
+
 /** Returns true if the operands can be swapped for no cost. */
 bool IsOperationCommutative(word ID)
 	switch ID of
@@ -789,17 +870,14 @@ char @CheckOperandReordering(word pLeft; word pRight)
 	when NodeCanBeEncodedAsImm(pRight):
 		return NULL;
 
-	char tmpBuff[nBUFF];
-	bool RightIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pRight, NULL);
-	when RightIsMemoryOperand:
+	when CodeRequiresSingleRegister(pRight):
 		return NULL;
 
 	when NodeCanBeEncodedAsImm(pLeft):
 		return "Imm on the left";
 
-	bool LeftIsMemoryOperand = CodeAsMemoryOperand(@tmpBuff, pLeft, NULL);
-	when LeftIsMemoryOperand:
-		return "Memory operand on the left";
+	when CodeRequiresSingleRegister(pLeft):
+		return "Single-register operand on the left";
 
 	return NULL;
 end
@@ -835,7 +913,7 @@ end
 
 /*****************************************************************************/
 
-word TryCodeFastMult(char @Buff; word P; word F; word T; word M)
+word TryCodeFastMult(char @Buff; word P)
 	when Node[P].ID != iMUL:
 		return nDICT;
 
@@ -892,7 +970,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	end
 
 	do
-		word pType = TryCodeFastMult(@Buff,P,0,0,0);
+		word pType = TryCodeFastMult(@Buff,P);
 		when pType < nDICT:
 			return pType;
 		exit;
