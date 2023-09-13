@@ -917,7 +917,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 
 	/* Try reusing a constant in the target register.
 	   This optimisation may potentially affect CPU register aliasing,
-	   so enabling it only when optimizing for speed. */
+	   so enabling it only when optimizing for size. */
 	if (EmitShortCode != 0) &
 	   (rightOperand == operandImm) &
 	   (T_SizeOf(Node[pRight].pType) == 4) &
