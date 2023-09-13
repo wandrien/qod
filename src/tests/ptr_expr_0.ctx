@@ -1,0 +1,58 @@
+// TEST: should_print '2 3 | OK1 OK2 | OK1 OK2 | OK1 OK2 | OK1 OK2 OK3 | OK1 OK2 OK3 OK4 OK5 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+word arr[20];
+
+begin
+	word v0 = 0;
+	word v2 = 0;
+	word v3 = 0;
+
+	word @p2 = @v2;
+	word @p3 = @v3;
+
+	p2 = 2;
+	p3 = 3;
+
+	put_word(p2); puts(" ");
+	put_word(p3); puts(" ");
+
+	puts("| ");
+
+	when p2 == v2: puts("OK1 ");
+	when v2 == p2: puts("OK2 ");
+	when p2 == v3: puts("FAIL ");
+
+	puts("| ");
+
+	when @v2 == @v2: puts("OK1 ");
+	when @v2 != @v3: puts("OK2 ");
+	when @v2 == @v3: puts("FAIL ");
+
+	puts("| ");
+
+	when @p2 == @v2: puts("OK1 ");
+	when @v2 == @p2: puts("OK2 ");
+	when @p2 == @p3: puts("FAIL ");
+	when @v3 == @p2: puts("FAIL ");
+
+	puts("| ");
+
+	when @arr[v3] == @arr[v2 + 1]: puts("OK1 ");
+	when @arr[v2 + 1] == @arr[v3]: puts("OK2 ");
+	when @arr[v2] == @arr[v2]: puts("OK3 ");
+	when @arr[v2] == @arr[v3]: puts("FAIL ");
+
+	puts("| ");
+
+	word @p_arr = @arr;
+
+	when @arr[v3] == @p_arr[v2 + 1]: puts("OK1 ");
+	when @arr[v2 + 1] == @p_arr[v3]: puts("OK2 ");
+	when @arr[v3] == @p_arr[v2 + 1 - (v0 * v2 / (v3 + 1))]: puts("OK3 ");
+	when @arr[v2 + 1 - (v0 * v2 / (v3 + 1))] == @p_arr[v3]: puts("OK4 ");
+	when @arr[v2] == @p_arr[v2]: puts("OK5 ");
+	when @arr[v2] == @p_arr[v3]: puts("FAIL ");
+end

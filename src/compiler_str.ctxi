@@ -21,6 +21,16 @@ char @strcpy5(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5)
 	return @Dst;
 end
 
+char @strcpy6(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6)
+	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5), @Src6);
+	return @Dst;
+end
+
+char @strcpy7(char @Dst, @Src1, @Src2, @Src3, @Src4, @Src5, @Src6, @Src7)
+	str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@str_push(@Dst, @Src1), @Src2), @Src3), @Src4), @Src5), @Src6), @Src7);
+	return @Dst;
+end
+
 char @strcat2(char @Dst, @Src1, @Src2)
 	str_push(@str_push(@Dst[strlen(@Dst)], @Src1), @Src2);
 	return @Dst;

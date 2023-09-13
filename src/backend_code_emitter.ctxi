@@ -178,41 +178,43 @@ word Code1(word pPrimary)
 			return pType;
 
 		case Node[P1].ID==iLPTR:
-			if fEAX!=RegA | IX==RegB then
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-			end:if
+			char @TX = @CodeReg(NULL, fEAX, 4);
 
 			if IX!=RegNone then
+				if fEAX!=IX then
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+				end:if
+
 				select
 				case ID==iDATA:
-					Emit(@strcpy2(@Buff,"add     EAX,  @@DATA+",@str(Ofs)));
+					Emit(@strcpy4(@Buff,"add     ",@TX,",  @@DATA+",@str(Ofs)));
 				case ID==iPARM:
-					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP+EAX+",@str(Ofs),"]"));
+					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"+",@str(Ofs),"]"));
 				case ID==iLOCAL:
-					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP+EAX-",@str(Ofs),"]"));
+					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"-",@str(Ofs),"]"));
 				case ID==iSTRING:
 					char @s = "@@ROLITERALS+";
 					when RO == 0:
 						@s = "@@RWLITERALS+";
-					Emit(@strcpy3(@Buff,"add     EAX,  ", @s,@str(Ofs)));
+					Emit(@strcpy5(@Buff,"add     ",@TX,",  ", @s,@str(Ofs)));
 				case ID==iREF & Ofs!=0:
-					Emit(@strcpy2(@Buff,"add     EAX,  ",@str(Ofs)));
+					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ofs)));
 				case ID!=iREF & ID!=iCALL:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
 			else
 				select
 				case ID==iDATA:
-					Emit(@strcpy2(@Buff,"mov     EAX,  @@DATA+",@str(Ofs)));
+					Emit(@strcpy4(@Buff,"mov     ",@TX,",  @@DATA+",@str(Ofs)));
 				case ID==iPARM:
-					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP+",@str(Ofs),"]"));
+					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP+",@str(Ofs),"]"));
 				case ID==iLOCAL:
-					Emit(@strcpy3(@Buff,"lea     EAX,  [EBP-",@str(Ofs),"]"));
+					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP-",@str(Ofs),"]"));
 				case ID==iSTRING:
 					char @s = "@@ROLITERALS+";
 					when RO == 0:
 						@s = "@@RWLITERALS+";
-					Emit(@strcpy3(@Buff,"mov     EAX,  ", @s,@str(Ofs)));
+					Emit(@strcpy5(@Buff,"mov     ",@TX,",  ",@s,@str(Ofs)));
 				case ID!=iCALL:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:select
@@ -324,12 +326,7 @@ word Code1(word pPrimary)
 			end:if
 
 			if IX!=RegNone then
-				char RX[4];
-				if IX==RegA then
-					strcpy(@RX,"EAX");
-				else
-					strcpy(@RX,"EBX");
-				end:if
+				char @RX = @CodeReg(NULL, IX, 4);
 
 				select
 				case ID==iDATA:
