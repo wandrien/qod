@@ -97,7 +97,7 @@ word Code1(word pPrimary)
 		case P1>=nNODE:
 			select
 			case IncID==iINC | IncID==iDEC:
-				if IX==RegB then
+				if IX > RegA then
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:if
 
@@ -124,56 +124,34 @@ word Code1(word pPrimary)
 				case Size==1 | Size==4:
 					strcpy(@Buff,"mov     ");
 					CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
+
+					select
+					case fEAX!=RegA:
+						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
+
+					case IX==RegA:
+						Emit("pop     EBX");
+						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
+
+					case IX==RegB:
+						Emit("pop     EAX");
+						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
+					end:select
 				default:
 					strcpy(@Buff,"lea     EDI,  ");
 					CodeDataIX_offset(@Buff, 0, ID, IX, Ofs);
-				end:select
+					Emit(@Buff);
 
-				select
-				case fEAX!=RegA:
-					select
-					case Size==1:
-						Emit(@strcat(@Buff,", AL"));
-					case Size==4:
-						Emit(@strcat(@Buff,", EAX"));
-
-					default:
+					if fEAX!=RegA then
 						Emit("mov     ESI,  EAX");
-						Emit(@Buff);
-					end:select
-
-				case IX==RegA:
-					select
-					case Size==1:
-						Emit("pop     EBX");
-						Emit(@strcat(@Buff,", BL"));
-					case Size==4:
-						Emit("pop     EBX");
-						Emit(@strcat(@Buff,", EBX"));
-					default:
+					else
 						Emit("pop     ESI");
-						Emit(@Buff);
-					end:select
+					end:if
 
-				case IX==RegB:
-					select
-					case Size==1:
-						Emit("pop     EAX");
-						Emit(@strcat(@Buff,", AL"));
-					case Size==4:
-						Emit("pop     EAX");
-						Emit(@strcat(@Buff,", EAX"));
-					default:
-						Emit("pop     ESI");
-						Emit(@Buff);
-					end:select
-				end:select
-
-				if Size!=1 & Size!=4 then
 					Emit("cld");
 					Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
 					Emit("rep     movsb");
-				end:if
+				end:select
 			end:select
 
 			exit;
@@ -240,7 +218,7 @@ word Code1(word pPrimary)
 				end:select
 			end:if
 
-			return nDICT;
+			return T_PtrTo(pType);
 
 		case Node[P1].ID==iCALL:
 			if fEAX!=RegA then
@@ -297,11 +275,7 @@ word Code1(word pPrimary)
 				end
 			else
 				_Code(Node[P1].pLeft,0,0,0);
-				if fEAX==RegA then
-					IX=RegA;
-				else
-					IX=RegB;
-				end:if
+				IX=fEAX;
 				Emit_IMUL_Reg_Const(IX, 4, Size);
 			end:if
 
@@ -528,37 +502,18 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 			end:select
 
 		case Node[P1].ID==iINDEX:
-
-			word  C   = 0;
-			word  N   = 0;
-			do
-				if NodeIsLiteralWord(Node[P1].pLeft) then
-					C = C * Node[P1].Value + Node[Node[P1].pLeft].Value;
-					N = N * Node[P1].Value;
-				else
-					return false;
-				end:if
-
-				if Node[P1].pRight>=nNODE then
-					exit;
-				end:if
-
-				if Node[Node[P1].pRight].ID!=iINDEX then
-					exit;
-				end:if
-
-				P1  =Node[P1].pRight;
-			end:do
-
 			word Size = SizeOfType(pType);
 
-			C = C * Size;
-
-			if ID != iLOCAL then
-				Ofs = Ofs + C;
+			if NodeIsLiteralWord(Node[P1].pLeft) then
+				word IndexingOffset = Size * Node[Node[P1].pLeft].Value;
+				if ID != iLOCAL then
+					Ofs = Ofs + IndexingOffset;
+				else
+					Ofs = Ofs - IndexingOffset;
+				end
 			else
-				Ofs = Ofs - C;
-			end
+				return false;
+			end:if
 
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
