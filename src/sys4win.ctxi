@@ -65,6 +65,6 @@ void     puts(char @S)
 end
 
 
-void halt(word Code)
+void     halt(word Code)
 	ExitProcess(Code);
 end

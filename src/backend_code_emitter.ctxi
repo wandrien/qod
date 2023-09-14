@@ -121,7 +121,12 @@ word Code1(word pPrimary)
 
 				Emit(@CodeDataIX_offset(@Buff, Size, ID, IX, Ofs));
 
-			case ID!=iCALL:
+				return st_void;
+
+			case ID==iCALL:
+				return pType;
+
+			default:
 				word Size = SizeOfType(pType);
 
 				select
@@ -156,9 +161,12 @@ word Code1(word pPrimary)
 					Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
 					Emit("rep     movsb");
 				end:select
+
+				return st_void;
+
 			end:select
 
-			exit;
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 
 		case Node[P1].ID==iLOAD:
 
@@ -1491,7 +1499,7 @@ word Code(word P; word F; word T; word M)
 				fEAX = RegB;
 			end
 
-			Code(Node[P].pLeft, 0, 0, 0);
+			return Code(Node[P].pLeft, 0, 0, 0);
 
 		case iINLINE:
 			Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));

@@ -407,6 +407,10 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 
 	word need_semicolon = 0;
 
+	if Dict[pFunc].pType == st_noreturn then
+		Stop(@RETINNORET);
+	end:if
+
 	if Dict[pFunc].pType != st_void then
 		Node[P1].pLeft=Expr(PRIO_ZERO, @Buff);
 		ImplicitCast(Dict[pFunc].pType, @Node[P1].pLeft);
