@@ -65,6 +65,7 @@ char@ DefaultTarget;
 void Translate()
 	@_Code = @Code;
 	@_CodeAsMemoryOperand = @CodeAsMemoryOperand;
+	@_CodeRequiresSingleRegister_ = @CodeRequiresSingleRegister_;
 	@_EmitLine = @EmitLine;
 	@_NodeMarkUsed = @NodeMarkUsed;
 

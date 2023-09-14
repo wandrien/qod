@@ -7,6 +7,9 @@ __EmitLine @_EmitLine;
 bool function __CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 __CodeAsMemoryOperand @_CodeAsMemoryOperand;
 
+bool function __CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
+__CodeRequiresSingleRegister_ @_CodeRequiresSingleRegister_;
+
 include "backend_pho.ctxi"
 include "backend_lib.ctxi"
 include "backend_labels.ctxi"

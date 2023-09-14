@@ -287,10 +287,15 @@ word Code1(word pPrimary)
 			end:if
 
 			pType = T_DerefPtr(pType);
+			word Size = SizeOfType(pType);
 
-			if Node[P1].pLeft<nNODE then
-				word Size = SizeOfType(pType);
+			word pLeft = Node[P1].pLeft;
 
+			if pLeft < nNODE & NodeIsLiteralWord(pLeft) & Node[pLeft].Value == 0 then
+				pLeft = nNODE;
+			end:if
+
+			if pLeft < nNODE then
 				select
 				case IX==RegB:
 					if fEAX!=RegA then
@@ -305,7 +310,7 @@ word Code1(word pPrimary)
 					fEAX=RegB;
 				end:select
 
-				_Code(Node[P1].pLeft,0,0,0);
+				_Code(pLeft,0,0,0);
 
 				Emit_IMUL_Reg_Const(fEAX, 4, Size);
 				if fEAX==RegA then
@@ -442,14 +447,27 @@ end
 
 /*****************************************************************************/
 
-bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
-	word ID = Node[pPrimary].ID;
+/*
+	Для оптимизации генерируемого кода, нам требуется уметь отвечать на два вопроса:
+	* Может ли ветка кода быть закодирована как MemRef (и формирование данного MemRef).
+	* Может ли ветка кода быть закодирована с использованием только одного регистра.
 
-	switch ID of
+	Для веток Primary алгоритм ответа на эти вопросы содержит по большей части
+	идентичный код и отличается только в детялях.
+	Эта вспомогательная функция проводит анализ веток Primary для одного из указанных
+	вариантов анализа в зависимости от значения параметра Query.
+*/
+
+define Query_MemoryOperand 0
+define Query_SingleRegOperand 1
+
+bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
+
+	switch Node[pPrimary].ID of
 	case iCAST:
 		word pTypeFrom = nDICT;
 		word pTypeTo = Node[pPrimary].pType;
-		bool RecursiveResult = CodeAsMemoryOperand(@Buff, Node[pPrimary].pLeft, @pTypeFrom);
+		bool RecursiveResult = QueryOperandStatus(@Buff, Node[pPrimary].pLeft, @pTypeFrom, Query);
 		when !RecursiveResult:
 			return RecursiveResult;
 		word Complexity = 0;
@@ -473,7 +491,7 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 	word pType;
 	word  Ofs;
 	word  RO;
-	ID=ExtractDataInfo(pPrimary, @pType, @Ofs, @RO);
+	word ID=ExtractDataInfo(pPrimary, @pType, @Ofs, @RO);
 	word IX=RegNone;
 
 	word P1=Node[pPrimary].pLeft;
@@ -498,6 +516,13 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 				return false;
 			end:select
 
+		case Node[P1].ID==iLPTR:
+			if Query == Query_SingleRegOperand then
+				return true;
+			else
+				return false;
+			end:if
+
 		case Node[P1].ID==iINDEX:
 			word Size = SizeOfType(pType);
 
@@ -509,8 +534,39 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 					Ofs = Ofs - IndexingOffset;
 				end
 			else
+				if Query != Query_SingleRegOperand then
+					return false;
+				end:if
+
+				when IX != RegNone:
+					return false;
+				when !_CodeRequiresSingleRegister_(@Buff, Node[P1].pLeft, @pTypeFinal):
+					return false;
+				IX = RegA;
+			end:if
+
+		case Node[P1].ID==iADDR:
+			if Query != Query_SingleRegOperand then
 				return false;
 			end:if
+
+			pType = T_DerefPtr(pType);
+			word Size = SizeOfType(pType);
+
+			word pLeft = Node[P1].pLeft;
+
+			if pLeft < nNODE & NodeIsLiteralWord(pLeft) & Node[pLeft].Value == 0 then
+				pLeft = nNODE;
+			end:if
+
+			if pLeft < nNODE then
+				when IX != RegNone:
+					return false;
+				when !_CodeRequiresSingleRegister_(@Buff, pLeft, @pTypeFinal):
+					return false;
+			end:if
+			Ofs = 0;
+			IX = RegA;
 
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
@@ -526,6 +582,19 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
 
 	return false;
 
+end
+
+/*****************************************************************************/
+
+/*
+	Если узел pPrimary может быть закодирован как MemRef,
+	выводит в буфер Buff этот MemRef, а в pTypeFinal записывает тип выражения.
+	Возввращает true при этом.
+	Если узел pPrimary не может быть закодирован как MemRef, возвращает false.
+*/
+
+bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
+	return QueryOperandStatus(@Buff, pPrimary, @pTypeFinal, Query_MemoryOperand);
 end
 
 /*****************************************************************************/
@@ -575,6 +644,24 @@ bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
 			return true;
 		end:if
 		return false;
+	case iMUL:
+		word pLeft = Node[P].pLeft;
+		word pRight = Node[P].pRight;
+		if
+			NodeCanBeEncodedAsImm(pRight) &
+			CodeRequiresSingleRegister_(@tmpBuff, pLeft, @pTypeFinal)
+		then
+			pTypeFinal = Node[P].pType;
+			return true;
+		end:if
+		if
+			NodeCanBeEncodedAsImm(pLeft) &
+			CodeRequiresSingleRegister_(@tmpBuff, pRight, @pTypeFinal)
+		then
+			pTypeFinal = Node[P].pType;
+			return true;
+		end:if
+		return false;
 	case iBIT_NOT, iNEG:
 		return CodeRequiresSingleRegister_(@tmpBuff, Node[P].pLeft, @pTypeFinal);
 	case iCAST:
@@ -595,8 +682,10 @@ bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
 		end:if
 	end:switch
 
-	return CodeAsMemoryOperand(@tmpBuff, P, @pTypeFinal);
+	return QueryOperandStatus(@tmpBuff, P, @pTypeFinal, Query_SingleRegOperand);
 end
+
+/*****************************************************************************/
 
 bool CodeRequiresSingleRegister(word P)
 	bool Result;
@@ -985,6 +1074,8 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			rightOperand = operandReg;
 		else
 			if fEAX!=RegA then
+				when CodeRequiresSingleRegister(pRight):
+					EmitLine(0, "", "XXX1");
 				EmitLine(0, "push    EAX", "saved in CodeBinOp");
 				fEAX=RegA;
 			end
@@ -1019,7 +1110,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			/* We can handle it by swapping operands back. */
 			switch ID of
 			case iSUB, iDIV, iMOD:
-				Emit("xchg    EAX,  EBX");
+				Emit(@CodeCmdRegReg(@Buff, "xchg", fEAX, 4, rightReg, 4));
 				exit;
 			end:switch
 

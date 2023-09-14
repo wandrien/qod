@@ -1,0 +1,18 @@
+// TEST: should_print '23 23 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+int f1(int a, b, c, d, e, f)
+    return a / b + c / d + e / f;
+end
+
+word f2(word a, b, c, d, e, f)
+    return a / b + c / d + e / f;
+end
+
+
+begin
+	put_word(f1(20, 2, 9, 3, 40, 4)); puts(" ");
+	put_word(f2(20, 2, 9, 3, 40, 4)); puts(" ");
+end
