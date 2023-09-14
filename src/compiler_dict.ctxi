@@ -8,6 +8,7 @@ word    nDict;
 
 /* Индексы встроенных типов данных. */
 
+word st_noreturn;
 word st_void;
 word st_bool;
 word st_char;

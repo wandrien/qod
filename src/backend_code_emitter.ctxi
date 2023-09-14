@@ -51,16 +51,20 @@ end
 
 word Code_List(word P)
 	while P < nNODE do
-		_Code(P,0,0,0);
+		word pType = _Code(P,0,0,0);
+		when pType == st_noreturn:
+			return st_noreturn;
 		P = Node[P].pRight;
 	end
+	return st_void;
 end
 
 word Code_Block(word P)
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
-	Code_List(P);
+	word pType = Code_List(P);
 	Code_EndBlock(@CB);
+	return pType;
 end
 
 /*****************************************************************************/
@@ -1495,19 +1499,19 @@ word Code(word P; word F; word T; word M)
 		case iPUSH:
 			Code_PUSH(P, @Buff);
 		case iRETURN:
-			Code_RETURN(P, @Buff);
+			return Code_RETURN(P, @Buff);
 		case iSELECT:
-			Code_SELECT(P, @Buff);
+			return Code_SELECT(P, @Buff);
 		case iSWITCH:
-			Code_SWITCH(P, @Buff);
+			return Code_SWITCH(P, @Buff);
 		case iWHILE:
 			Code_WHILE(P, @Buff);
 		case iREPEAT:
 			Code_REPEAT(P, @Buff);
 		case iCONTINUE:
-			Code_CONTINUE(P, @Buff);
+			return Code_CONTINUE(P, @Buff);
 		case iEXIT:
-			Code_EXIT(P, @Buff);
+			return Code_EXIT(P, @Buff);
 		case iEMPTY:
 			null;
 		default:
@@ -1582,14 +1586,15 @@ void EmitFunction(char @Buff; word I)
 	Code_BeginBlock(@CB);
 
 	word  P = Dict[I].pNode;
-	word  ID;
+	word  pType = st_void;
 	while P < nNODE do
-		_Code(P, 0, 0, 0);
-		ID = Node[P].ID;
+		pType = _Code(P, 0, 0, 0);
+		when pType == st_noreturn:
+			exit;
 		P  = Node[P].pRight;
 	end
 
-	if ID!=iRETURN then
+	if pType != st_noreturn then
 		word pRet = Peek();
 		Node[pRet].ID = iRETURN;
 		_Code(pRet, 0, 0, 0);

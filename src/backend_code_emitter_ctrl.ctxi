@@ -171,6 +171,7 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 	end:if
 
+	return st_noreturn;
 end
 
 /*****************************************************************************/
@@ -189,6 +190,8 @@ word Code_SELECT(word P; char @Buff)
 	         [body]     NULL
 	*/
 
+	word pType = st_noreturn;
+	bool DefaultBranchPresent = false;
 	word CASE = Node[P].pLeft;
 	while CASE < nNODE do
 		when Node[CASE].ID != iCASE:
@@ -204,12 +207,16 @@ word Code_SELECT(word P; char @Buff)
 		if Node[COND].pLeft < nNODE then
 			_Code(Node[COND].pLeft,LabelResolve(CASE, lCASEBODYEND),0,LabelResolve(CASE, lCASEBODY));
 			EmitLabel(LabelResolve(CASE, lCASEBODY));
+		else
+			DefaultBranchPresent = true;
 		end
 
-		Code_Block(Node[BODY].pLeft);
-
-		if Node[CASE].pRight < nNODE then
-			EmitJumpToLabel(LabelResolve(P, lEXIT));
+		word pTypeBody = Code_Block(Node[BODY].pLeft);
+		if pTypeBody != st_noreturn then
+			pType = pTypeBody;
+			if Node[CASE].pRight < nNODE then
+				EmitJumpToLabel(LabelResolve(P, lEXIT));
+			end
 		end
 
 		if Node[COND].pLeft < nNODE then
@@ -219,7 +226,13 @@ word Code_SELECT(word P; char @Buff)
 		CASE = Node[CASE].pRight;
 	end:while
 
-	EmitLabel(LabelResolve(P, lEXIT));
+	when !DefaultBranchPresent:
+		pType = st_void;
+
+	when pType != st_noreturn:
+		EmitLabel(LabelResolve(P, lEXIT));
+
+	return st_void;
 end
 
 /*****************************************************************************/
@@ -252,6 +265,9 @@ word Code_SWITCH(word P; char @Buff)
 
 
 	*/
+
+	word pTypeFinal = st_noreturn;
+	bool DefaultBranchPresent = false;
 
 	word COND = Node[P].pLeft;
 	when Node[COND].ID != iCOND:
@@ -311,6 +327,7 @@ word Code_SWITCH(word P; char @Buff)
 				EmitBranchToLabel("e", LabelResolve(CASE_I, lCASEBODY));
 			case iDEFAULT:
 				L_Default = LabelResolve(CASE_I, lCASEBODY);
+				DefaultBranchPresent = true;
 			case iBODY:
 				null;
 			default:
@@ -336,8 +353,11 @@ word Code_SWITCH(word P; char @Buff)
 				null;
 			case iBODY:
 				EmitLabel(LabelResolve(CASE_I, lCASEBODY));
-				Code_Block(Node[VALUE_I].pLeft);
-				EmitJumpToLabel(LabelResolve(P, lEXIT));
+				word pTypeBody = Code_Block(Node[VALUE_I].pLeft);
+				if pTypeBody != st_noreturn then
+					pTypeFinal = st_void;
+					EmitJumpToLabel(LabelResolve(P, lEXIT));
+				end:if
 			default:
 				StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
@@ -347,8 +367,13 @@ word Code_SWITCH(word P; char @Buff)
 		CASE_I = Node[CASE_I].pRight;
 	end:while
 
-	EmitLabel(LabelResolve(P, lEXIT));
+	when !DefaultBranchPresent:
+		pTypeFinal = st_void;
 
+	when pType != st_noreturn:
+		EmitLabel(LabelResolve(P, lEXIT));
+
+	return pTypeFinal;
 end
 
 /*****************************************************************************/
@@ -388,6 +413,8 @@ word Code_WHILE(word P; char @Buff)
 	EmitLabel(LabelResolve(P, lEXIT));
 
 	Code_EndBlock(@CB);
+
+	return st_void;
 end
 
 /*****************************************************************************/
@@ -429,18 +456,21 @@ word Code_REPEAT(word P; char @Buff)
 
 	Code_EndBlock(@CB);
 
+	return st_void;
 end
 
 /*****************************************************************************/
 
 word Code_CONTINUE(word P; char @Buff)
 	EmitJumpToLabel(LabelResolve(Node[P].Value, lCONTINUE));
+	return st_noreturn;
 end
 
 /*****************************************************************************/
 
 word Code_EXIT(word P; char @Buff)
 	EmitJumpToLabel(LabelResolve(Node[P].Value, lEXIT));
+	return st_noreturn;
 end
 
 /*****************************************************************************/

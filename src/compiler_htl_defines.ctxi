@@ -35,19 +35,20 @@ define  sBASE_CHAR   3 // Символьный тип
 define  sBASE_SINT   4 // Целое со знаком
 define  sBASE_UINT   5 // Целое без знака
 define  sBASE_FLOAT  6 // Число с плавающей точкой:
-define  sBASE_MAX    6 //
+define  sBASE_NORET  7 //
+define  sBASE_MAX    7 //
                        // Производные типы
-define  sSTRUCT      7 // Стpуктуpа
-define  sFUNCTYPE    8 // Функциональный тип
-//define  sCONST       9 // Константный подтип типа
-define  sPTR        10 // Указатель
-define  sARRAY      11 // Массив
+define  sSTRUCT      8 // Стpуктуpа
+define  sFUNCTYPE    9 // Функциональный тип
+//define  sCONST      10 // Константный подтип типа
+define  sPTR        11 // Указатель
+define  sARRAY      12 // Массив
 
 /*****************************************************************************/
 
-define  sSYS        12 // Функция ОС
-define  sFUNC       13 // Функция пpогpаммы
-define  sMAIN       14 // Главная функция
+define  sSYS        13 // Функция ОС
+define  sFUNC       14 // Функция пpогpаммы
+define  sMAIN       15 // Главная функция
 
 /*****************************************************************************/
 

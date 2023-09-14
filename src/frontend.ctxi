@@ -132,6 +132,7 @@ void InitFrontEnd()
 	Word("__FILE__");
 	Word("__LINE__");
 
+	st_noreturn = BaseType("noreturn", sBASE_NORET, 0);
 	st_void    = BaseType("void", sBASE_VOID, 0);
 	st_bool    = BaseType("bool", sBASE_BOOL, target_size_of_bool);
 
