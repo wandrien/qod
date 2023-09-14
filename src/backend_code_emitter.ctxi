@@ -733,6 +733,8 @@ bool DoesOperationAllowRightMemRef(word ID)
 		iADD,
 		iSUB,
 		iMUL,
+		iDIV,
+		iMOD,
 		iLT,
 		iLE,
 		iEQ,
@@ -1267,36 +1269,44 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		Emit(@Buff);
 		return pType;
 
-	case ID==iDIV:
+	case ID==iDIV | ID==iMOD:
 		select
 		case pType==st_byte:
 			Emit("xor     AH,   AH");
-			Emit("div     BL");
+			strcpy(@Buff,"div     ");
 		case pType==st_word:
 			Emit("xor     EDX,  EDX");
-			Emit("div     EBX");
+			strcpy(@Buff,"div     ");
 		case pType==st_int:
 			Emit("cdq");
-			Emit("idiv    EBX");
+			strcpy(@Buff,"idiv    ");
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
-		return pType;
-
-	case ID==iMOD:
 		select
-		case pType==st_byte:
-			Emit("xor     AH,   AH");
-			Emit("div     BL");
-			Emit("xchg    AL,   AH");
-		case pType==st_word:
-			Emit("xor     EDX,  EDX");
-			Emit("div     EBX");
-			Emit("xchg    EAX,  EDX");
+		case rightOperand == operandImm:
+			StopInternalCodegen(__FILE__, __LINE__);
+		case rightOperand == operandMemRef:
+			strcat(@Buff,@BuffRightOperand);
+		case rightOperand == operandReg:
+			CodeReg(@Buff, rightReg, Size);
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
+
+		Emit(@Buff);
+
+		if ID==iMOD then
+			select
+			case pType==st_byte:
+				Emit("xchg    AL,   AH");
+			case pType==st_word:
+				Emit("xchg    EAX,  EDX");
+			default:
+				StopInternalCodegen(__FILE__, __LINE__);
+			end:select
+		end:if
 
 		return pType;
 
