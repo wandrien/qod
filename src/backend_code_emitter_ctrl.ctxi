@@ -1,6 +1,19 @@
 
 /*****************************************************************************/
 
+LABEL @CodeExtractJump(word P)
+	switch Node[P].ID of
+	case iCONTINUE:
+		return @LabelResolve(Node[P].Value, lCONTINUE);
+	case iEXIT:
+		return @LabelResolve(Node[P].Value, lEXIT);
+	default:
+		return NULL;
+	end:switch
+end
+
+/*****************************************************************************/
+
 word Code_OR(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 	LABEL @L = @LabelResolve(P, lBRANCH);
 	if @T == NULL then
@@ -204,14 +217,24 @@ word Code_SELECT(word P; char @Buff)
 		|    Node[COND].ID != iCOND:
 			StopInternalCodegen(__FILE__, __LINE__);
 
+		LABEL @L_Jump = NULL;
+
 		if Node[COND].pLeft < nNODE then
-			_Code(Node[COND].pLeft,@LabelResolve(CASE, lCASEBODYEND),NULL,@LabelResolve(CASE, lCASEBODY));
+			@L_Jump = @CodeExtractJump(Node[BODY].pLeft);
+			if @L_Jump == NULL then
+				_Code(Node[COND].pLeft,@LabelResolve(CASE, lCASEBODYEND),NULL,@LabelResolve(CASE, lCASEBODY));
+			else
+				_Code(Node[COND].pLeft,NULL,@L_Jump,@LabelResolve(CASE, lCASEBODYEND));
+			end:if
 			EmitLabelIfUsed(@LabelResolve(CASE, lCASEBODY));
 		else
 			DefaultBranchPresent = true;
 		end
 
-		word pTypeBody = Code_Block(Node[BODY].pLeft);
+		word pTypeBody = st_noreturn;
+		when @L_Jump == NULL:
+			pTypeBody = Code_Block(Node[BODY].pLeft);
+
 		if pTypeBody != st_noreturn then
 			pTypeFinal = pTypeBody;
 			if Node[CASE].pRight < nNODE then
@@ -467,14 +490,14 @@ end
 /*****************************************************************************/
 
 word Code_CONTINUE(word P; char @Buff)
-	EmitJumpToLabel(@LabelResolve(Node[P].Value, lCONTINUE));
+	EmitJumpToLabel(@CodeExtractJump(P));
 	return st_noreturn;
 end
 
 /*****************************************************************************/
 
 word Code_EXIT(word P; char @Buff)
-	EmitJumpToLabel(@LabelResolve(Node[P].Value, lEXIT));
+	EmitJumpToLabel(@CodeExtractJump(P));
 	return st_noreturn;
 end
 
