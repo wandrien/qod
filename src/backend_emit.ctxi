@@ -243,9 +243,13 @@ end
 
 char EmitTmpBuff[1024];
 
-void EmitJumpToLabel(LABEL @Label)
+void EmitJumpToLabelWithComment(LABEL @Label; char @Comment)
 	LabelMarkUsed(@Label);
-	Emit(@strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))));
+	EmitLine(NULL, @strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))), @Comment);
+end
+
+void EmitJumpToLabel(LABEL @Label)
+	EmitJumpToLabelWithComment(@Label, NULL);
 end
 
 void EmitBranchToLabel(char @Condition; LABEL @Label)
