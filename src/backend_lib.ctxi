@@ -133,6 +133,8 @@ bool ValueRef_IsLValue(ValueRef@ vref)
 		return true;
 	case iREG, iCONST:
 		return false;
+	default:
+		StopInternal(__FILE__, __LINE__);
 	end:switch
 end
 
@@ -142,6 +144,8 @@ bool ValueRef_IsIndirect(ValueRef@ vref)
 		return true;
 	case iREG, iCONST:
 		return false;
+	default:
+		StopInternal(__FILE__, __LINE__);
 	end:switch
 end
 

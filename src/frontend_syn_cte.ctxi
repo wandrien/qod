@@ -286,7 +286,7 @@ end
 
 /*****************************************************************************/
 
-word CTE_SELECT(word P)
+void CTE_SELECT(word P)
 
 	/*
 	                 iSELECT
@@ -333,7 +333,7 @@ end
 
 /*****************************************************************************/
 
-word CTE_SWITCH(word P)
+void CTE_SWITCH(word P)
 
 	/*
 	                 iSWITCH
@@ -433,14 +433,24 @@ end
 void CTE_Function(word dFunc)
 	word pBody = Dict[dFunc].pNode;
 
+	bool fLastReturn = false;
+	bool fLastNoReturn = false;
+	bool fLastInlineAssembly = false;
 	bool fReturn = true;
 
 	word P = pBody;
 	while P != nNODE do
+		if Node[P].ID == iINLINE then
+			fLastInlineAssembly = true;
+		else
+			fLastInlineAssembly = false;
+		end:if
 		if Node[P].ID == iRETURN then
+			fLastReturn = true;
 			exit;
 		end:if
 		if Node[P].pType == st_noreturn then
+			fLastNoReturn = true;
 			fReturn = false;
 			exit;
 		end:if
@@ -458,6 +468,13 @@ void CTE_Function(word dFunc)
 
 	if !fReturn then
 		Dict[dFunc].pType = st_noreturn;
+	end:if
+
+	if
+		(!fLastReturn & !fLastNoReturn & !fLastInlineAssembly) &
+		(Dict[dFunc].pType != st_void & Dict[dFunc].pType != st_noreturn)
+	then
+		ErrorAtNode(pBody, @eMISSINGRET);
 	end:if
 
 end

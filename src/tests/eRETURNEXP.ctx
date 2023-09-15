@@ -1,0 +1,11 @@
+// TEST: compilation_should_fail 'Функция должна возвращать значение'
+word a;
+
+word f()
+	a = 2;
+end
+
+begin
+	a = 1;
+	f();
+end

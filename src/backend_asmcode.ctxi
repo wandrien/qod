@@ -179,6 +179,7 @@ char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value)
 	default:
 		CodeCmdRegConst(@Buff, "mov", Reg, RegMode, Value);
 	end
+	return @Buff;
 end
 
 /*****************************************************************************/

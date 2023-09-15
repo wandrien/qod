@@ -180,7 +180,7 @@ end
 
 /*****************************************************************************/
 
-word DictAddToNamespace(word P; word pNamespace)
+void DictAddToNamespace(word P; word pNamespace)
 	when P >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when pNamespace >= nDict:
