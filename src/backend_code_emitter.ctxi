@@ -99,7 +99,7 @@ word CodePrimary(word pPrimary)
 		select
 		case P1>=nNODE:
 			select
-			case IncID==iINC | IncID==iDEC:
+			case IncID == iINC | IncID == iDEC:
 				if IX > RegA then
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:if
@@ -122,7 +122,7 @@ word CodePrimary(word pPrimary)
 
 				return st_void;
 
-			case ID==iCALL:
+			case ID == iREG:
 				return pType;
 
 			default:
@@ -138,11 +138,11 @@ word CodePrimary(word pPrimary)
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
 
 					case IX==RegA:
-						Emit("pop     EBX");
+						EmitLine(NULL, "pop     EBX", "restored in CodePrimary (STORE)");
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
 
 					case IX==RegB:
-						Emit("pop     EAX");
+						EmitLine(NULL, "pop     EAX", "restored in CodePrimary (STORE)");
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
 					end:select
 				default:
@@ -153,7 +153,7 @@ word CodePrimary(word pPrimary)
 					if fEAX!=RegA then
 						Emit("mov     ESI,  EAX");
 					else
-						Emit("pop     ESI");
+						EmitLine(NULL, "pop     ESI", "restored in CodePrimary (STORE)");
 					end:if
 
 					Emit("cld");
@@ -169,7 +169,9 @@ word CodePrimary(word pPrimary)
 
 		case Node[P1].ID==iLOAD:
 
-			if IX==RegNone & ID==iCALL then
+			if ID==iREG then
+				when IX != fEAX:
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				return pType;
 			end:if
 
@@ -191,44 +193,47 @@ word CodePrimary(word pPrimary)
 		case Node[P1].ID==iLPTR:
 			char @TX = @CodeReg(NULL, fEAX, 4);
 
-			if IX!=RegNone then
-				if fEAX!=IX then
+			if IX != RegNone then
+				if fEAX != IX then
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:if
 
-				select
-				case ID==iDATA:
+				switch ID of
+				case iDATA:
 					Emit(@strcpy4(@Buff,"add     ",@TX,",  @@DATA+",@str(Ofs)));
-				case ID==iPARM:
+				case iPARM:
 					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"+",@str(Ofs),"]"));
-				case ID==iLOCAL:
+				case iLOCAL:
 					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"-",@str(Ofs),"]"));
-				case ID==iSTRING:
+				case iSTRING:
 					char @s = "@@ROLITERALS+";
 					when RO == 0:
 						@s = "@@RWLITERALS+";
 					Emit(@strcpy5(@Buff,"add     ",@TX,",  ", @s,@str(Ofs)));
-				case ID==iREF & Ofs!=0:
-					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ofs)));
-				case ID!=iREF & ID!=iCALL:
+				case iREF:
+					when Ofs != 0:
+						Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ofs)));
+				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-				end:select
+				end:switch
 			else
-				select
-				case ID==iDATA:
+				switch ID of
+				case iDATA:
 					Emit(@strcpy4(@Buff,"mov     ",@TX,",  @@DATA+",@str(Ofs)));
-				case ID==iPARM:
+				case iPARM:
 					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP+",@str(Ofs),"]"));
-				case ID==iLOCAL:
+				case iLOCAL:
 					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP-",@str(Ofs),"]"));
-				case ID==iSTRING:
+				case iSTRING:
 					char @s = "@@ROLITERALS+";
 					when RO == 0:
 						@s = "@@RWLITERALS+";
 					Emit(@strcpy5(@Buff,"mov     ",@TX,",  ",@s,@str(Ofs)));
-				case ID!=iCALL:
+				case iREF:
+					null;
+				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-				end:select
+				end:switch
 			end:if
 
 			return T_PtrTo(pType);
@@ -252,8 +257,9 @@ word CodePrimary(word pPrimary)
 					);
 			end:if
 
-			ID =iCALL;
-			Ofs=    0;
+			ID  = iREG;
+			IX  = RegA;
+			Ofs = 0;
 
 		case Node[P1].ID==iCALL2:
 			if fEAX!=RegA then
@@ -273,8 +279,9 @@ word CodePrimary(word pPrimary)
 
 			pType=Dict[Node[P1].Value].pType;
 
-			ID   =iCALL;
-			Ofs  =    0;
+			ID  = iREG;
+			IX  = RegA;
+			Ofs = 0;
 
 		case Node[P1].ID==iINDEX:
 			word Size = SizeOfType(pType);
@@ -308,62 +315,72 @@ word CodePrimary(word pPrimary)
 
 			if pLeft < nNODE then
 				select
-				case IX==RegB:
-					if fEAX!=RegA then
+				case IX == RegB:
+					if fEAX != RegA then
 						EmitLine(NULL, "push    EAX", "saved in CodePrimary (iADDR)");
 					end:if
 
 					Emit("xchg    EAX,  EBX");
-					IX  =RegA;
-					fEAX=RegB;
+					IX   = RegA;
+					fEAX = RegB;
 
-				case IX==RegA:
-					fEAX=RegB;
+				case IX == RegA:
+					fEAX = RegB;
 				end:select
 
 				Code(pLeft,NULL,NULL,NULL);
 
 				Emit_IMUL_Reg_Const(fEAX, 4, Size);
-				if fEAX==RegA then
-					if IX!=RegNone then
+				if fEAX == RegA then
+					if IX != RegNone then
 						Emit("pop     EBX");
-						IX=RegB;
+						IX = RegB;
 					end:if
 				end:if
-				strcpy3(@Buff,"add     ",@CodeReg(NULL, fEAX, 4),",  dword ");
+			end:if
+
+			char @TX = @CodeReg(NULL, fEAX, 4);
+
+			if pLeft < nNODE then
+				strcpy3(@Buff,"add     ",@TX,",  dword ");
 			else
-				strcpy3(@Buff,"mov     ",@CodeReg(NULL, fEAX, 4),",  dword ");
+				strcpy3(@Buff,"mov     ",@TX,",  dword ");
 			end:if
 
 			if IX!=RegNone then
 				char @RX = @CodeReg(NULL, IX, 4);
 
-				select
-				case ID==iDATA:
+				switch ID of
+				case iDATA:
 					Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ofs),"]"));
-				case ID==iPARM:
+				case iPARM:
 					Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ofs),"]"));
-				case ID==iLOCAL:
+				case iLOCAL:
 					Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ofs),"]"));
-				case ID==iREF:
+				case iREF:
 					Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ofs),"]"));
+				case iREG:
+					if fEAX != IX then
+						strcpy3(@Buff,"lea     ",@TX,",  dword ");
+						strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ofs),"]");
+						Emit(@Buff);
+					end:if
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-				end:select
+				end:switch
 			else
-				select
-				case ID==iDATA:
-					Emit(@strcat3(@Buff,"[@@DATA+",@str(Ofs),"]")); // FASM
-				case ID==iPARM:
+				switch ID of
+				case iDATA:
+					Emit(@strcat3(@Buff,"[@@DATA+",@str(Ofs),"]"));
+				case iPARM:
 					Emit(@strcat3(@Buff,"[EBP+",@str(Ofs),"]"));
-				case ID==iLOCAL:
+				case iLOCAL:
 					Emit(@strcat3(@Buff,"[EBP-",@str(Ofs),"]"));
-				//TODO Пpовеpить!
-				case ID==iCALL:
+				case iREG:
 					null;
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-				end:select
+				end:switch
 			end:if
 
 			if fEAX==RegA then
@@ -377,8 +394,8 @@ word CodePrimary(word pPrimary)
 				IX=fEAX_tmp;
 			end:if
 
-			ID =iREF;
-			Ofs=   0;
+			ID  = iREF;
+			Ofs = 0;
 
 		case Node[P1].ID==iFIELD:
 			CodeData_FIELD(@P1, @pType, @ID, @Ofs);

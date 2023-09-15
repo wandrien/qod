@@ -1,5 +1,4 @@
 // TEST: should_print '12 15 16 '
-// EXPECTED-TO-FAIL: FIXME: Wrong code generated
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"

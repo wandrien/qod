@@ -1,5 +1,4 @@
-// TEST: should_print '10 11 12 12 '
-// EXPECTED-TO-FAIL: FIXME: Wrong code generated
+// TEST: should_print '10 11 12 13 '
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
@@ -18,8 +17,8 @@ begin
 	ret_arr1()[2] = 12;
 	word @p = @arr1[3];
 	p[v0 + v0] = 13;
-	puts(@str(arr1[0])); puts(" ");
-	puts(@str(arr1[1])); puts(" ");
-	puts(@str(arr1[2])); puts(" ");
-	puts(@str(arr1[3])); puts(" ");
+	put_word(arr1[0]); puts(" ");
+	put_word(arr1[1]); puts(" ");
+	put_word(arr1[2]); puts(" ");
+	put_word(arr1[3]); puts(" ");
 end
