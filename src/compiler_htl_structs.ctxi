@@ -10,6 +10,7 @@ end
 struct LABEL             // Ссылка
 	word   Name;         // Имя ссылки
 	word   Value;        // Значение
+	bool   Used;
 	word  pNext;         // Следующая ссылка в списке
 end
 

@@ -1,7 +1,7 @@
 
 /*****************************************************************************/
 
-void function __EmitLine(word Label; char @Inst; char @Comment)
+void function __EmitLine(LABEL @Label; char @Inst; char @Comment)
 __EmitLine @_EmitLine;
 
 bool function __CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)

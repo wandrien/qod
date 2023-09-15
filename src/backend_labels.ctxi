@@ -26,7 +26,19 @@ void LabelAllocate(word N; word Name)
 	inc nLabel;
 end
 
-word LabelResolve(word N; word Name)
+word LabelGetValue(LABEL @L)
+	return L[0].Value;
+end
+
+void LabelMarkUsed(LABEL @L)
+	L[0].Used = true;
+end
+
+bool LabelIsUsed(LABEL @L)
+	return L[0].Used;
+end
+
+LABEL @LabelResolve(word N; word Name)
 	word L = Node[N].pLabel;
 	do
 		when L == 0 | L >= nLabel:
@@ -35,7 +47,7 @@ word LabelResolve(word N; word Name)
 			exit;
 		L = Label[L].pNext;
 	end:do
-	return Label[L].Value;
+	return @Label[L];
 end
 
 /*****************************************************************************/

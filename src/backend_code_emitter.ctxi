@@ -27,7 +27,7 @@ word fEAX;
 
 /*****************************************************************************/
 
-word function __Code(word P; word F; word T; word M)
+word function __Code(word P; LABEL @F; LABEL @T; LABEL @M)
 __Code @_Code;
 
 /*****************************************************************************/
@@ -51,7 +51,7 @@ end
 
 word Code_List(word P)
 	while P < nNODE do
-		word pType = _Code(P,0,0,0);
+		word pType = _Code(P,NULL,NULL,NULL);
 		when pType == st_noreturn:
 			return st_noreturn;
 		P = Node[P].pRight;
@@ -241,13 +241,13 @@ word Code1(word pPrimary)
 			end:if
 
 			if Node[P1].pLeft<nNODE then
-				_Code(Node[P1].pLeft,0,0,0);
+				_Code(Node[P1].pLeft,NULL,NULL,NULL);
 			end:if
 
 			if Dict[Node[P1].Value].Sub==sSYS then
 				Emit(@strcpy3(@Buff,"call   [@",@str(Dict[Node[P1].Value].Label),"]"));
 			else
-				EmitLine(0,
+				EmitLine(NULL,
 					@strcpy2(@Buff,"call    @",@str(Dict[Node[P1].Value].Label)),
 					@DictGetName(Node[P1].Value)
 					);
@@ -265,10 +265,10 @@ word Code1(word pPrimary)
 			word P2=Node[P1].pLeft;
 
 			if Node[P2].pRight<nNODE then
-				_Code(Node[P2].pRight,0,0,0);
+				_Code(Node[P2].pRight,NULL,NULL,NULL);
 			end:if
 
-			_Code(Node[P2].pLeft,0,0,0);
+			_Code(Node[P2].pLeft,NULL,NULL,NULL);
 
 			Emit("call    EAX");
 
@@ -288,7 +288,7 @@ word Code1(word pPrimary)
 					Ofs = Ofs - IndexingOffset;
 				end
 			else
-				_Code(Node[P1].pLeft,0,0,0);
+				_Code(Node[P1].pLeft,NULL,NULL,NULL);
 				IX=fEAX;
 				Emit_IMUL_Reg_Const(IX, 4, Size);
 			end:if
@@ -322,7 +322,7 @@ word Code1(word pPrimary)
 					fEAX=RegB;
 				end:select
 
-				_Code(pLeft,0,0,0);
+				_Code(pLeft,NULL,NULL,NULL);
 
 				Emit_IMUL_Reg_Const(fEAX, 4, Size);
 				if fEAX==RegA then
@@ -858,7 +858,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when nMulTrick >= nMUL_TRICKS:
 		return nDICT;
 
-	word pType2=_Code(pLeft,0,0,0);
+	word pType2=_Code(pLeft,NULL,NULL,NULL);
 
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -876,7 +876,7 @@ define operandReg      1
 define operandImm      2
 define operandMemRef   3
 
-word CodeBinOp(char @Buff; word P; word F; word T; word M)
+word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	Buff[0] = #0;
 
 	word ID = Node[P].ID;
@@ -897,7 +897,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
 		if fEAX!=RegA then
-			EmitLine(0, "push    EAX", "saved in CodeBinOp");
+			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
 			fEAX=RegA;
 		end
 	end:switch
@@ -1032,7 +1032,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 				rightOperand = operandMemRef;
 				leftOperand = operandReg;
 				pType = Node[pLeft].pType;
-				EmitLine(0, "", "Const reuse in CodeBinOp");
+				EmitLine(NULL, "", "Const reuse in CodeBinOp");
 				exit;
 			end:if
 
@@ -1043,7 +1043,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 				ID = swappedID;
 				leftOperand = operandReg;
 				pType = Node[pLeft].pType;
-				EmitLine(0, "", "Const reuse in CodeBinOp");
+				EmitLine(NULL, "", "Const reuse in CodeBinOp");
 				exit;
 			end:if
 
@@ -1057,11 +1057,11 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 		when pLeft2 < nNODE:
 			pLeft = pLeft2;
 
-		pType=_Code(pLeft,0,0,0);
+		pType=_Code(pLeft,NULL,NULL,NULL);
 
 	case operandMemRef:
 		when leftOperand == operandNotReady:
-			pType=_Code(pLeft,0,0,0);
+			pType=_Code(pLeft,NULL,NULL,NULL);
 
 	case operandReg:
 		null;
@@ -1069,16 +1069,16 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 	case operandNotReady:
 		char @reorderingReason = @CheckOperandReordering(pLeft, pRight);
 		if @reorderingReason != NULL then
-			EmitLine(0, "", "Reordering in CodeBinOp");
-			EmitLine(0, "", @reorderingReason);
+			EmitLine(NULL, "", "Reordering in CodeBinOp");
+			EmitLine(NULL, "", @reorderingReason);
 			if fEAX!=RegA then
-				EmitLine(0, "push    EAX", "saved in CodeBinOp");
+				EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
 				fEAX=RegA;
 			end
 
-			_Code(pRight,0,0,0);
+			_Code(pRight,NULL,NULL,NULL);
 			fEAX =RegB;
-			pType=_Code(pLeft,0,0,0);
+			pType=_Code(pLeft,NULL,NULL,NULL);
 			fSwap=1;
 			when fEAX != RegB:
 				StopInternalCodegen(__FILE__, __LINE__);
@@ -1088,17 +1088,15 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			rightOperand = operandReg;
 		else
 			if fEAX!=RegA then
-				when CodeRequiresSingleRegister(pRight):
-					EmitLine(0, "", "XXX1");
-				EmitLine(0, "push    EAX", "saved in CodeBinOp");
+				EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
 				fEAX=RegA;
 			end
 
-			pType=_Code(pLeft,0,0,0);
+			pType=_Code(pLeft,NULL,NULL,NULL);
 			fEAX =RegB;
-			_Code(pRight,0,0,0);
+			_Code(pRight,NULL,NULL,NULL);
 			if fEAX==RegA then
-				EmitLine(0, "pop     EBX", "restored in CodeBinOp");
+				EmitLine(NULL, "pop     EBX", "restored in CodeBinOp");
 				fSwap=1;
 			end
 
@@ -1192,7 +1190,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 			StopInternalCodegen(__FILE__, __LINE__);
 		end
 
-		if T==0 then
+		if @T == NULL then
 			switch ID of
 			case iLT: ID=iGE;
 			case iLE: ID=iGT;
@@ -1204,11 +1202,11 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 				StopInternalCodegen(__FILE__, __LINE__);
             end:switch
 
-            T=F;
-            F=0;
+            @T = @F;
+            @F = NULL;
 		end:if
 
-		if T==0 | F!=0 then
+		if @T == NULL | @F != NULL then
 			StopInternalCodegen(__FILE__, __LINE__);
 		end
 
@@ -1238,7 +1236,7 @@ word CodeBinOp(char @Buff; word P; word F; word T; word M)
 				StopInternalCodegen(__FILE__, __LINE__);
 			end:switch
 		end:select
-		EmitBranchToLabel(@BranchCondition, T);
+		EmitBranchToLabel(@BranchCondition, @T);
 
 		return nDICT;
 
@@ -1368,7 +1366,7 @@ end
 	M содержит метку кода, идущего за данным, чтобы можно делать переходы "изнутри" блока кода в то же место, куда попадет управление при F/T = 0.
 */
 
-word Code(word P; word F; word T; word M)
+word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 
 	char Buff[nBUFF];
 
@@ -1376,53 +1374,53 @@ word Code(word P; word F; word T; word M)
 
 	EmitWithSourceNote(NULL, P);
 
-	when M != 0: /* M может быть установлено только когда F или T установлены */
-		when T == 0 & F == 0:
+	when @M != NULL: /* M может быть установлено только когда F или T установлены */
+		when @T == NULL & @F == NULL:
 			StopInternalCodegen(__FILE__, __LINE__);
 
-	when T != 0 & F != 0: /* T и F не могут быть установлены в не 0 одновременно. */
+	when @T != NULL & @F != NULL: /* T и F не могут быть установлены в не 0 одновременно. */
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	if T != 0 | F != 0 then
+	if @T != NULL | @F != NULL then
 		when !NodeTypeIs(P, st_bool): /* T и F имеют смысл только для булевых вычислений. */
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		switch Node[P].ID of
 		case iLITERAL:
 			select
-			case Node[P].Value == 0 & F != 0:
-				EmitJumpToLabel(F);
-			case Node[P].Value != 0 & T != 0:
-				EmitJumpToLabel(T);
+			case Node[P].Value == 0 & @F != NULL:
+				EmitJumpToLabel(@F);
+			case Node[P].Value != 0 & @T != NULL:
+				EmitJumpToLabel(@T);
 			end:select
 			return st_bool;
 
 		case iLT, iLE, iEQ, iNE, iGE, iGT:
-			return CodeBinOp(@Buff, P, F, T, M);
+			return CodeBinOp(@Buff, P, @F, @T, @M);
 
 		case iNOT:
-			return Code(Node[P].pLeft, T, F, M);
+			return Code(Node[P].pLeft, @T, @F, @M);
 		case iOR:
-			Code_OR(P, F, T, M, @Buff);
+			Code_OR(P, @F, @T, @M, @Buff);
 			return st_bool;
 		case iXOR:
-			Code_XOR(P, F, T, M, @Buff);
+			Code_XOR(P, @F, @T, @M, @Buff);
 			return st_bool;
 		case iEQV:
-			Code_EQV(P, F, T, M, @Buff);
+			Code_EQV(P, @F, @T, @M, @Buff);
 			return st_bool;
 		case iAND:
-			Code_AND(P, F, T, M, @Buff);
+			Code_AND(P, @F, @T, @M, @Buff);
 			return st_bool;
 
 		case iDATA, iPARM, iLOCAL:
-			Code(P, 0, 0, 0);
+			Code(P, NULL, NULL, NULL);
 			Emit(@CodeCmdRegReg(@Buff, "test", fEAX, 4, fEAX, 4));
 			select
-			case F != 0:
-				EmitBranchToLabel("z", F);
-			case T != 0:
-				EmitBranchToLabel("nz", T);
+			case @F != NULL:
+				EmitBranchToLabel("z", @F);
+			case @T != NULL:
+				EmitBranchToLabel("nz", @T);
 			end:select
 
 		default:
@@ -1447,13 +1445,13 @@ word Code(word P; word F; word T; word M)
 			return Code1(P);
 
 		case iCAST:
-			word pTypeFrom = Code(Node[P].pLeft, 0, 0, 0);
+			word pTypeFrom = Code(Node[P].pLeft, NULL, NULL, NULL);
 			word pTypeTo = Node[P].pType;
 			word Complexity = 0;
 			return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, fEAX, @Complexity);
 
 		case iBIT_NOT:
-			word pType = Code(Node[P].pLeft, 0, 0, 0);
+			word pType = Code(Node[P].pLeft, NULL, NULL, NULL);
 			word  Size = SizeOfType(pType);
 			Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
 
@@ -1465,14 +1463,14 @@ word Code(word P; word F; word T; word M)
 				return st_int;
 			end
 
-			Code(Node[P].pLeft,0,0,0);
+			Code(Node[P].pLeft, NULL, NULL, NULL);
 
 			Emit(@CodeCmdReg(@Buff, "neg", fEAX, 4));
 
 			return st_int;
 
 		case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
-			return CodeBinOp(@Buff, P, 0, 0, 0);
+			return CodeBinOp(@Buff, P, NULL, NULL, NULL);
 
 		case iDEF_LOCAL:
 		  if nLocal>=nLOCAL then
@@ -1489,17 +1487,17 @@ word Code(word P; word F; word T; word M)
 		  Local[nLocal].Value=AllocatedFrameSize;
 		  inc   nLocal;
 
-		  Code(Node[P].pLeft,0,0,0);
+		  Code(Node[P].pLeft, NULL, NULL, NULL);
 
 		case iASSIGN:
 			P    = Node[P].pLeft;
 			fEAX = RegA;
 			if Node[P].pRight < nNODE then
-				Code(Node[P].pRight, 0, 0, 0);
+				Code(Node[P].pRight, NULL, NULL, NULL);
 				fEAX = RegB;
 			end
 
-			return Code(Node[P].pLeft, 0, 0, 0);
+			return Code(Node[P].pLeft, NULL, NULL, NULL);
 
 		case iINLINE:
 			Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));
@@ -1542,7 +1540,8 @@ void EmitFunction(char @Buff; word I)
 		strcat(@Buff, "<begin>");
 	end:if
 	strcat(@Buff," ##");
-	EmitLine(Dict[I].Label, "", @Buff);
+	LABEL L; L.Value = Dict[I].Label;
+	EmitLine(@L, "", @Buff);
 
 	word S1 = 0;
 
@@ -1578,7 +1577,7 @@ void EmitFunction(char @Buff; word I)
 				end:if
 				if StaticDataIsZeroed == 0
 				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == false then
-					Code(Dict[J].pNode, 0, 0, 0);
+					Code(Dict[J].pNode, NULL, NULL, NULL);
 				end:if
 			end:if
 
@@ -1596,7 +1595,7 @@ void EmitFunction(char @Buff; word I)
 	word  P = Dict[I].pNode;
 	word  pType = st_void;
 	while P < nNODE do
-		pType = _Code(P, 0, 0, 0);
+		pType = _Code(P, NULL, NULL, NULL);
 		when pType == st_noreturn:
 			exit;
 		P  = Node[P].pRight;
@@ -1605,7 +1604,7 @@ void EmitFunction(char @Buff; word I)
 	if pType != st_noreturn then
 		word pRet = Peek();
 		Node[pRet].ID = iRETURN;
-		_Code(pRet, 0, 0, 0);
+		_Code(pRet, NULL, NULL, NULL);
 	end
 
 	Code_EndBlock(@CB);

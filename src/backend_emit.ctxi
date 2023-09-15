@@ -135,7 +135,7 @@ end
 /*****************************************************************************/
 
 /* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
-void EmitLine(word Label; char @Inst; char @Comment)
+void EmitLine(LABEL @Label; char @Inst; char @Comment)
 	when EmitDisabled > 0:
 		return;
 
@@ -144,21 +144,21 @@ void EmitLine(word Label; char @Inst; char @Comment)
 	when @Comment == NULL:
 		@Comment = "";
 
-	if Label != 0 then
+	if @Label != NULL then
 		PHO_InvalidateRegs();
 	else
 		@Inst = @PHO_Optimize(@Inst);
 	end:if
 
-	when Label == 0 & Inst[0] == #0 & Comment[0] == #0:
+	when @Label == NULL & Inst[0] == #0 & Comment[0] == #0:
 		return;
 
 	word C = 0;
 
-	if Label != 0 then
+	if @Label != NULL then
 		EmitChar('@'); inc C;
 
-		char @P = @str(Label);
+		char @P = @str(LabelGetValue(@Label));
 		word I = 0;
 		while P[I] != #0 do
 			EmitChar(P[I]); inc C;
@@ -202,15 +202,20 @@ end
 
 /*****************************************************************************/
 
-void EmitLabel(word Label)
-	when Label == 0: StopInternal(__FILE__, __LINE__);
-	EmitLine(Label, "", NULL);
+void EmitLabel(LABEL @Label)
+	when @Label == NULL: StopInternal(__FILE__, __LINE__);
+	EmitLine(@Label, "", NULL);
+end
+
+void EmitLabelIfUsed(LABEL @Label)
+	when LabelIsUsed(@Label):
+		EmitLabel(@Label);
 end
 
 /*****************************************************************************/
 
 void Emit(char @Inst)
-	EmitLine(0, @Inst, NULL);
+	EmitLine(NULL, @Inst, NULL);
 end
 
 /*****************************************************************************/
@@ -224,25 +229,27 @@ void EmitWithSourceNote(char @Inst; word P)
 		if @PrevSourceLocation.FileName != @SourceLocation.FileName |
 			PrevSourceLocation.Line != SourceLocation.Line then
 			strcpy4(@Buff, "#line ", @SourceLocation.FileName, ":", @str(SourceLocation.Line));
-			EmitLine(0, NULL, @Buff);
+			EmitLine(NULL, NULL, @Buff);
 			PrevSourceLocation = SourceLocation;
 		end:if
 	end:if
-	EmitLine(0, @Inst, NULL);
+	EmitLine(NULL, @Inst, NULL);
 end
 
 /*****************************************************************************/
 
 char EmitTmpBuff[1024];
 
-void EmitJumpToLabel(word Label)
-	Emit(@strcpy2(@EmitTmpBuff, "jmp     @", @str(Label)));
+void EmitJumpToLabel(LABEL @Label)
+	LabelMarkUsed(@Label);
+	Emit(@strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))));
 end
 
-void EmitBranchToLabel(char @Condition; word Label)
+void EmitBranchToLabel(char @Condition; LABEL @Label)
 	char @s = "";
 	when Condition[1] == #0: @s = " ";
-	Emit(@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(Label)));
+	LabelMarkUsed(@Label);
+	Emit(@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(LabelGetValue(@Label))));
 end
 
 /*****************************************************************************/
