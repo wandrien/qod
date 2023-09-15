@@ -1,12 +1,16 @@
 
 /*****************************************************************************/
 
+LABEL @CodeExtractExitLabel(word P);
+
 LABEL @CodeExtractJump(word P)
 	switch Node[P].ID of
+	case iVIRTUAL_JUMP:
+		return @LabelResolve(Node[P].Value, Node[P].pType);
 	case iCONTINUE:
 		return @LabelResolve(Node[P].Value, lCONTINUE);
 	case iEXIT:
-		return @LabelResolve(Node[P].Value, lEXIT);
+		return @CodeExtractExitLabel(Node[P].Value);
 	default:
 		return NULL;
 	end:switch
@@ -19,6 +23,19 @@ LABEL @CodeExtractExitLabel(word P)
 	when @L_Exit == NULL:
 		@L_Exit = @LabelResolve(P, lEXIT);
 	return @L_Exit;
+end
+
+void CodeList_InsertVirtualJump(word P; word pTarget; word LabelId)
+	word pJump = Peek();
+	Node[pJump].ID = iVIRTUAL_JUMP;
+	Node[pJump].Value = pTarget;
+	Node[pJump].pType = LabelId;
+	Node[pJump].SourceLocation.Line = -1;
+
+	while Node[P].pRight != nNODE do
+		P = Node[P].pRight;
+	end
+	Node[P].pRight = pJump;
 end
 
 /*****************************************************************************/
@@ -219,6 +236,7 @@ word Code_SELECT(word P; char @Buff)
 	LABEL @L_Exit = @CodeExtractExitLabel(P);
 
 	word pTypeFinal = st_noreturn;
+	word pTypeBody = st_void;
 	bool DefaultBranchPresent = false;
 	word CASE = Node[P].pLeft;
 	while CASE < nNODE do
@@ -253,9 +271,11 @@ word Code_SELECT(word P; char @Buff)
 			DefaultBranchPresent = true;
 		end
 
-		word pTypeBody = st_noreturn;
-		when @L_Jump == NULL:
+		if @L_Jump == NULL then
 			pTypeBody = Code_Block(Node[BODY].pLeft);
+		else
+			pTypeBody = st_noreturn;
+		end:if
 
 		if pTypeBody != st_noreturn then
 			pTypeFinal = pTypeBody;
@@ -273,6 +293,9 @@ word Code_SELECT(word P; char @Buff)
 		pTypeFinal = st_void;
 
 	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
+
+	when (DefaultBranchPresent) & (pTypeBody == st_noreturn) & !LabelIsUsed(@LabelResolve(P, lEXIT)):
+		pTypeFinal = st_noreturn;
 
 	return pTypeFinal;
 end
@@ -450,6 +473,7 @@ word Code_WHILE(word P; char @Buff)
 		EmitLabelIfUsed(@LabelResolve(P, lLOOPBODY));
 	end
 
+	CodeList_InsertVirtualJump(Node[BODY].pLeft, P, lCONTINUE);
 	word pTypeBody = Code_List(Node[BODY].pLeft);
 	when pTypeBody != st_noreturn:
 		EmitJumpToLabel(@LabelResolve(P, lCONTINUE));

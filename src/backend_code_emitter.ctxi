@@ -1517,7 +1517,7 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 			return Code_CONTINUE(P, @Buff);
 		case iEXIT:
 			return Code_EXIT(P, @Buff);
-		case iEMPTY:
+		case iEMPTY, iVIRTUAL_JUMP:
 			null;
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);

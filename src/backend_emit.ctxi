@@ -226,8 +226,11 @@ void EmitWithSourceNote(char @Inst; word P)
 	if P < nNODE & P > 0 & EmitSourceLineNotes != 0 then
 		char Buff[nBUFF];
 		SOURCELOCATION @SourceLocation = @Node[P].SourceLocation;
-		if @PrevSourceLocation.FileName != @SourceLocation.FileName |
-			PrevSourceLocation.Line != SourceLocation.Line then
+		if
+			(@PrevSourceLocation.FileName != @SourceLocation.FileName |
+			PrevSourceLocation.Line != SourceLocation.Line) &
+			(SourceLocation.Line != -1)
+		then
 			strcpy4(@Buff, "#line ", @SourceLocation.FileName, ":", @str(SourceLocation.Line));
 			EmitLine(NULL, NULL, @Buff);
 			PrevSourceLocation = SourceLocation;

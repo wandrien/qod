@@ -125,7 +125,9 @@ define  iFAKE_CAST  59 // Fake cast to mask a semantic error while parsing
 define  iREG        60 // used in the backend for ValueRef's
 define  iCONST      61 // used in the backend for ValueRef's
 
-define  iID_COUNT   62
+define  iVIRTUAL_JUMP 62 // used in the backend for jump optimization
+
+define  iID_COUNT   63
 
 /*****************************************************************************/
 
