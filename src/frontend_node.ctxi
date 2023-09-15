@@ -23,6 +23,11 @@ word Peek()
 	return N;
 end
 
+void NodeFree(word @P)
+	/* TODO: Рекурсивное освобождение узлов, когда будет реализовано управление памятью. */
+	P = nNODE;
+end
+
 /*****************************************************************************/
 
 bool NodeHasImmediateValue(word P)
@@ -43,7 +48,6 @@ word NodeGetImmediateValue(word P)
 		return Node[P].Value;
 
 	StopInternal(__FILE__, __LINE__);
-	return 0;
 end
 
 void NodeSetImmediateValue(word P; word Value)
@@ -69,6 +73,18 @@ end
 
 bool NodeIsLiteralInt(word P)
 	when Node[P].ID == iLITERAL & Node[P].pType == st_int:
+		return true;
+	return false;
+end
+
+bool NodeIsFalse(word P)
+	when Node[P].ID == iLITERAL & Node[P].pType == st_bool & Node[P].Value == 0:
+		return true;
+	return false;
+end
+
+bool NodeIsTrue(word P)
+	when Node[P].ID == iLITERAL & Node[P].pType == st_bool & Node[P].Value != 0:
 		return true;
 	return false;
 end
@@ -142,7 +158,6 @@ end
 /*****************************************************************************/
 
 word NodeGetDict(word P)
-
 	when P >= nNode:
 		StopInternal(__FILE__, __LINE__);
 
@@ -152,7 +167,6 @@ word NodeGetDict(word P)
 	end
 
 	StopInternal(__FILE__, __LINE__);
-	return 0;
 end
 
 void NodeSetDict(word P; word D)

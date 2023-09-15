@@ -108,6 +108,8 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 	end:while
 
 	SkipFinalScan = EndOf(@Buff, @End1, NULL);
+
+	CTE_SELECT(P1);
 end
 
 /*****************************************************************************/
@@ -144,6 +146,8 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	Node[BODY].pLeft = _Ctrl(@Buff);
 
 	SkipFinalScan = 1;
+
+	CTE_SELECT(P1);
 end
 
 
@@ -262,6 +266,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	SkipFinalScan = EndOf(@Buff, "switch", NULL);
 
+	CTE_SWITCH(P1);
 end
 
 /*****************************************************************************/
@@ -303,6 +308,8 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 	SkipFinalScan = EndOf(@Buff, "do", @End2);
 
 	pLoop=pLoop1;
+
+	CTE_DO(@P1);
 end
 
 /*****************************************************************************/
@@ -336,6 +343,8 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	end
 
 	pLoop=pLoop1;
+
+	CTE_REPEAT(@P1);
 end
 
 /*****************************************************************************/
@@ -350,6 +359,7 @@ void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[P1].ID = iCONTINUE;
 	Node[P1].Value = pLoop;
+	Node[P1].pType = st_noreturn;
 
 	MatchCStyleSemicolon(@Buff);
 end
@@ -366,6 +376,7 @@ void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[P1].ID = iEXIT;
 	Node[P1].Value = pLoop;
+	Node[P1].pType = st_noreturn;
 
 	MatchCStyleSemicolon(@Buff);
 end
@@ -408,7 +419,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	word need_semicolon = 0;
 
 	if Dict[pFunc].pType == st_noreturn then
-		Stop(@RETINNORET);
+		Stop(@eRETINNORET);
 	end:if
 
 	if Dict[pFunc].pType != st_void then
@@ -425,6 +436,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 		SkipFinalScan = 1;
 	end:if
 
+	Node[P1].pType = st_noreturn;
 end
 
 /*****************************************************************************/
@@ -455,22 +467,29 @@ end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
-	word P2=Expr(PRIO_LVALUE, @Buff);
-	if P2<nNODE then
+	word pLValue = Expr(PRIO_LVALUE, @Buff);
+	if pLValue < nNODE then
 		word P3=Peek();
-		Node[P1].ID    =iASSIGN;
+		Node[P1].ID    = iASSIGN;
 		Node[P1].pLeft = P3;
 
-		Node[P3].ID    =iEMPTY;
-		Node[P3].pLeft = P2;
+		Node[P3].ID    = iEMPTY;
+		Node[P3].pLeft = pLValue;
 
 		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
 			if !NodeIsLValue(Node[P3].pLeft) then
 				Error(@eLVALUE_IN_ASSIGNMENT);
 			end:if
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
-			ImplicitCast(Node[P2].pType, @Node[P3].pRight);
+			ImplicitCast(Node[pLValue].pType, @Node[P3].pRight);
 		end:if
+
+		if Node[pLValue].pType == st_noreturn then
+			Node[P1].pType = st_noreturn;
+		else
+			Node[P1].pType = st_void;
+		end:if
+
 	else
 		word pType=Find(@Buff);
 		if pType>=nDict | Dict[pType].Class!=cTYPE then
@@ -560,7 +579,6 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 	if str_ne(@Buff,";") then
 		Stop(@eSEMICOLONEXP);
 	end:if
-
 end
 
 /*****************************************************************************/
@@ -640,6 +658,8 @@ word Statements(char @Buff; char @End1; char @End2; char @End3)
 	until str_eq(@Buff, @End1);
 
 	nLocal = Saved_nLocal;
+
+	CTE_CodeList(P);
 
 	return P;
 end

@@ -190,7 +190,7 @@ word Code_SELECT(word P; char @Buff)
 	         [body]     NULL
 	*/
 
-	word pType = st_noreturn;
+	word pTypeFinal = st_noreturn;
 	bool DefaultBranchPresent = false;
 	word CASE = Node[P].pLeft;
 	while CASE < nNODE do
@@ -213,7 +213,7 @@ word Code_SELECT(word P; char @Buff)
 
 		word pTypeBody = Code_Block(Node[BODY].pLeft);
 		if pTypeBody != st_noreturn then
-			pType = pTypeBody;
+			pTypeFinal = pTypeBody;
 			if Node[CASE].pRight < nNODE then
 				EmitJumpToLabel(LabelResolve(P, lEXIT));
 			end
@@ -227,12 +227,12 @@ word Code_SELECT(word P; char @Buff)
 	end:while
 
 	when !DefaultBranchPresent:
-		pType = st_void;
+		pTypeFinal = st_void;
 
-	when pType != st_noreturn:
+	when pTypeFinal != st_noreturn:
 		EmitLabel(LabelResolve(P, lEXIT));
 
-	return st_void;
+	return pTypeFinal;
 end
 
 /*****************************************************************************/
@@ -370,7 +370,7 @@ word Code_SWITCH(word P; char @Buff)
 	when !DefaultBranchPresent:
 		pTypeFinal = st_void;
 
-	when pType != st_noreturn:
+	when pTypeFinal != st_noreturn:
 		EmitLabel(LabelResolve(P, lEXIT));
 
 	return pTypeFinal;
@@ -385,7 +385,7 @@ word Code_WHILE(word P; char @Buff)
 	                /     \
 	              iBODY    [next statement]
 	             /    \
-	  [loop body]    iHEAD
+	  [loop body]    iCOND
 	                /    \
 	[loop condition]      NULL
 	*/
@@ -407,14 +407,15 @@ word Code_WHILE(word P; char @Buff)
 		EmitLabel(LabelResolve(P, lLOOPBODY));
 	end
 
-	Code_List(Node[BODY].pLeft);
+	word pTypeBody = Code_List(Node[BODY].pLeft);
+	when pTypeBody != st_noreturn:
+		EmitJumpToLabel(LabelResolve(P, lCONTINUE));
 
-	EmitJumpToLabel(LabelResolve(P, lCONTINUE));
 	EmitLabel(LabelResolve(P, lEXIT));
 
 	Code_EndBlock(@CB);
 
-	return st_void;
+	return Node[P].pType;
 end
 
 /*****************************************************************************/
@@ -426,7 +427,7 @@ word Code_REPEAT(word P; char @Buff)
 	                /      \
 	              iBODY     [next statement]
 	             /    \
-	  [loop body]    iHEAD
+	  [loop body]    iCOND
 	                /    \
 	[loop condition]      NULL
 	*/
@@ -441,6 +442,14 @@ word Code_REPEAT(word P; char @Buff)
 	|    Node[COND].ID != iCOND:
 		StopInternalCodegen(__FILE__, __LINE__);
 
+	/* Check the case when loop can be replaced with simple code block */
+	if NodeIsTrue(Node[COND].pLeft) &
+	   !CTE_LoopHasExits(P, Node[BODY].pLeft) &
+	   !CTE_LoopHasContinues(P, Node[BODY].pLeft)
+	then
+		Code_List(Node[BODY].pLeft);
+		return st_void;
+	end
 
 	EmitLabel(LabelResolve(P, lLOOPBODY));
 
@@ -456,7 +465,7 @@ word Code_REPEAT(word P; char @Buff)
 
 	Code_EndBlock(@CB);
 
-	return st_void;
+	return Node[P].pType;
 end
 
 /*****************************************************************************/

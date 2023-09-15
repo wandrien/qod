@@ -196,6 +196,8 @@ void DeclFunc1(char @Buff; word a)
 			Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 			nLocal = Saved_nLocal;
 
+			CTE_Function(pFunc);
+
 	end:select
 
 end

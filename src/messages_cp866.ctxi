@@ -61,7 +61,8 @@ define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
 define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"
 
-define @RETINNORET       "Оператор return в теле noreturn функции"     // Return statement inside noreturn function
+define @eRETINNORET      "Оператор return в теле noreturn функции"     // Return statement inside noreturn function
+define @eRETINNORET2     "Управление достигает конца noreturn функции" // Control flow reaches the end of noreturn function
 
 define @eLVALUE_IN_ASSIGNMENT "Левая часть присваивания должна быть lvalue-выражением" // lvalue required as left operand of assignment
 define @eLVALUE_IN_INC   "Операнд инкремента должен быть lvalue-выражением" // lvalue required as increment operand
@@ -76,6 +77,7 @@ define @wGLOBALVARUNUSED ": глобальная переменная не используется"     // a glob
 define @wFUNCUNUSED      ": функция не используется"                   // a function is never used
 define @wTYPEUNUSED      ": тип данных не используется"                // a type is never used
 
+define @wUNREACHABLE     "Недостижимый оператор"                       // Unreachable statement
 
 define @msgWARNING       "предупреждение: "                            // warning
 define @msgERROR         "ошибка: "                                    // error

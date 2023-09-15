@@ -206,3 +206,260 @@ void CTE(word P)
 end
 
 /*****************************************************************************/
+
+bool CTE_CodeListDoesNotReturn(word P)
+	while P != nNODE do
+		if Node[P].pType == st_noreturn then
+			return true;
+		end:if
+		P = Node[P].pRight;
+	end:do
+	return false;
+end
+
+/*****************************************************************************/
+
+bool CTE_LoopHasExits(word pLoop, P)
+	while P != nNODE do
+		when Node[P].ID == iEXIT & Node[P].Value == pLoop:
+			return true;
+		when CTE_LoopHasExits(pLoop, Node[P].pLeft):
+			return true;
+		P = Node[P].pRight;
+	end:do
+	return false;
+end
+
+/*****************************************************************************/
+
+bool CTE_LoopHasContinues(word pLoop, P)
+	while P != nNODE do
+		when Node[P].ID == iCONTINUE & Node[P].Value == pLoop:
+			return true;
+		when CTE_LoopHasContinues(pLoop, Node[P].pLeft):
+			return true;
+		P = Node[P].pRight;
+	end:do
+	return false;
+end
+
+/*****************************************************************************/
+
+void CTE_DO(word @pLoop)
+	word BODY = Node[pLoop].pLeft;
+	word COND = Node[BODY].pRight;
+
+	Node[pLoop].pType = st_void;
+
+	if NodeIsFalse(Node[COND].pLeft) then
+		Node[pLoop].ID = iEMPTY;
+		NodeFree(@Node[pLoop].pLeft);
+		return;
+	end
+
+	if NodeIsTrue(Node[COND].pLeft) then
+		NodeFree(@Node[COND].pLeft);
+	end
+
+	if
+		(Node[COND].pLeft == nNODE | CTE_CodeListDoesNotReturn(Node[BODY].pLeft)) &
+		(!CTE_LoopHasExits(pLoop, Node[BODY].pLeft))
+	then
+		Node[pLoop].pType = st_noreturn;
+	end:if
+end
+
+void CTE_REPEAT(word @pLoop)
+	word BODY = Node[pLoop].pLeft;
+	word COND = Node[BODY].pRight;
+	word pBody = Node[BODY].pLeft;
+
+	Node[pLoop].pType = st_void;
+
+	if
+		(NodeIsFalse(Node[COND].pLeft) | CTE_CodeListDoesNotReturn(Node[BODY].pLeft)) &
+		(!CTE_LoopHasExits(pLoop, Node[BODY].pLeft))
+	then
+		Node[pLoop].pType = st_noreturn;
+	end:if
+end
+
+/*****************************************************************************/
+
+word CTE_SELECT(word P)
+
+	/*
+	                 iSELECT
+	                /       \
+	              iCASE      [next statement]
+	             /     \
+	            iCOND   [next case]
+	           /     \
+	[condition]     iBODY
+	               /    \
+	         [body]     NULL
+	*/
+
+	word pTypeFinal = st_noreturn;
+	bool DefaultBranchPresent = false;
+	word CASE = Node[P].pLeft;
+	while CASE < nNODE do
+		when Node[CASE].ID != iCASE:
+			StopInternal(__FILE__, __LINE__);
+
+		word COND = Node[CASE].pLeft;
+		word BODY = Node[COND].pRight;
+
+		when Node[BODY].ID != iBODY
+		|    Node[COND].ID != iCOND:
+			StopInternal(__FILE__, __LINE__);
+
+		if Node[COND].pLeft == nNODE then
+			DefaultBranchPresent = true;
+		end
+
+		if !CTE_CodeListDoesNotReturn(Node[BODY].pLeft) then
+			pTypeFinal = st_void;
+		end
+
+		CASE = Node[CASE].pRight;
+	end:while
+
+	when !DefaultBranchPresent:
+		pTypeFinal = st_void;
+
+	Node[P].pType = pTypeFinal;
+end
+
+/*****************************************************************************/
+
+word CTE_SWITCH(word P)
+
+	/*
+	                 iSWITCH
+	                /       \
+	              iCOND      [next statement]
+	             /     \
+	 [expression]     iCASE
+	                 /     \
+	            iVALUE      [next case]
+	           /      \
+	    [value]       iVALUE
+                    /      \
+	         [value]       iBODY
+	                      /     \
+	                [body]       NULL
+
+
+                      iCASE
+	                 /     \
+	          iDEFAULT      [next case]
+	         /        \
+	     NULL        iBODY
+	                /     \
+	          [body]       NULL
+
+
+	*/
+
+	word pTypeFinal = st_noreturn;
+	bool DefaultBranchPresent = false;
+
+	word COND = Node[P].pLeft;
+	when Node[COND].ID != iCOND:
+		StopInternal(__FILE__, __LINE__);
+
+	word  CASE_I = Node[COND].pRight;
+	while CASE_I < nNODE do
+		when Node[CASE_I].ID != iCASE:
+			StopInternal(__FILE__, __LINE__);
+
+		word  VALUE_I = Node[CASE_I].pLeft;
+		while VALUE_I < nNode do
+			switch Node[VALUE_I].ID of
+			case iVALUE:
+				null;
+			case iDEFAULT:
+				DefaultBranchPresent = true;
+			case iBODY:
+				if !CTE_CodeListDoesNotReturn(Node[VALUE_I].pLeft) then
+					pTypeFinal = st_void;
+				end:if
+			default:
+				StopInternal(__FILE__, __LINE__);
+			end:switch
+			VALUE_I = Node[VALUE_I].pRight;
+		end:while
+
+		CASE_I = Node[CASE_I].pRight;
+	end:while
+
+	when !DefaultBranchPresent:
+		pTypeFinal = st_void;
+
+	Node[P].pType = pTypeFinal;
+end
+
+/*****************************************************************************/
+
+void CTE_CodeList(word P)
+	while P != nNODE do
+		if Node[P].pType == st_noreturn then
+			if Node[P].pRight != nNODE then
+				WarnAtNode(Node[P].pRight, @wUNREACHABLE);
+				NodeFree(@Node[P].pRight);
+			end:if
+			return;
+		end:if
+		P = Node[P].pRight;
+	end:do
+end
+
+/*****************************************************************************/
+
+bool CTE_CodeHasReturns(word P)
+	while P != nNODE do
+		when Node[P].ID == iRETURN:
+			return true;
+		when CTE_CodeHasReturns(Node[P].pLeft):
+			return true;
+		P = Node[P].pRight;
+	end:do
+	return false;
+end
+
+/*****************************************************************************/
+
+void CTE_Function(word dFunc)
+	word pBody = Dict[dFunc].pNode;
+
+	bool fReturn = true;
+
+	word P = pBody;
+	while P != nNODE do
+		if Node[P].ID == iRETURN then
+			exit;
+		end:if
+		if Node[P].pType == st_noreturn then
+			fReturn = false;
+			exit;
+		end:if
+		P = Node[P].pRight;
+	end:do
+
+	if !fReturn then
+		fReturn = CTE_CodeHasReturns(pBody);
+	end:if
+
+	if fReturn & (Dict[dFunc].pType == st_noreturn) then
+		ErrorAtNode(pBody, @eRETINNORET2);
+		return;
+	end:if
+
+	if !fReturn then
+		Dict[dFunc].pType = st_noreturn;
+	end:if
+
+end
+
+/*****************************************************************************/

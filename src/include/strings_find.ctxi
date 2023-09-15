@@ -92,7 +92,6 @@ word str_rfind_chars_from(char @S; char @Chars; word P)
 		end:if
 		dec i;
 	end:do
-	return i;
 end
 
 /*****************************************************************************/

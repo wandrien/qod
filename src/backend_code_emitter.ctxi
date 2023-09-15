@@ -1513,9 +1513,9 @@ word Code(word P; word F; word T; word M)
 		case iSWITCH:
 			return Code_SWITCH(P, @Buff);
 		case iWHILE:
-			Code_WHILE(P, @Buff);
+			return Code_WHILE(P, @Buff);
 		case iREPEAT:
-			Code_REPEAT(P, @Buff);
+			return Code_REPEAT(P, @Buff);
 		case iCONTINUE:
 			return Code_CONTINUE(P, @Buff);
 		case iEXIT:

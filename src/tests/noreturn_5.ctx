@@ -1,0 +1,28 @@
+// TEST: should_print '1000 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+word s = 0;
+
+noreturn nr1(word a)
+	while a > 100 do
+		if s == 1 then
+			put_word(a); puts(" ");
+			halt(0);
+		else
+			halt(0);
+			exit;
+		end:if
+	end:do
+end
+
+void f1(word a)
+	nr1(a);
+	nr1(a + 1);
+end
+
+begin
+	s = 1;
+	f1(1000);
+end
