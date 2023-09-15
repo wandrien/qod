@@ -235,7 +235,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iCALL:
 			if fEAX!=RegA then
-				Emit("push    EAX");
+				EmitLine(NULL, "push    EAX", "saved in Code1 (iCALL)");
 				fEAX=RegA;
 			end:if
 
@@ -257,7 +257,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iCALL2:
 			if fEAX!=RegA then
-				Emit("push    EAX");
+				EmitLine(NULL, "push    EAX", "saved in Code1 (iCALL2)");
 				fEAX=RegA;
 			end:if
 
@@ -310,7 +310,7 @@ word Code1(word pPrimary)
 				select
 				case IX==RegB:
 					if fEAX!=RegA then
-						Emit("push    EAX");
+						EmitLine(NULL, "push    EAX", "saved in Code1 (iADDR)");
 					end:if
 
 					Emit("xchg    EAX,  EBX");
@@ -1384,6 +1384,10 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 		when !NodeTypeIs(P, st_bool): /* T и F имеют смысл только для булевых вычислений. */
 			StopInternalCodegen(__FILE__, __LINE__);
 
+		/* These operations don't return the result in any register,
+		instead a conditional jump is the result. So we reset fEAX here. */
+		fEAX=RegA;
+
 		switch Node[P].ID of
 		case iLITERAL:
 			select
@@ -1495,8 +1499,9 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 				Code(Node[P].pRight, NULL, NULL, NULL);
 				fEAX = RegB;
 			end
-
-			return Code(Node[P].pLeft, NULL, NULL, NULL);
+			word pType = Code(Node[P].pLeft, NULL, NULL, NULL);
+			fEAX = RegA;
+			return pType;
 
 		case iINLINE:
 			Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));
