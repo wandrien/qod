@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Повтор имени'
+
+word f(word a);
+
+word f;
+
+begin
+	null;
+end

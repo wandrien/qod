@@ -91,6 +91,14 @@ word DictAlloc()
 	return r;
 end
 
+void DictFree(word @D)
+	Dict[D].Used = 0;
+	Dict[D].Class = word(-1);
+	Dict[D].Sub = sNONE;
+	DictSetName(D, "<None>");
+	@D = NULL;
+end
+
 /*****************************************************************************/
 
 /*
@@ -114,12 +122,12 @@ word FindInNamespace(char @Name; word pNamespace)
 				when P >= nDict:
 					StopInternal(__FILE__, __LINE__);
 			end
-			exit;
+			return P;
 		end
 		P = Dict[P].pNext;
 	end
 
-	return P;
+	return nDICT;
 end
 
 /*****************************************************************************/
@@ -141,12 +149,12 @@ word Find(char @Name)
 				when P >= nDict:
 					StopInternal(__FILE__, __LINE__);
 			end
-			exit;
+			return P;
 		end
 		inc P;
 	end
 
-	return P;
+	return nDICT;
 end
 
 /*****************************************************************************/
@@ -162,12 +170,12 @@ word Find_cFILE(char @Name)
 		&  strcmp(@DictGetName(P), @Name) == 0
 		&  Dict[P].Class == cFILE
 		&  Dict[P].pNamespace == nDICT then
-			exit;
+			return P;
 		end
 		inc P;
 	end
 
-	return P;
+	return nDICT;
 end
 
 /*****************************************************************************/
@@ -237,6 +245,16 @@ word DictDupLiteral(word D1)
 	Dict[D2].LiteralValue = Dict[D1].LiteralValue;
 
 	return D2;
+end
+
+/*****************************************************************************/
+
+bool Dict_IsFunction(word D)
+	when D >= nDict:
+		StopInternal(__FILE__, __LINE__);
+	when Dict[D].Class == cFUNC:
+		return true;
+	return false;
 end
 
 /*****************************************************************************/

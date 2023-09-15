@@ -129,19 +129,30 @@ end
 
 /*****************************************************************************/
 
-void DeclFunc1(char @Buff; word a)
+void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
-	pFunc=a;
+	pFunc=_pFunc;
 
 	Dict[pFunc].Class = cFUNC;
 	Dict[pFunc].Sub   = sFUNC;
 	FuncArgs(@Buff, pFunc);
 
+	if pForward != nDICT then
+		word T1 = T_FuncTypeForFunction(pFunc);
+		word T2 = T_FuncTypeForFunction(pForward);
+		if !T_IsFuctTypesIdentical(T1, T2) then
+			Error(@eTYPE_FUNC_FWD);
+		else
+			DictFree(@pFunc);
+			pFunc = pForward;
+		end
+	end:if
+
 	Scan(@Buff);
 
 	select
 		case str_eq(@Buff,";"): /* Прототип. */
-			Stop(@eNOTAVAIL);
+			Dict[pFunc].Forward = 1;
 
 		case str_eq(@Buff,"external"): /* Внешняя функция. */
 			select
@@ -253,8 +264,12 @@ void DeclVarFunc(char @Buff)
 	do
 		word nPtr = ReadPtrs(@Buff);
 
-		if Find(@Buff) < nDict then
-			StopWithSubject(@eDUPLICATE, @Buff);
+		word pForward = Find(@Buff);
+		if pForward < nDict then
+			when !Dict_IsFunction(pForward):
+				StopWithSubject(@eDUPLICATE, @Buff);
+			when Dict[pForward].Forward == 0:
+				StopWithSubject(@eDUPLICATE, @Buff);
 		end
 
 		word D = DictAlloc();
@@ -269,9 +284,12 @@ void DeclVarFunc(char @Buff)
 			if FirstName == 0 then
 				Stop(@eNOFUNCTION);
 			end
-			DeclFunc1(@Buff, D);
+			DeclFunc1(@Buff, D, pForward);
 			return;
 		end
+
+		when pForward < nDict:
+			StopWithSubject(@eDUPLICATE, @DictGetName(D));
 
 		FirstName = 0;
 
