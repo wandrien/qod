@@ -302,6 +302,22 @@ end
 
 /*****************************************************************************/
 
+word Code_SWITCH_CASE_GetBody(word CASE_I)
+	word  VALUE_I = Node[CASE_I].pLeft;
+	while VALUE_I < nNode do
+		switch Node[VALUE_I].ID of
+		case iVALUE, iDEFAULT:
+			null;
+		case iBODY:
+			return VALUE_I;
+		default:
+			StopInternalCodegen(__FILE__, __LINE__);
+		end:switch
+		VALUE_I = Node[VALUE_I].pRight;
+	end:while
+	StopInternalCodegen(__FILE__, __LINE__);
+end
+
 word Code_SWITCH(word P; char @Buff)
 
 	/*
@@ -331,6 +347,8 @@ word Code_SWITCH(word P; char @Buff)
 
 	*/
 
+	LABEL @L_Exit = @CodeExtractExitLabel(P);
+
 	word pTypeFinal = st_noreturn;
 	bool DefaultBranchPresent = false;
 
@@ -344,13 +362,18 @@ word Code_SWITCH(word P; char @Buff)
 		Emit("and     EAX,  0FFH");
 	end:if
 
-	LABEL @L_Default = @LabelResolve(P, lEXIT);
+	LABEL @L_Default = @L_Exit;
 	word offset = 0;
 
 	word  CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
 		when Node[CASE_I].ID != iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
+
+		word BODY_I = Code_SWITCH_CASE_GetBody(CASE_I);
+		LABEL @L_Jump = @CodeExtractJump(Node[BODY_I].pLeft);
+		when @L_Jump == NULL:
+			@L_Jump = @LabelResolve(CASE_I, lCASEBODY);
 
 		word  VALUE_I = Node[CASE_I].pLeft;
 		while VALUE_I < nNode do
@@ -389,7 +412,7 @@ word Code_SWITCH(word P; char @Buff)
 
 				offset = offset + value;
 
-				EmitBranchToLabel("e", @LabelResolve(CASE_I, lCASEBODY));
+				EmitBranchToLabel("e", @L_Jump);
 			case iDEFAULT:
 				@L_Default = @LabelResolve(CASE_I, lCASEBODY);
 				DefaultBranchPresent = true;
@@ -406,28 +429,27 @@ word Code_SWITCH(word P; char @Buff)
 
 	EmitJumpToLabel(@L_Default);
 
+	word pTypeBody = st_void;
+
 	CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
 		when Node[CASE_I].ID != iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
 
-		word  VALUE_I = Node[CASE_I].pLeft;
-		while VALUE_I < nNode do
-			switch Node[VALUE_I].ID of
-			case iVALUE, iDEFAULT:
-				null;
-			case iBODY:
-				EmitLabel(@LabelResolve(CASE_I, lCASEBODY));
-				word pTypeBody = Code_Block(Node[VALUE_I].pLeft);
-				if pTypeBody != st_noreturn then
-					pTypeFinal = st_void;
-					EmitJumpToLabel(@LabelResolve(P, lEXIT));
-				end:if
-			default:
-				StopInternalCodegen(__FILE__, __LINE__);
-			end:switch
-			VALUE_I = Node[VALUE_I].pRight;
-		end:while
+		word BODY_I = Code_SWITCH_CASE_GetBody(CASE_I);
+		LABEL @L_Jump = @CodeExtractJump(Node[BODY_I].pLeft);
+
+		if @L_Jump == NULL then
+			EmitLabel(@LabelResolve(CASE_I, lCASEBODY));
+			pTypeBody = Code_Block(Node[BODY_I].pLeft);
+		else
+			pTypeBody = st_noreturn;
+		end:if
+
+		if pTypeBody != st_noreturn then
+			pTypeFinal = st_void;
+			EmitJumpToLabel(@L_Exit);
+		end:if
 
 		CASE_I = Node[CASE_I].pRight;
 	end:while
@@ -436,6 +458,9 @@ word Code_SWITCH(word P; char @Buff)
 		pTypeFinal = st_void;
 
 	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
+
+	when (pTypeBody == st_noreturn) & !LabelIsUsed(@LabelResolve(P, lEXIT)):
+		pTypeFinal = st_noreturn;
 
 	return pTypeFinal;
 end
