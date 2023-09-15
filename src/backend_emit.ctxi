@@ -244,6 +244,8 @@ end
 char EmitTmpBuff[1024];
 
 void EmitJumpToLabelWithComment(LABEL @Label; char @Comment)
+	when !EmitDebugComments_Jumps:
+		@Comment = NULL;
 	LabelMarkUsed(@Label);
 	EmitLine(NULL, @strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))), @Comment);
 end

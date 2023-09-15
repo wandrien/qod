@@ -33,8 +33,10 @@ void PHO_InvalidateReg(word R)
 	end:if
 
 	if PHO_ValidRegConst[R] != 0 then
-		char Buff[nBUFF];
-		EmitLine(NULL, "", @strcpy2(@Buff, "PHO: Invalidate: ", @PHO_RegName(R)));
+		char Buff[nBUFF]; Buff[0] = #0;
+		when EmitDebugComments_PHO:
+			strcpy2(@Buff, "PHO: Invalidate: ", @PHO_RegName(R));
+		EmitLine(NULL, "", @Buff);
 
 		PHO_ValidRegConst[R] = 0;
 	end:if
@@ -95,8 +97,10 @@ void PHO_RegLoadConst(word R; word Data)
 	end:if
 
 	if (PHO_ValidRegConst[R] == 0) | (PHO_RegConst[R] != Data) then
-		char Buff[nBUFF];
-		EmitLine(NULL, "", @strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data)));
+		char Buff[nBUFF]; Buff[0] = #0;
+		when EmitDebugComments_PHO:
+			strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data));
+		EmitLine(NULL, "", @Buff);
 	end:if
 
 	PHO_ValidRegConst[R] = 1;
@@ -444,8 +448,10 @@ end
 char@ PHO_Optimize(char @Inst)
 	char @NewInst = @PHO_Optimize_(@Inst);
 	if str_ne(@NewInst, @Inst) then
-		char Buff[nBUFF];
-		EmitLine(NULL, "", @strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")"));
+		char Buff[nBUFF]; Buff[0] = #0;
+		when EmitDebugComments_PHO:
+			strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")");
+		EmitLine(NULL, "", @Buff);
 	end:if
 	return @NewInst;
 end

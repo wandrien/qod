@@ -6,6 +6,9 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal);
 void NodeMarkUsed(word P);
 
+bool EmitDebugComments_PHO = false;
+bool EmitDebugComments_Jumps = false;
+
 include "backend_pho.ctxi"
 include "backend_lib.ctxi"
 include "backend_labels.ctxi"
