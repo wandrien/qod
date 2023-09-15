@@ -320,12 +320,14 @@ char@ PHO_Optimize_(char @Inst)
 
 	/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
 	/* FIXME: Add support of shl and shr */
-	if (!str_has_prefix(@Inst, "mov"))
-	 & (!str_has_prefix(@Inst, "add"))
-	 & (!str_has_prefix(@Inst, "sub"))
-	 & (!str_has_prefix(@Inst, "and"))
+	if (!str_has_prefix(@Inst, "mov "))
+	 & (!str_has_prefix(@Inst, "add "))
+	 & (!str_has_prefix(@Inst, "mul "))
+	 & (!str_has_prefix(@Inst, "imul "))
+	 & (!str_has_prefix(@Inst, "sub "))
+	 & (!str_has_prefix(@Inst, "and "))
 	 & (!str_has_prefix(@Inst, "or "))
-	 & (!str_has_prefix(@Inst, "xor")) then
+	 & (!str_has_prefix(@Inst, "xor ")) then
 		PHO_InvalidateRegs();
 		return @Inst;
 	end:if
@@ -345,6 +347,15 @@ char@ PHO_Optimize_(char @Inst)
 
 	@s = @s[str_find_chars(@s, " ~t,")]; /* Пропуск регистра. */
 	@s = @s[str_skip_chars(@s, " ~t" )]; /* Пропуск пробелов. */
+
+	/* Если нет запятой - отдельный вариант для однооперандных вариантов mul, imul. */
+	if s[0] != ',' then
+		if str_has_prefix(@Inst, "mul ") | str_has_prefix(@Inst, "imul ") then
+			/* FIXME: Add support of this case. */
+			PHO_InvalidateRegs();
+			return @Inst;
+		end:if
+	end:if
 
 	/* Если нет запятой, неизвестная или неверно сформированная команда. */
 	if s[0] != ',' then
@@ -395,7 +406,7 @@ char@ PHO_Optimize_(char @Inst)
 
 
 	/* Вариант - загрузка полного значения регистра. */
-	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov") then
+	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov ") then
 		char @RetInst = @Inst;
 		PHO_Buff[0] = #0;
 		when PHO_Optimize_FindReplacement(@PHO_Buff, Reg1, Mask1, Const2) != 0:
@@ -417,18 +428,22 @@ char@ PHO_Optimize_(char @Inst)
 	word Result;
 
 	select
-	case str_has_prefix(@Inst, "mov"):
+	case str_has_prefix(@Inst, "mov "):
 		Result = Const2;
-	case str_has_prefix(@Inst, "add"):
+	case str_has_prefix(@Inst, "add "):
 		Result = Const1 + Const2;
-	case str_has_prefix(@Inst, "sub"):
+	case str_has_prefix(@Inst, "sub "):
 		Result = Const1 - Const2;
-	case str_has_prefix(@Inst, "and"):
+	case str_has_prefix(@Inst, "and "):
 		Result = Const1 & Const2;
 	case str_has_prefix(@Inst, "or "):
 		Result = Const1 | Const2;
-	case str_has_prefix(@Inst, "xor"):
+	case str_has_prefix(@Inst, "xor "):
 		Result = Const1 ^ Const2;
+	case str_has_prefix(@Inst, "mul "):
+		Result = Const1 * Const2;
+	case str_has_prefix(@Inst, "imul "):
+		Result = int(Const1) * int(Const2);
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
