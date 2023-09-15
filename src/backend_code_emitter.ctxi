@@ -329,16 +329,10 @@ word Code1(word pPrimary)
 						Emit("pop     EBX");
 						IX=RegB;
 					end:if
-					strcpy(@Buff,"add     EAX,  dword ");     // FASM
-				else
-					strcpy(@Buff,"add     EBX,  dword ");     // FASM
 				end:if
+				strcpy3(@Buff,"add     ",@CodeReg(NULL, fEAX, 4),",  dword ");
 			else
-				if fEAX==RegA then
-					strcpy(@Buff,"mov     EAX,  dword ");     // FASM
-				else
-					strcpy(@Buff,"mov     EBX,  dword ");     // FASM
-				end:if
+				strcpy3(@Buff,"mov     ",@CodeReg(NULL, fEAX, 4),",  dword ");
 			end:if
 
 			if IX!=RegNone then
@@ -375,11 +369,12 @@ word Code1(word pPrimary)
 			if fEAX==RegA then
 				IX=RegA;
 			else
+				word fEAX_tmp = fEAX;
 				if IX!=RegNone then
 					fEAX=RegA;
 				end:if
 
-				IX=RegB;
+				IX=fEAX_tmp;
 			end:if
 
 			ID =iREF;
@@ -778,6 +773,17 @@ bool DoesOperationAllowRightImm(word ID)
 	end:switch
 end
 
+bool DoesOperationAllowRightRegD(word ID)
+	switch ID of
+	case
+		iDIV,
+		iMOD:
+		return false;
+	default:
+		return true;
+	end:switch
+end
+
 /** A heuristic to determine whether it might be advantageous to change the order in which operands are evaluated.
     Returns NULL, if the operand evaluation should not be reordered.
     Returns a string describing the reason of reordering (for debugging purposes),
@@ -1070,40 +1076,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		if @reorderingReason != NULL then
 			EmitLine(NULL, "", "Reordering in CodeBinOp");
 			EmitLine(NULL, "", @reorderingReason);
-			if fEAX!=RegA then
-				EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
-				fEAX=RegA;
-			end
-
-			Code(pRight,NULL,NULL,NULL);
-			fEAX =RegB;
-			pType=Code(pLeft,NULL,NULL,NULL);
-			fSwap=1;
-			when fEAX != RegB:
-				StopInternalCodegen(__FILE__, __LINE__);
-
-			fEAX = RegA;
-			rightReg = RegB;
-			rightOperand = operandReg;
-		else
-			if fEAX!=RegA then
-				EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
-				fEAX=RegA;
-			end
-
-			pType=Code(pLeft,NULL,NULL,NULL);
-			fEAX =RegB;
-			Code(pRight,NULL,NULL,NULL);
-			if fEAX==RegA then
-				EmitLine(NULL, "pop     EBX", "restored in CodeBinOp");
-				fSwap=1;
-			end
-
-			fEAX = RegA;
-			rightReg = RegB;
-			rightOperand = operandReg;
+			word tmp = pLeft; pLeft = pRight; pRight = tmp;
+			inc fSwap;
 		end:if
 
+		rightOperand = operandReg;
+		rightReg = RegB;
+		when CodeRequiresSingleRegister(pRight) & DoesOperationAllowRightRegD(ID):
+			rightReg = RegD;
+
+		if fEAX != RegA then
+			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
+			fEAX = RegA;
+		end
+		pType = Code(pLeft,NULL,NULL,NULL);
+		fEAX  = rightReg;
+		Code(pRight,NULL,NULL,NULL);
+		when fEAX != rightReg & fSwap != 0:
+			StopInternalCodegen(__FILE__, __LINE__);
+
+		if fEAX==RegA then
+			EmitLine(NULL, "pop     EBX", "restored in CodeBinOp");
+			inc fSwap;
+		end
+		fEAX = RegA;
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
@@ -1417,6 +1413,8 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 			return st_bool;
 
 		case iDATA, iPARM, iLOCAL:
+			when CodeRequiresSingleRegister(P):
+				fEAX = RegD;
 			Code(P, NULL, NULL, NULL);
 			Emit(@CodeCmdRegReg(@Buff, "test", fEAX, 4, fEAX, 4));
 			select

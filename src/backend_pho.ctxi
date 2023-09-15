@@ -55,7 +55,7 @@ end
 /*****************************************************************************/
 
 bool PHO_RegContainsAConst(word R)
-	if R >= PHO_REGS then
+	if R >= PHO_FIRST_REG + PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
 	if PHO_ValidRegConst[R] != 0 then
