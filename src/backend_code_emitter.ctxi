@@ -76,7 +76,7 @@ include "backend_code_emitter_ctrl.ctxi"
 	Генератор кода для "постфиксных деревьев", генерируемых функцией Primary синтаксического анализатора.
 	(Эта функция - самая главная среди множества причин, почему весь кодогенератор надо переписать. VU)
 */
-word Code1(word pPrimary)
+word CodePrimary(word pPrimary)
 
 	char Buff [nBUFF];
 	Buff[0] = #0;
@@ -235,7 +235,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iCALL:
 			if fEAX!=RegA then
-				EmitLine(NULL, "push    EAX", "saved in Code1 (iCALL)");
+				EmitLine(NULL, "push    EAX", "saved in CodePrimary (iCALL)");
 				fEAX=RegA;
 			end:if
 
@@ -257,7 +257,7 @@ word Code1(word pPrimary)
 
 		case Node[P1].ID==iCALL2:
 			if fEAX!=RegA then
-				EmitLine(NULL, "push    EAX", "saved in Code1 (iCALL2)");
+				EmitLine(NULL, "push    EAX", "saved in CodePrimary (iCALL2)");
 				fEAX=RegA;
 			end:if
 
@@ -310,7 +310,7 @@ word Code1(word pPrimary)
 				select
 				case IX==RegB:
 					if fEAX!=RegA then
-						EmitLine(NULL, "push    EAX", "saved in Code1 (iADDR)");
+						EmitLine(NULL, "push    EAX", "saved in CodePrimary (iADDR)");
 					end:if
 
 					Emit("xchg    EAX,  EBX");
@@ -1443,7 +1443,7 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 			return nDICT;
 
 		case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
-			return Code1(P);
+			return CodePrimary(P);
 
 		case iCAST:
 			word pTypeFrom = Code(Node[P].pLeft, NULL, NULL, NULL);
