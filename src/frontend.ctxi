@@ -33,23 +33,10 @@ end
 
 /*****************************************************************************/
 
-word function __Statements(char @Buff; char @End1; char @End2; char @End3)
-__Statements @_Statements;
-
-/*****************************************************************************/
-
-word function __Ctrl(char @Buff)
-__Ctrl @_Ctrl;
-
-/*****************************************************************************/
-
-word function __Expr(word Prty; char @Buff)
-__Expr @_Expr;
-
-/*****************************************************************************/
-
-void function  __CTE(word P)
-__CTE @_CTE;
+word Statements(char @Buff; char @End1; char @End2; char @End3);
+word Ctrl(char @Buff);
+word Expr(word Prio; char @Buff);
+void CTE(word P);
 
 /*****************************************************************************/
 
@@ -79,11 +66,6 @@ void InitFrontEnd()
 
 	nFile = 0;
 	pFile = 0;
-
-	@_Statements = @Statements;
-	@_Ctrl       = @Ctrl;
-	@_Expr       = @Expr;
-	@_CTE        = @CTE;
 
 	RegisterDigraph("!=");
 	RegisterDigraph("<=");

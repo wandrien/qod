@@ -96,7 +96,7 @@ end
 word Tabl(char @Buff)
 	word nIndx = 0;
 	if strcmp(@Buff,"[") == 0 then
-		word P = _Expr(PRIO_ZERO, @Scan(@Buff));
+		word P = Expr(PRIO_ZERO, @Scan(@Buff));
 
 		select
 		case !T_IsInteger(Node[P].pType):
@@ -291,7 +291,7 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff)
 	while pARG < nDICT do
 		word P8=Peek();
 		Node[P8].ID   =iPUSH;
-		Node[P8].pLeft=_Expr(PRIO_ZERO, @Buff);
+		Node[P8].pLeft=Expr(PRIO_ZERO, @Buff);
 
 		ImplicitCast(Dict[pARG].pType, @Node[P8].pLeft);
 
@@ -485,7 +485,7 @@ word Primary(word Prty; char @Buff)
 					Stop(@eBRACKETEXP);
 				end:if
 
-				P1 = _Expr(PRIO_ZERO, @Scan(@Buff));
+				P1 = Expr(PRIO_ZERO, @Scan(@Buff));
 
 				if strcmp(@Buff,")")!=0 then
 					Stop(@eBRACKETEXP);
@@ -541,7 +541,7 @@ word Primary(word Prty; char @Buff)
 			word P3=Peek();
 			Node[P3].ID   =iINDEX;
 			Node[P3].Value= T_ArrayGetLen(pType);
-			Node[P3].pLeft= _Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[P3].pLeft= Expr(PRIO_ZERO, @Scan(@Buff));
 			pType = T_ArrayDeref(pType);
 
 			if strcmp(@Buff,"]")!=0 then
@@ -563,7 +563,7 @@ word Primary(word Prty; char @Buff)
 
 			word P3=Peek();
 			Node[P3].ID   =iADDR;
-			Node[P3].pLeft= _Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[P3].pLeft= Expr(PRIO_ZERO, @Scan(@Buff));
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
@@ -966,7 +966,7 @@ word ExprBinOp(word P1; word O; char @Buff)
 		StopInternal(__FILE__, __LINE__);
 	else
 		Node[P_OP].pLeft  = P1;
-		Node[P_OP].pRight = _Expr(Operator[O].Prio, @Scan(@Buff));
+		Node[P_OP].pRight = Expr(Operator[O].Prio, @Scan(@Buff));
 		Cast2(P_OP);
 	end:if
 
@@ -977,7 +977,7 @@ end
 
 word ExprParentheses(word P1; word O;  char @Buff)
 
-	word P2 = _Expr(PRIO_ZERO, @Scan(@Buff));
+	word P2 = Expr(PRIO_ZERO, @Scan(@Buff));
 	if strcmp(@Buff,")")!=0 then
 		Stop(@eBRACKETEXP);
 	end
@@ -1068,7 +1068,7 @@ word ExprNOT(word P_; word O; char @Buff)
 
 	word P1;
 
-	word P2=_Expr(Operator[O].Prio, @Scan(@Buff));
+	word P2=Expr(Operator[O].Prio, @Scan(@Buff));
 	word pType = Node[P2].pType;
 
 	select
@@ -1093,7 +1093,7 @@ end
 
 word ExprNEG(word P_; word O; char @Buff)
 
-	word pLeft = _Expr(Operator[O].Prio, @Scan(@Buff));
+	word pLeft = Expr(Operator[O].Prio, @Scan(@Buff));
 
 	word P1 = Peek();
 	Node[P1].ID    = iNEG;

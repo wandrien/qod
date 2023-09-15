@@ -52,9 +52,6 @@ end
 
 /*****************************************************************************/
 
-void function __NodeMarkUsed(word P)
-__NodeMarkUsed @_NodeMarkUsed;
-
 void DictMarkUsed(word D)
 	when D >= nDICT:
 		return;
@@ -64,7 +61,7 @@ void DictMarkUsed(word D)
 
 	Dict[D].Used = 1;
 	DictMarkUsed(Dict[D].pType);
-	_NodeMarkUsed(Dict[D].pNode);
+	NodeMarkUsed(Dict[D].pNode);
 end
 
 void NodeMarkUsed(word P)

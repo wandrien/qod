@@ -104,7 +104,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		end:if
 
 		Scan(@Buff);
-		Node[BODY].pLeft = _Statements(@Buff, @Case, @Else, "end");
+		Node[BODY].pLeft = Statements(@Buff, @Case, @Else, "end");
 	end:while
 
 	SkipFinalScan = EndOf(@Buff, @End1, NULL);
@@ -143,7 +143,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 
 	Scan(@Buff);
 
-	Node[BODY].pLeft = _Ctrl(@Buff);
+	Node[BODY].pLeft = Ctrl(@Buff);
 
 	SkipFinalScan = 1;
 
@@ -240,7 +240,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		ValueBackLink = BODY;
 
 		Scan(@Buff);
-		Node[BODY].pLeft = _Statements(@Buff, "case", "default", "end");
+		Node[BODY].pLeft = Statements(@Buff, "case", "default", "end");
 	end
 
 	if str_eq(@Buff,"default") then
@@ -261,7 +261,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		CaseBackLink = CASE;
 
 		Scan(@Buff);
-		Node[BODY].pLeft = _Statements(@Buff, "end", NULL, NULL);
+		Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 	end:if
 
 	SkipFinalScan = EndOf(@Buff, "switch", NULL);
@@ -303,7 +303,7 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 	pLoop=P1;
 
 	Scan(@Buff);
-	Node[BODY].pLeft = _Statements(@Buff, "end", NULL, NULL);
+	Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 
 	SkipFinalScan = EndOf(@Buff, "do", @End2);
 
@@ -329,7 +329,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	pLoop=P1;
 
 	Scan(@Buff);
-	Node[BODY].pLeft = _Statements(@Buff, "until", NULL, NULL);
+	Node[BODY].pLeft = Statements(@Buff, "until", NULL, NULL);
 
 	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;

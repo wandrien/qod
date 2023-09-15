@@ -1,14 +1,10 @@
 
 /*****************************************************************************/
 
-void function __EmitLine(LABEL @Label; char @Inst; char @Comment)
-__EmitLine @_EmitLine;
-
-bool function __CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal)
-__CodeAsMemoryOperand @_CodeAsMemoryOperand;
-
-bool function __CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
-__CodeRequiresSingleRegister_ @_CodeRequiresSingleRegister_;
+void EmitLine(LABEL @Label; char @Inst; char @Comment);
+bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
+bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal);
+void NodeMarkUsed(word P);
 
 include "backend_pho.ctxi"
 include "backend_lib.ctxi"

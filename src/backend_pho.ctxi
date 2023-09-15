@@ -34,7 +34,7 @@ void PHO_InvalidateReg(word R)
 
 	if PHO_ValidRegConst[R] != 0 then
 		char Buff[nBUFF];
-		_EmitLine(NULL, "", @strcpy2(@Buff, "PHO: Invalidate: ", @PHO_RegName(R)));
+		EmitLine(NULL, "", @strcpy2(@Buff, "PHO: Invalidate: ", @PHO_RegName(R)));
 
 		PHO_ValidRegConst[R] = 0;
 	end:if
@@ -96,7 +96,7 @@ void PHO_RegLoadConst(word R; word Data)
 
 	if (PHO_ValidRegConst[R] == 0) | (PHO_RegConst[R] != Data) then
 		char Buff[nBUFF];
-		_EmitLine(NULL, "", @strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data)));
+		EmitLine(NULL, "", @strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data)));
 	end:if
 
 	PHO_ValidRegConst[R] = 1;
@@ -445,7 +445,7 @@ char@ PHO_Optimize(char @Inst)
 	char @NewInst = @PHO_Optimize_(@Inst);
 	if str_ne(@NewInst, @Inst) then
 		char Buff[nBUFF];
-		_EmitLine(NULL, "", @strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")"));
+		EmitLine(NULL, "", @strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")"));
 	end:if
 	return @NewInst;
 end

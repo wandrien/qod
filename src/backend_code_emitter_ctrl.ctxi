@@ -26,13 +26,13 @@ end
 word Code_OR(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 	LABEL @L = @LabelResolve(P, lBRANCH);
 	if @T == NULL then
-		_Code(Node[P].pLeft , NULL, @M, @L);
+		Code(Node[P].pLeft , NULL, @M, @L);
 		EmitLabelIfUsed(@L);
-		_Code(Node[P].pRight, @F, NULL, @M);
+		Code(Node[P].pRight, @F, NULL, @M);
 	else
-		_Code(Node[P].pLeft , NULL, @T, @L);
+		Code(Node[P].pLeft , NULL, @T, @L);
 		EmitLabelIfUsed(@L);
-		_Code(Node[P].pRight, NULL, @T, @M);
+		Code(Node[P].pRight, NULL, @T, @M);
 	end
 	return Node[P].pType;
 end
@@ -54,13 +54,13 @@ end
 word Code_AND(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 	LABEL @L = @LabelResolve(P, lBRANCH);
 	if @T == NULL then
-		_Code(Node[P].pLeft , @F, NULL, @L);
+		Code(Node[P].pLeft , @F, NULL, @L);
 		EmitLabelIfUsed(@L);
-		_Code(Node[P].pRight, @F, NULL, @M);
+		Code(Node[P].pRight, @F, NULL, @M);
 	else
-		_Code(Node[P].pLeft , @M, NULL, @L);
+		Code(Node[P].pLeft , @M, NULL, @L);
 		EmitLabelIfUsed(@L);
-		_Code(Node[P].pRight, NULL, @T, @M);
+		Code(Node[P].pRight, NULL, @T, @M);
 	end
 	return Node[P].pType;
 end
@@ -70,7 +70,7 @@ end
 word Code_PUSH(word P; char @Buff)
 
 	if Node[P].pRight<nNODE then
-		_Code(Node[P].pRight,NULL,NULL,NULL);
+		Code(Node[P].pRight,NULL,NULL,NULL);
 	end
 
 	word P1 = Node[P].pLeft;
@@ -79,7 +79,7 @@ word Code_PUSH(word P; char @Buff)
 	/* Оптимизация прямой загрузки значения из переменной. */
 	char BuffOperand[nBUFF];
 	word pOperandType;
-	if _CodeAsMemoryOperand(@BuffOperand, P1, @pOperandType) & (T_SizeOf(pOperandType) ==  4) then
+	if CodeAsMemoryOperand(@BuffOperand, P1, @pOperandType) & (T_SizeOf(pOperandType) ==  4) then
 		Emit(@strcpy2(@Buff, "push    ", @BuffOperand));
 		return nDICT;
 	end
@@ -128,7 +128,7 @@ word Code_PUSH(word P; char @Buff)
 	/* Все остальные варианты... */
 
 	fEAX=RegA;
-	word pType = _Code(Node[P].pLeft,NULL,NULL,NULL);
+	word pType = Code(Node[P].pLeft,NULL,NULL,NULL);
 
 	word Size = target_size_of_pointer;
 	if pType<nDICT then
@@ -158,7 +158,7 @@ word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
 		fEAX=RegA;
-		word pType=_Code(Node[P].pLeft,NULL,NULL,NULL);
+		word pType=Code(Node[P].pLeft,NULL,NULL,NULL);
 		word  Size=4;
 		if pType<nDICT then
 			Size=SizeOfType(pType);
@@ -244,9 +244,9 @@ word Code_SELECT(word P; char @Buff)
 		if Node[COND].pLeft < nNODE then
 			@L_Jump = @CodeExtractJump(Node[BODY].pLeft);
 			if @L_Jump == NULL then
-				_Code(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
+				Code(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
 			else
-				_Code(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
+				Code(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
 			end:if
 			EmitLabelIfUsed(@LabelResolve(CASE, lCASEBODY));
 		else
@@ -316,7 +316,7 @@ word Code_SWITCH(word P; char @Buff)
 		StopInternalCodegen(__FILE__, __LINE__);
 
 	fEAX = RegA;
-	word pType = _Code(Node[COND].pLeft,NULL,NULL,NULL);
+	word pType = Code(Node[COND].pLeft,NULL,NULL,NULL);
 	if pType == st_byte then
 		Emit("and     EAX,  0FFH");
 	end:if
@@ -446,7 +446,7 @@ word Code_WHILE(word P; char @Buff)
 	EmitLabel(@LabelResolve(P, lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
-		_Code(Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY));
+		Code(Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY));
 		EmitLabelIfUsed(@LabelResolve(P, lLOOPBODY));
 	end
 
@@ -501,7 +501,7 @@ word Code_REPEAT(word P; char @Buff)
 	EmitLabelIfUsed(@LabelResolve(P, lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
-		_Code(Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT));
+		Code(Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT));
 	end
 
 	EmitLabelIfUsed(@LabelResolve(P, lEXIT));

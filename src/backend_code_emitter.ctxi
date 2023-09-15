@@ -27,8 +27,7 @@ word fEAX;
 
 /*****************************************************************************/
 
-word function __Code(word P; LABEL @F; LABEL @T; LABEL @M)
-__Code @_Code;
+word Code(word P; LABEL @F; LABEL @T; LABEL @M);
 
 /*****************************************************************************/
 
@@ -51,7 +50,7 @@ end
 
 word Code_List(word P)
 	while P < nNODE do
-		word pType = _Code(P,NULL,NULL,NULL);
+		word pType = Code(P,NULL,NULL,NULL);
 		when pType == st_noreturn:
 			return st_noreturn;
 		P = Node[P].pRight;
@@ -241,7 +240,7 @@ word Code1(word pPrimary)
 			end:if
 
 			if Node[P1].pLeft<nNODE then
-				_Code(Node[P1].pLeft,NULL,NULL,NULL);
+				Code(Node[P1].pLeft,NULL,NULL,NULL);
 			end:if
 
 			if Dict[Node[P1].Value].Sub==sSYS then
@@ -265,10 +264,10 @@ word Code1(word pPrimary)
 			word P2=Node[P1].pLeft;
 
 			if Node[P2].pRight<nNODE then
-				_Code(Node[P2].pRight,NULL,NULL,NULL);
+				Code(Node[P2].pRight,NULL,NULL,NULL);
 			end:if
 
-			_Code(Node[P2].pLeft,NULL,NULL,NULL);
+			Code(Node[P2].pLeft,NULL,NULL,NULL);
 
 			Emit("call    EAX");
 
@@ -288,7 +287,7 @@ word Code1(word pPrimary)
 					Ofs = Ofs - IndexingOffset;
 				end
 			else
-				_Code(Node[P1].pLeft,NULL,NULL,NULL);
+				Code(Node[P1].pLeft,NULL,NULL,NULL);
 				IX=fEAX;
 				Emit_IMUL_Reg_Const(IX, 4, Size);
 			end:if
@@ -322,7 +321,7 @@ word Code1(word pPrimary)
 					fEAX=RegB;
 				end:select
 
-				_Code(pLeft,NULL,NULL,NULL);
+				Code(pLeft,NULL,NULL,NULL);
 
 				Emit_IMUL_Reg_Const(fEAX, 4, Size);
 				if fEAX==RegA then
@@ -552,7 +551,7 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 
 				when IX != RegNone:
 					return false;
-				when !_CodeRequiresSingleRegister_(@Buff, Node[P1].pLeft, @pTypeFinal):
+				when !CodeRequiresSingleRegister_(@Buff, Node[P1].pLeft, @pTypeFinal):
 					return false;
 				IX = RegA;
 			end:if
@@ -574,7 +573,7 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 			if pLeft < nNODE then
 				when IX != RegNone:
 					return false;
-				when !_CodeRequiresSingleRegister_(@Buff, pLeft, @pTypeFinal):
+				when !CodeRequiresSingleRegister_(@Buff, pLeft, @pTypeFinal):
 					return false;
 			end:if
 			Ofs = 0;
@@ -858,7 +857,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when nMulTrick >= nMUL_TRICKS:
 		return nDICT;
 
-	word pType2=_Code(pLeft,NULL,NULL,NULL);
+	word pType2=Code(pLeft,NULL,NULL,NULL);
 
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -1057,11 +1056,11 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when pLeft2 < nNODE:
 			pLeft = pLeft2;
 
-		pType=_Code(pLeft,NULL,NULL,NULL);
+		pType=Code(pLeft,NULL,NULL,NULL);
 
 	case operandMemRef:
 		when leftOperand == operandNotReady:
-			pType=_Code(pLeft,NULL,NULL,NULL);
+			pType=Code(pLeft,NULL,NULL,NULL);
 
 	case operandReg:
 		null;
@@ -1076,9 +1075,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				fEAX=RegA;
 			end
 
-			_Code(pRight,NULL,NULL,NULL);
+			Code(pRight,NULL,NULL,NULL);
 			fEAX =RegB;
-			pType=_Code(pLeft,NULL,NULL,NULL);
+			pType=Code(pLeft,NULL,NULL,NULL);
 			fSwap=1;
 			when fEAX != RegB:
 				StopInternalCodegen(__FILE__, __LINE__);
@@ -1092,9 +1091,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				fEAX=RegA;
 			end
 
-			pType=_Code(pLeft,NULL,NULL,NULL);
+			pType=Code(pLeft,NULL,NULL,NULL);
 			fEAX =RegB;
-			_Code(pRight,NULL,NULL,NULL);
+			Code(pRight,NULL,NULL,NULL);
 			if fEAX==RegA then
 				EmitLine(NULL, "pop     EBX", "restored in CodeBinOp");
 				fSwap=1;
@@ -1595,7 +1594,7 @@ void EmitFunction(char @Buff; word I)
 	word  P = Dict[I].pNode;
 	word  pType = st_void;
 	while P < nNODE do
-		pType = _Code(P, NULL, NULL, NULL);
+		pType = Code(P, NULL, NULL, NULL);
 		when pType == st_noreturn:
 			exit;
 		P  = Node[P].pRight;
@@ -1604,7 +1603,7 @@ void EmitFunction(char @Buff; word I)
 	if pType != st_noreturn then
 		word pRet = Peek();
 		Node[pRet].ID = iRETURN;
-		_Code(pRet, NULL, NULL, NULL);
+		Code(pRet, NULL, NULL, NULL);
 	end
 
 	Code_EndBlock(@CB);
