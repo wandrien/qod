@@ -173,14 +173,17 @@ do_test_with_compiler ()
 	local test_name="$1" ; shift
 	local condition="$1" ; shift
 
-	local stdout_log=tests/out/"$test_name"."$c".stdout
-	local stderr_log=tests/out/"$test_name"."$c".stderr
+	local tests_out_dir="tests/out/$c"
+	mkdir -p "$tests_out_dir"
+
+	local stdout_log="$tests_out_dir"/"$test_name"."$c".stdout
+	local stderr_log="$tests_out_dir"/"$test_name"."$c".stderr
 
 	local COMPILER_FLAGS="`grep -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
 
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
 		if (mk out/lcontext_"$c" tests/"$test_name"\
-				--linux tests/out/ "$test_name" \
+				--linux "$tests_out_dir"/ "$test_name" \
 				$COMPILER_FLAGS \
 				1> "$stdout_log" \
 				2> "$stderr_log") ; then
@@ -197,7 +200,7 @@ do_test_with_compiler ()
 		fi
 	elif [ "x$condition" = "xshould_print" ] ; then
 		if ! (mk out/lcontext_"$c" tests/"$test_name"\
-				--linux tests/out/ "$test_name" \
+				--linux "$tests_out_dir"/ "$test_name" \
 				$COMPILER_FLAGS \
 				1> "$stdout_log" \
 				2> "$stderr_log") ; then
@@ -205,7 +208,7 @@ do_test_with_compiler ()
 			$CAT_TEST_LOGS "$stderr_log"
 			return $failed
 		fi
-		if [ "x`tests/out/"$test_name"`" = "x$1" ] ; then
+		if [ "x`"$tests_out_dir"/"$test_name"`" = "x$1" ] ; then
 			return $passed
 		else
 			$CAT_TEST_LOGS "$stdout_log"
@@ -219,7 +222,8 @@ do_test_with_compiler ()
 
 _run_test ()
 {
-	do_test_with_compiler c "$@" \
+	do_test_with_compiler a "$@" \
+	&& do_test_with_compiler c "$@" \
 	&& do_test_with_compiler c_debug "$@" \
 	&& do_test_with_compiler c_size "$@"
 }

@@ -678,7 +678,7 @@ word Primary(word Prty; char @Buff)
 		end:select
 	end:do
 
-	if Prty >= PRIO_LVALUE & strcmp(@Buff,"=")!=0 & strcmp(@Buff,":=")!=0 then
+	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) & (strcmp(@Buff,":=") != 0) then
 		if Call == 0 | nPtr > 0 then
 			Stop(@eASSIGNEXP);
 		end:if

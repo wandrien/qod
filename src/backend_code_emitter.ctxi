@@ -1199,6 +1199,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		select
 		case rightOperand == operandImm:
 			word Value = Node[pRight].Value;
+			word PHO_Load_Value = Value;
 			bool SkipCmp = false;
 			switch Value of
 			case 0:
@@ -1224,17 +1225,21 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			case 1:
 				if (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0 then
 					Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+					dec PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			case word(-1):
 				if (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0 then
 					Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+					inc PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			end:switch
 			if !SkipCmp then
-				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Node[pRight].Value));
+				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Value));
 			end:if
+			when (Size == 4) & (ID == iNE):
+				PHO_RegLoadConst(fEAX, PHO_Load_Value);
 		case rightOperand == operandMemRef:
 			Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
 		case rightOperand == operandReg:

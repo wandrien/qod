@@ -92,6 +92,9 @@ end
 /*****************************************************************************/
 
 void PHO_RegLoadConst(word R; word Data)
+	when PHOptimization == 0:
+		return;
+
 	if R >= PHO_FIRST_REG + PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
@@ -290,10 +293,8 @@ end
 char PHO_Buff[256];
 
 char@ PHO_Optimize_(char @Inst)
-
-	if PHOptimization == 0 then
+	when PHOptimization == 0:
 		return @Inst;
-	end:if
 
 	/* Для пустой строки ничего не делаем. */
 	if strlen(@Inst[str_skip_chars(@Inst, " ~t")]) == 0 then
@@ -474,6 +475,9 @@ end
 /*****************************************************************************/
 
 word PHO_EncodeRegContainingConst(char @Buff; word Const; word RegMode)
+	when PHOptimization == 0:
+		return 0;
+
 	when RegMode != 4: /* FIXME: not implemented */
 		return 0;
 
