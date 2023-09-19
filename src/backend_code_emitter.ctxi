@@ -1152,44 +1152,29 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		select
 		case Value == 1 & PreferIncDec(fEAX, Size) > 0:
 			Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+			MeaningfulFlags = (Flag_Zero | Flag_Sign);
 			return pType;
 		case Value == -1 & PreferIncDec(fEAX, Size) > 0:
 			Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+			MeaningfulFlags = (Flag_Zero | Flag_Sign);
 			return pType;
 		case Value == 2 & PreferIncDec(fEAX, Size) > 1:
 			Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
 			Emit(@Buff);
+			MeaningfulFlags = (Flag_Zero | Flag_Sign);
 			return pType;
 		case Value == -2 & PreferIncDec(fEAX, Size) > 1:
 			Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
 			Emit(@Buff);
+			MeaningfulFlags = (Flag_Zero | Flag_Sign);
 			return pType;
 		end:select
 	end:if
 
+	word _MeaningfulFlags = 0;
+
 	select
 	case iLT<=ID & ID<=iGT:
-
-		select
-		case rightOperand == operandImm:
-			word Value = Node[pRight].Value;
-			select
-			case Value == 0 & (ID == iEQ | ID == iNE):
-				Emit(@CodeCmdRegReg(@Buff, "test", fEAX, Size, fEAX, Size));
-			case Value == 1 & (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0:
-				Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
-			case Value == word(-1) & (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0:
-				Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
-			default:
-				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Node[pRight].Value));
-			end:select
-		case rightOperand == operandMemRef:
-			Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
-		case rightOperand == operandReg:
-			Emit(@CodeCmdRegReg(@Buff, "cmp", fEAX, Size, rightReg, Size));
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-		end
 
 		if @T == NULL then
 			switch ID of
@@ -1201,19 +1186,66 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			case iGT: ID=iLE;
 			default:
 				StopInternalCodegen(__FILE__, __LINE__);
-            end:switch
+			end:switch
 
-            @T = @F;
-            @F = NULL;
+			@T = @F;
+			@F = NULL;
 		end:if
 
 		if @T == NULL | @F != NULL then
 			StopInternalCodegen(__FILE__, __LINE__);
 		end
 
+		select
+		case rightOperand == operandImm:
+			word Value = Node[pRight].Value;
+			bool SkipCmp = false;
+			switch Value of
+			case 0:
+				select
+				case (ID == iEQ) | (ID == iNE):
+					if (MeaningfulFlags & Flag_Zero) != 0 then
+						null;
+						SkipCmp = true;
+					else
+						Emit(@CodeCmdRegReg(@Buff, "test", fEAX, Size, fEAX, Size));
+						SkipCmp = true;
+					end:if
+				case (MeaningfulFlags & (Flag_Zero | Flag_Sign)) == (Flag_Zero | Flag_Sign):
+					select
+					case (ID == iGE) & T_IsSigned(pType):
+						ID = iBRANCH_NSF;
+						SkipCmp = true;
+					case (ID == iLT) & T_IsSigned(pType):
+						ID = iBRANCH_SF;
+						SkipCmp = true;
+					end:select
+				end:select
+			case 1:
+				if (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0 then
+					Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+					SkipCmp = true;
+				end:if
+			case word(-1):
+				if (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0 then
+					Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+					SkipCmp = true;
+				end:if
+			end:switch
+			if !SkipCmp then
+				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Node[pRight].Value));
+			end:if
+		case rightOperand == operandMemRef:
+			Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
+		case rightOperand == operandReg:
+			Emit(@CodeCmdRegReg(@Buff, "cmp", fEAX, Size, rightReg, Size));
+		default:
+			StopInternalCodegen(__FILE__, __LINE__);
+		end
+
 		char@ BranchCondition = "";
 		select
-		case pType==st_int:
+		case T_IsSigned(pType):
 			switch ID of
 			case iLT: @BranchCondition = "l ";
 			case iLE: @BranchCondition = "le";
@@ -1221,8 +1253,10 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			case iNE: @BranchCondition = "ne";
 			case iGE: @BranchCondition = "ge";
 			case iGT: @BranchCondition = "g ";
+			case iBRANCH_SF: @BranchCondition = "s ";
+			case iBRANCH_NSF: @BranchCondition = "ns";
 			default:
-				StopInternalCodegen(__FILE__, __LINE__);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:switch
 
 		default:
@@ -1234,7 +1268,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			case iGE: @BranchCondition = "ae";
 			case iGT: @BranchCondition = "a ";
 			default:
-				StopInternalCodegen(__FILE__, __LINE__);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:switch
 		end:select
 		EmitBranchToLabel(@BranchCondition, @T);
@@ -1242,18 +1276,23 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		return nDICT;
 
 	case ID==iBIT_OR:
+		_MeaningfulFlags = Flag_Zero;
 		strcpy(@Buff,"or      ");
 
 	case ID==iBIT_XOR:
+		_MeaningfulFlags = Flag_Zero;
 		strcpy(@Buff,"xor     ");
 
 	case ID==iBIT_AND:
+		_MeaningfulFlags = Flag_Zero;
 		strcpy(@Buff,"and     ");
 
 	case ID==iADD:
+		_MeaningfulFlags = (Flag_Zero | Flag_Sign);
 		strcpy(@Buff,"add     ");
 
 	case ID==iSUB:
+		_MeaningfulFlags = (Flag_Zero | Flag_Sign);
 		strcpy(@Buff,"sub     ");
 
 	case ID==iMUL:
@@ -1368,6 +1407,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:select
 
+	MeaningfulFlags = _MeaningfulFlags;
 	return pType;
 end
 

@@ -9,6 +9,10 @@ void NodeMarkUsed(word P);
 bool EmitDebugComments_PHO = false;
 bool EmitDebugComments_Jumps = false;
 
+define Flag_Zero 1
+define Flag_Sign 2
+word MeaningfulFlags = 0;
+
 include "backend_pho.ctxi"
 include "backend_lib.ctxi"
 include "backend_labels.ctxi"

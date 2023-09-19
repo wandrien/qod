@@ -127,7 +127,10 @@ define  iCONST      61 // used in the backend for ValueRef's
 
 define  iVIRTUAL_JUMP 62 // used in the backend for jump optimization
 
-define  iID_COUNT   63
+define  iBRANCH_SF  63 // used in the backend for branch optimization
+define  iBRANCH_NSF 64 // used in the backend for branch optimization
+
+define  iID_COUNT   65
 
 /*****************************************************************************/
 

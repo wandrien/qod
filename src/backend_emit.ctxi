@@ -153,6 +153,9 @@ void EmitLine(LABEL @Label; char @Inst; char @Comment)
 	when @Label == NULL & Inst[0] == #0 & Comment[0] == #0:
 		return;
 
+	when Inst[0] != #0 | @Label != NULL:
+		MeaningfulFlags = 0;
+
 	word C = 0;
 
 	if @Label != NULL then
