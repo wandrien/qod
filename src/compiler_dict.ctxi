@@ -78,15 +78,17 @@ word DictAlloc()
 	word r = nDict;
 	inc nDict;
 
-	Dict[r].Used = 0;
-	Dict[r].pType = nDICT;
-	Dict[r].tCachedPtrToMe = nDICT;
-	Dict[r].tCachedFuncTypeOfMe = nDICT;
-	Dict[r].tCachedIntegerPair = nDICT;
-	Dict[r].pNamespace = nDICT;
-	Dict[r].pNext = nDICT;
-	Dict[r].pFirst = nDICT;
-	Dict[r].pLast = nDICT;
+	DICT @d = @Dict[r];
+
+	d.Used = 0;
+	d.pType = nDICT;
+	d.tCachedPtrToMe = nDICT;
+	d.tCachedFuncTypeOfMe = nDICT;
+	d.tCachedIntegerPair = nDICT;
+	d.pNamespace = nDICT;
+	d.pNext = nDICT;
+	d.pFirst = nDICT;
+	d.pLast = nDICT;
 	DictSetName(r, "<None>");
 
 	return r;

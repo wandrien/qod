@@ -13,11 +13,13 @@ word Peek()
 	when N >= nNODE:
 		StopMemory();
 
-	Node[nNode].Used = 0;
-	Node[nNode].pLeft  = nNODE;
-	Node[nNode].pRight = nNODE;
-	Node[nNode].pType  = nDICT;
-	Node[nNode].SourceLocation = CurrentFileInfo;
+	NODE @n = @Node[nNode];
+
+	n.Used = 0;
+	n.pLeft  = nNODE;
+	n.pRight = nNODE;
+	n.pType  = nDICT;
+	n.SourceLocation = CurrentFileInfo;
 	inc  nNode;
 
 	return N;

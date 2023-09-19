@@ -64,11 +64,11 @@ word val(char @Buff)
 	word k = str_find_chars(@Buff, "$");
 	select
 	/* Префикс 0x - шестнадцатиричное. */
-	case str_has_prefix(@Buff, "0x"):
+	case Buff[0] == '0' & Buff[1] == 'x':
 		Base = 16;
 		P    = 2;
 	/* Префикс 0b - двоичное. */
-	case str_has_prefix(@Buff, "0b"):
+	case Buff[0] == '0' & Buff[1] == 'b':
 		Base = 2;
 		P    = 2;
 	/* Символ $ не найден - десятичное. */
@@ -316,16 +316,16 @@ end
 /*****************************************************************************/
 
 word Primary(word Prty; char @Buff)
-	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
+	if isdigit(Buff[0])!=0 then /* Число. */
 		word P1 = Peek();
-		NodeAssignWord(P1, CurrentFileInfo.Line);
+		NodeAssignWord(P1, val(@Buff));
 		Scan(@Buff);
 		return P1;
 	end
 
-	if isdigit(Buff)!=0 then /* Число. */
+	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
 		word P1 = Peek();
-		NodeAssignWord(P1, val(@Buff));
+		NodeAssignWord(P1, CurrentFileInfo.Line);
 		Scan(@Buff);
 		return P1;
 	end
@@ -393,7 +393,7 @@ word Primary(word Prty; char @Buff)
 		word I = ResolveLocal(@Buff);
 		if I < nLOCAL then
 			P1=Peek();
-			Node[P1].ID    =iLOCAL;
+			Node[P1].ID    = iLOCAL;
 			Node[P1].Value = I;
 			pType          = Local[I].pType;
 			Flag           = 1;
@@ -404,7 +404,7 @@ word Primary(word Prty; char @Buff)
 		word I = ResolveParm(@Buff);
 		if I < nDICT then
 			P1=Peek();
-			Node[P1].ID    =iPARM;
+			Node[P1].ID    = iPARM;
 			Node[P1].Value = I;
 			pType          = Dict[I].pType;
 			Flag           = 1;

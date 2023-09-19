@@ -20,6 +20,7 @@ word function __Operator(word P1; word O; char @Buff)
 
 struct OPERATOR
 	char        Name[OPERATOR_NAME_SIZE]; // Имя операции
+	word        NameLen;  // Длина имени
 	word        Prio;     // Приоритет операции.
 	word        Mode;     // Режим операции.
 	word        ID;       // Идентификатор создаваемого узла.
@@ -44,6 +45,7 @@ void InitOperator()
 	word i = 0;
 	while i < nOPERATOR do
 		Operator[i].Name[0] = #0;
+		Operator[i].NameLen = 0;
 		Operator[i].Prio = 0;
 		inc i;
 	end
@@ -60,9 +62,9 @@ void SortOperators()
 	end:if
 
 	word i = 0;
-	while i < nOPERATOR do
+	while i < nOperator do
 		word j = i + 1;
-		while j < nOPERATOR do
+		while j < nOperator do
 			if Operator[i].Prio < Operator[j].Prio then
 				OPERATOR O  = Operator[i];
 				Operator[i] = Operator[j];
@@ -85,21 +87,22 @@ word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Han
 		StopInternal(__FILE__, __LINE__);
 	end
 
-	word i = 0;
-	while i < nOPERATOR do
-		if Operator[i].Name[0] == #0 then
-			strcpy(@Operator[i].Name, @Name);
-			Operator[i].Prio = Prio;
-			Operator[i].Mode = Mode;
-			Operator[i].ID   = ID;
-			@Operator[i].Handler = @Handler;
-			NeedToSortOperators = 1;
-			return i;
-		end:if
-		inc i;
-	end:while
+	if nOperator >= nOPERATOR then
+		StopInternal(__FILE__, __LINE__);
+	end
 
-	StopInternal(__FILE__, __LINE__);
+	word i = nOperator;
+	inc nOperator;
+
+	strcpy(@Operator[i].Name, @Name);
+	Operator[i].NameLen = strlen(@Name);
+	Operator[i].Prio = Prio;
+	Operator[i].Mode = Mode;
+	Operator[i].ID   = ID;
+	@Operator[i].Handler = @Handler;
+	NeedToSortOperators = 1;
+
+	return i;
 end
 
 /*****************************************************************************/
@@ -110,18 +113,23 @@ end
 word FindOperator(char@ Name; word Prio; word ModeMask)
 
 	SortOperators();
+	word NameLen = strlen(@Name);
 
 	word i = 0;
-	while i < nOPERATOR do
+	while i < nOperator do
 		if Operator[i].Prio > Prio then
-			if ((Operator[i].Mode & ModeMask) != 0) & (strcmp(@Operator[i].Name, @Name) == 0) then
+			if
+				((Operator[i].Mode & ModeMask) != 0) &
+				(Operator[i].NameLen == NameLen) &
+				(strcmp(@Operator[i].Name, @Name) == 0)
+			then
 				return i;
 			end:if
 		end:if
 		inc i;
 	end:while
 
-	return OPERATOR_INVALID;	
+	return OPERATOR_INVALID;
 end
 
 /*****************************************************************************/
@@ -132,7 +140,7 @@ word NextOperatorPrio(word Prio)
 	SortOperators();
 
 	word i = 0;
-	while i < nOPERATOR do
+	while i < nOperator do
 		if Operator[i].Prio > Prio then
 			return Operator[i].Prio;
 		end:if

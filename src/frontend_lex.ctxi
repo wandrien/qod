@@ -19,12 +19,15 @@ define nCOMMENT_AFFIX 4
 struct Comment
 	char Prefix[nCOMMENT_AFFIX];
 	char Suffix[nCOMMENT_AFFIX];
+	word PrefixLen;
+	word SuffixLen;
 end
 
 Comment Comments[nCOMMENT];
 word nComment;
 
 char@ HereCommentPrefix;
+word HereCommentPrefixLen = 0;
 
 /*****************************************************************************/
 
@@ -32,7 +35,6 @@ char@ HereCommentPrefix;
 	Пропуск пробельных символов.
 */
 void SkipWhitespaces()
-
 	while iswhitespace(Read()) != 0 do
 		Next();
 	end
@@ -52,11 +54,11 @@ char ScanChar()
 	end
 
 	Ch = Read();
-	select
-		case Ch == 'n': Ch = '~n';
-		case Ch == 'r': Ch = '~r';
-		case Ch == 't': Ch = '~t';
-		case Ch == '0': Ch = '~0';
+	switch Ch of
+		case 'n': Ch = '~n';
+		case 'r': Ch = '~r';
+		case 't': Ch = '~t';
+		case '0': Ch = '~0';
 	end
 	Next();
 
@@ -75,8 +77,12 @@ void ScanString(word D)
 	word i = 0;
 	do
 
-		while Read() != '"' do
-			if Read() == '~r' | Read() == '~n' then
+		do
+			char Ch = Read();
+			when Ch == '"':
+				exit;
+
+			if Ch == '~r' | Ch == '~n' then
 				Stop(@eQUOTEXP);
 			end
 
@@ -86,7 +92,7 @@ void ScanString(word D)
 
 			Buff[i] = ScanChar();
 			inc  i;
-		end:while
+		end:do
 
 		Next();
 		SkipWhitespaces();
@@ -113,29 +119,34 @@ end
 
 /*****************************************************************************/
 
-char@ ScanAlphaNum(char@ Buff)
+void ScanAlphaNum(char@ Buff; word @Len)
 	word P = 0;
-	while isalpha(Read()) != 0 | isdigit(Read()) != 0 do
-		Buff[P]=Read();
+	do
+		char Ch = Read();
+		when isalpha(Ch) == 0 & isdigit(Ch) == 0:
+			exit;
+
+		Buff[P] = Ch;
 		inc  P;
 		if   P >= nBUFF then
 			Stop(@eLONGNAME);
 		end
 
 		Next();
-	end:while
+	end:do
+	Len = P;
 	Buff[P] = #0;
-	return @Buff;
 end
 
 /*****************************************************************************/
 
-char @Scan1(char @Buff)
+void Scan1(char @Buff; word @Len)
 
 	SkipWhitespaces();
 
-	if strlen(@ScanAlphaNum(@Buff)) != 0 then
-		return @Buff;
+	ScanAlphaNum(@Buff, @Len);
+	if Len != 0 then
+		return;
 	end
 
 	word P = 0;
@@ -148,13 +159,15 @@ char @Scan1(char @Buff)
 	while i < nDigraph do
 		if Buff[0] == Digraphs[i].Name[0] & Read() == Digraphs[i].Name[1] then
 			Next();
-			return @strcpy(@Buff, @Digraphs[i].Name);
+			strcpy(@Buff, @Digraphs[i].Name);
+			Len = 2;
+			return;
 		end:if
 		inc i;
 	end:while
 
 	Buff[P] = #0;
-	return  @Buff;
+	Len = P;
 end
 
 /*****************************************************************************/
@@ -162,23 +175,37 @@ end
 char@ Scan(char@ Buff)
 
 	do
-		Scan1(@Buff);
+		word LexLen = 0;
+		Scan1(@Buff, @LexLen);
 
 		/* Обработка комментариев. */
 
 		char@ Suffix = NULL; /* Признак конца комментария. */
+		word SuffixLen;
 
-		if @HereCommentPrefix != NULL & strcmp(@Buff, @HereCommentPrefix) == 0 then
+		if
+			(HereCommentPrefixLen != 0) &
+			(HereCommentPrefixLen == LexLen) &
+			(strcmp(@Buff, @HereCommentPrefix) == 0)
+		then
 			SkipWhitespaces();
-			if strlen(@ScanAlphaNum(@Buff)) == 0 then
+
+			word PrefixLen = 0;
+			ScanAlphaNum(@Buff, @PrefixLen);
+			if PrefixLen == 0 then
 				Stop(@eEXPECTED);
 			end
 			@Suffix = @Buff;
+			SuffixLen = PrefixLen;
 		else
 			word i = 0;
 			while i < nComment do
-				if strcmp(@Buff, @Comments[i].Prefix) == 0 then
+				if
+					(LexLen == Comments[i].PrefixLen) &
+					(strcmp(@Buff, @Comments[i].Prefix) == 0)
+				then
 					@Suffix = @Comments[i].Suffix;
+					SuffixLen = Comments[i].SuffixLen;
 				end:if
 				inc i;
 			end:while
@@ -189,9 +216,8 @@ char@ Scan(char@ Buff)
 		end:if
 
 		/* Пропускаем символы, пока не встретится Suffix. */
-		word suffix_len = strlen(@Suffix);
 		word k = 0;
-		while k < suffix_len do
+		while k < SuffixLen do
 			select
 			case Suffix[k] == Read():
 				inc k;
@@ -222,6 +248,7 @@ end
 
 void RegisterHereCommentPrefix(char@ Prefix)
 	@HereCommentPrefix = @Char[SaveString0(@Prefix)];
+	HereCommentPrefixLen = strlen(@Prefix);
 end
 
 /*****************************************************************************/
@@ -234,6 +261,9 @@ void RegisterComment(char@ Prefix; char@ Suffix)
 	if strlen(@Suffix) >= nCOMMENT_AFFIX then
 		StopInternal(__FILE__, __LINE__);
 	end
+
+	Comments[nComment].PrefixLen = strlen(@Prefix);
+	Comments[nComment].SuffixLen = strlen(@Suffix);
 
 	strcpy(@Comments[nComment].Prefix, @Prefix);
 	strcpy(@Comments[nComment].Suffix, @Suffix);
