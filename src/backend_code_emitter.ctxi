@@ -87,20 +87,17 @@ word CodePrimary(word pPrimary)
 		pPrimary = Node[pPrimary].pLeft;
 	end
 
-	word pType;
-	word  Ofs;
-	word  RO;
-	word ID=ExtractDataInfo(pPrimary, @pType, @Ofs, @RO);
-	word IX=RegNone;
+	ValueRef Ref;
+	ValueRef_ExtractDataInfo(@Ref, pPrimary);
 
-	word P1=Node[pPrimary].pLeft;
+	word P1 = Node[pPrimary].pLeft;
 	do
 		Buff[0] = #0;
 		select
 		case P1>=nNODE:
 			select
 			case IncID == iINC | IncID == iDEC:
-				if IX > RegA then
+				if Ref.IX > RegA then
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:if
 
@@ -110,44 +107,44 @@ word CodePrimary(word pPrimary)
 					strcpy(@Buff,"dec     ");
 				end:if
 
-				word Size=SizeOfType(pType);
+				word Size = T_SizeOf(Ref.pType);
 				select
-				case Size==1 | Size==4:
+				case IsNativeOperandSize(Size):
 					null;
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				end:select
 
-				Emit(@CodeDataIX_offset(@Buff, Size, ID, IX, Ofs));
+				Emit(@ValueRef_Code(@Buff, @Ref));
 
 				return st_void;
 
-			case ID == iREG:
-				return pType;
+			case Ref.ID == iREG:
+				return Ref.pType;
 
 			default:
-				word Size = SizeOfType(pType);
+				word Size = T_SizeOf(Ref.pType);
 
 				select
 				case IsNativeOperandSize(Size):
 					strcpy(@Buff,"mov     ");
-					CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
+					ValueRef_Code(@Buff, @Ref);
 
 					select
 					case fEAX!=RegA:
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
 
-					case IX==RegA:
+					case Ref.IX==RegA:
 						EmitLine(NULL, "pop     EBX", "restored in CodePrimary (STORE)");
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
 
-					case IX==RegB:
+					case Ref.IX==RegB:
 						EmitLine(NULL, "pop     EAX", "restored in CodePrimary (STORE)");
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
 					end:select
 				default:
 					strcpy(@Buff,"lea     EDI,  ");
-					CodeDataIX_offset(@Buff, 0, ID, IX, Ofs);
+					ValueRef_Code_ForLEA(@Buff, @Ref);
 					Emit(@Buff);
 
 					if fEAX!=RegA then
@@ -170,66 +167,66 @@ word CodePrimary(word pPrimary)
 
 		case Node[P1].ID==iLOAD:
 
-			if ID==iREG then
-				when IX != fEAX:
+			if Ref.ID==iREG then
+				when Ref.IX != fEAX:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
-				return pType;
+				return Ref.pType;
 			end:if
 
-			word Size = SizeOfType(pType);
+			word Size = T_SizeOf(Ref.pType);
 
 			select
 			case IsNativeOperandSize(Size):
 				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, Size), ",  ");
-				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
+				ValueRef_Code(@Buff, @Ref);
 			default:
 				strcpy3(@Buff, "lea     ", @CodeReg(NULL, fEAX, 4), ",  ");
-				CodeDataIX_offset(@Buff, 0, ID, IX, Ofs);
+				ValueRef_Code_ForLEA(@Buff, @Ref);
 			end:select
 
 			Emit(@Buff);
 
-			return pType;
+			return Ref.pType;
 
 		case Node[P1].ID==iLPTR:
 			char @TX = @CodeReg(NULL, fEAX, 4);
 
-			if IX != RegNone then
-				if fEAX != IX then
+			if Ref.IX != RegNone then
+				if fEAX != Ref.IX then
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:if
 
-				switch ID of
+				switch Ref.ID of
 				case iDATA:
-					Emit(@strcpy4(@Buff,"add     ",@TX,",  @@DATA+",@str(Ofs)));
+					Emit(@strcpy4(@Buff,"add     ",@TX,",  @@DATA+",@str(Ref.Offset)));
 				case iPARM:
-					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"+",@str(Ofs),"]"));
+					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"+",@str(Ref.Offset),"]"));
 				case iLOCAL:
-					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"-",@str(Ofs),"]"));
+					Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"-",@str(Ref.Offset),"]"));
 				case iSTRING:
 					char @s = "@@ROLITERALS+";
-					when RO == 0:
+					when Ref.RO == 0:
 						@s = "@@RWLITERALS+";
-					Emit(@strcpy5(@Buff,"add     ",@TX,",  ", @s,@str(Ofs)));
+					Emit(@strcpy5(@Buff,"add     ",@TX,",  ", @s,@str(Ref.Offset)));
 				case iREF:
-					when Ofs != 0:
-						Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ofs)));
+					when Ref.Offset != 0:
+						Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ref.Offset)));
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:switch
 			else
-				switch ID of
+				switch Ref.ID of
 				case iDATA:
-					Emit(@strcpy4(@Buff,"mov     ",@TX,",  @@DATA+",@str(Ofs)));
+					Emit(@strcpy4(@Buff,"mov     ",@TX,",  @@DATA+",@str(Ref.Offset)));
 				case iPARM:
-					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP+",@str(Ofs),"]"));
+					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP+",@str(Ref.Offset),"]"));
 				case iLOCAL:
-					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP-",@str(Ofs),"]"));
+					Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP-",@str(Ref.Offset),"]"));
 				case iSTRING:
 					char @s = "@@ROLITERALS+";
-					when RO == 0:
+					when Ref.RO == 0:
 						@s = "@@RWLITERALS+";
-					Emit(@strcpy5(@Buff,"mov     ",@TX,",  ",@s,@str(Ofs)));
+					Emit(@strcpy5(@Buff,"mov     ",@TX,",  ",@s,@str(Ref.Offset)));
 				case iREF:
 					null;
 				default:
@@ -237,7 +234,7 @@ word CodePrimary(word pPrimary)
 				end:switch
 			end:if
 
-			return T_PtrTo(pType);
+			return T_PtrTo(Ref.pType);
 
 		case Node[P1].ID==iCALL:
 			if fEAX!=RegA then
@@ -258,9 +255,9 @@ word CodePrimary(word pPrimary)
 					);
 			end:if
 
-			ID  = iREG;
-			IX  = RegA;
-			Ofs = 0;
+			Ref.ID = iREG;
+			Ref.IX = RegA;
+			Ref.Offset = 0;
 
 		case Node[P1].ID==iCALL2:
 			if fEAX!=RegA then
@@ -278,35 +275,36 @@ word CodePrimary(word pPrimary)
 
 			Emit("call    EAX");
 
-			pType=Dict[Node[P1].Value].pType;
+			Ref.pType=Dict[Node[P1].Value].pType;
 
-			ID  = iREG;
-			IX  = RegA;
-			Ofs = 0;
+			Ref.ID = iREG;
+			Ref.IX = RegA;
+			Ref.Offset = 0;
 
 		case Node[P1].ID==iINDEX:
-			word Size = SizeOfType(pType);
+			Ref.pType = T_ArrayDeref(Ref.pType);
+			word Size = T_SizeOf(Ref.pType);
 
 			if NodeIsLiteralWord(Node[P1].pLeft) then
 				word IndexingOffset = Size * Node[Node[P1].pLeft].Value;
-				if ID != iLOCAL then
-					Ofs = Ofs + IndexingOffset;
+				if Ref.ID != iLOCAL then
+					Ref.Offset = Ref.Offset + IndexingOffset;
 				else
-					Ofs = Ofs - IndexingOffset;
+					Ref.Offset = Ref.Offset - IndexingOffset;
 				end
 			else
 				Code(Node[P1].pLeft,NULL,NULL,NULL);
-				IX=fEAX;
-				Emit_IMUL_Reg_Const(IX, 4, Size);
+				Ref.IX = fEAX;
+				Emit_IMUL_Reg_Const(Ref.IX, 4, Size);
 			end:if
 
 		case Node[P1].ID==iADDR:
-			if !T_IsPtr(pType) then
+			if !T_IsPtr(Ref.pType) then
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 			end:if
 
-			pType = T_DerefPtr(pType);
-			word Size = SizeOfType(pType);
+			Ref.pType = T_DerefPtr(Ref.pType);
+			word Size = T_SizeOf(Ref.pType);
 
 			word pLeft = Node[P1].pLeft;
 
@@ -316,16 +314,16 @@ word CodePrimary(word pPrimary)
 
 			if pLeft < nNODE then
 				select
-				case IX == RegB:
+				case Ref.IX == RegB:
 					if fEAX != RegA then
 						EmitLine(NULL, "push    EAX", "saved in CodePrimary (iADDR)");
 					end:if
 
 					Emit("xchg    EAX,  EBX");
-					IX   = RegA;
-					fEAX = RegB;
+					Ref.IX = RegA;
+					fEAX   = RegB;
 
-				case IX == RegA:
+				case Ref.IX == RegA:
 					fEAX = RegB;
 				end:select
 
@@ -333,9 +331,9 @@ word CodePrimary(word pPrimary)
 
 				Emit_IMUL_Reg_Const(fEAX, 4, Size);
 				if fEAX == RegA then
-					if IX != RegNone then
+					if Ref.IX != RegNone then
 						Emit("pop     EBX");
-						IX = RegB;
+						Ref.IX = RegB;
 					end:if
 				end:if
 			end:if
@@ -348,35 +346,35 @@ word CodePrimary(word pPrimary)
 				strcpy3(@Buff,"mov     ",@TX,",  dword ");
 			end:if
 
-			if IX!=RegNone then
-				char @RX = @CodeReg(NULL, IX, 4);
+			if Ref.IX != RegNone then
+				char @RX = @CodeReg(NULL, Ref.IX, 4);
 
-				switch ID of
+				switch Ref.ID of
 				case iDATA:
-					Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ofs),"]"));
+					Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ref.Offset),"]"));
 				case iPARM:
-					Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ofs),"]"));
+					Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ref.Offset),"]"));
 				case iLOCAL:
-					Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ofs),"]"));
+					Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ref.Offset),"]"));
 				case iREF:
-					Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ofs),"]"));
+					Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ref.Offset),"]"));
 				case iREG:
-					if fEAX != IX then
+					if fEAX != Ref.IX then
 						strcpy3(@Buff,"lea     ",@TX,",  dword ");
-						strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ofs),"]");
+						strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ref.Offset),"]");
 						Emit(@Buff);
 					end:if
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:switch
 			else
-				switch ID of
+				switch Ref.ID of
 				case iDATA:
-					Emit(@strcat3(@Buff,"[@@DATA+",@str(Ofs),"]"));
+					Emit(@strcat3(@Buff,"[@@DATA+",@str(Ref.Offset),"]"));
 				case iPARM:
-					Emit(@strcat3(@Buff,"[EBP+",@str(Ofs),"]"));
+					Emit(@strcat3(@Buff,"[EBP+",@str(Ref.Offset),"]"));
 				case iLOCAL:
-					Emit(@strcat3(@Buff,"[EBP-",@str(Ofs),"]"));
+					Emit(@strcat3(@Buff,"[EBP-",@str(Ref.Offset),"]"));
 				case iREG:
 					null;
 				default:
@@ -384,24 +382,22 @@ word CodePrimary(word pPrimary)
 				end:switch
 			end:if
 
-			if fEAX==RegA then
-				IX=RegA;
+			if fEAX == RegA then
+				Ref.IX = RegA;
 			else
 				word fEAX_tmp = fEAX;
-				if IX!=RegNone then
-					fEAX=RegA;
+				if Ref.IX != RegNone then
+					fEAX = RegA;
 				end:if
 
-				IX=fEAX_tmp;
+				Ref.IX = fEAX_tmp;
 			end:if
 
-			ID  = iREF;
-			Ofs = 0;
+			Ref.ID = iREF;
+			Ref.Offset = 0;
 
 		case Node[P1].ID==iFIELD:
-			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
-			when T_IsArray(pType):
-				pType = T_ArrayDeref(pType);
+			ValueRef_Apply_FIELD(@Ref, P1);
 
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
@@ -463,7 +459,7 @@ end
 	* Может ли ветка кода быть закодирована с использованием только одного регистра.
 
 	Для веток Primary алгоритм ответа на эти вопросы содержит по большей части
-	идентичный код и отличается только в детялях.
+	идентичный код и отличается только в деталях.
 	Эта вспомогательная функция проводит анализ веток Primary для одного из указанных
 	вариантов анализа в зависимости от значения параметра Query.
 */
@@ -498,28 +494,24 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 		return false;
 	end:switch
 
-	word pType;
-	word  Ofs;
-	word  RO;
-	word ID=ExtractDataInfo(pPrimary, @pType, @Ofs, @RO);
-	word IX=RegNone;
+	ValueRef Ref;
+	ValueRef_ExtractDataInfo(@Ref, pPrimary);
 
 	word P1=Node[pPrimary].pLeft;
 	do
-
 		select
 		case P1>=nNODE:
 			return false;
 
 		case Node[P1].ID==iLOAD:
-			word Size = SizeOfType(pType);
+			word Size = SizeOfType(Ref.pType);
 
 			select
 			case IsNativeOperandSize(Size):
 				Buff[0] = #0;
-				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
+				ValueRef_Code(@Buff, @Ref);
 				when @pTypeFinal != NULL:
-					pTypeFinal = pType;
+					pTypeFinal = Ref.pType;
 				return true;
 
 			default:
@@ -534,25 +526,26 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 			end:if
 
 		case Node[P1].ID==iINDEX:
-			word Size = SizeOfType(pType);
+			Ref.pType = T_ArrayDeref(Ref.pType);
+			word Size = SizeOfType(Ref.pType);
 
 			if NodeIsLiteralWord(Node[P1].pLeft) then
 				word IndexingOffset = Size * Node[Node[P1].pLeft].Value;
-				if ID != iLOCAL then
-					Ofs = Ofs + IndexingOffset;
+				if Ref.ID != iLOCAL then
+					Ref.Offset = Ref.Offset + IndexingOffset;
 				else
-					Ofs = Ofs - IndexingOffset;
+					Ref.Offset = Ref.Offset - IndexingOffset;
 				end
 			else
 				if Query != Query_SingleRegOperand then
 					return false;
 				end:if
 
-				when IX != RegNone:
+				when Ref.IX != RegNone:
 					return false;
 				when !CodeRequiresSingleRegister_(@Buff, Node[P1].pLeft, @pTypeFinal):
 					return false;
-				IX = RegA;
+				Ref.IX = RegA;
 			end:if
 
 		case Node[P1].ID==iADDR:
@@ -560,8 +553,8 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 				return false;
 			end:if
 
-			pType = T_DerefPtr(pType);
-			word Size = SizeOfType(pType);
+			Ref.pType = T_DerefPtr(Ref.pType);
+			word Size = SizeOfType(Ref.pType);
 
 			word pLeft = Node[P1].pLeft;
 
@@ -570,18 +563,16 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 			end:if
 
 			if pLeft < nNODE then
-				when IX != RegNone:
+				when Ref.IX != RegNone:
 					return false;
 				when !CodeRequiresSingleRegister_(@Buff, pLeft, @pTypeFinal):
 					return false;
 			end:if
-			Ofs = 0;
-			IX = RegA;
+			Ref.Offset = 0;
+			Ref.IX = RegA;
 
 		case Node[P1].ID==iFIELD:
-			CodeData_FIELD(@P1, @pType, @ID, @Ofs);
-			when T_IsArray(pType):
-				pType = T_ArrayDeref(pType);
+			ValueRef_Apply_FIELD(@Ref, P1);
 
 		default:
 			return false;

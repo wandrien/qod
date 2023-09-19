@@ -71,11 +71,6 @@ word ExtractDataInfo(word P, @pType, @Offset, @RO)
 			StopInternal(__FILE__, __LINE__);
       end
 
-	if pType < nDICT then
-		when T_IsArray(pType):
-			pType = T_ArrayDeref(pType);
-	end:if
-
 	return ID;
 end
 
@@ -100,52 +95,3 @@ bool NodeCanBeEncodedAsImm(word P)
 end
 
 /*****************************************************************************/
-
-/*
-
-ID             Value Location                  LValue    Indirect
-iSTRING, RO=0: [@@RWLITERALS + XI + Offset]    Yes       Yes
-iSTRING, RO=1: [@@ROLITERALS + XI + Offset]    No        Yes
-iDATA:         [@@DATA       + XI + Offset]    Yes       Yes
-iPARM:         [EBP          + XI + Offset]    Yes       Yes
-iLOCAL:        [EBP          + XI - Offset]    Yes       Yes
-iREF:          [               XI + Offset]    Yes       Yes
-iREG                           XI + Offset     No        No
-iCONST                              Offset     No        No
-*/
-
-struct ValueRef
-	word ID;
-	word RO;
-	word pType;
-	word Size;
-	word Offset;
-	word XI;
-end
-
-bool ValueRef_IsLValue(ValueRef@ vref)
-	switch vref.ID of
-	case iSTRING:
-		when vref.RO == 0:
-			return true;
-		return false;
-	case iDATA, iPARM, iLOCAL, iREF:
-		return true;
-	case iREG, iCONST:
-		return false;
-	default:
-		StopInternal(__FILE__, __LINE__);
-	end:switch
-end
-
-bool ValueRef_IsIndirect(ValueRef@ vref)
-	switch vref.ID of
-	case iSTRING, iDATA, iPARM, iLOCAL, iREF:
-		return true;
-	case iREG, iCONST:
-		return false;
-	default:
-		StopInternal(__FILE__, __LINE__);
-	end:switch
-end
-

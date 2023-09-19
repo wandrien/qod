@@ -550,6 +550,7 @@ word Primary(word Prty; char @Buff)
 			Node[P3].Value= T_ArrayGetLen(pType);
 			Node[P3].pLeft= Expr(PRIO_ZERO, @Scan(@Buff));
 			pType = T_ArrayDeref(pType);
+			Node[P3].pType = pType;
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
@@ -558,7 +559,7 @@ word Primary(word Prty; char @Buff)
 			ImplicitCast(st_word, @Node[P3].pLeft);
 
 			P2 = P3;
-			@P2=@Node[P3].pRight;
+			@P2 = @Node[P3].pRight;
 
 			Scan(@Buff);
 		end:if
@@ -579,10 +580,11 @@ word Primary(word Prty; char @Buff)
 			ImplicitCast(st_word, @Node[P3].pLeft);
 
 			P2 = P3;
-			@P2=@Node[P3].pRight;
+			@P2 = @Node[P3].pRight;
 
 			pType = T_DerefPtr(pType);
-			Call=   0;
+			Node[P3].pType = pType;
+			Call = 0;
 
 			Scan(@Buff);
 		end:while

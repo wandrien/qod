@@ -214,18 +214,109 @@ end
 
 /*****************************************************************************/
 
-void CodeData_FIELD(word @P1, @pType, @ID, @Ofs)
+/*
 
-	word F = Node[P1].Value;
+ID             Value Location                  LValue    Indirect
+iSTRING, RO=0: [@@RWLITERALS + IX + Offset]    Yes       Yes
+iSTRING, RO=1: [@@ROLITERALS + IX + Offset]    No        Yes
+iDATA:         [@@DATA       + IX + Offset]    Yes       Yes
+iPARM:         [EBP          + IX + Offset]    Yes       Yes
+iLOCAL:        [EBP          + IX - Offset]    Yes       Yes
+iREF:          [               IX + Offset]    Yes       Yes
+iREG                           IX + Offset     No        No
+iCONST                              Offset     No        No
+*/
+
+struct ValueRef
+	word ID;
+	word RO;
+	word pType;
+	word Offset;
+	word IX;
+end
+
+bool ValueRef_IsLValue(ValueRef@ vref)
+	switch vref.ID of
+	case iSTRING:
+		when vref.RO == 0:
+			return true;
+		return false;
+	case iDATA, iPARM, iLOCAL, iREF:
+		return true;
+	case iREG, iCONST:
+		return false;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:switch
+end
+
+bool ValueRef_IsIndirect(ValueRef@ vref)
+	switch vref.ID of
+	case iSTRING, iDATA, iPARM, iLOCAL, iREF:
+		return true;
+	case iREG, iCONST:
+		return false;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:switch
+end
+
+/*****************************************************************************/
+
+/*
+	Распаковывает из узлов iDATA, iPARM, iLOCAL и iSTRING информацию об объекте.
+	Offset - смещение относительно специфичного источника.
+	Напр., для iDATA - смещение от начала секции данных.
+*/
+void ValueRef_ExtractDataInfo(ValueRef @Ref; word P)
+	word Value = Node[P].Value;
+
+	Ref.IX = 0;
+	Ref.ID = Node[P].ID;
+
+	switch Ref.ID of
+	case iDATA:
+		Ref.pType  = Dict[Value].pType;
+		Ref.Offset = Dict[Value].Label;
+		Ref.RO     = 0;
+
+	case iPARM:
+		when Dict[Value].Class != cARG:
+			StopInternal(__FILE__, __LINE__);
+		Ref.pType  = Dict[Value].pType;
+		Ref.Offset = Dict[Value].Label;
+		Ref.RO     = 0;
+
+	case iLOCAL:
+		Ref.pType  = Local[Value].pType;
+		Ref.Offset = Local[Value].Value;
+		Ref.RO     = 0;
+
+	case iSTRING:
+		Ref.pType  = Dict[Value].pType;
+		Ref.Offset = Dict[Value].Label;
+		Ref.RO     = Dict[Value].RO;
+
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end
+
+end
+
+/*****************************************************************************/
+
+void ValueRef_Apply_FIELD(ValueRef @Ref; word P)
+
+	word F = Node[P].Value;
 
 	when Dict[F].Class != cFIELD:
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	pType = Dict[F].pType;
-	if ID != iLOCAL then
-		Ofs = Ofs + Dict[F].Label;
+	Ref.pType = Dict[F].pType;
+	if Ref.ID != iLOCAL then
+		Ref.Offset = Ref.Offset + Dict[F].Label;
 	else
-		Ofs = Ofs - Dict[F].Label;
+		Ref.Offset = Ref.Offset - Dict[F].Label;
 	end
 end
 
@@ -240,7 +331,7 @@ iREF:     [         IX + offset]
 
 */
 
-char @CodeDataIX_offset(char @Buff; word Size; word ID; word IX; word offset)
+char @ValueRef_Code_(char @Buff; word Size; word ID; word IX; word offset)
 
 	char@ SizeMarker = "";
 	char@ Prefix = "";
@@ -289,6 +380,15 @@ char @CodeDataIX_offset(char @Buff; word Size; word ID; word IX; word offset)
 
 	return @Buff;
 end
+
+char @ValueRef_Code(char @Buff; ValueRef @Ref)
+	return @ValueRef_Code_(@Buff, T_SizeOf(Ref.pType), Ref.ID, Ref.IX, Ref.Offset);
+end
+
+char @ValueRef_Code_ForLEA(char @Buff; ValueRef @Ref)
+	return @ValueRef_Code_(@Buff, 0, Ref.ID, Ref.IX, Ref.Offset);
+end
+
 
 /*****************************************************************************/
 
