@@ -159,6 +159,7 @@ word CodePrimary(word pPrimary)
 					Emit("cld");
 					Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
 					Emit("rep     movsb");
+					PHO_RegLoadConst(RegC, 0);
 				end:select
 
 				return st_void;
@@ -813,6 +814,24 @@ end
 
 /*****************************************************************************/
 
+word ChooseEmptyReg()
+	when !PHO_RegContainsAConst(RegA):
+		return RegA;
+
+	when !PHO_RegContainsAConst(RegD):
+		return RegD;
+
+	when !PHO_RegContainsAConst(RegC):
+		return RegC;
+
+	when !PHO_RegContainsAConst(RegB):
+		return RegB;
+
+	return RegA;
+end
+
+/*****************************************************************************/
+
 word TryDropCastBeforeCmp(word P)
 
 	word ID = Node[P].ID;
@@ -1029,11 +1048,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word fSwap=0;
 	word pType;
 
-	/* Try reusing a constant in the target register.
-	   This optimisation may potentially affect CPU register aliasing,
-	   so enabling it only when optimizing for size. */
-	if (EmitShortCode != 0) &
-	   (rightOperand == operandImm) &
+	if (rightOperand == operandImm) &
 	   (T_SizeOf(Node[pRight].pType) == 4) &
 	   (PHO_RegContainsConst(fEAX, Node[pRight].Value))
 	then
@@ -1068,11 +1083,22 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when pLeft2 < nNODE:
 			pLeft = pLeft2;
 
+		if iLT <= ID & ID <= iGT then
+			when CodeRequiresSingleRegister(pLeft):
+				fEAX = ChooseEmptyReg();
+		end:if
+
 		pType=Code(pLeft,NULL,NULL,NULL);
 
 	case operandMemRef:
-		when leftOperand == operandNotReady:
+		if leftOperand == operandNotReady then
+			if iLT <= ID & ID <= iGT then
+				when CodeRequiresSingleRegister(pLeft):
+					fEAX = ChooseEmptyReg();
+			end:if
+
 			pType=Code(pLeft,NULL,NULL,NULL);
+		end:if
 
 	case operandReg:
 		null;
@@ -1088,8 +1114,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		rightOperand = operandReg;
 		rightReg = RegB;
-		when CodeRequiresSingleRegister(pRight) & DoesOperationAllowRightRegD(ID):
-			rightReg = RegD;
+		if CodeRequiresSingleRegister(pRight) then
+			if DoesOperationAllowRightRegD(ID) & !PHO_RegContainsAConst(RegD) then
+				rightReg = RegD;
+			else
+				rightReg = RegC;
+			end:if
+		end:if
 
 		if fEAX != RegA then
 			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
@@ -1236,7 +1267,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				end:if
 			end:switch
 			if !SkipCmp then
-				Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Value));
+				BuffRightOperand[0] = #0;
+				if PHO_EncodeRegContainingConst(@BuffRightOperand, Value, Size) != 0 then
+					Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
+				else
+					Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Value));
+				end:if
 			end:if
 			when (Size == 4) & (ID == iNE):
 				PHO_RegLoadConst(fEAX, PHO_Load_Value);
@@ -1482,7 +1518,7 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 
 		case iDATA, iPARM, iLOCAL:
 			when CodeRequiresSingleRegister(P):
-				fEAX = RegD;
+				fEAX = ChooseEmptyReg();
 			Code(P, NULL, NULL, NULL);
 			Emit(@CodeCmdRegReg(@Buff, "test", fEAX, 4, fEAX, 4));
 			select
