@@ -31,10 +31,12 @@ define @eARR_SIZE_LO_BOUND "В качестве размера массива ожидается значение больше
 define @eARR_SIZE_HI_BOUND "Размер массива превосходит максимально допустимое значение для целевой платформы"
 define @eTYPE            "Несоответствие типов"                        // Incompatible types
 define @eTYPE_COMP_OP    "Несоответствие типов в операции сравнения"   // Incompatible types in comparison operator
-define @eTYPE_LOGIC_OP   "Несоответствие типов в логической сравнения" // Incompatible types in logical operator
+define @eTYPE_LOGIC_OP   "Несоответствие типов в логической операции"  // Incompatible types in logical operator
 define @eTYPE_ARITH_OP   "Несоответствие типов в арифметической операции" // Incompatible types in arithmetic operator
+define @eTYPE_SIGNED_BIT_OP "Несоответствие типов: побитовые операции неприменимы к числам со знаком" // Incompatible types: bitwise operators do not apply to signed numbers
 define @eTYPE_COND_EXPR  "Несоответствие типов в условном выражении"   // Incompatible types in conditional expression
 define @eTYPE_FUNC_FWD   "Тип функции не соответствует типу предварительного объявления" // Function type mismatches its forward declaration
+define @eTYPE_IMPLICIT_CAST "Неявное приведение типов невозможно"      // No implicit cast possible
 
 define @eSWTYPE          "Требуется результат целого/символьного типа" // word/integer/char result required
 define @eCONSTEXP        "Требуется целая/символьная константа"        // word/integer/char constant required
@@ -84,6 +86,13 @@ define @wUNREACHABLE     "Недостижимый оператор"                       // Unreac
 
 define @msgWARNING       "предупреждение: "                            // warning
 define @msgERROR         "ошибка: "                                    // error
+
+define @msgIMPLICITCAST_1 "неявное преобразование "
+define @msgIMPLICITCAST_2 " в "
+
+define @msgNOWAYTOCAST_1 "нет способа преобразования "
+define @msgNOWAYTOCAST_2 " в "
+
 
 define @msgUSAGE
 "~r~n"

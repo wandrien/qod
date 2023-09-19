@@ -129,7 +129,7 @@ word CodePrimary(word pPrimary)
 				word Size = SizeOfType(pType);
 
 				select
-				case Size==1 | Size==4:
+				case IsNativeOperandSize(Size):
 					strcpy(@Buff,"mov     ");
 					CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 
@@ -178,7 +178,7 @@ word CodePrimary(word pPrimary)
 			word Size = SizeOfType(pType);
 
 			select
-			case Size==1 | Size==4:
+			case IsNativeOperandSize(Size):
 				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, Size), ",  ");
 				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 			default:
@@ -429,34 +429,20 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 		null;
 	case T_Equal(pTypeTo, pTypeFrom):
 		null;
-	case pTypeTo==st_char & pTypeFrom==st_byte:
-		null;
-	case pTypeTo==st_char & pTypeFrom==st_word:
-		null;
-	case pTypeTo==st_char & pTypeFrom==st_int:
-		null;
-	case pTypeTo==st_byte & pTypeFrom==st_char:
-		null;
-	case pTypeTo==st_byte & pTypeFrom==st_int:
-		null;
-	case pTypeTo==st_byte & pTypeFrom==st_word:
-		null;
-	case pTypeTo==st_word & pTypeFrom==st_char:
-		Complexity = 1;
-		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
-	case pTypeTo==st_word & pTypeFrom==st_byte:
-		Complexity = 1;
-		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
-	case pTypeTo==st_word & pTypeFrom==st_int:
-		null;
-	case pTypeTo==st_int & pTypeFrom==st_char:
-		Complexity = 1;
-		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
-	case pTypeTo==st_int & pTypeFrom==st_byte:
-		Complexity = 1;
-		Emit(@CodeCmdRegConst(@Buff, "and", Reg, 4, 0xFF));
-	case pTypeTo==st_int & pTypeFrom==st_word:
-		null;
+	case (T_IsInteger(pTypeTo) | pTypeTo == st_char)&
+	     (T_IsInteger(pTypeFrom) | pTypeFrom == st_char):
+		word SizeTo = T_SizeOf(pTypeTo);
+		word SizeFrom = T_SizeOf(pTypeFrom);
+		if SizeTo > SizeFrom then
+			Complexity = 1;
+			word Mask;
+			switch SizeFrom of
+			case 1: Mask = 0xFF;
+			case 2: Mask = 0xFFFF;
+			default: StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+			end:switch
+			Emit(@CodeCmdRegConst(@Buff, "and", Reg, SizeTo, Mask));
+		end:if
 	case T_IsPtr(pTypeTo) & T_IsPtr(pTypeFrom):
 		null;
 	case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom):
@@ -528,7 +514,7 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 			word Size = SizeOfType(pType);
 
 			select
-			case Size==1 | Size==4:
+			case IsNativeOperandSize(Size):
 				Buff[0] = #0;
 				CodeDataIX_offset(@Buff, Size, ID, IX, Ofs);
 				when @pTypeFinal != NULL:
@@ -668,6 +654,9 @@ bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
 		end:if
 		return false;
 	case iMUL:
+		if T_SizeOf(Node[P].pType) != 4 then
+			return false;
+		end:if
 		word pLeft = Node[P].pLeft;
 		word pRight = Node[P].pRight;
 		if
@@ -1293,15 +1282,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	case ID==iDIV | ID==iMOD:
 		select
-		case pType==st_byte:
-			Emit("xor     AH,   AH");
-			strcpy(@Buff,"div     ");
-		case pType==st_word:
-			Emit("xor     EDX,  EDX");
-			strcpy(@Buff,"div     ");
-		case pType==st_int:
-			Emit("cdq");
-			strcpy(@Buff,"idiv    ");
+		case Size==1:
+			if T_IsSigned(pType) then
+				Emit("movsx   AX,   AL");
+				strcpy(@Buff,"idiv    ");
+			else
+				Emit("xor     AH,   AH");
+				strcpy(@Buff,"div     ");
+			end:if
+		case Size==2:
+			if T_IsSigned(pType) then
+				Emit("cwq");
+				strcpy(@Buff,"idiv    ");
+			else
+				Emit("xor     DX,   DX");
+				strcpy(@Buff,"div     ");
+			end:if
+		case Size==4:
+			if T_IsSigned(pType) then
+				Emit("cdq");
+				strcpy(@Buff,"idiv    ");
+			else
+				Emit("xor     EDX,  EDX");
+				strcpy(@Buff,"div     ");
+			end:if
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
@@ -1321,9 +1325,11 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		if ID==iMOD then
 			select
-			case pType==st_byte:
+			case Size==1:
 				Emit("xchg    AL,   AH");
-			case pType==st_word:
+			case Size==2:
+				Emit("xchg    AX,   DX");
+			case Size==4:
 				Emit("xchg    EAX,  EDX");
 			default:
 				StopInternalCodegen(__FILE__, __LINE__);
@@ -1337,7 +1343,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	end:select
 
 	select
-	case Size==1 | Size==4:
+	case IsNativeOperandSize(Size):
 		select
 		case rightOperand == operandImm:
 			/*
@@ -1478,14 +1484,14 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 		case iNEG:
 			if NodeIsLiteralWord(Node[P].pLeft) then
 				Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
-				return st_int;
+				return Node[P].pType;
 			end
 
 			Code(Node[P].pLeft, NULL, NULL, NULL);
 
-			Emit(@CodeCmdReg(@Buff, "neg", fEAX, 4));
+			Emit(@CodeCmdReg(@Buff, "neg", fEAX, T_SizeOf(Node[P].pType)));
 
-			return st_int;
+			return Node[P].pType;
 
 		case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
 			return CodeBinOp(@Buff, P, NULL, NULL, NULL);

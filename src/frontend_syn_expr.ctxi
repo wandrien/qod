@@ -495,7 +495,14 @@ word Primary(word Prty; char @Buff)
 					AddCast(I, @P1);
 				else
 					AddFakeCast(I, @P1);
-					Error(@eTYPE);
+					char Buff2[nBUFF];
+					strcpy4(@Buff2,
+						@msgNOWAYTOCAST_1,
+						@T_GetName(Node[P1].pType),
+						@msgNOWAYTOCAST_2,
+						@T_GetName(I)
+					);
+					ErrorWithSubject(@eTYPE, @Buff2);
 				end:if
 
 				pType = Node[P1].pType;
@@ -748,14 +755,16 @@ void ApplyUACCastsForIntegers(word P_OP)
 	when T_IsInteger(pType1) == false | T_IsInteger(pType2) == false:
 		return;
 
-	word do_integer_promotion = 0; /* TODO: disabled now; should be configurable from the sources */
-	word do_implicit_cast_uint_to_int = 1; /* HACK: temporary rules to make self-compilation possible */
+	bool do_integer_promotion = false; /* TODO: disabled now; should be configurable from the sources */
+	bool do_implicit_cast_uint_to_int = true; /* HACK: temporary rules to make self-compilation possible */
 
-	if do_integer_promotion != 0 then
+	if do_integer_promotion then
 		pType1 = IntegerPromotion(pType1);
 		pType2 = IntegerPromotion(pType2);
 		AddImplicitCast(pType1, @Node[P_OP].pLeft);
 		AddImplicitCast(pType2, @Node[P_OP].pRight);
+		P1 = Node[P_OP].pLeft;
+		P2 = Node[P_OP].pRight;
 	end:if
 
 	/* Эквивалентные типы. */
@@ -763,6 +772,17 @@ void ApplyUACCastsForIntegers(word P_OP)
 		ApplyCommonType(P_OP, pType1);
 		return;
 	end:if
+
+	bool P1_IsLiteralAutocastPossible = IsLiteralAutoCastPossible(pType2, P1);
+	bool P2_IsLiteralAutocastPossible = IsLiteralAutoCastPossible(pType1, P2);
+	if P1_IsLiteralAutocastPossible & !P2_IsLiteralAutocastPossible then
+		AddImplicitCast(pType2, @Node[P_OP].pLeft);
+		return;
+	end
+	if P2_IsLiteralAutocastPossible & !P1_IsLiteralAutocastPossible then
+		AddImplicitCast(pType1, @Node[P_OP].pRight);
+		return;
+	end
 
 	/* signed + signed OR unsigned + unsigned */
 	if T_IsSigned(pType1) == T_IsSigned(pType2) then
@@ -803,7 +823,7 @@ void ApplyUACCastsForIntegers(word P_OP)
 		return;
 	end:if
 
-	if rankSigned == rankUnsigned & do_implicit_cast_uint_to_int == 1 then
+	if rankSigned == rankUnsigned & do_implicit_cast_uint_to_int == true then
 		word pTargetType = pTypeSigned;
 		ApplyCommonType(P_OP, pTypeSigned);
 		return;
@@ -857,27 +877,37 @@ void Cast2(word P_OP)
 	select
 	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
 		select
-		case pTypeOp == st_byte | pTypeOp == st_word:
+		case T_IsUnsigned(pTypeOp):
 			Node[P_OP].ID=iBIT_OR;
-		case pTypeOp != st_bool:
+		case pTypeOp == st_bool:
+			null;
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
 			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
 	case ID == iXOR: /* Аналогично предыдущему. */
 		select
-		case pTypeOp == st_byte | pTypeOp == st_word:
+		case T_IsUnsigned(pTypeOp):
 			Node[P_OP].ID=iBIT_XOR;
 		case pTypeOp == st_bool:
 			Stop(@eXORNOTIMPL);
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
 		default:
 			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
 	case ID == iAND: /* Аналогично предыдущему. */
 		select
-		case pTypeOp == st_byte | pTypeOp == st_word:
+		case T_IsUnsigned(pTypeOp):
 			Node[P_OP].ID=iBIT_AND;
-		case pTypeOp != st_bool:
+		case pTypeOp == st_bool:
+			null;
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
 			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
@@ -1094,11 +1124,21 @@ end
 word ExprNEG(word P_; word O; char @Buff)
 
 	word pLeft = Expr(Operator[O].Prio, @Scan(@Buff));
+	word pTargetType;
+	select
+	case T_IsSigned(Node[pLeft].pType):
+		pTargetType = Node[pLeft].pType;
+	case T_IsUnsigned(Node[pLeft].pType):
+		pTargetType = T_GetIntegerPair(Node[pLeft].pType);
+	default:
+		ImplicitCast(st_int, @pLeft);
+		pTargetType = Node[pLeft].pType;
+	end:select
 
 	word P1 = Peek();
 	Node[P1].ID    = iNEG;
 	Node[P1].pLeft = pLeft;
-	Node[P1].pType = st_int;
+	Node[P1].pType = pTargetType;
 
 	select
 	case (Node[pLeft].ID == iLITERAL) & (Node[pLeft].pType == st_word | Node[pLeft].pType == st_int):
@@ -1106,8 +1146,6 @@ word ExprNEG(word P_; word O; char @Buff)
 			Stop(@eCALCERR);
 		end
 		NodeAssignInt(P1, -Node[pLeft].Value);
-	default:
-		ImplicitCast(st_int, @Node[P1].pLeft);
 	end:select
 
 	return P1;

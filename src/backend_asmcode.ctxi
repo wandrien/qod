@@ -13,6 +13,23 @@ define RegD    4
 
 /*****************************************************************************/
 
+word NativeRegSize = 4;
+
+bool IsNativeOperandSize(word Size)
+	word S = NativeRegSize;
+	when Size > NativeRegSize:
+		return false;
+	do
+		when S == 0:
+			return false;
+		when S == Size:
+			return true;
+		S = S / 2;
+	end:do
+end
+
+/*****************************************************************************/
+
 /*
 	Помещает в Buff обозначение регистра Reg в режиме RegMode
 	RegMode:

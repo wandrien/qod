@@ -49,6 +49,14 @@ void Error(char @Msg)
 	ErrorAt(NULL, @Msg);
 end
 
+void ErrorWithSubject(char @Msg; char @Subject)
+	char Buff[nBUFF];
+	strcpy(@Buff, @Msg);
+	strcat(@Buff, ": ");
+	strcat(@Buff, @Subject);
+	Error(@Buff);
+end
+
 void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;

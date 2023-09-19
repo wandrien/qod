@@ -40,6 +40,36 @@ end
 
 /*****************************************************************************/
 
+bool IsLiteralAutoCastPossible(word pTypeTo; word P)
+	when Node[P].ID != iLITERAL:
+		return false;
+
+	word pTypeFrom = Node[P].pType;
+	when !T_IsInteger(pTypeFrom):
+		return false;
+
+	word Min = 0;
+	word Max = 0;
+
+	if T_GetMinMaxOf(pTypeTo, @Min, @Max) == MinMaxIsUnsigned then
+		word Value = Node[P].Value;
+		when T_IsSigned(pTypeFrom) & (int(Value) < 0):
+			return false;
+		when Value <= Max:
+			return true;
+		return false;
+	else
+		int Value = Node[P].Value;
+		when T_IsUnsigned(pTypeFrom) & (word(Value) > Max):
+			return false;
+		when (Min <= Value) & (Value <= Max):
+			return true;
+		return false;
+	end:if
+end
+
+/*****************************************************************************/
+
 bool IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 
 	select
@@ -78,10 +108,22 @@ end
 /*****************************************************************************/
 
 void ImplicitCast(word pTypeTo; word @P)
-	when !IsImplicitCastPossible(Node[P].pType, pTypeTo):
-		Stop(@eTYPE);
-
-	AddImplicitCast(pTypeTo, @P);
+	if
+		!IsImplicitCastPossible(Node[P].pType, pTypeTo) &
+		!IsLiteralAutoCastPossible(pTypeTo, P)
+	then
+		char Buff[nBUFF];
+		strcpy4(@Buff,
+			@msgIMPLICITCAST_1,
+			@T_GetName(Node[P].pType),
+			@msgIMPLICITCAST_2,
+			@T_GetName(pTypeTo)
+		);
+		ErrorWithSubject(@eTYPE, @Buff);
+		AddFakeCast(pTypeTo, @P);
+	else
+		AddImplicitCast(pTypeTo, @P);
+	end:if
 end
 
 /*****************************************************************************/
