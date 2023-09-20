@@ -13,7 +13,7 @@ char    Char[_nCHAR];
 /* Сохраняет последовательность байт в массиве Char и возвращает индекс начала. */
 word SaveString(char @Str; word Size)
 	uintptr u_Str = uintptr(@Str);
-	if u_Str >= uintptr(@Char[0]) & u_Str + Size < uintptr(@Char[_nChar]) then
+	if (u_Str >= uintptr(@Char[0])) & (u_Str + Size < uintptr(@Char[_nChar])) then
 		return u_Str - uintptr(@Char[0]);
 	end:if
 

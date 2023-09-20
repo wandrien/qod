@@ -416,8 +416,7 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 
 	select
 	case pTypeFrom == nDICT:
-		null; /* FIXME: should trigger internal error */
-		//StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	case pTypeFrom == st_void:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	case pTypeTo == st_void:
@@ -471,7 +470,7 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 
 	switch Node[pPrimary].ID of
 	case iCAST:
-		word pTypeFrom = nDICT;
+		word pTypeFrom = Node[Node[pPrimary].pLeft].pType;
 		word pTypeTo = Node[pPrimary].pType;
 		bool RecursiveResult = QueryOperandStatus(@Buff, Node[pPrimary].pLeft, @pTypeFrom, Query);
 		when !RecursiveResult:
@@ -669,7 +668,7 @@ bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal)
 	case iBIT_NOT, iNEG:
 		return CodeRequiresSingleRegister_(@tmpBuff, Node[P].pLeft, @pTypeFinal);
 	case iCAST:
-		word pTypeFrom = nDICT;
+		word pTypeFrom = Node[Node[P].pLeft].pType;
 		word pTypeTo = Node[P].pType;
 		bool RecursiveResult = CodeRequiresSingleRegister_(@tmpBuff, Node[P].pLeft, @pTypeFrom);
 		when !RecursiveResult:
@@ -1158,11 +1157,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:do
 	end:if
 
-
-	word Size=4;
-	if pType<nDICT then
-		Size=SizeOfType(pType);
-	end
+	word Size=SizeOfType(pType);
 
 	/* Check if we can replace add/sub with inc/dec */
 	if rightOperand == operandImm & (ID == iADD | ID == iSUB) then
@@ -1171,26 +1166,34 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when ID == iSUB:
 			Value = -Value;
 
-		select
-		case Value == 1 & PreferIncDec(fEAX, Size) > 0:
-			Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
-			MeaningfulFlags = (Flag_Zero | Flag_Sign);
-			return pType;
-		case Value == -1 & PreferIncDec(fEAX, Size) > 0:
-			Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
-			MeaningfulFlags = (Flag_Zero | Flag_Sign);
-			return pType;
-		case Value == 2 & PreferIncDec(fEAX, Size) > 1:
-			Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
-			Emit(@Buff);
-			MeaningfulFlags = (Flag_Zero | Flag_Sign);
-			return pType;
-		case Value == -2 & PreferIncDec(fEAX, Size) > 1:
-			Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
-			Emit(@Buff);
-			MeaningfulFlags = (Flag_Zero | Flag_Sign);
-			return pType;
-		end:select
+		switch Value of
+		case 1:
+			if PreferIncDec(fEAX, Size) > 0 then
+				Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+				MeaningfulFlags = (Flag_Zero | Flag_Sign);
+				return pType;
+			end:if
+		case word(-1):
+			if PreferIncDec(fEAX, Size) > 0 then
+				Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+				MeaningfulFlags = (Flag_Zero | Flag_Sign);
+				return pType;
+			end:if
+		case 2:
+			if PreferIncDec(fEAX, Size) > 1 then
+				Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+				Emit(@Buff);
+				MeaningfulFlags = (Flag_Zero | Flag_Sign);
+				return pType;
+			end:if
+		case word(-2):
+			if PreferIncDec(fEAX, Size) > 1 then
+				Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+				Emit(@Buff);
+				MeaningfulFlags = (Flag_Zero | Flag_Sign);
+				return pType;
+			end:if
+		end:switch
 	end:if
 
 	word _MeaningfulFlags = 0;
@@ -1337,16 +1340,16 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 
-		select
-		case rightOperand == operandImm:
+		switch rightOperand of
+		case operandImm:
 			StopInternalCodegen(__FILE__, __LINE__);
-		case rightOperand == operandMemRef:
+		case operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
-		case rightOperand == operandReg:
+		case operandReg:
 			CodeReg(@Buff, rightReg, Size);
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
-		end:select
+		end:switch
 
 		Emit(@Buff);
 		return pType;
@@ -1535,7 +1538,7 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 		case iFUNC:
 			CodeLoadLabel(@Buff, fEAX, Node[P].Value);
 			Emit(@Buff);
-			return nDICT;
+			return Node[P].pType;
 
 		case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
 			return CodePrimary(P);

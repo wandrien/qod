@@ -68,10 +68,7 @@ end
 /*****************************************************************************/
 
 /* Вывести в листинг символ. */
-void EmitChar(char C)
-	when EmitDisabled > 0:
-		return;
-
+void EmitChar_(char C)
 	if nText > nTEXT then
 		StopInternal(__FILE__, __LINE__);
 	end
@@ -84,6 +81,13 @@ void EmitChar(char C)
 	inc  nText;
 end
 
+void EmitChar(char C)
+	when EmitDisabled > 0:
+		return;
+
+	EmitChar_(C);
+end
+
 /*****************************************************************************/
 
 /* Вывести в листинг строку. */
@@ -93,7 +97,7 @@ void EmitString(char @S)
 
 	word I = 0;
 	while S[I] != #0 do
-		EmitChar(S[I]);
+		EmitChar_(S[I]);
 		inc I;
 	end
 end
@@ -109,9 +113,9 @@ void EmitStringIgnoreNewLines(char @S)
 		char C = S[I];
 		switch C of
 		case '~r', '~n':
-			EmitChar(' ');
+			EmitChar_(' ');
 		default:
-			EmitChar(C);
+			EmitChar_(C);
 		end:switch
 		inc I;
 	end
@@ -159,17 +163,17 @@ void EmitLine(LABEL @Label; char @Inst; char @Comment)
 	word C = 0;
 
 	if @Label != NULL then
-		EmitChar('@'); inc C;
+		EmitChar_('@'); inc C;
 
 		char @P = @str(LabelGetValue(@Label));
 		word I = 0;
 		while P[I] != #0 do
-			EmitChar(P[I]); inc C;
+			EmitChar_(P[I]); inc C;
 			inc I;
 		end:while
 
-		EmitChar(':'); inc C;
-		EmitChar(' '); inc C;
+		EmitChar_(':'); inc C;
+		EmitChar_(' '); inc C;
 	end:if
 
 	if Inst[0] != #0 then
@@ -182,19 +186,19 @@ void EmitLine(LABEL @Label; char @Inst; char @Comment)
 				C = 0;
 			default:
 				while C < 8 do
-					EmitChar(' '); inc C;
+					EmitChar_(' '); inc C;
 				end:while
 				inc C;
 			end:switch
 
-			EmitChar(Ch);
+			EmitChar_(Ch);
 			inc I;
 		end
 	end:if
 
 	if Comment[0] != #0 then
 		while C < 40 do
-			EmitChar(' '); inc C;
+			EmitChar_(' '); inc C;
 		end:while
 		EmitString(" ; ");
 		EmitStringIgnoreNewLines(@Comment);

@@ -102,24 +102,18 @@ word Code_PUSH(word P; char @Buff)
 	end
 
 	/* Оптимизация прямой загрузки указателя на строку. */
-	if Node[P1].ID==iSTRING then
-
-		if Node[P1].pLeft != nNODE
-		 & Node[Node[P1].pLeft].ID==iLPTR then
-
-			word pType;
-			word  Ofs;
-			word  RO;
-			word ID=ExtractDataInfo(P1, @pType, @Ofs, @RO);
-
-			char @s = "dword @@ROLITERALS+";
-			when RO == 0:
-				@s = "dword @@RWLITERALS+";
-
-			Emit(@strcpy3(@Buff, "push    ",@s,@str(Ofs)));
-
-			return nDICT;
-		end:if
+	if
+		(Node[P1].ID == iSTRING) &
+		(Node[P1].pLeft != nNODE) &
+		(Node[Node[P1].pLeft].ID) == iLPTR
+	then
+		ValueRef Ref;
+		ValueRef_ExtractDataInfo(@Ref, P1);
+		char @s = "dword @@ROLITERALS+";
+		when Ref.RO == 0:
+			@s = "dword @@RWLITERALS+";
+		Emit(@strcpy3(@Buff, "push    ",@s,@str(Ref.Offset)));
+		return nDICT;
 	end:if
 
 	/* Оптимизация прямой загрузки числа. */

@@ -34,48 +34,6 @@ end
 
 /*****************************************************************************/
 
-/*
-	Распаковывает из узлов iDATA, iPARM, iLOCAL и iSTRING информацию об объекте.
-	Offset - смещение относительно специфичного источника.
-	Напр., для iDATA - смещение от начала секции данных.
-*/
-word ExtractDataInfo(word P, @pType, @Offset, @RO)
-
-	word ID = Node[P].ID;
-	word Value = Node[P].Value;
-
-	select
-		case ID == iDATA:
-			pType  = Dict[Value].pType;
-			Offset = Dict[Value].Label;
-			RO     = 0;
-
-		case ID == iPARM:
-			when Dict[Value].Class != cARG:
-				StopInternal(__FILE__, __LINE__);
-			pType  = Dict[Value].pType;
-			Offset = Dict[Value].Label;
-			RO     = 0;
-
-		case ID == iLOCAL:
-			pType  = Local[Value].pType;
-			Offset = Local[Value].Value;
-			RO     = 0;
-
-		case ID == iSTRING:
-			pType  = Dict[Value].pType;
-			Offset = Dict[Value].Label;
-			RO     = Dict[Value].RO;
-
-		default:
-			StopInternal(__FILE__, __LINE__);
-      end
-
-	return ID;
-end
-
-/*****************************************************************************/
-
 bool NodeHasConst(word P; word Data)
 	if (Node[P].ID == iNULL & Data == 0)
 	 | (Node[P].ID == iLITERAL & Node[P].Value == Data) then
