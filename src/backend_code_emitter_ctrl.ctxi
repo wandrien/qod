@@ -43,13 +43,13 @@ end
 word Code_OR(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 	LABEL @L = @LabelResolve(P, lBRANCH);
 	if @T == NULL then
-		Code(Node[P].pLeft , NULL, @M, @L);
+		CodeBooleanExpr(Node[P].pLeft , NULL, @M, @L);
 		EmitLabelIfUsed(@L);
-		Code(Node[P].pRight, @F, NULL, @M);
+		CodeBooleanExpr(Node[P].pRight, @F, NULL, @M);
 	else
-		Code(Node[P].pLeft , NULL, @T, @L);
+		CodeBooleanExpr(Node[P].pLeft , NULL, @T, @L);
 		EmitLabelIfUsed(@L);
-		Code(Node[P].pRight, NULL, @T, @M);
+		CodeBooleanExpr(Node[P].pRight, NULL, @T, @M);
 	end
 	return Node[P].pType;
 end
@@ -71,13 +71,13 @@ end
 word Code_AND(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 	LABEL @L = @LabelResolve(P, lBRANCH);
 	if @T == NULL then
-		Code(Node[P].pLeft , @F, NULL, @L);
+		CodeBooleanExpr(Node[P].pLeft , @F, NULL, @L);
 		EmitLabelIfUsed(@L);
-		Code(Node[P].pRight, @F, NULL, @M);
+		CodeBooleanExpr(Node[P].pRight, @F, NULL, @M);
 	else
-		Code(Node[P].pLeft , @M, NULL, @L);
+		CodeBooleanExpr(Node[P].pLeft , @M, NULL, @L);
 		EmitLabelIfUsed(@L);
-		Code(Node[P].pRight, NULL, @T, @M);
+		CodeBooleanExpr(Node[P].pRight, NULL, @T, @M);
 	end
 	return Node[P].pType;
 end
@@ -87,7 +87,7 @@ end
 word Code_PUSH(word P; char @Buff)
 
 	if Node[P].pRight<nNODE then
-		Code(Node[P].pRight,NULL,NULL,NULL);
+		Code(Node[P].pRight);
 	end
 
 	word P1 = Node[P].pLeft;
@@ -139,7 +139,7 @@ word Code_PUSH(word P; char @Buff)
 	/* Все остальные варианты... */
 
 	Reg_TARGET = RegA;
-	word pType = Code(Node[P].pLeft,NULL,NULL,NULL);
+	word pType = Code(Node[P].pLeft);
 
 	word Size = target_size_of_pointer;
 	if pType<nDICT then
@@ -169,7 +169,7 @@ word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
 		Reg_TARGET = RegA;
-		word pType=Code(Node[P].pLeft,NULL,NULL,NULL);
+		word pType=Code(Node[P].pLeft);
 		word  Size=4;
 		if pType<nDICT then
 			Size=SizeOfType(pType);
@@ -258,9 +258,9 @@ word Code_SELECT(word P; char @Buff)
 		if Node[COND].pLeft < nNODE then
 			@L_Jump = @CodeExtractJump(Node[BODY].pLeft);
 			if @L_Jump == NULL then
-				Code(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
+				CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
 			else
-				Code(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
+				CodeBooleanExpr(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
 			end:if
 			EmitLabelIfUsed(@LabelResolve(CASE, lCASEBODY));
 		else
@@ -360,7 +360,7 @@ word Code_SWITCH(word P; char @Buff)
 		StopInternalCodegen(__FILE__, __LINE__);
 
 	Reg_TARGET = RegA;
-	word pType = Code(Node[COND].pLeft,NULL,NULL,NULL);
+	word pType = Code(Node[COND].pLeft);
 	if pType == st_byte then
 		Emit("and     EAX,  0FFH");
 	end:if
@@ -497,7 +497,7 @@ word Code_WHILE(word P; char @Buff)
 	EmitLabel(@LabelResolve(P, lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
-		Code(Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY));
+		CodeBooleanExpr(Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY));
 		EmitLabelIfUsed(@LabelResolve(P, lLOOPBODY));
 	end
 
@@ -556,7 +556,7 @@ word Code_REPEAT(word P; char @Buff)
 	EmitLabelIfUsed(@LabelResolve(P, lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
-		Code(Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT));
+		CodeBooleanExpr(Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT));
 	end
 
 	EmitLabelIfUsed(@LabelResolve(P, lEXIT));

@@ -78,7 +78,8 @@ end
 
 /*****************************************************************************/
 
-word Code(word P; LABEL @F; LABEL @T; LABEL @M);
+word Code(word P);
+word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M);
 
 /*****************************************************************************/
 
@@ -101,7 +102,7 @@ end
 
 word Code_List(word P)
 	while P < nNODE do
-		word pType = Code(P,NULL,NULL,NULL);
+		word pType = Code(P);
 		when pType == st_noreturn:
 			return st_noreturn;
 		P = Node[P].pRight;
@@ -159,7 +160,7 @@ void Code_ADDR(char @Buff; word P1; ValueRef @Ref)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:select
 
-		Code(pLeft,NULL,NULL,NULL);
+		Code(pLeft);
 		Emit_IMUL_Reg_Const(Reg_TARGET, 4, Size);
 
 		if Reg_TARGET == Reg_ALT_TARGET then
@@ -409,7 +410,7 @@ word CodePrimary(word pPrimary)
 			Reg_ALT_TARGET = RegA;
 
 			if Node[P1].pLeft<nNODE then
-				Code(Node[P1].pLeft,NULL,NULL,NULL);
+				Code(Node[P1].pLeft);
 			end:if
 
 			if Dict[Node[P1].Value].Sub==sSYS then
@@ -435,10 +436,10 @@ word CodePrimary(word pPrimary)
 			word P2=Node[P1].pLeft;
 
 			if Node[P2].pRight<nNODE then
-				Code(Node[P2].pRight,NULL,NULL,NULL);
+				Code(Node[P2].pRight);
 			end:if
 
-			Code(Node[P2].pLeft,NULL,NULL,NULL);
+			Code(Node[P2].pLeft);
 
 			Emit("call    EAX");
 
@@ -460,7 +461,7 @@ word CodePrimary(word pPrimary)
 					Ref.Offset = Ref.Offset - IndexingOffset;
 				end
 			else
-				Code(Node[P1].pLeft,NULL,NULL,NULL);
+				Code(Node[P1].pLeft);
 				Ref.IX = Reg_TARGET;
 				Emit_IMUL_Reg_Const(Ref.IX, 4, Size);
 				when Reg_ALT_TARGET == RegNone:
@@ -934,7 +935,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when nMulTrick >= nMUL_TRICKS:
 		return nDICT;
 
-	word pType2=Code(pLeft,NULL,NULL,NULL);
+	word pType2=Code(pLeft);
 
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -1134,7 +1135,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				Reg_TARGET = ChooseEmptyReg();
 		end:if
 
-		pType=Code(pLeft,NULL,NULL,NULL);
+		pType=Code(pLeft);
 
 	case operandMemRef:
 		if leftOperand == operandNotReady then
@@ -1143,7 +1144,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					Reg_TARGET = ChooseEmptyReg();
 			end:if
 
-			pType=Code(pLeft,NULL,NULL,NULL);
+			pType=Code(pLeft);
 		end:if
 
 	case operandReg:
@@ -1172,9 +1173,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
 			Reg_TARGET = RegA;
 		end
-		pType = Code(pLeft,NULL,NULL,NULL);
+		pType = Code(pLeft);
 		Reg_TARGET  = rightReg;
-		Code(pRight,NULL,NULL,NULL);
+		Code(pRight);
 		when Reg_TARGET != rightReg & fSwap != 0:
 			StopInternalCodegen(__FILE__, __LINE__);
 
@@ -1505,9 +1506,8 @@ end
 /*****************************************************************************/
 
 /*
-	Основная функция кодогенератора.
+	Генерация кода для условных переходов из булевых выражений.
 
-	Параметры F, T и M используются в условных переходах:
 	F указывает метку перехода, если условие ложно.
 	T указывает метку перехода, если условие истинно.
 	Ноль в F/T указывает, что если условие ложно/истинно, нужно выполнять код дальше (не переходить по метке).
@@ -1515,180 +1515,181 @@ end
 	M содержит метку кода, идущего за данным, чтобы можно делать переходы "изнутри" блока кода в то же место, куда попадет управление при F/T = 0.
 */
 
-word Code(word P; LABEL @F; LABEL @T; LABEL @M)
-
+word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 	char Buff[nBUFF];
-
 	Buff[0] = #0;
 
 	EmitWithSourceNote(NULL, P);
 
-	when @M != NULL: /* M может быть установлено только когда F или T установлены */
-		when @T == NULL & @F == NULL:
-			StopInternalCodegen(__FILE__, __LINE__);
-
 	when @T != NULL & @F != NULL: /* T и F не могут быть установлены в не 0 одновременно. */
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	if @T != NULL | @F != NULL then
-		when !NodeTypeIs(P, st_bool): /* T и F имеют смысл только для булевых вычислений. */
-			StopInternalCodegen(__FILE__, __LINE__);
+	when Node[P].pType != st_bool:
+		StopInternalCodegen(__FILE__, __LINE__);
 
-		/* These operations don't return the result in any register,
-		instead a conditional jump is the result. So we reset Reg_TARGET here. */
+	/* These operations don't return the result in any register,
+	instead a conditional jump is the result. So we reset Reg_TARGET here. */
+	Reg_TARGET = RegA;
+	Reg_ALT_TARGET = RegNone;
+
+	switch Node[P].ID of
+	case iLITERAL:
+		select
+		case Node[P].Value == 0 & @F != NULL:
+			EmitJumpToLabel(@F);
+		case Node[P].Value != 0 & @T != NULL:
+			EmitJumpToLabel(@T);
+		end:select
+		return st_bool;
+
+	case iLT, iLE, iEQ, iNE, iGE, iGT:
+		return CodeBinOp(@Buff, P, @F, @T, @M);
+
+	case iNOT:
+		return CodeBooleanExpr(Node[P].pLeft, @T, @F, @M);
+	case iOR:
+		Code_OR(P, @F, @T, @M, @Buff);
+		return st_bool;
+	case iXOR:
+		Code_XOR(P, @F, @T, @M, @Buff);
+		//return st_bool;
+	case iEQV:
+		Code_EQV(P, @F, @T, @M, @Buff);
+		//return st_bool;
+	case iAND:
+		Code_AND(P, @F, @T, @M, @Buff);
+		return st_bool;
+
+	case iDATA, iPARM, iLOCAL:
+		when CodeRequiresSingleRegister(P):
+			Reg_TARGET = ChooseEmptyReg();
+		Code(P);
+		Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, 4, Reg_TARGET, 4));
+		select
+		case @F != NULL:
+			EmitBranchToLabel("z", @F);
+		case @T != NULL:
+			EmitBranchToLabel("nz", @T);
+		end:select
+		return st_bool;
+
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:switch
+end
+
+/*****************************************************************************/
+
+word Code(word P)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+
+	EmitWithSourceNote(NULL, P);
+
+	switch Node[P].ID of
+	case iNULL:
+		Emit_Load_Constant(Reg_TARGET, 4, 0);
+		return Node[P].pType;
+
+	case iLITERAL:
+		Emit_Load_Constant(Reg_TARGET, T_SizeOf(Node[P].pType), Node[P].Value);
+		return Node[P].pType;
+
+	case iFUNC:
+		CodeLoadLabel(@Buff, Reg_TARGET, Node[P].Value);
+		Emit(@Buff);
+		return Node[P].pType;
+
+	case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
+		return CodePrimary(P);
+
+	case iCAST:
+		word pTypeFrom = Code(Node[P].pLeft);
+		word pTypeTo = Node[P].pType;
+		word Complexity = 0;
+		return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, Reg_TARGET, @Complexity);
+
+	case iBIT_NOT:
+		word pType = Code(Node[P].pLeft);
+		word  Size = SizeOfType(pType);
+		Emit(@CodeCmdReg(@Buff, "not", Reg_TARGET, Size));
+
+		return pType;
+
+	case iNEG:
+		if NodeIsLiteralWord(Node[P].pLeft) then
+			Emit_Load_Constant(Reg_TARGET, 4, -Node[Node[P].pLeft].Value);
+			return Node[P].pType;
+		end
+
+		Code(Node[P].pLeft);
+
+		Emit(@CodeCmdReg(@Buff, "neg", Reg_TARGET, T_SizeOf(Node[P].pType)));
+
+		return Node[P].pType;
+
+	case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
+		return CodeBinOp(@Buff, P, NULL, NULL, NULL);
+
+	case iDEF_LOCAL:
+		if nLocal>=nLOCAL then
+			StopMemory();
+		end
+
+		word pType = Node[P].pType;
+		word Size  = SizeOfType(pType);
+
+		AllocatedFrameSize = AllocatedFrameSize + DefaultInStackAlign(Size);
+
+		word i = nLocal;
+		inc nLocal;
+		Local[i].pType=pType;
+		Local[i].Value=AllocatedFrameSize;
+		when EmitDebugComments_LOCAL_DEFS:
+			EmitLine(NULL, "", @strcpy4(@Buff, "iDEF_LOCAL: ",@Char[Node[P].Value]," ",@str(Local[i].Value)));
+
+		Code(Node[P].pLeft);
+
+	case iASSIGN:
+		P = Node[P].pLeft;
 		Reg_TARGET = RegA;
 		Reg_ALT_TARGET = RegNone;
 
-		switch Node[P].ID of
-		case iLITERAL:
-			select
-			case Node[P].Value == 0 & @F != NULL:
-				EmitJumpToLabel(@F);
-			case Node[P].Value != 0 & @T != NULL:
-				EmitJumpToLabel(@T);
-			end:select
-			return st_bool;
+		if Node[P].pRight < nNODE then
+			Code(Node[P].pRight);
+			Reg_ALT_TARGET = Reg_TARGET;
+			Reg_TARGET = RegB;
+		end
 
-		case iLT, iLE, iEQ, iNE, iGE, iGT:
-			return CodeBinOp(@Buff, P, @F, @T, @M);
+		word pType = Code(Node[P].pLeft);
+		Reg_TARGET = RegA;
+		Reg_ALT_TARGET = RegA;
+		return pType;
 
-		case iNOT:
-			return Code(Node[P].pLeft, @T, @F, @M);
-		case iOR:
-			Code_OR(P, @F, @T, @M, @Buff);
-			return st_bool;
-		case iXOR:
-			Code_XOR(P, @F, @T, @M, @Buff);
-			return st_bool;
-		case iEQV:
-			Code_EQV(P, @F, @T, @M, @Buff);
-			return st_bool;
-		case iAND:
-			Code_AND(P, @F, @T, @M, @Buff);
-			return st_bool;
+	case iINLINE:
+		Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));
 
-		case iDATA, iPARM, iLOCAL:
-			when CodeRequiresSingleRegister(P):
-				Reg_TARGET = ChooseEmptyReg();
-			Code(P, NULL, NULL, NULL);
-			Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, 4, Reg_TARGET, 4));
-			select
-			case @F != NULL:
-				EmitBranchToLabel("z", @F);
-			case @T != NULL:
-				EmitBranchToLabel("nz", @T);
-			end:select
-
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-		end:switch
-	else
-		switch Node[P].ID of
-		case iNULL:
-			Emit_Load_Constant(Reg_TARGET, 4, 0);
-			return Node[P].pType;
-
-		case iLITERAL:
-			Emit_Load_Constant(Reg_TARGET, T_SizeOf(Node[P].pType), Node[P].Value);
-			return Node[P].pType;
-
-		case iFUNC:
-			CodeLoadLabel(@Buff, Reg_TARGET, Node[P].Value);
-			Emit(@Buff);
-			return Node[P].pType;
-
-		case iDATA, iPARM, iLOCAL, iSTRING, iINC, iDEC:
-			return CodePrimary(P);
-
-		case iCAST:
-			word pTypeFrom = Code(Node[P].pLeft, NULL, NULL, NULL);
-			word pTypeTo = Node[P].pType;
-			word Complexity = 0;
-			return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, Reg_TARGET, @Complexity);
-
-		case iBIT_NOT:
-			word pType = Code(Node[P].pLeft, NULL, NULL, NULL);
-			word  Size = SizeOfType(pType);
-			Emit(@CodeCmdReg(@Buff, "not", Reg_TARGET, Size));
-
-			return pType;
-
-		case iNEG:
-			if NodeIsLiteralWord(Node[P].pLeft) then
-				Emit_Load_Constant(Reg_TARGET, 4, -Node[Node[P].pLeft].Value);
-				return Node[P].pType;
-			end
-
-			Code(Node[P].pLeft, NULL, NULL, NULL);
-
-			Emit(@CodeCmdReg(@Buff, "neg", Reg_TARGET, T_SizeOf(Node[P].pType)));
-
-			return Node[P].pType;
-
-		case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
-			return CodeBinOp(@Buff, P, NULL, NULL, NULL);
-
-		case iDEF_LOCAL:
-			if nLocal>=nLOCAL then
-				StopMemory();
-			end
-
-			word pType = Node[P].pType;
-			word Size  = SizeOfType(pType);
-
-			AllocatedFrameSize = AllocatedFrameSize + DefaultInStackAlign(Size);
-
-			word i = nLocal;
-			inc nLocal;
-			Local[i].pType=pType;
-			Local[i].Value=AllocatedFrameSize;
-			when EmitDebugComments_LOCAL_DEFS:
-				EmitLine(NULL, "", @strcpy4(@Buff, "iDEF_LOCAL: ",@Char[Node[P].Value]," ",@str(Local[i].Value)));
-
-			Code(Node[P].pLeft, NULL, NULL, NULL);
-
-		case iASSIGN:
-			P = Node[P].pLeft;
-			Reg_TARGET = RegA;
-			Reg_ALT_TARGET = RegNone;
-
-			if Node[P].pRight < nNODE then
-				Code(Node[P].pRight, NULL, NULL, NULL);
-				Reg_ALT_TARGET = Reg_TARGET;
-				Reg_TARGET = RegB;
-			end
-
-			word pType = Code(Node[P].pLeft, NULL, NULL, NULL);
-			Reg_TARGET = RegA;
-			Reg_ALT_TARGET = RegA;
-			return pType;
-
-		case iINLINE:
-			Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));
-
-		case iPUSH:
-			Code_PUSH(P, @Buff);
-		case iRETURN:
-			return Code_RETURN(P, @Buff);
-		case iSELECT:
-			return Code_SELECT(P, @Buff);
-		case iSWITCH:
-			return Code_SWITCH(P, @Buff);
-		case iWHILE:
-			return Code_WHILE(P, @Buff);
-		case iREPEAT:
-			return Code_REPEAT(P, @Buff);
-		case iCONTINUE:
-			return Code_CONTINUE(P, @Buff);
-		case iEXIT:
-			return Code_EXIT(P, @Buff);
-		case iEMPTY, iVIRTUAL_JUMP:
-			null;
-		default:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-		end:switch
-
-	end:if
+	case iPUSH:
+		Code_PUSH(P, @Buff);
+	case iRETURN:
+		return Code_RETURN(P, @Buff);
+	case iSELECT:
+		return Code_SELECT(P, @Buff);
+	case iSWITCH:
+		return Code_SWITCH(P, @Buff);
+	case iWHILE:
+		return Code_WHILE(P, @Buff);
+	case iREPEAT:
+		return Code_REPEAT(P, @Buff);
+	case iCONTINUE:
+		return Code_CONTINUE(P, @Buff);
+	case iEXIT:
+		return Code_EXIT(P, @Buff);
+	case iEMPTY, iVIRTUAL_JUMP:
+		null;
+	default:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+	end:switch
 
 	return nDICT;
 end
@@ -1741,7 +1742,7 @@ void EmitFunction(char @Buff; word I)
 				end:if
 				if StaticDataIsZeroed == 0
 				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == false then
-					Code(Dict[J].pNode, NULL, NULL, NULL);
+					Code(Dict[J].pNode);
 				end:if
 			end:if
 
@@ -1759,7 +1760,7 @@ void EmitFunction(char @Buff; word I)
 	word  P = Dict[I].pNode;
 	word  pType = st_void;
 	while P < nNODE do
-		pType = Code(P, NULL, NULL, NULL);
+		pType = Code(P);
 		when pType == st_noreturn:
 			exit;
 		P  = Node[P].pRight;
@@ -1768,7 +1769,7 @@ void EmitFunction(char @Buff; word I)
 	if pType != st_noreturn then
 		word pRet = Peek();
 		Node[pRet].ID = iRETURN;
-		Code(pRet, NULL, NULL, NULL);
+		Code(pRet);
 	end
 
 	Code_EndBlock(@CB);
