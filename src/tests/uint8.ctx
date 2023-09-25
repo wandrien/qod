@@ -1,0 +1,35 @@
+// TEST: should_print '100 200 44 144 235 123 250 205 53 210 210 254 '
+// COMPILER_FLAGS: --optimize size
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+begin
+	uint8 v0 = 0;
+	uint8 v1 = 1;
+	uint8 v2 = 2;
+	uint8 v3 = 3;
+	uint8 v5 = 5;
+	uint8 v100 = 100;
+	uint8 v200 = 200;
+	uint8 v255 = 255;
+
+	put_word(v100 * 1); puts(" ");
+	put_word(v100 * 2); puts(" ");
+	put_word(v100 * 3); puts(" ");
+	put_word(v100 * 4); puts(" ");
+	put_word(v255 - v5 * 4); puts(" ");
+	put_word(v100 * 2 - v1 * 27 - v100 / 2); puts(" ");
+
+	uint8 v250 = v2 * v100 + v5 * (v100 - 90);
+	put_word(v250); puts(" ");
+
+	uint8 v200_2 = 2 * v100 + v100 * 3 - (v5 + v3 + v2) * 10 - v200;
+	put_word(v200_2 + v5); puts(" ");
+
+	put_word(100 - (v5 * 10) + (v1 & 100) + (v5 - 2)); puts(" ");
+
+	put_word((uint8(-v100) + 5 + v5 + v200) + (v200 + v5 - v3 - v2) - v100); puts(" ");
+	put_word((uint8(-v100) + 5 + v5 + v200) + (v200 / v2)); puts(" ");
+	put_word((uint8(-v100) + 5 + v5 + v200) + (v200 * v2)); puts(" ");
+end

@@ -171,10 +171,10 @@ word PHO_DecodeReg(char @S; word @Reg; word @Mask)
 	case str_has_prefix(@S, "BL" ): r = 2; m = 0x0000_00FF;
 	case str_has_prefix(@S, "CL" ): r = 3; m = 0x0000_00FF;
 	case str_has_prefix(@S, "DL" ): r = 4; m = 0x0000_00FF;
-	case str_has_prefix(@S, "AH" ): StopInternal(__FILE__, __LINE__);
-	case str_has_prefix(@S, "BH" ): StopInternal(__FILE__, __LINE__);
-	case str_has_prefix(@S, "CH" ): StopInternal(__FILE__, __LINE__);
-	case str_has_prefix(@S, "DH" ): StopInternal(__FILE__, __LINE__);
+	case str_has_prefix(@S, "AH" ): r = 1; m = 0x0000_FF00;
+	case str_has_prefix(@S, "BH" ): r = 2; m = 0x0000_FF00;
+	case str_has_prefix(@S, "CH" ): r = 3; m = 0x0000_FF00;
+	case str_has_prefix(@S, "DH" ): r = 4; m = 0x0000_FF00;
 	default:
 		return 0;
 	end:select
@@ -346,6 +346,12 @@ char@ PHO_Optimize_(char @Inst)
 		return @Inst;
 	end:if
 
+	if Mask1 == 0xFF00 then
+		/* FIXME: Add support of this case. */
+		PHO_InvalidateReg(Reg1);
+		return @Inst;
+	end:if
+
 	@s = @s[str_find_chars(@s, " ~t,")]; /* Пропуск регистра. */
 	@s = @s[str_skip_chars(@s, " ~t" )]; /* Пропуск пробелов. */
 
@@ -373,6 +379,12 @@ char@ PHO_Optimize_(char @Inst)
 	word Reg2;
 	word Mask2;
 	if PHO_DecodeReg(@s, @Reg2, @Mask2) != 0 then
+
+		if Mask2 == 0xFF00 then
+			/* FIXME: Add support of this case. */
+			PHO_InvalidateReg(Reg2);
+			return @Inst;
+		end:if
 
 		/* Обработка случая обнуления через XOR. */
 		if Reg1 == Reg2 & Mask1 == Mask2 & Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "xor") then
