@@ -148,7 +148,7 @@ void Code_ADDR(char @Buff; word P1; ValueRef @Ref)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		case Reg_ALT_TARGET != RegNone:
 			if Reg_TARGET != Reg_ALT_TARGET then
-				EmitLine(NULL, @CodePushReg(@Buff, Reg_ALT_TARGET, 4),
+				EmitWithExprComment(@CodePushReg(@Buff, Reg_ALT_TARGET, 4),
 					"saved in Code_ADDR");
 			end:if
 			Emit(@CodeXchgRegReg(@Buff, Ref.IX, Reg_ALT_TARGET, 4));
@@ -166,7 +166,7 @@ void Code_ADDR(char @Buff; word P1; ValueRef @Ref)
 		if Reg_TARGET == Reg_ALT_TARGET then
 			if Ref.IX != RegNone then
 				Ref.IX = RegB;
-				EmitLine(NULL, @CodePopReg(@Buff, Ref.IX, 4), "restored in Code_ADDR");
+				EmitWithExprComment(@CodePopReg(@Buff, Ref.IX, 4), "restored in Code_ADDR");
 			end:if
 		end:if
 	end:if
@@ -301,11 +301,11 @@ word CodePrimary(word pPrimary)
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, Reg_ALT_TARGET, Size)));
 
 					case Ref.IX==RegA:
-						EmitLine(NULL, "pop     EBX", "restored in CodePrimary (STORE)");
+						EmitWithExprComment("pop     EBX", "restored in CodePrimary (STORE)");
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
 
 					case Ref.IX==RegB:
-						EmitLine(NULL, "pop     EAX", "restored in CodePrimary (STORE)");
+						EmitWithExprComment("pop     EAX", "restored in CodePrimary (STORE)");
 						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
 					end:select
 				default:
@@ -316,7 +316,7 @@ word CodePrimary(word pPrimary)
 					if Reg_TARGET != Reg_ALT_TARGET then
 						Emit(@strcpy2(@Buff,"mov     ESI,  ",@CodeReg(NULL, Reg_ALT_TARGET, 4)));
 					else
-						EmitLine(NULL, "pop     ESI", "restored in CodePrimary (STORE)");
+						EmitWithExprComment("pop     ESI", "restored in CodePrimary (STORE)");
 					end:if
 
 					Emit("cld");
@@ -404,7 +404,7 @@ word CodePrimary(word pPrimary)
 
 		case Node[P1].ID==iCALL:
 			if Reg_ALT_TARGET == RegA & Reg_TARGET != RegA then
-				EmitLine(NULL, "push    EAX", "saved in CodePrimary (iCALL)");
+				EmitWithExprComment("push    EAX", "saved in CodePrimary (iCALL)");
 			end:if
 			Reg_TARGET = RegA;
 			Reg_ALT_TARGET = RegA;
@@ -428,7 +428,7 @@ word CodePrimary(word pPrimary)
 
 		case Node[P1].ID==iCALL2:
 			if Reg_ALT_TARGET == RegA & Reg_TARGET != RegA then
-				EmitLine(NULL, "push    EAX", "saved in CodePrimary (iCALL2)");
+				EmitWithExprComment("push    EAX", "saved in CodePrimary (iCALL2)");
 			end:if
 			Reg_TARGET = RegA;
 			Reg_ALT_TARGET = RegA;
@@ -974,7 +974,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
 		if Reg_TARGET!=RegA then
-			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
+			EmitWithExprComment("push    EAX", "saved in CodeBinOp");
 			Reg_TARGET=RegA;
 		end
 	end:switch
@@ -1105,7 +1105,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				rightOperand = operandMemRef;
 				leftOperand = operandReg;
 				pType = Node[pLeft].pType;
-				EmitLine(NULL, "", "Const reuse in CodeBinOp");
+				EmitWithExprComment("", "Const reuse in CodeBinOp");
 				exit;
 			end:if
 
@@ -1116,7 +1116,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				ID = swappedID;
 				leftOperand = operandReg;
 				pType = Node[pLeft].pType;
-				EmitLine(NULL, "", "Const reuse in CodeBinOp");
+				EmitWithExprComment("", "Const reuse in CodeBinOp");
 				exit;
 			end:if
 
@@ -1153,8 +1153,8 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	case operandNotReady:
 		char @reorderingReason = @CheckOperandReordering(pLeft, pRight);
 		if @reorderingReason != NULL then
-			EmitLine(NULL, "", "Reordering in CodeBinOp");
-			EmitLine(NULL, "", @reorderingReason);
+			EmitWithExprComment("", "Reordering in CodeBinOp");
+			EmitWithExprComment("", @reorderingReason);
 			word tmp = pLeft; pLeft = pRight; pRight = tmp;
 			inc fSwap;
 		end:if
@@ -1170,7 +1170,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:if
 
 		if Reg_TARGET != RegA then
-			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
+			EmitWithExprComment("push    EAX", "saved in CodeBinOp");
 			Reg_TARGET = RegA;
 		end
 		pType = Code(pLeft);
@@ -1180,7 +1180,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		if Reg_TARGET==RegA then
-			EmitLine(NULL, "pop     EBX", "restored in CodeBinOp");
+			EmitWithExprComment("pop     EBX", "restored in CodeBinOp");
 			inc fSwap;
 		end
 		Reg_TARGET = RegA;
@@ -1645,7 +1645,7 @@ word Code(word P)
 		inc nLocal;
 		Local[i].pType=pType;
 		Local[i].Value=AllocatedFrameSize;
-		when EmitDebugComments_LOCAL_DEFS:
+		when EmitDebugComments_LocalDefs:
 			EmitLine(NULL, "", @strcpy4(@Buff, "iDEF_LOCAL: ",@Char[Node[P].Value]," ",@str(Local[i].Value)));
 
 		Code(Node[P].pLeft);

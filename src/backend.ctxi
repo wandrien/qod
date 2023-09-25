@@ -8,7 +8,8 @@ void NodeMarkUsed(word P);
 
 bool EmitDebugComments_PHO = false;
 bool EmitDebugComments_Jumps = false;
-bool EmitDebugComments_LOCAL_DEFS = false;
+bool EmitDebugComments_Expr = false;
+bool EmitDebugComments_LocalDefs = false;
 
 define Flag_Zero 1
 define Flag_Sign 2

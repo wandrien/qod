@@ -270,3 +270,10 @@ end
 
 /*****************************************************************************/
 
+void EmitWithExprComment(char @Inst; char @Comment)
+	when !EmitDebugComments_Expr:
+		@Comment = NULL;
+	EmitLine(NULL, @Inst, @Comment);
+end
+
+/*****************************************************************************/
