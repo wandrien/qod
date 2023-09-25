@@ -188,6 +188,20 @@ end
 
 /*****************************************************************************/
 
+char @CodePushReg(char @Buff; word Reg; word RegMode)
+	return @CodeCmdReg(@Buff, "push", Reg, RegMode);
+end
+
+char @CodePopReg(char @Buff; word Reg; word RegMode)
+	return @CodeCmdReg(@Buff, "pop", Reg, RegMode);
+end
+
+char @CodeXchgRegReg(char @Buff; word Reg1; word Reg2; word RegMode)
+	return @CodeCmdRegReg(@Buff, "xchg", Reg1, RegMode, Reg2, RegMode);
+end
+
+/*****************************************************************************/
+
 /* Помещает в Buff код загрузки константы в регистр. */
 char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value)
 	select

@@ -138,7 +138,7 @@ word Code_PUSH(word P; char @Buff)
 
 	/* Все остальные варианты... */
 
-	fEAX=RegA;
+	Reg_TARGET = RegA;
 	word pType = Code(Node[P].pLeft,NULL,NULL,NULL);
 
 	word Size = target_size_of_pointer;
@@ -168,7 +168,7 @@ end
 word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
-		fEAX=RegA;
+		Reg_TARGET = RegA;
 		word pType=Code(Node[P].pLeft,NULL,NULL,NULL);
 		word  Size=4;
 		if pType<nDICT then
@@ -359,7 +359,7 @@ word Code_SWITCH(word P; char @Buff)
 	when Node[COND].ID != iCOND:
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	fEAX = RegA;
+	Reg_TARGET = RegA;
 	word pType = Code(Node[COND].pLeft,NULL,NULL,NULL);
 	if pType == st_byte then
 		Emit("and     EAX,  0FFH");

@@ -13,17 +13,68 @@ Active register.
 
 When entering a function for generating code for an operation:
 
- * If fEAX == RegA, the caller expects the result to be places in RegA.
+ * If Reg_TARGET == RegA, the caller expects the result to be places in RegA.
    The code may use both RegA and RegB and should return the result in RegA.
 
- * If fEAX == RegB, the caller expects the result to be placed in RegB.
+ * If Reg_TARGET == RegB, the caller expects the result to be placed in RegB.
    RegA is used by the caller to store a value.
    The code either returns the result in RegB and keeps the value of RegA untouched.
-   Or stores RegA on the stack, sets fEAX = RegA and return the result in RegA.
+   Or stores RegA on the stack, sets Reg_TARGET = RegA and return the result in RegA.
    In the latter case, the caller normally pops the value from the stack to RegB,
    and does the calculation with the swapped arguments.
 */
-word fEAX;
+
+word Reg_TARGET;
+word Reg_ALT_TARGET = RegA;
+word RegAllocation[5];
+
+void RegAllocate(word Reg)
+	when RegAllocation[Reg] != 0:
+		StopInternalCodegen(__FILE__, __LINE__);
+	inc RegAllocation[Reg];
+end
+
+void RegFree(word Reg)
+	when RegAllocation[Reg] != 1:
+		StopInternalCodegen(__FILE__, __LINE__);
+	dec RegAllocation[Reg];
+end
+
+/*****************************************************************************/
+
+word ChooseEmptyReg()
+	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0 & !PHO_RegContainsAConst(RegA):
+		return RegA;
+
+	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0 & !PHO_RegContainsAConst(RegD):
+		return RegD;
+
+	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
+		return RegC;
+
+	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
+		return RegB;
+
+	return RegNone;
+end
+
+word ChooseEmptyReg2()
+	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0 & !PHO_RegContainsAConst(RegA):
+		return RegA;
+
+	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
+		return RegB;
+
+	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0 & !PHO_RegContainsAConst(RegD):
+		return RegD;
+
+	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
+		return RegC;
+
+
+	return RegNone;
+end
+
 
 /*****************************************************************************/
 
@@ -72,10 +123,121 @@ include "backend_code_emitter_ctrl.ctxi"
 
 /*****************************************************************************/
 
-/*
-	Генератор кода для "постфиксных деревьев", генерируемых функцией Primary синтаксического анализатора.
-	(Эта функция - самая главная среди множества причин, почему весь кодогенератор надо переписать. VU)
-*/
+void Code_ADDR(char @Buff; word P1; ValueRef @Ref)
+	if !T_IsPtr(Ref.pType) then
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+	end:if
+
+	Ref.pType = T_DerefPtr(Ref.pType);
+	word Size = T_SizeOf(Ref.pType);
+
+	word pLeft = Node[P1].pLeft;
+
+	if pLeft < nNODE & NodeIsLiteralWord(pLeft) & Node[pLeft].Value == 0 then
+		pLeft = nNODE;
+	end:if
+
+	if pLeft < nNODE then
+		select
+		case Ref.IX == RegNone:
+			null;
+		case Ref.IX == Reg_ALT_TARGET:
+			Reg_TARGET = ChooseEmptyReg2();
+			when Reg_TARGET == RegNone:
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		case Reg_ALT_TARGET != RegNone:
+			if Reg_TARGET != Reg_ALT_TARGET then
+				EmitLine(NULL, @CodePushReg(@Buff, Reg_ALT_TARGET, 4),
+					"saved in Code_ADDR");
+			end:if
+			Emit(@CodeXchgRegReg(@Buff, Ref.IX, Reg_ALT_TARGET, 4));
+			Reg_TARGET = Ref.IX;
+			Ref.IX = Reg_ALT_TARGET;
+		default:
+			Reg_TARGET = ChooseEmptyReg2();
+			when Reg_TARGET == RegNone:
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		end:select
+
+		Code(pLeft,NULL,NULL,NULL);
+		Emit_IMUL_Reg_Const(Reg_TARGET, 4, Size);
+
+		if Reg_TARGET == Reg_ALT_TARGET then
+			if Ref.IX != RegNone then
+				Ref.IX = RegB;
+				EmitLine(NULL, @CodePopReg(@Buff, Ref.IX, 4), "restored in Code_ADDR");
+			end:if
+		end:if
+	end:if
+
+	char @TX = @CodeReg(NULL, Reg_TARGET, 4);
+
+	if pLeft < nNODE then
+		strcpy3(@Buff,"add     ",@TX,",  dword ");
+	else
+		strcpy3(@Buff,"mov     ",@TX,",  dword ");
+	end:if
+
+	if Ref.IX != RegNone then
+		char @RX = @CodeReg(NULL, Ref.IX, 4);
+
+		switch Ref.ID of
+		case iDATA:
+			Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ref.Offset),"]"));
+		case iPARM:
+			Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ref.Offset),"]"));
+		case iLOCAL:
+			Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ref.Offset),"]"));
+		case iREF:
+			Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ref.Offset),"]"));
+		case iREG:
+			if Reg_TARGET != Ref.IX then
+				if Ref.Offset != 0 then
+					strcpy3(@Buff,"lea     ",@TX,",  dword ");
+					strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ref.Offset),"]");
+					Emit(@Buff);
+				else
+					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@RX));
+				end:if
+			end:if
+		default:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		end:switch
+	else
+		switch Ref.ID of
+		case iDATA:
+			Emit(@strcat3(@Buff,"[@@DATA+",@str(Ref.Offset),"]"));
+		case iPARM:
+			Emit(@strcat3(@Buff,"[EBP+",@str(Ref.Offset),"]"));
+		case iLOCAL:
+			Emit(@strcat3(@Buff,"[EBP-",@str(Ref.Offset),"]"));
+		case iREG:
+			Reg_TARGET = Ref.IX;
+			null;
+		default:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		end:switch
+	end:if
+
+	if Reg_TARGET == Reg_ALT_TARGET | Reg_ALT_TARGET == RegNone then
+		Ref.IX = Reg_TARGET;
+	else
+		word Reg_TARGET_tmp = Reg_TARGET;
+		if Ref.IX != RegNone then
+			when (Reg_ALT_TARGET == RegNone):
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+			Reg_TARGET = Reg_ALT_TARGET;
+		end:if
+
+		Ref.IX = Reg_TARGET_tmp;
+	end:if
+
+	Ref.ID = iREF;
+	Ref.Offset = 0;
+end
+
+/*****************************************************************************/
+
 word CodePrimary(word pPrimary)
 
 	char Buff [nBUFF];
@@ -83,7 +245,7 @@ word CodePrimary(word pPrimary)
 
 	word IncID=Node[pPrimary].ID;
 	if IncID==iINC | IncID==iDEC then
-		fEAX=RegA;
+		Reg_TARGET=RegA;
 		pPrimary = Node[pPrimary].pLeft;
 	end
 
@@ -130,9 +292,12 @@ word CodePrimary(word pPrimary)
 					strcpy(@Buff,"mov     ");
 					ValueRef_Code(@Buff, @Ref);
 
+					/*when Ref.IX != Reg_TARGET & Ref.IX != RegNone:
+						StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);*/
+
 					select
-					case fEAX!=RegA:
-						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
+					case Reg_TARGET != Reg_ALT_TARGET:
+						Emit(@strcat2(@Buff,", ",@CodeReg(NULL, Reg_ALT_TARGET, Size)));
 
 					case Ref.IX==RegA:
 						EmitLine(NULL, "pop     EBX", "restored in CodePrimary (STORE)");
@@ -147,8 +312,8 @@ word CodePrimary(word pPrimary)
 					ValueRef_Code_ForLEA(@Buff, @Ref);
 					Emit(@Buff);
 
-					if fEAX!=RegA then
-						Emit("mov     ESI,  EAX");
+					if Reg_TARGET != Reg_ALT_TARGET then
+						Emit(@strcpy2(@Buff,"mov     ESI,  ",@CodeReg(NULL, Reg_ALT_TARGET, 4)));
 					else
 						EmitLine(NULL, "pop     ESI", "restored in CodePrimary (STORE)");
 					end:if
@@ -168,7 +333,7 @@ word CodePrimary(word pPrimary)
 		case Node[P1].ID==iLOAD:
 
 			if Ref.ID==iREG then
-				when Ref.IX != fEAX:
+				when Ref.IX != Reg_TARGET:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 				return Ref.pType;
 			end:if
@@ -177,10 +342,10 @@ word CodePrimary(word pPrimary)
 
 			select
 			case IsNativeOperandSize(Size):
-				strcpy3(@Buff, "mov     ", @CodeReg(NULL, fEAX, Size), ",  ");
+				strcpy3(@Buff, "mov     ", @CodeReg(NULL, Reg_TARGET, Size), ",  ");
 				ValueRef_Code(@Buff, @Ref);
 			default:
-				strcpy3(@Buff, "lea     ", @CodeReg(NULL, fEAX, 4), ",  ");
+				strcpy3(@Buff, "lea     ", @CodeReg(NULL, Reg_TARGET, 4), ",  ");
 				ValueRef_Code_ForLEA(@Buff, @Ref);
 			end:select
 
@@ -189,10 +354,10 @@ word CodePrimary(word pPrimary)
 			return Ref.pType;
 
 		case Node[P1].ID==iLPTR:
-			char @TX = @CodeReg(NULL, fEAX, 4);
+			char @TX = @CodeReg(NULL, Reg_TARGET, 4);
 
 			if Ref.IX != RegNone then
-				if fEAX != Ref.IX then
+				if Reg_TARGET != Ref.IX then
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 				end:if
 
@@ -237,10 +402,11 @@ word CodePrimary(word pPrimary)
 			return T_PtrTo(Ref.pType);
 
 		case Node[P1].ID==iCALL:
-			if fEAX!=RegA then
+			if Reg_ALT_TARGET == RegA & Reg_TARGET != RegA then
 				EmitLine(NULL, "push    EAX", "saved in CodePrimary (iCALL)");
-				fEAX=RegA;
 			end:if
+			Reg_TARGET = RegA;
+			Reg_ALT_TARGET = RegA;
 
 			if Node[P1].pLeft<nNODE then
 				Code(Node[P1].pLeft,NULL,NULL,NULL);
@@ -260,10 +426,11 @@ word CodePrimary(word pPrimary)
 			Ref.Offset = 0;
 
 		case Node[P1].ID==iCALL2:
-			if fEAX!=RegA then
+			if Reg_ALT_TARGET == RegA & Reg_TARGET != RegA then
 				EmitLine(NULL, "push    EAX", "saved in CodePrimary (iCALL2)");
-				fEAX=RegA;
 			end:if
+			Reg_TARGET = RegA;
+			Reg_ALT_TARGET = RegA;
 
 			word P2=Node[P1].pLeft;
 
@@ -294,107 +461,14 @@ word CodePrimary(word pPrimary)
 				end
 			else
 				Code(Node[P1].pLeft,NULL,NULL,NULL);
-				Ref.IX = fEAX;
+				Ref.IX = Reg_TARGET;
 				Emit_IMUL_Reg_Const(Ref.IX, 4, Size);
+				when Reg_ALT_TARGET == RegNone:
+					Reg_ALT_TARGET = Ref.IX;
 			end:if
 
 		case Node[P1].ID==iADDR:
-			if !T_IsPtr(Ref.pType) then
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-			end:if
-
-			Ref.pType = T_DerefPtr(Ref.pType);
-			word Size = T_SizeOf(Ref.pType);
-
-			word pLeft = Node[P1].pLeft;
-
-			if pLeft < nNODE & NodeIsLiteralWord(pLeft) & Node[pLeft].Value == 0 then
-				pLeft = nNODE;
-			end:if
-
-			if pLeft < nNODE then
-				select
-				case Ref.IX == RegB:
-					if fEAX != RegA then
-						EmitLine(NULL, "push    EAX", "saved in CodePrimary (iADDR)");
-					end:if
-
-					Emit("xchg    EAX,  EBX");
-					Ref.IX = RegA;
-					fEAX   = RegB;
-
-				case Ref.IX == RegA:
-					fEAX = RegB;
-				end:select
-
-				Code(pLeft,NULL,NULL,NULL);
-
-				Emit_IMUL_Reg_Const(fEAX, 4, Size);
-				if fEAX == RegA then
-					if Ref.IX != RegNone then
-						Emit("pop     EBX");
-						Ref.IX = RegB;
-					end:if
-				end:if
-			end:if
-
-			char @TX = @CodeReg(NULL, fEAX, 4);
-
-			if pLeft < nNODE then
-				strcpy3(@Buff,"add     ",@TX,",  dword ");
-			else
-				strcpy3(@Buff,"mov     ",@TX,",  dword ");
-			end:if
-
-			if Ref.IX != RegNone then
-				char @RX = @CodeReg(NULL, Ref.IX, 4);
-
-				switch Ref.ID of
-				case iDATA:
-					Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ref.Offset),"]"));
-				case iPARM:
-					Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ref.Offset),"]"));
-				case iLOCAL:
-					Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ref.Offset),"]"));
-				case iREF:
-					Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ref.Offset),"]"));
-				case iREG:
-					if fEAX != Ref.IX then
-						strcpy3(@Buff,"lea     ",@TX,",  dword ");
-						strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ref.Offset),"]");
-						Emit(@Buff);
-					end:if
-				default:
-					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-				end:switch
-			else
-				switch Ref.ID of
-				case iDATA:
-					Emit(@strcat3(@Buff,"[@@DATA+",@str(Ref.Offset),"]"));
-				case iPARM:
-					Emit(@strcat3(@Buff,"[EBP+",@str(Ref.Offset),"]"));
-				case iLOCAL:
-					Emit(@strcat3(@Buff,"[EBP-",@str(Ref.Offset),"]"));
-				case iREG:
-					null;
-				default:
-					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-				end:switch
-			end:if
-
-			if fEAX == RegA then
-				Ref.IX = RegA;
-			else
-				word fEAX_tmp = fEAX;
-				if Ref.IX != RegNone then
-					fEAX = RegA;
-				end:if
-
-				Ref.IX = fEAX_tmp;
-			end:if
-
-			Ref.ID = iREF;
-			Ref.Offset = 0;
+			Code_ADDR(@Buff, P1, @Ref);
 
 		case Node[P1].ID==iFIELD:
 			ValueRef_Apply_FIELD(@Ref, P1);
@@ -804,24 +878,6 @@ end
 
 /*****************************************************************************/
 
-word ChooseEmptyReg()
-	when !PHO_RegContainsAConst(RegA):
-		return RegA;
-
-	when !PHO_RegContainsAConst(RegD):
-		return RegD;
-
-	when !PHO_RegContainsAConst(RegC):
-		return RegC;
-
-	when !PHO_RegContainsAConst(RegB):
-		return RegB;
-
-	return RegA;
-end
-
-/*****************************************************************************/
-
 word TryDropCastBeforeCmp(word P)
 
 	word ID = Node[P].ID;
@@ -883,7 +939,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	word done = Emit_MUL_Reg_Const(fEAX, Size, RightValue);
+	word done = Emit_MUL_Reg_Const(Reg_TARGET, Size, RightValue);
 	when done == 0:
 		StopInternalCodegen(__FILE__, __LINE__);
 	return pType;
@@ -903,8 +959,8 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	if iLT <= ID & ID <= iGT then
 		/* These operations don't return the result in any register,
-		instead a conditional jump is the result. So we can reset fEAX freely. */
-		fEAX=RegA;
+		instead a conditional jump is the result. So we can reset Reg_TARGET freely. */
+		Reg_TARGET=RegA;
 	end
 
 	do
@@ -916,9 +972,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
-		if fEAX!=RegA then
+		if Reg_TARGET!=RegA then
 			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
-			fEAX=RegA;
+			Reg_TARGET=RegA;
 		end
 	end:switch
 
@@ -932,9 +988,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	do
 		/*
 			The usual calculation scheme is:
-				RegA  <- LeftOperand
-				RegB  <- RightOperand
-				OP    RegA,  RegB
+				Reg1  <- LeftOperand
+				Reg2  <- RightOperand
+				OP    Reg1,  Reg2
 
 			We can handle some special cases in a more efficient way:
 		*/
@@ -944,12 +1000,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/*
 				## Immediate constant on the right.
 				Do:
-					RegA  <- LeftOperand
-					Op    RegA,  ImmValue
+					Reg1  <- LeftOperand
+					Op    Reg1,  ImmValue
 				Instead of:
-					RegA  <- LeftOperand
-					mov   RegB,  ImmValue
-					Op    RegA,  RegB
+					Reg1  <- LeftOperand
+					mov   Reg2,  ImmValue
+					Op    Reg1,  Reg1
 			*/
 			if NodeCanBeEncodedAsImm(pRight) then
 				rightOperand = operandImm;
@@ -961,12 +1017,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				   and the operation is commutative
 				   or can be calculated in the reverse order.
 				Do:
-					RegA  <- RightOperand
-					Op    RegA,  ImmValue
+					Reg1  <- RightOperand
+					Op    Reg1,  ImmValue
 				Instead of:
-					mov   RegA,  ImmValue
-					RegB  <- RightOperand
-					Op    RegA,  RegB
+					mov   Reg1,  ImmValue
+					Reg2  <- RightOperand
+					Op    Reg1,  Reg2
 			*/
 			if IsOperationCommutative(ID) & NodeCanBeEncodedAsImm(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
@@ -990,12 +1046,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/*
 				## Simple memory reference on the right.
 				Do:
-					RegA  <- LeftOperand
-					Op    RegA,  [MemRef]
+					Reg1  <- LeftOperand
+					Op    Reg1,  [MemRef]
 				Instead of:
-					RegA  <- LeftOperand
-					mov   RegB, [MemRef]
-					Op    RegA, RegB
+					Reg1  <- LeftOperand
+					mov   Reg2, [MemRef]
+					Op    Reg1, Reg2
 			*/
 			if CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL) then
 				rightOperand = operandMemRef;
@@ -1007,12 +1063,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				   and the operation is commutative
 				   or can be calculated in the reverse order.
 				Do:
-					RegA  <- RightOperand
-					Op    RegA,  [MemRef]
+					Reg1  <- RightOperand
+					Op    Reg1,  [MemRef]
 				Instead of:
-					mov   RegA,  [MemRef]
-					RegB  <- RightOperand
-					Op    RegA,  RegB
+					mov   Reg1,  [MemRef]
+					Reg2  <- RightOperand
+					Op    Reg1,  Reg2
 			*/
 			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
@@ -1040,7 +1096,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	if (rightOperand == operandImm) &
 	   (T_SizeOf(Node[pRight].pType) == 4) &
-	   (PHO_RegContainsConst(fEAX, Node[pRight].Value))
+	   (PHO_RegContainsConst(Reg_TARGET, Node[pRight].Value))
 	then
 		do
 			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
@@ -1075,7 +1131,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		if iLT <= ID & ID <= iGT then
 			when CodeRequiresSingleRegister(pLeft):
-				fEAX = ChooseEmptyReg();
+				Reg_TARGET = ChooseEmptyReg();
 		end:if
 
 		pType=Code(pLeft,NULL,NULL,NULL);
@@ -1084,7 +1140,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		if leftOperand == operandNotReady then
 			if iLT <= ID & ID <= iGT then
 				when CodeRequiresSingleRegister(pLeft):
-					fEAX = ChooseEmptyReg();
+					Reg_TARGET = ChooseEmptyReg();
 			end:if
 
 			pType=Code(pLeft,NULL,NULL,NULL);
@@ -1112,21 +1168,21 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			end:if
 		end:if
 
-		if fEAX != RegA then
+		if Reg_TARGET != RegA then
 			EmitLine(NULL, "push    EAX", "saved in CodeBinOp");
-			fEAX = RegA;
+			Reg_TARGET = RegA;
 		end
 		pType = Code(pLeft,NULL,NULL,NULL);
-		fEAX  = rightReg;
+		Reg_TARGET  = rightReg;
 		Code(pRight,NULL,NULL,NULL);
-		when fEAX != rightReg & fSwap != 0:
+		when Reg_TARGET != rightReg & fSwap != 0:
 			StopInternalCodegen(__FILE__, __LINE__);
 
-		if fEAX==RegA then
+		if Reg_TARGET==RegA then
 			EmitLine(NULL, "pop     EBX", "restored in CodeBinOp");
 			inc fSwap;
 		end
-		fEAX = RegA;
+		Reg_TARGET = RegA;
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
@@ -1144,7 +1200,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/* We can handle it by swapping operands back. */
 			switch ID of
 			case iSUB, iDIV, iMOD:
-				Emit(@CodeCmdRegReg(@Buff, "xchg", fEAX, 4, rightReg, 4));
+				Emit(@CodeCmdRegReg(@Buff, "xchg", Reg_TARGET, 4, rightReg, 4));
 				exit;
 			end:switch
 
@@ -1168,27 +1224,27 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		switch Value of
 		case 1:
-			if PreferIncDec(fEAX, Size) > 0 then
-				Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+			if PreferIncDec(Reg_TARGET, Size) > 0 then
+				Emit(@CodeCmdReg(@Buff, "inc", Reg_TARGET, Size));
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
 		case word(-1):
-			if PreferIncDec(fEAX, Size) > 0 then
-				Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+			if PreferIncDec(Reg_TARGET, Size) > 0 then
+				Emit(@CodeCmdReg(@Buff, "dec", Reg_TARGET, Size));
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
 		case 2:
-			if PreferIncDec(fEAX, Size) > 1 then
-				Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+			if PreferIncDec(Reg_TARGET, Size) > 1 then
+				Emit(@CodeCmdReg(@Buff, "inc", Reg_TARGET, Size));
 				Emit(@Buff);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
 		case word(-2):
-			if PreferIncDec(fEAX, Size) > 1 then
-				Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+			if PreferIncDec(Reg_TARGET, Size) > 1 then
+				Emit(@CodeCmdReg(@Buff, "dec", Reg_TARGET, Size));
 				Emit(@Buff);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
@@ -1234,7 +1290,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 						null;
 						SkipCmp = true;
 					else
-						Emit(@CodeCmdRegReg(@Buff, "test", fEAX, Size, fEAX, Size));
+						Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, Size, Reg_TARGET, Size));
 						SkipCmp = true;
 					end:if
 				case (MeaningfulFlags & (Flag_Zero | Flag_Sign)) == (Flag_Zero | Flag_Sign):
@@ -1248,14 +1304,14 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					end:select
 				end:select
 			case 1:
-				if (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0 then
-					Emit(@CodeCmdReg(@Buff, "dec", fEAX, Size));
+				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, Size) != 0 then
+					Emit(@CodeCmdReg(@Buff, "dec", Reg_TARGET, Size));
 					dec PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			case word(-1):
-				if (ID == iEQ | ID == iNE) & PreferIncDec(fEAX, Size) != 0 then
-					Emit(@CodeCmdReg(@Buff, "inc", fEAX, Size));
+				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, Size) != 0 then
+					Emit(@CodeCmdReg(@Buff, "inc", Reg_TARGET, Size));
 					inc PHO_Load_Value;
 					SkipCmp = true;
 				end:if
@@ -1263,17 +1319,17 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			if !SkipCmp then
 				BuffRightOperand[0] = #0;
 				if PHO_EncodeRegContainingConst(@BuffRightOperand, Value, Size) != 0 then
-					Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
+					Emit(@CodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand));
 				else
-					Emit(@CodeCmdRegConst(@Buff, "cmp", fEAX, Size, Value));
+					Emit(@CodeCmdRegConst(@Buff, "cmp", Reg_TARGET, Size, Value));
 				end:if
 			end:if
 			when (Size == 4) & (ID == iNE):
-				PHO_RegLoadConst(fEAX, PHO_Load_Value);
+				PHO_RegLoadConst(Reg_TARGET, PHO_Load_Value);
 		case rightOperand == operandMemRef:
-			Emit(@CodeCmdRegFmt(@Buff, "cmp", fEAX, Size, @BuffRightOperand));
+			Emit(@CodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand));
 		case rightOperand == operandReg:
-			Emit(@CodeCmdRegReg(@Buff, "cmp", fEAX, Size, rightReg, Size));
+			Emit(@CodeCmdRegReg(@Buff, "cmp", Reg_TARGET, Size, rightReg, Size));
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end
@@ -1426,14 +1482,14 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				May be useful when a full-featured register allocation strategy will be implemented.
 			*/
 			/*if PHO_EncodeRegContainingConst(@BuffRightOperand, Node[pRight].Value, Size) != 0 then
-				CodeRegFmt(@Buff, fEAX, Size, @BuffRightOperand);
+				CodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
 			else*/
-				CodeRegConst(@Buff, fEAX, Size, Node[pRight].Value);
+				CodeRegConst(@Buff, Reg_TARGET, Size, Node[pRight].Value);
 			/*end:if*/
 		case rightOperand == operandMemRef:
-			CodeRegFmt(@Buff, fEAX, Size, @BuffRightOperand);
+			CodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
 		case rightOperand == operandReg:
-			CodeRegReg(@Buff, fEAX, Size, rightReg, Size);
+			CodeRegReg(@Buff, Reg_TARGET, Size, rightReg, Size);
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
@@ -1479,8 +1535,9 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		/* These operations don't return the result in any register,
-		instead a conditional jump is the result. So we reset fEAX here. */
-		fEAX=RegA;
+		instead a conditional jump is the result. So we reset Reg_TARGET here. */
+		Reg_TARGET = RegA;
+		Reg_ALT_TARGET = RegNone;
 
 		switch Node[P].ID of
 		case iLITERAL:
@@ -1512,9 +1569,9 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 
 		case iDATA, iPARM, iLOCAL:
 			when CodeRequiresSingleRegister(P):
-				fEAX = ChooseEmptyReg();
+				Reg_TARGET = ChooseEmptyReg();
 			Code(P, NULL, NULL, NULL);
-			Emit(@CodeCmdRegReg(@Buff, "test", fEAX, 4, fEAX, 4));
+			Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, 4, Reg_TARGET, 4));
 			select
 			case @F != NULL:
 				EmitBranchToLabel("z", @F);
@@ -1528,15 +1585,15 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 	else
 		switch Node[P].ID of
 		case iNULL:
-			Emit_Load_Constant(fEAX, 4, 0);
+			Emit_Load_Constant(Reg_TARGET, 4, 0);
 			return Node[P].pType;
 
 		case iLITERAL:
-			Emit_Load_Constant(fEAX, T_SizeOf(Node[P].pType), Node[P].Value);
+			Emit_Load_Constant(Reg_TARGET, T_SizeOf(Node[P].pType), Node[P].Value);
 			return Node[P].pType;
 
 		case iFUNC:
-			CodeLoadLabel(@Buff, fEAX, Node[P].Value);
+			CodeLoadLabel(@Buff, Reg_TARGET, Node[P].Value);
 			Emit(@Buff);
 			return Node[P].pType;
 
@@ -1547,24 +1604,24 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 			word pTypeFrom = Code(Node[P].pLeft, NULL, NULL, NULL);
 			word pTypeTo = Node[P].pType;
 			word Complexity = 0;
-			return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, fEAX, @Complexity);
+			return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, Reg_TARGET, @Complexity);
 
 		case iBIT_NOT:
 			word pType = Code(Node[P].pLeft, NULL, NULL, NULL);
 			word  Size = SizeOfType(pType);
-			Emit(@CodeCmdReg(@Buff, "not", fEAX, Size));
+			Emit(@CodeCmdReg(@Buff, "not", Reg_TARGET, Size));
 
 			return pType;
 
 		case iNEG:
 			if NodeIsLiteralWord(Node[P].pLeft) then
-				Emit_Load_Constant(fEAX, 4, -Node[Node[P].pLeft].Value);
+				Emit_Load_Constant(Reg_TARGET, 4, -Node[Node[P].pLeft].Value);
 				return Node[P].pType;
 			end
 
 			Code(Node[P].pLeft, NULL, NULL, NULL);
 
-			Emit(@CodeCmdReg(@Buff, "neg", fEAX, T_SizeOf(Node[P].pType)));
+			Emit(@CodeCmdReg(@Buff, "neg", Reg_TARGET, T_SizeOf(Node[P].pType)));
 
 			return Node[P].pType;
 
@@ -1572,31 +1629,38 @@ word Code(word P; LABEL @F; LABEL @T; LABEL @M)
 			return CodeBinOp(@Buff, P, NULL, NULL, NULL);
 
 		case iDEF_LOCAL:
-		  if nLocal>=nLOCAL then
-			StopMemory();
-		  end
+			if nLocal>=nLOCAL then
+				StopMemory();
+			end
 
-		  word pType = Node[P].pType;
-		  word Size  = SizeOfType(pType);
+			word pType = Node[P].pType;
+			word Size  = SizeOfType(pType);
 
-		  AllocatedFrameSize =
-			  AllocatedFrameSize + DefaultInStackAlign(Size);
+			AllocatedFrameSize = AllocatedFrameSize + DefaultInStackAlign(Size);
 
-		  Local[nLocal].pType=pType;
-		  Local[nLocal].Value=AllocatedFrameSize;
-		  inc   nLocal;
+			word i = nLocal;
+			inc nLocal;
+			Local[i].pType=pType;
+			Local[i].Value=AllocatedFrameSize;
+			when EmitDebugComments_LOCAL_DEFS:
+				EmitLine(NULL, "", @strcpy4(@Buff, "iDEF_LOCAL: ",@Char[Node[P].Value]," ",@str(Local[i].Value)));
 
-		  Code(Node[P].pLeft, NULL, NULL, NULL);
+			Code(Node[P].pLeft, NULL, NULL, NULL);
 
 		case iASSIGN:
-			P    = Node[P].pLeft;
-			fEAX = RegA;
+			P = Node[P].pLeft;
+			Reg_TARGET = RegA;
+			Reg_ALT_TARGET = RegNone;
+
 			if Node[P].pRight < nNODE then
 				Code(Node[P].pRight, NULL, NULL, NULL);
-				fEAX = RegB;
+				Reg_ALT_TARGET = Reg_TARGET;
+				Reg_TARGET = RegB;
 			end
+
 			word pType = Code(Node[P].pLeft, NULL, NULL, NULL);
-			fEAX = RegA;
+			Reg_TARGET = RegA;
+			Reg_ALT_TARGET = RegA;
 			return pType;
 
 		case iINLINE:
