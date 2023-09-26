@@ -1,7 +1,10 @@
 @echo off
 
+set /p LATEST=<..\precompiled\latest
+set BOOTSTRAP_COMPILER="..\precompiled\"%LATEST%"\lcontext_c.exe"
+set FASM="..\3rd-party\fasm\FASM.exe"
 
-call :mk ..\bin\lcontext.exe    ctx4win --win32-c out\ lcontext_a.exe
+call :mk %BOOTSTRAP_COMPILER% ctx4win --win32-c out\ lcontext_a.exe
 
 call :mk out\lcontext_a.exe ctx4win       --win32-c out\ lcontext_b.exe
 call :mk out\lcontext_b.exe ctx4win       --win32-c out\ lcontext_c.exe
@@ -22,9 +25,9 @@ goto :end
 
 :mk
 echo %2 ==^> %4%5
-%1    %2.ctx %3 --output %4.%5.asm --output-tree %4.%5.tree --output-include-list %4.%5.includes %6 %7 %8 %9
+%1 %2.ctx %3 --output %4.%5.asm --output-tree %4.%5.tree --output-include-list %4.%5.includes %6 %7 %8 %9
 if not %ERRORLEVEL%==0 goto err
-fasm  %4.%5.asm %4%5 > nul
+%FASM% %4.%5.asm %4%5 > nul
 if not %ERRORLEVEL%==0 goto err
 exit /b
 
