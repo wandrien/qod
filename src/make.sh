@@ -13,10 +13,12 @@ if which valgrind > /dev/null 2> /dev/null ; then
 	DEFAULT_VALGRIND="valgrind"
 fi
 
+DEFAULT_BOOTSTRAP_COMPILER="../precompiled/`cat ../precompiled/latest`/lcontext_c"
+
 export WINE="${WINE-$DEFAULT_WINE}"
 export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 
-export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-../precompiled/lcontext_c}"
+export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-$DEFAULT_BOOTSTRAP_COMPILER}"
 
 crop_known_differencies()
 {
@@ -374,7 +376,7 @@ if [ "x$1" = "x--save-to-precompiled" ] ; then
 		"$save_path"
 	chmod a-x "$save_path"/*.exe
 
-	ln -sf "$save_dir/lcontext_c" "../precompiled/lcontext_c"
+	echo "$save_dir" > "../precompiled/latest.tmp" && mv "../precompiled/latest.tmp" "../precompiled/latest"
 
 	printf "    Binaries: `ls "$save_path" | tr "\n" " "`\n"
 fi
