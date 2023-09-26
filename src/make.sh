@@ -14,11 +14,13 @@ if which valgrind > /dev/null 2> /dev/null ; then
 fi
 
 DEFAULT_BOOTSTRAP_COMPILER="../precompiled/`cat ../precompiled/latest`/lcontext_c"
+DEFAULT_FASM="../3rd-party/fasm/fasm"
 
 export WINE="${WINE-$DEFAULT_WINE}"
 export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 
 export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-$DEFAULT_BOOTSTRAP_COMPILER}"
+export FASM="${FASM-$DEFAULT_FASM}"
 
 crop_known_differencies()
 {
@@ -58,7 +60,7 @@ mk()
 		--output-include-list $4.$5.includes \
 		--emit-source-line-notes \
 		$6 $7 $8 && \
-    fasm -m 200000 $4.$5.asm $4$5 >/dev/null && \
+    $FASM -m 200000 $4.$5.asm $4$5 >/dev/null && \
 	chmod a+x $4$5
 }
 
