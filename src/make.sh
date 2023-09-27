@@ -180,8 +180,8 @@ do_test_with_compiler ()
 	local tests_out_dir="tests/out/$c"
 	mkdir -p "$tests_out_dir"
 
-	local stdout_log="$tests_out_dir"/"$test_name"."$c".stdout
-	local stderr_log="$tests_out_dir"/"$test_name"."$c".stderr
+	local stdout_log="$tests_out_dir"/"$test_name".stdout
+	local stderr_log="$tests_out_dir"/"$test_name".stderr
 
 	local COMPILER_FLAGS="`grep -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
 
