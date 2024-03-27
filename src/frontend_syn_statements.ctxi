@@ -271,7 +271,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_WHILE(char @Buff; word @P1; word @SkipFinalScan)
 
 	word  BODY = Peek();
 	word  COND = Peek();
@@ -309,7 +309,7 @@ void Statement_DO(char @Buff; word @P1; word @SkipFinalScan)
 
 	pLoop=pLoop1;
 
-	CTE_DO(@P1);
+	CTE_WHILE(@P1);
 end
 
 /*****************************************************************************/
@@ -594,7 +594,7 @@ word Ctrl(char @Buff)
 			Statement_IF(@Buff, @P1, @SkipFinalScan);
 
 		case str_eq(@Buff,"while") | str_eq(@Buff,"do"):
-			Statement_DO(@Buff, @P1, @SkipFinalScan);
+			Statement_WHILE(@Buff, @P1, @SkipFinalScan);
 
 		case str_eq(@Buff,"when"):
 			Statement_WHEN(@Buff, @P1, @SkipFinalScan);

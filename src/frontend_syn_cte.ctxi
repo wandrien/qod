@@ -245,7 +245,7 @@ end
 
 /*****************************************************************************/
 
-void CTE_DO(word @pLoop)
+void CTE_WHILE(word @pLoop)
 	word BODY = Node[pLoop].pLeft;
 	word COND = Node[BODY].pRight;
 
