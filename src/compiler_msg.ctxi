@@ -104,9 +104,9 @@ void ShowParseProgress(word nl)
 		@NL = "~r~n";
 	end
 	char Buff[nBUFF];
-	puts(@strcat(@strcat(@strcat(@strcat(@strcat(@strcpy(@Buff,
-		"~r"), @CurrentFileInfo.FileName), "("), @str(CurrentFileInfo.Line)), ")"), @NL)
-	);
+	puts(@strcpy6(@Buff,
+		"~r", @CurrentFileInfo.FileName, "(", @str(CurrentFileInfo.Line), ")", @NL
+	));
 end
 
 /*****************************************************************************/

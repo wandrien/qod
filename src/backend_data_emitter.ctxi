@@ -43,32 +43,27 @@ void EmitByte(char c)
 		case EmitByteState == 0:
 			select
 				case NewState == 1:
-					strcat(@Buff, "db ");
-					strcat(@Buff, @str(word(c)));
+					strcpy2(@Buff, "db ", @str(word(c)));
 				case NewState == 2:
-					strcat(@Buff, "db ~"");
-					strcat(@Buff, @C);
+					strcpy2(@Buff, "db ~"", @C);
 				default:
 					StopInternalCodegen(__FILE__, __LINE__);
 			end
 		case EmitByteState == 1:
 			select
 				case NewState == 1:
-					strcat(@Buff, ", ");
-					strcat(@Buff, @str(word(c)));
+					strcpy2(@Buff, ", ", @str(word(c)));
 				case NewState == 2:
-					strcat(@Buff, ", ~"");
-					strcat(@Buff, @C);
+					strcpy2(@Buff, ", ~"", @C);
 				default:
 					StopInternalCodegen(__FILE__, __LINE__);
 			end
 		case EmitByteState == 2:
 			select
 				case NewState == 1:
-					strcat(@Buff, "~", ");
-					strcat(@Buff, @str(word(c)));
+					strcpy2(@Buff, "~", ", @str(word(c)));
 				case NewState == 2:
-					strcat(@Buff, @C);
+					strcpy(@Buff, @C);
 				default:
 					StopInternalCodegen(__FILE__, __LINE__);
 			end

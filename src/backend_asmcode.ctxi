@@ -90,8 +90,7 @@ end
 /* Помещает в Buff обозначение указанной метки. */
 char @CodeLabel(char @Buff; word Label)
 
-	strcat(@Buff, " @");
-	strcat(@Buff, @str(Dict[Label].Label));
+	strcat2(@Buff, " @", @str(Dict[Label].Label));
 	return @Buff;
 end
 
