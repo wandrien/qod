@@ -315,7 +315,7 @@ char@ PHO_Optimize_(char @Inst)
  	 | str_has_prefix(@Inst, "jae" )
  	 | str_has_prefix(@Inst, "ja"  )
  	 | str_has_prefix(@Inst, "jz"  )
- 	 | str_has_prefix(@Inst, "cmp" ) then
+	 | str_has_prefix(@Inst, "cmp" ) then
 		return @Inst;
 	end:if
 
@@ -502,3 +502,31 @@ word PHO_EncodeRegContainingConst(char @Buff; word Const; word RegMode)
 end
 
 /*****************************************************************************/
+
+bool PHO_Try_Emit_Load_Constant(word Reg; word RegMode; word Value)
+	when PHOptimization == 0:
+		return false;
+
+	word Mask;
+
+	switch RegMode of
+	case 4: Mask = 0xFFFF_FFFF;
+	case 2: Mask = 0x0000_FFFF; /* NOT IMPLEMENTED */ return false;
+	case 1: Mask = 0x0000_00FF; /* NOT IMPLEMENTED */ return false;
+	default:
+		return false;
+	end:switch
+
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	if PHO_Optimize_FindReplacement(@Buff, Reg, Mask, Value) == 0 then
+		CodeLoadConstant(@Buff, Reg, RegMode, Value);
+	end:if
+
+	word PHOptimization_Saved = PHOptimization;
+	PHOptimization = 0;
+	EmitLine(NULL, @Buff, NULL);
+	PHOptimization = PHOptimization_Saved;
+	PHO_RegLoadConst(Reg, Value);
+	return true;
+end

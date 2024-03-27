@@ -2,6 +2,7 @@
 /*****************************************************************************/
 
 void EmitLine(LABEL @Label; char @Inst; char @Comment);
+char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
 bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(char @tmpBuff; word P; word @pTypeFinal);
 void NodeMarkUsed(word P);

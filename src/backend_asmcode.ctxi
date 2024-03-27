@@ -482,6 +482,9 @@ end
 /*****************************************************************************/
 
 void Emit_Load_Constant(word Reg; word RegMode; word Value)
+	when PHO_Try_Emit_Load_Constant(Reg, RegMode, Value):
+		return;
+
 	char Buff[nBUFF];
 	Buff[0] = #0;
 	Emit(@CodeLoadConstant(@Buff, Reg, RegMode, Value));
@@ -515,4 +518,3 @@ word PreferIncDec(word Reg; word RegMode)
 end
 
 /*****************************************************************************/
-
