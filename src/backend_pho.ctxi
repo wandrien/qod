@@ -290,6 +290,17 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	return 0;
 end
 
+define opINVALIDATE  0
+define opMOV         1
+define opADD         2
+define opSUB         3
+define opMUL         4
+define opIMUL        5
+define opAND         6
+define opOR          7
+define opXOR         8
+define opINVALIDATE_REG  9
+
 char PHO_Buff[256];
 
 char@ PHO_Optimize_(char @Inst)
@@ -301,38 +312,43 @@ char@ PHO_Optimize_(char @Inst)
 		return @Inst;
 	end:if
 
-	/* Инструкции, не изменяющие сожержимое регистров. */
+	/* Инструкции, не изменяющие содержимое регистров. */
 	if str_has_prefix(@Inst, "push")
- 	 | str_has_prefix(@Inst, "jl"  )
- 	 | str_has_prefix(@Inst, "jle" )
- 	 | str_has_prefix(@Inst, "je"  )
- 	 | str_has_prefix(@Inst, "jne" )
- 	 | str_has_prefix(@Inst, "jnz" )
- 	 | str_has_prefix(@Inst, "jge" )
- 	 | str_has_prefix(@Inst, "jg"  )
- 	 | str_has_prefix(@Inst, "jb"  )
- 	 | str_has_prefix(@Inst, "jbe" )
- 	 | str_has_prefix(@Inst, "jae" )
- 	 | str_has_prefix(@Inst, "ja"  )
- 	 | str_has_prefix(@Inst, "jz"  )
-	 | str_has_prefix(@Inst, "cmp" ) then
+	 | str_has_prefix(@Inst, "cmp" )
+	 | str_has_prefix(@Inst, "test")
+	 | str_has_prefix(@Inst, "jl"  )
+	 /*| str_has_prefix(@Inst, "jle" )*/
+	 | str_has_prefix(@Inst, "je"  )
+	 | str_has_prefix(@Inst, "jne" )
+	 | str_has_prefix(@Inst, "jnz" )
+	 /*| str_has_prefix(@Inst, "jge" )*/
+	 | str_has_prefix(@Inst, "jg"  )
+	 | str_has_prefix(@Inst, "jb"  )
+	 /*| str_has_prefix(@Inst, "jbe" )*/
+	 /*| str_has_prefix(@Inst, "jae" )*/
+	 | str_has_prefix(@Inst, "ja"  )
+	 | str_has_prefix(@Inst, "jz"  ) then
 		return @Inst;
 	end:if
 
-	/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
 	/* FIXME: Add support of shl and shr */
-	if (!str_has_prefix(@Inst, "mov "))
-	 & (!str_has_prefix(@Inst, "add "))
-	 & (!str_has_prefix(@Inst, "mul "))
-	 & (!str_has_prefix(@Inst, "imul "))
-	 & (!str_has_prefix(@Inst, "sub "))
-	 & (!str_has_prefix(@Inst, "and "))
-	 & (!str_has_prefix(@Inst, "or "))
-	 & (!str_has_prefix(@Inst, "xor ")) then
+	word operation;
+	select
+	case str_has_prefix(@Inst, "mov "): operation = opMOV;
+	case str_has_prefix(@Inst, "imul "): operation = opIMUL;
+	case str_has_prefix(@Inst, "mul "): operation = opMUL;
+	case str_has_prefix(@Inst, "sub "): operation = opSUB;
+	case str_has_prefix(@Inst, "add "): operation = opADD;
+	case str_has_prefix(@Inst, "and "): operation = opAND;
+	case str_has_prefix(@Inst, "or "): operation = opOR;
+	case str_has_prefix(@Inst, "xor "): operation = opXOR;
+	case str_has_prefix(@Inst, "pop "): operation = opINVALIDATE_REG;
+	case str_has_prefix(@Inst, "lea "): operation = opINVALIDATE_REG;
+	default:
+		/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
 		PHO_InvalidateRegs();
 		return @Inst;
-	end:if
-
+	end:select
 
 	char@ s = @Inst;
 	
@@ -343,6 +359,11 @@ char@ PHO_Optimize_(char @Inst)
 	word Reg1;
 	word Mask1;
 	if PHO_DecodeReg(@s, @Reg1, @Mask1) == 0 then
+		return @Inst;
+	end:if
+
+	if operation == opINVALIDATE_REG then
+		PHO_InvalidateReg(Reg1);
 		return @Inst;
 	end:if
 
@@ -357,7 +378,7 @@ char@ PHO_Optimize_(char @Inst)
 
 	/* Если нет запятой - отдельный вариант для однооперандных вариантов mul, imul. */
 	if s[0] != ',' then
-		if str_has_prefix(@Inst, "mul ") | str_has_prefix(@Inst, "imul ") then
+		if (operation == opIMUL) | (operation == opMUL) then
 			/* FIXME: Add support of this case. */
 			PHO_InvalidateRegs();
 			return @Inst;
@@ -419,7 +440,7 @@ char@ PHO_Optimize_(char @Inst)
 
 
 	/* Вариант - загрузка полного значения регистра. */
-	if Mask1 == 0xFFFF_FFFF & str_has_prefix(@Inst, "mov ") then
+	if (Mask1 == 0xFFFF_FFFF) & (operation == opMOV) then
 		char @RetInst = @Inst;
 		PHO_Buff[0] = #0;
 		when PHO_Optimize_FindReplacement(@PHO_Buff, Reg1, Mask1, Const2) != 0:
@@ -440,26 +461,26 @@ char@ PHO_Optimize_(char @Inst)
 	Const2 = Const2 & Mask1;
 	word Result;
 
-	select
-	case str_has_prefix(@Inst, "mov "):
+	switch operation of
+	case opMOV:
 		Result = Const2;
-	case str_has_prefix(@Inst, "add "):
+	case opADD:
 		Result = Const1 + Const2;
-	case str_has_prefix(@Inst, "sub "):
+	case opSUB:
 		Result = Const1 - Const2;
-	case str_has_prefix(@Inst, "and "):
+	case opAND:
 		Result = Const1 & Const2;
-	case str_has_prefix(@Inst, "or "):
+	case opOR:
 		Result = Const1 | Const2;
-	case str_has_prefix(@Inst, "xor "):
+	case opXOR:
 		Result = Const1 ^ Const2;
-	case str_has_prefix(@Inst, "mul "):
+	case opMUL:
 		Result = Const1 * Const2;
-	case str_has_prefix(@Inst, "imul "):
+	case opIMUL:
 		Result = int(Const1) * int(Const2);
 	default:
 		StopInternal(__FILE__, __LINE__);
-	end:select
+	end:switch
 
 	Result = (Result & Mask1) | (Const1 & (Mask1 ^ 0xFFFF_FFFF));
 
