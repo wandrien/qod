@@ -436,6 +436,8 @@ word Code_SWITCH(word P; char @Buff)
 
 	CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
+		word NEXT_CASE_I = Node[CASE_I].pRight;
+
 		when Node[CASE_I].ID != iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
 
@@ -451,10 +453,11 @@ word Code_SWITCH(word P; char @Buff)
 
 		if pTypeBody != st_noreturn then
 			pTypeFinal = st_void;
-			EmitJumpToLabel(@L_Exit);
+			when NEXT_CASE_I < nNODE:
+				EmitJumpToLabel(@L_Exit);
 		end:if
 
-		CASE_I = Node[CASE_I].pRight;
+		CASE_I = NEXT_CASE_I;
 	end:while
 
 	when !DefaultBranchPresent:
