@@ -1455,13 +1455,29 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		Emit(@Buff);
 
 		if ID==iMOD then
+			/*
+				XCHG is encoded as a single byte for native-length registers:
+				0x92 - xchg AX, DX (16-bit mode), xchg EAX, EDX (32-bit mode)
+				MOV takes 2 bytes.
+				So we prefer XCHG when optimizing for size.
+				See also notes on XCHG performance:
+				https://stackoverflow.com/questions/45766444/why-is-xchg-reg-reg-a-3-micro-op-instruction-on-modern-intel-architectures
+			*/
 			select
 			case Size==1:
-				Emit("xchg    AL,   AH");
+				Emit("mov     AL,   AH");
 			case Size==2:
-				Emit("xchg    AX,   DX");
+				if EmitShortCode != 0 then
+					Emit("xchg    AX,   DX");
+				else
+					Emit("mov     AX,   DX");
+				end:if
 			case Size==4:
-				Emit("xchg    EAX,  EDX");
+				if EmitShortCode != 0 then
+					Emit("xchg    EAX,  EDX");
+				else
+					Emit("mov     EAX,  EDX");
+				end:if
 			default:
 				StopInternalCodegen(__FILE__, __LINE__);
 			end:select
