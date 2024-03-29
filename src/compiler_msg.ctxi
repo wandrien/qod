@@ -76,6 +76,13 @@ void StopWithSubject(char @Msg; char @Subject)
 	Stop(@Buff);
 end
 
+void StopWithSubjectChar(char @Msg; char Char)
+	char Subject[2];
+	Subject[0] = Char;
+	Subject[1] = #0;
+	StopWithSubject(@Msg, @Subject);
+end
+
 void StopInternal(char @File; word Line)
 	char Buff[nBUFF];
 	strcpy(@Buff, @eINTERNAL);

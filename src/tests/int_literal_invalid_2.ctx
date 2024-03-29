@@ -1,0 +1,5 @@
+// TEST: compilation_should_fail 'Недопустимый символ в целочисленном литерале: X'
+
+begin
+	word b = 0xFX5;
+end

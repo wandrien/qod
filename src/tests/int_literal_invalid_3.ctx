@@ -1,0 +1,5 @@
+// TEST: compilation_should_fail 'Недопустимый символ в целочисленном литерале: y'
+
+begin
+	word b = 01fyh;
+end

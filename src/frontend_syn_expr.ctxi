@@ -36,8 +36,11 @@ word val2(char @Str; word Base)
 		case ch >= word('a') & ch <= word('z'):
 			Digit = ch - word('a') + 10;
 		default:
-			Stop(@eWRONGCHAR);
+			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
 		end:select
+
+		when Digit >= Base:
+			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
 
 		word NewValue = Value * Base + Digit;
 

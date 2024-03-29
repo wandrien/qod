@@ -29,6 +29,9 @@ begin
 	put_word(v130); puts(" ");
 	put_word(v131); puts(" ");
 	put_word(v132); puts(" ");
+	put_word(v8100); puts(" ");
+	put_word(v8101); puts(" ");
+	put_word(v8102); puts(" ");
 	put_word(v65400); puts(" ");
 	put_word(v65401); puts(" ");
 	put_word(v65402); puts(" ");

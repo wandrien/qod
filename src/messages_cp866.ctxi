@@ -4,7 +4,7 @@ define @eNOFILE          "Невозможно открыть файл"                     // Can't 
 define @eINCLUDE         "Некорректная вставка файла"                  // Incorrect file include
 define @eEOF             "Конец файла"                                 // Unexpected EOF
 define @eNOMEMORY        "Недостаточно памяти"                         // Not enough memory
-define @eWRONGCHAR       "Недопустимый символ в константе"             // Illegal character in const
+define @eWRONGCHARININT  "Недопустимый символ в целочисленном литерале"// Illegal character in integer literal
 define @eOVERFLOW        "Константа слишком велика"                    // Too big number
 define @eLONGNAME        "Слишком длинный идентификатор"               // Name length too long
 define @eINTTOOBIG       "Слишком длинный целочисленный литерал"       // Integer literal too big
