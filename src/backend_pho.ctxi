@@ -214,7 +214,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	if Const2 == 0 then
 		strcpy(@Buff, "xor     "); /* 2 bytes */
 		strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
-		strcat(@Buff, ", ");
+		strcat(@Buff, ",  ");
 		strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
 		return 1;
 	end:if
@@ -233,7 +233,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 		case ((Const2 & 1) == 0) & (Reg1Const == (Const2 / 2)):
 			strcpy(@Buff, "add     "); /* 2 bytes */
 			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
-			strcat(@Buff, ", ");
+			strcat(@Buff, ",  ");
 			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
 			return 1;
 		end:select
@@ -244,7 +244,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	if RegC != PHO_REG_INVALID then
 		strcpy(@Buff, "mov     "); /* 2 bytes */
 		strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
-		strcat(@Buff, ", ");
+		strcat(@Buff, ",  ");
 		strcat(@Buff, @PHO_EncodeReg(RegC, Mask1));
 		return 1;
 	end:if
