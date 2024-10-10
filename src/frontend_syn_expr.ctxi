@@ -623,12 +623,13 @@ word Primary(word Prty; char @Buff)
 
 			while T_IsPtr(pType) do
 				word P3=Peek();
-				Node[P3].ID   =iADDR;
+				Node[P3].ID = iADDR;
 
 				P2 = P3;
 				@P2=@Node[P3].pRight;
 
 				pType = T_DerefPtr(pType);
+				Node[P3].pType = pType;
 				Call=   0;
 			end:while
 
@@ -670,12 +671,13 @@ word Primary(word Prty; char @Buff)
 
 			while T_IsPtr(pType) do
 				word P3=Peek();
-				Node[P3].ID   =iADDR;
+				Node[P3].ID = iADDR;
 
 				P2 = P3;
 				@P2=@Node[P3].pRight;
 
 				pType = T_DerefPtr(pType);
+				Node[P3].pType = pType;
 				Call=   0;
 			end:while
 
@@ -699,6 +701,7 @@ word Primary(word Prty; char @Buff)
 			Node[P3].ID   =iFIELD;
 			Node[P3].Value= F;
 			pType         = Dict[F].pType;
+			Node[P3].pType= pType;
 			Call          = 0;
 
 			P2 = P3;
