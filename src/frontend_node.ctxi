@@ -8,6 +8,37 @@ word    nNode;
 /*****************************************************************************/
 
 /* Выделить узел и вернуть его индекс. */
+
+word Peek5(word ID; word pLeft; word pRight; word pType)
+	word N  = nNode;
+	when N >= nNODE:
+		StopMemory();
+
+	NODE @n = @Node[nNode];
+
+	n.Used = 0;
+	n.ID     = ID;
+	n.pLeft  = pLeft;
+	n.pRight = pRight;
+	n.pType  = pType;
+	n.SourceLocation = CurrentFileInfo;
+	inc  nNode;
+
+	return N;
+end
+
+word Peek4(word ID; word pLeft; word pRight)
+	return Peek5(ID, pLeft, pRight, nDICT);
+end
+
+word Peek3(word ID; word pLeft)
+	return Peek5(ID, pLeft, nNODE, nDICT);
+end
+
+word Peek2(word ID)
+	return Peek5(ID, nNODE, nNODE, nDICT);
+end
+
 word Peek()
 	word N  = nNode;
 	when N >= nNODE:
@@ -24,6 +55,7 @@ word Peek()
 
 	return N;
 end
+
 
 void NodeFree(word @P)
 	/* TODO: Рекурсивное освобождение узлов, когда будет реализовано управление памятью. */

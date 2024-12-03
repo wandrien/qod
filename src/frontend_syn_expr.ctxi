@@ -474,22 +474,18 @@ word Primary(word Prty; char @Buff)
 			//pType          = Dict[I].pType;
 
 		case Dict[I].Class == cDATA | Dict[I].Class == cFUNC: /* Глобальная переменная/функция? */
-			P1=Peek();
-			Node[P1].ID    =iDATA;
-			Node[P1].Value = I;
-			pType          = Dict[I].pType;
+			P1 = Peek();
 
 			if Dict[I].Class == cFUNC then
 				if strcmp(@Scan(@Buff),"(") == 0 then
-					word P2=Peek();
-					Node[P1].pLeft = P2;
-					Node[P2].ID    =iCALL;
-					Node[P2].Value = I;
-					Call           = 1;
+					Node[P1].ID = iCALL;
+					Node[P1].Value = I;
+					pType = Dict[I].pType;
+					Call = 1;
 
 					Scan(@Buff);
 
-					ParseCallArgs(I, @Node[P2].pLeft, @Buff);
+					ParseCallArgs(I, @Node[P1].pLeft, @Buff);
 				else
 					if nPtr != 1 then
 						when Prty == PRIO_INC:
@@ -500,12 +496,16 @@ word Primary(word Prty; char @Buff)
 							Stop(@eNOADDR);
 					end
 
-					Node[P1].ID    =iFUNC;
+					Node[P1].ID = iFUNC;
 					Node[P1].Value = I;
 					Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
 
 					return P1;
 				end:if
+			else
+				Node[P1].ID = iDATA;
+				Node[P1].Value = I;
+				pType = Dict[I].pType;
 			end:if
 
 		case Dict[I].Class == cTYPE: /* Тип данных? */
@@ -538,11 +538,12 @@ word Primary(word Prty; char @Buff)
 
 				/*
 					TODO:
-						Дальнейший код построения Primary портит дерево для iCAST.
-						Так что здесь мы выходим.
-						Сейчас iCAST поддерживается только для типов, для которых операции точки,
-						индексации массива и вызова функции не имеют смысла. Поэтому в любом случае
-						мы ничего не теряем.
+						Старый код построения Primary портил дерево для iCAST,
+						поэтому здесь стоял принудительный выход из функции.
+						Код был переписан, но сейчас iCAST поддерживается только для типов,
+						для которых операции точки, индексации массива и вызова
+						функции не имеют смысла.
+						Поэтому принудительный выход пока оставлен как есть.
 				*/
 				Scan(@Buff);
 				return P1;
@@ -561,23 +562,21 @@ word Primary(word Prty; char @Buff)
 
 	/*
 		В этом месте имеем следующие поля:
-		P1 - (логически) дочерний узел
+		P1 - дочерний узел
 		pType - тип дочернего узла
 		nPtr - количество операций @ перед узлом.
 	*/
 
-	word @P2=@Node[P1].pLeft;
-	if Node[P1].pLeft<nNODE then
-		@P2=@Node[Node[P1].pLeft].pRight;
-	end:if
+	Node[P1].pType = pType;
 
 	do
 		Scan(@Buff);
 		if strcmp(@Buff,"[")==0 & T_IsArray(pType) then /* Индексация массива. */
-			word P3=Peek();
-			Node[P3].ID   =iINDEX;
-			Node[P3].Value= T_ArrayGetLen(pType);
-			Node[P3].pLeft= Expr(PRIO_ZERO, @Scan(@Buff));
+			word P3 = Peek();
+			Node[P3].ID = iINDEX;
+			Node[P3].Value = T_ArrayGetLen(pType);
+			Node[P3].pLeft = P1;
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 			pType = T_ArrayDeref(pType);
 			Node[P3].pType = pType;
 
@@ -585,10 +584,11 @@ word Primary(word Prty; char @Buff)
 				Stop(@eBRACKETEXP);
 			end:if
 
-			ImplicitCast(st_word, @Node[P3].pLeft);
+			ImplicitCast(st_word, @Node[P3].pRight);
 
-			P2 = P3;
-			@P2 = @Node[P3].pRight;
+			P1 = P3;
+			//P2 = P3;
+			//@P2 = @Node[P3].pRight;
 
 			Scan(@Buff);
 		end:if
@@ -597,23 +597,21 @@ word Primary(word Prty; char @Buff)
 			if !T_IsPtr(pType) then
 				Stop(@eNOADDR);
 			end:if
-
-			word P3=Peek();
-			Node[P3].ID   =iADDR;
-			Node[P3].pLeft= Expr(PRIO_ZERO, @Scan(@Buff));
+			word P3 = Peek();
+			Node[P3].ID = iADDR;
+			Node[P3].pLeft = P1;
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 
 			if strcmp(@Buff,"]")!=0 then
 				Stop(@eBRACKETEXP);
 			end:if
 
-			ImplicitCast(st_word, @Node[P3].pLeft);
-
-			P2 = P3;
-			@P2 = @Node[P3].pRight;
+			ImplicitCast(st_word, @Node[P3].pRight);
 
 			pType = T_DerefPtr(pType);
 			Node[P3].pType = pType;
 			Call = 0;
+			P1 = P3;
 
 			Scan(@Buff);
 		end:while
@@ -624,61 +622,38 @@ word Primary(word Prty; char @Buff)
 			while T_IsPtr(pType) do
 				word P3=Peek();
 				Node[P3].ID = iADDR;
-
-				P2 = P3;
-				@P2=@Node[P3].pRight;
-
+				Node[P3].pLeft = P1;
 				pType = T_DerefPtr(pType);
 				Node[P3].pType = pType;
-				Call=   0;
+				Call = 0;
+				P1 = P3;
 			end:while
 
 			if Dict[pType].Sub!=sFUNCTYPE then
 				Stop(@eHEADEREXP);
 			end
 
-			word  P3        = Peek();
-			Node [P3].ID    =iLPTR;
-			P2              = P3;
-
-			word  P4        = Peek();
-			Node [P4].ID    =iDATA;
-
-			word  P5        = Peek();
-			Node [P5].ID    =iCALL2;
-			Node [P5].Value =pType;
-
-			Node [P4].pLeft = P5;
-
-			word  P6        = Peek();
-			Node [P6].ID    =iEMPTY;
-			Node [P6].pLeft = P1;
-
-			Node [P5].pLeft = P6;
+			P1 = Peek3(iLPTR, P1);
+			Node[P1].pType = T_nPtrTo(1, pType);
+			word P_CALL2 = Peek5(iCALL2, nNODE, P1, Dict[pType].pType);
 
 			Scan(@Buff);
+			ParseCallArgs(pType, @Node[P_CALL2].pLeft, @Buff);
 
-			ParseCallArgs(pType, @Node[P6].pRight, @Buff);
-
-			word pType0     =pType;
-			pType           = Dict[pType0].pType;
-			Call            = 1;
-
-			P1 = P4;
-			@P2=@Node[P5].pRight;
+			pType = Dict[pType].pType;
+			Call = 1;
+			P1 = P_CALL2;
 
 		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры. */
 
 			while T_IsPtr(pType) do
 				word P3=Peek();
 				Node[P3].ID = iADDR;
-
-				P2 = P3;
-				@P2=@Node[P3].pRight;
-
+				Node[P3].pLeft = P1;
 				pType = T_DerefPtr(pType);
 				Node[P3].pType = pType;
-				Call=   0;
+				Call = 0;
+				P1 = P3;
 			end:while
 
 			if Dict[pType].Sub!=sSTRUCT then
@@ -698,14 +673,13 @@ word Primary(word Prty; char @Buff)
 				StopInternal(__FILE__, __LINE__);
 
 			word P3=Peek();
-			Node[P3].ID   =iFIELD;
-			Node[P3].Value= F;
-			pType         = Dict[F].pType;
-			Node[P3].pType= pType;
-			Call          = 0;
-
-			P2 = P3;
-			@P2=@Node[P3].pRight;
+			Node[P3].ID = iFIELD;
+			Node[P3].pLeft = P1;
+			Node[P3].Value = F;
+			pType = Dict[F].pType;
+			Node[P3].pType = pType;
+			P1 = P3;
+			Call = 0;
 
 		default:
 			exit;
@@ -735,27 +709,23 @@ word Primary(word Prty; char @Buff)
 			Stop(@eNOADDR);
 		end:if
 
-		P4=Peek();
 		if nPtr>nPtr1 then
-			Node[P4].ID=iLPTR;
-		else
-			Node[P4].ID=iLOAD;
+			P4=Peek();
+			Node[P4].ID = iLPTR;
+			Node[P4].pType = T_nPtrTo(1, pType);
 		end:if
 	end:if
 
 	while nPtr1>nPtr do
-		word P3=Peek();
-		Node[P3].ID   =iADDR;
-
-		P2 = P3;
-		@P2=@Node[P3].pRight;
-
+		pType = T_DerefPtr(pType);
+		P1 = Peek5(iADDR, P1, nNODE, pType);
 		dec nPtr1;
 	end:while
 
-	P2  =P4;
-
-	Node[P1].pType = T_nPtrTo(nPtr, pTypeDeref);
+	if P4 != nNODE then
+		Node[P4].pLeft = P1;
+		P1 = P4;
+	end:if
 
 	return P1;
 

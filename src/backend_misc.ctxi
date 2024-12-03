@@ -104,7 +104,6 @@ void InitializeIDDesc()
 	InitIDDesc1(iINDEX  , "iINDEX"  );
 	InitIDDesc1(iADDR   , "iADDR"   );
 	InitIDDesc2(iFIELD  , "iFIELD"  , vcDict, 0);
-	InitIDDesc1(iLOAD   , "iLOAD"   );
 	InitIDDesc1(iLPTR   , "iLPTR"   );
 
 	InitIDDesc2(iDEF_LOCAL, "iDEF_LOCAL", vcChar, 1);
@@ -120,7 +119,7 @@ void InitializeIDDesc()
 	InitIDDesc2(iDEC    , "iDEC"    , vcNone, 1);
 	InitIDDesc2(iPUSH   , "iPUSH"   , vcNone, 1);
 	InitIDDesc2(iASSIGN , "iASSIGN" , vcNone, 1);
-	InitIDDesc1(iINLINE , "iINLINE" );
+	InitIDDesc2(iINLINE , "iINLINE" , vcNone, 1);
 	InitIDDesc2(iRETURN , "iRETURN" , vcNone, 1);
 
 	InitIDDesc2(iBODY   , "iBODY"  , vcNone, 1);

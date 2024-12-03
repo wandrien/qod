@@ -92,7 +92,7 @@ define  iCALL2      32 // Косвенный вызов функции
 define  iINDEX      33 // Индексация массива
 define  iADDR       34 // Индексация указателя
 define  iFIELD      35 // Обращение к полю структуры
-define  iLOAD       36 // Загpузка значения переменной
+//define  iUNUNSED36  36 //
 define  iLPTR       37 // Загpузка адpеса переменной
 
 define  iDEF_LOCAL  38 // Опpеделение локальной пеpеменной
