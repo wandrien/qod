@@ -132,8 +132,8 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 	end:if
 
-	Ref.pType = T_DerefPtr(Ref.pType);
-	word Size = T_SizeOf(Ref.pType);
+	word pTypeDeref = T_DerefPtr(Ref.pType);
+	word Size = T_SizeOf(pTypeDeref);
 
 	word pIndex = P1;
 
@@ -176,26 +176,18 @@ void Code_ADDR(word P1; ValueRef @Ref)
 
 	char @TX = @CodeReg(NULL, Reg_TARGET, 4);
 
-	if pIndex < nNODE then
-		strcpy3(@Buff,"add     ",@TX,",  dword ");
-	else
-		strcpy3(@Buff,"mov     ",@TX,",  dword ");
-	end:if
-
-	if Ref.IX != RegNone then
-		char @RX = @CodeReg(NULL, Ref.IX, 4);
-
-		switch Ref.ID of
-		case iDATA:
-			Emit(@strcat5(@Buff,"[@@DATA+",@RX,"+",@str(Ref.Offset),"]"));
-		case iPARM:
-			Emit(@strcat5(@Buff,"[EBP+",@RX,"+",@str(Ref.Offset),"]"));
-		case iLOCAL:
-			Emit(@strcat5(@Buff,"[EBP+",@RX,"-",@str(Ref.Offset),"]"));
-		case iREF:
-			Emit(@strcat5(@Buff,"[",@RX,"+",@str(Ref.Offset),"]"));
-		case iREG:
+	switch Ref.ID of
+	case iDATA, iPARM, iLOCAL, iREF:
+		if pIndex < nNODE then
+			strcpy3(@Buff,"add     ",@TX,",  ");
+		else
+			strcpy3(@Buff,"mov     ",@TX,",  ");
+		end:if
+		Emit(@ValueRef_Code(@Buff, @Ref));
+	case iREG:
+		if Ref.IX != RegNone then
 			if Reg_TARGET != Ref.IX then
+				char @RX = @CodeReg(NULL, Ref.IX, 4);
 				if Ref.Offset != 0 then
 					strcpy3(@Buff,"lea     ",@TX,",  dword ");
 					strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ref.Offset),"]");
@@ -204,24 +196,13 @@ void Code_ADDR(word P1; ValueRef @Ref)
 					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@RX));
 				end:if
 			end:if
-		default:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-		end:switch
-	else
-		switch Ref.ID of
-		case iDATA:
-			Emit(@strcat3(@Buff,"[@@DATA+",@str(Ref.Offset),"]"));
-		case iPARM:
-			Emit(@strcat3(@Buff,"[EBP+",@str(Ref.Offset),"]"));
-		case iLOCAL:
-			Emit(@strcat3(@Buff,"[EBP-",@str(Ref.Offset),"]"));
-		case iREG:
-			Reg_TARGET = Ref.IX;
+		else
+			//Reg_TARGET = Ref.IX;
 			null;
-		default:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-		end:switch
-	end:if
+		end:if
+	default:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+	end:switch
 
 	if Reg_TARGET == Reg_ALT_TARGET | Reg_ALT_TARGET == RegNone then
 		Ref.IX = Reg_TARGET;
@@ -236,6 +217,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		Ref.IX = Reg_TARGET_tmp;
 	end:if
 
+	Ref.pType = pTypeDeref;
 	Ref.ID = iREF;
 	Ref.Offset = 0;
 end
@@ -254,17 +236,12 @@ void Code_LPTR(word P1; ValueRef @Ref)
 		end:if
 
 		switch Ref.ID of
-		case iDATA:
-			Emit(@strcpy4(@Buff,"add     ",@TX,",  @@DATA+",@str(Ref.Offset)));
-		case iPARM:
-			Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"+",@str(Ref.Offset),"]"));
-		case iLOCAL:
-			Emit(@strcpy7(@Buff,"lea     ",@TX,",  [EBP+",@TX,"-",@str(Ref.Offset),"]"));
-		case iSTRING:
-			char @s = "@@ROLITERALS+";
-			when Ref.RO == 0:
-				@s = "@@RWLITERALS+";
-			Emit(@strcpy5(@Buff,"add     ",@TX,",  ", @s,@str(Ref.Offset)));
+		case iDATA, iSTRING:
+			strcpy3(@Buff,"add     ",@TX,",  ");
+			Emit(@ValueRef_Code_StaticOffset(@Buff, @Ref));
+		case iPARM, iLOCAL:
+			strcpy3(@Buff,"lea     ",@TX,",  ");
+			Emit(@ValueRef_Code_ForLEA(@Buff, @Ref));
 		case iREF:
 			when Ref.Offset != 0:
 				Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ref.Offset)));
@@ -273,17 +250,12 @@ void Code_LPTR(word P1; ValueRef @Ref)
 		end:switch
 	else
 		switch Ref.ID of
-		case iDATA:
-			Emit(@strcpy4(@Buff,"mov     ",@TX,",  @@DATA+",@str(Ref.Offset)));
-		case iPARM:
-			Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP+",@str(Ref.Offset),"]"));
-		case iLOCAL:
-			Emit(@strcpy5(@Buff,"lea     ",@TX,",  [EBP-",@str(Ref.Offset),"]"));
-		case iSTRING:
-			char @s = "@@ROLITERALS+";
-			when Ref.RO == 0:
-				@s = "@@RWLITERALS+";
-			Emit(@strcpy5(@Buff,"mov     ",@TX,",  ",@s,@str(Ref.Offset)));
+		case iDATA, iSTRING:
+			strcpy3(@Buff,"mov     ",@TX,",  ");
+			Emit(@ValueRef_Code_StaticOffset(@Buff, @Ref));
+		case iPARM, iLOCAL:
+			strcpy3(@Buff,"lea     ",@TX,",  ");
+			Emit(@ValueRef_Code_ForLEA(@Buff, @Ref));
 		case iREF:
 			null;
 		default:
@@ -293,7 +265,7 @@ void Code_LPTR(word P1; ValueRef @Ref)
 
 	Ref.pType = T_PtrTo(Ref.pType);
 	Ref.ID = iREG;
-	Ref.IX = RegA;
+	Ref.IX = Reg_TARGET;
 	Ref.Offset = 0;
 end
 
@@ -357,11 +329,7 @@ word CodePrimary(word pPrimary; ValueRef @Ref)
 
 		if NodeIsLiteralWord(P1) then
 			word IndexingOffset = Size * Node[P1].Value;
-			if Ref.ID != iLOCAL then
-				Ref.Offset = Ref.Offset + IndexingOffset;
-			else
-				Ref.Offset = Ref.Offset - IndexingOffset;
-			end
+			Ref.Offset = Ref.Offset + IndexingOffset;
 		else
 			Code(P1);
 			Ref.IX = Reg_TARGET;
@@ -574,11 +542,7 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 
 		if NodeIsLiteralWord(pIndex) then
 			word IndexingOffset = Size * Node[pIndex].Value;
-			if Ref.ID != iLOCAL then
-				Ref.Offset = Ref.Offset + IndexingOffset;
-			else
-				Ref.Offset = Ref.Offset - IndexingOffset;
-			end
+			Ref.Offset = Ref.Offset + IndexingOffset;
 		else
 			if Query != Query_SingleRegOperand then
 				return false;
@@ -1641,7 +1605,6 @@ word Code_ASSIGN(word P)
 	else
 		Code(Node[P1].pLeft);
 	end
-
 
 	Reg_TARGET = RegA;
 	Reg_ALT_TARGET = RegA;

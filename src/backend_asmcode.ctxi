@@ -227,6 +227,21 @@ end
 
 /*****************************************************************************/
 
+char CodeOffsetAddenum_Buff[nBUFF];
+char @CodeOffsetAddenum(int Offset)
+	select
+	case Offset > 0:
+		strcpy2(@CodeOffsetAddenum_Buff,"+",@str(Offset));
+	case Offset < 0:
+		strcpy2(@CodeOffsetAddenum_Buff,"-",@str(-Offset));
+	default:
+		CodeOffsetAddenum_Buff[0] = #0;
+	end:select
+	return @CodeOffsetAddenum_Buff;
+end
+
+/*****************************************************************************/
+
 /*
 
 ID             Value Location                  LValue    Indirect
@@ -234,7 +249,7 @@ iSTRING, RO=0: [@@RWLITERALS + IX + Offset]    Yes       Yes
 iSTRING, RO=1: [@@ROLITERALS + IX + Offset]    No        Yes
 iDATA:         [@@DATA       + IX + Offset]    Yes       Yes
 iPARM:         [EBP          + IX + Offset]    Yes       Yes
-iLOCAL:        [EBP          + IX - Offset]    Yes       Yes
+iLOCAL:        [EBP          + IX + Offset]    Yes       Yes       (Offset is negative)
 iREF:          [               IX + Offset]    Yes       Yes
 iREG                           IX + Offset     No        No
 iCONST                              Offset     No        No
@@ -244,7 +259,7 @@ struct ValueRef
 	word ID;
 	word RO;
 	word pType;
-	word Offset;
+	int  Offset;
 	word IX;
 end
 
@@ -302,7 +317,7 @@ void ValueRef_ExtractDataInfo(ValueRef @Ref; word P)
 
 	case iLOCAL:
 		Ref.pType  = Local[Value].pType;
-		Ref.Offset = Local[Value].Value;
+		Ref.Offset = -Local[Value].Value;
 		Ref.RO     = 0;
 
 	case iSTRING:
@@ -326,11 +341,7 @@ void ValueRef_Apply_FIELD(ValueRef @Ref; word P)
 		StopInternalCodegen(__FILE__, __LINE__);
 
 	Ref.pType = Dict[F].pType;
-	if Ref.ID != iLOCAL then
-		Ref.Offset = Ref.Offset + Dict[F].Label;
-	else
-		Ref.Offset = Ref.Offset - Dict[F].Label;
-	end
+	Ref.Offset = Ref.Offset + Dict[F].Label;
 end
 
 /*****************************************************************************/
@@ -339,20 +350,18 @@ end
 
 iDATA:    [@@DATA + IX + offset]
 iPARM:    [EBP    + IX + offset]
-iLOCAL:   [EBP    + IX - offset]
+iLOCAL:   [EBP    + IX + offset]
 iREF:     [         IX + offset]
 
 */
 
-char @ValueRef_Code_(char @Buff; word Size; word ID; word IX; word offset)
+char @ValueRef_Code_(char @Buff; word Size; word ID; word IX; int Offset)
 
 	char@ SizeMarker = "";
 	char@ Prefix = "";
 
 	char@ Plus_RX = "";
 	char@ RX = "";
-
-	char@ PlusOffset = "+";
 
 	select
 	case Size == 0:
@@ -372,24 +381,21 @@ char @ValueRef_Code_(char @Buff; word Size; word ID; word IX; word offset)
 		@RX = @CodeReg(NULL, IX, 4);
 	end
 
-	select
-	case ID==iDATA:
+	switch ID of
+	case iDATA:
 		@Prefix = "[@@DATA";
-	case ID==iPARM:
+	case iPARM, iLOCAL:
 		@Prefix = "[EBP";
-	case ID==iLOCAL:
-		@Prefix = "[EBP";
-		@PlusOffset = "-";
-	case ID==iREF:
+	case iREF:
 		when IX == RegNone:
 			StopInternalCodegen(__FILE__, __LINE__);
 		@Prefix = "[";
 		@Plus_RX = "";
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
-	end:select
+	end:switch
 
-	strcat7(@Buff, @SizeMarker, @Prefix, @Plus_RX, @RX, @PlusOffset, @str(offset), "]");
+	strcat6(@Buff, @SizeMarker, @Prefix, @Plus_RX, @RX, @CodeOffsetAddenum(Offset), "]");
 
 	return @Buff;
 end
@@ -400,6 +406,31 @@ end
 
 char @ValueRef_Code_ForLEA(char @Buff; ValueRef @Ref)
 	return @ValueRef_Code_(@Buff, 0, Ref.ID, Ref.IX, Ref.Offset);
+end
+
+/*
+iSTRING, RO=0: @@RWLITERALS + Offset
+iSTRING, RO=1: @@ROLITERALS + Offset
+iDATA:         @@DATA       + Offset
+*/
+
+char @ValueRef_Code_StaticOffset(char @Buff; ValueRef @Ref)
+	char @Prefix = "";
+	switch Ref.ID of
+	case iDATA:
+		@Prefix = "@@DATA";
+	case iSTRING:
+		if Ref.RO == 0 then
+			@Prefix = "@@RWLITERALS";
+		else
+			@Prefix = "@@ROLITERALS";
+		end:if
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:switch
+
+	strcat2(@Buff, @Prefix, @CodeOffsetAddenum(Ref.Offset));
+	return @Buff;
 end
 
 
