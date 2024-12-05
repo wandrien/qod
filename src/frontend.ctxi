@@ -118,6 +118,9 @@ void InitFrontEnd()
 	Word("false");
 	Word("true");
 	Word("sizeof");
+	Word("bitsizeof");
+	Word("countof");
+	Word("const_expr");
 	Word("__FILE__");
 	Word("__LINE__");
 

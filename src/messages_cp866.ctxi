@@ -40,6 +40,8 @@ define @eTYPE_IMPLICIT_CAST "Неявное приведение типов невозможно"      // No imp
 
 define @eSWTYPE          "Требуется результат целого/символьного типа" // word/integer/char result required
 define @eCONSTEXP        "Требуется целая/символьная константа"        // word/integer/char constant required
+define @eBITSIZEOVERFLOW "Переполнение в выражении bitsizeof()"
+define @eCOUNTOFREQARR   "Для countof() требуется тип массива"
 define @eDUPCASE         "Повтор варианта"                             // Duplicate case label
 define @eHEADEREXP       "Требуется ссылка на функцию"                 // Function reference required
 define @eTYPEEXP         "Пропущен идентификатор типа"                 // Type name expected
@@ -61,7 +63,7 @@ define @eWRITEERR        "Ошибка записи"                               // Write 
 define @eFNAMEEXP        "Пропушено имя файла"                         // File name expected
 define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote expected
 define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param expected
-define @eINVALIDBASE     "Недопустимое основани системы счисления"     //
+define @eINVALIDBASE     "Недопустимое основание системы счисления"    //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
 define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"
 

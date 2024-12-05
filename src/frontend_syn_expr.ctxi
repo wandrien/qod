@@ -343,6 +343,30 @@ end
 
 /*****************************************************************************/
 
+word ParseXOfTypeArgs(char @Buff)
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	if b == BRACKET_INVALID then
+		Stop(@eBRACKETEXP);
+	end:if
+
+	Scan(@Buff);
+	word I=Find(@Buff);
+	if I>=nDict then
+		StopWithSubject(@eUNDECLARED, @Buff);
+	end:if
+
+	when Dict[I].Class != cTYPE:
+		StopWithSubject(@eNOTATYPE, @Buff);
+
+	if !str_eq(@Scan(@Buff),@Bracket[b].RightBracket) then
+		Stop(@eBRACKETEXP);
+	end:if
+
+	return I;
+end
+
+/*****************************************************************************/
+
 word Primary(word Prty; char @Buff)
 	if isdigit(Buff[0])!=0 then /* Число. */
 		word P1 = Peek();
@@ -359,29 +383,36 @@ word Primary(word Prty; char @Buff)
 	end
 
 	if str_eq(@Buff,"sizeof") then /* sizeof(type) */
-		word b = LookupBracket(BracketType_Parentheses, @Scan(@Buff));
-		if b == BRACKET_INVALID then
-			Stop(@eBRACKETEXP);
-		end:if
-
-		Scan(@Buff);
-		word I=Find(@Buff);
-		if I>=nDict then
-			StopWithSubject(@eUNDECLARED, @Buff);
-		end:if
-
-		when Dict[I].Class != cTYPE:
-			StopWithSubject(@eNOTATYPE, @Buff);
-
-		if !str_eq(@Scan(@Buff),@Bracket[b].RightBracket) then
-			Stop(@eBRACKETEXP);
-		end:if
-
+		word I = ParseXOfTypeArgs(@Scan(@Buff));
 		word P1 = Peek();
 		NodeAssignWord(P1, T_SizeOf(I));
 		Scan(@Buff);
 		return P1;
 	end
+
+	if str_eq(@Buff,"bitsizeof") then /* bitsizeof(type) */
+		word I = ParseXOfTypeArgs(@Scan(@Buff));
+		word P1 = Peek();
+		word Size = T_SizeOf(I);
+		word BitSize = Size * 8;
+		when BitSize < Size:
+			Stop(@eBITSIZEOVERFLOW);
+		NodeAssignWord(P1, BitSize);
+		Scan(@Buff);
+		return P1;
+	end
+
+	if str_eq(@Buff,"countof") then /* countof(type) */
+		/* TODO: Невозможно протестировать, не реализован конструктор типа. */
+		word I = ParseXOfTypeArgs(@Scan(@Buff));
+		word P1 = Peek();
+		when !T_IsArray(I):
+			Stop(@eCOUNTOFREQARR);
+		NodeAssignWord(P1, T_ArrayGetLen(I));
+		Scan(@Buff);
+		return P1;
+	end
+
 
 	word pType;
 	word nPtr;
