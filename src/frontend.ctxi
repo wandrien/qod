@@ -46,6 +46,7 @@ word pLoop;
 /*****************************************************************************/
 
 include "frontend_local.ctxi"
+include "frontend_syn_brackets.ctxi"
 include "frontend_syn_operators.ctxi"
 include "frontend_syn_expr.ctxi"
 include "frontend_syn_statements.ctxi"
@@ -58,6 +59,7 @@ void InitFrontEnd()
 	init_charid();
 	InitLex();
 	InitCharData();
+	InitBracket();
 	InitOperator();
 
 	nDict = 0;
@@ -72,6 +74,11 @@ void InitFrontEnd()
 	RegisterDigraph(">=");
 	RegisterDigraph(":=");
 	RegisterDigraph("==");
+
+	RegisterDigraph("(*");
+	RegisterDigraph("*)");
+	RegisterDigraph("(%");
+	RegisterDigraph("%)");
 
 	RegisterDigraph("/*");
 	RegisterDigraph("//");
@@ -148,6 +155,7 @@ void InitFrontEnd()
 	st_double  = BaseType("double", sBASE_FLOAT, target_size_of_double);
 	st_long_double = BaseType("long_double", sBASE_FLOAT, target_size_of_long_double);
 
+	RegisterBrackets();
 	RegisterOperators();
 
 	strcpy(@Text,"");

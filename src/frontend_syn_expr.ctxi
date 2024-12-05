@@ -311,7 +311,7 @@ end
 
 /*****************************************************************************/
 
-void ParseCallArgs(word pFunc; word @P7; char @Buff)
+void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
 	word pARGS = FindInNamespace("args", pFunc);
 	when pARGS >= nDICT:
 		StopInternal(__FILE__, __LINE__);
@@ -337,9 +337,8 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff)
 
 	end:while
 
-	when strcmp(@Buff,")")!=0:
+	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
 		Stop(@eBRACKETEXP);
-
 end
 
 /*****************************************************************************/
@@ -360,7 +359,8 @@ word Primary(word Prty; char @Buff)
 	end
 
 	if str_eq(@Buff,"sizeof") then /* sizeof(type) */
-		if strcmp(@Scan(@Buff),"(")!=0 then
+		word b = LookupBracket(BracketType_Parentheses, @Scan(@Buff));
+		if b == BRACKET_INVALID then
 			Stop(@eBRACKETEXP);
 		end:if
 
@@ -373,7 +373,7 @@ word Primary(word Prty; char @Buff)
 		when Dict[I].Class != cTYPE:
 			StopWithSubject(@eNOTATYPE, @Buff);
 
-		if strcmp(@Scan(@Buff),")")!=0 then
+		if !str_eq(@Scan(@Buff),@Bracket[b].RightBracket) then
 			Stop(@eBRACKETEXP);
 		end:if
 
@@ -477,7 +477,8 @@ word Primary(word Prty; char @Buff)
 			P1 = Peek();
 
 			if Dict[I].Class == cFUNC then
-				if strcmp(@Scan(@Buff),"(") == 0 then
+				word b = LookupBracket(BracketType_Parentheses, @Scan(@Buff));
+				if b != BRACKET_INVALID then
 					Node[P1].ID = iCALL;
 					Node[P1].Value = I;
 					pType = Dict[I].pType;
@@ -485,7 +486,7 @@ word Primary(word Prty; char @Buff)
 
 					Scan(@Buff);
 
-					ParseCallArgs(I, @Node[P1].pLeft, @Buff);
+					ParseCallArgs(I, @Node[P1].pLeft, @Buff, b);
 				else
 					if nPtr != 1 then
 						when Prty == PRIO_INC:
@@ -616,8 +617,9 @@ word Primary(word Prty; char @Buff)
 			Scan(@Buff);
 		end:while
 
+		word b = LookupBracket(BracketType_Parentheses, @Buff);
 		select
-		case strcmp(@Buff,"(") == 0: /* Вызов функтора. */
+		case b != BRACKET_INVALID: /* Вызов функтора. */
 
 			while T_IsPtr(pType) do
 				word P3=Peek();
@@ -638,7 +640,7 @@ word Primary(word Prty; char @Buff)
 			word P_CALL2 = Peek5(iCALL2, nNODE, P1, Dict[pType].pType);
 
 			Scan(@Buff);
-			ParseCallArgs(pType, @Node[P_CALL2].pLeft, @Buff);
+			ParseCallArgs(pType, @Node[P_CALL2].pLeft, @Buff, b);
 
 			pType = Dict[pType].pType;
 			Call = 1;
@@ -1009,10 +1011,13 @@ end
 
 /*****************************************************************************/
 
-word ExprParentheses(word P1; word O;  char @Buff)
+word ExprParentheses(word P1; word O; char @Buff)
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	when b == BRACKET_INVALID:
+		StopInternal(__FILE__, __LINE__);
 
 	word P2 = Expr(PRIO_ZERO, @Scan(@Buff));
-	if strcmp(@Buff,")")!=0 then
+	if !str_eq(@Buff,@Bracket[b].RightBracket) then
 		Stop(@eBRACKETEXP);
 	end
 	Scan(@Buff);
@@ -1021,9 +1026,11 @@ end
 
 /*****************************************************************************/
 
-word ExprConstExpr(word P1; word O;  char @Buff)
+word ExprConstExpr(word P1; word O; char @Buff)
 	Scan(@Buff);
-	if strcmp(@Buff,"(") != 0 then
+
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	if b == BRACKET_INVALID then
 		Stop(@eBRACKETEXP);
 	end
 
@@ -1183,6 +1190,8 @@ void RegisterOperators()
 	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
 
 	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("(*"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("(%"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0   , @ExprConstExpr);
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
@@ -1194,3 +1203,8 @@ end
 
 /*****************************************************************************/
 
+void RegisterBrackets()
+	RegisterBracket(BracketType_Parentheses, "(", ")");
+	RegisterBracket(BracketType_Parentheses, "(*", "*)");
+	RegisterBracket(BracketType_Parentheses, "(%", "%)");
+end

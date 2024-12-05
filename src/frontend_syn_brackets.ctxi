@@ -1,0 +1,69 @@
+
+/*****************************************************************************/
+
+define BRACKET_LEX_SIZE 3 /* Максимальный размер лексемы. */
+
+define BracketType_Parentheses 0
+
+struct BRACKET
+	char LeftBracket[BRACKET_LEX_SIZE];
+	char RightBracket[BRACKET_LEX_SIZE];
+	word Type;
+end
+
+/*****************************************************************************/
+
+define nBRACKET 8
+define BRACKET_INVALID 8
+BRACKET Bracket[nBRACKET];
+
+word nBracket;
+
+/*****************************************************************************/
+
+void InitBracket()
+	nBracket = 0;
+end
+
+/*****************************************************************************/
+
+void RegisterBracket(word Type; char @LeftBracket; char @RightBracket)
+
+	word ls = strlen(@LeftBracket);
+	word rs = strlen(@LeftBracket);
+
+	if ls >= BRACKET_LEX_SIZE | ls < 1 then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	if rs >= BRACKET_LEX_SIZE | rs < 1 then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	if nBracket >= nBRACKET then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	word i = nBracket;
+	inc nBracket;
+
+	strcpy(@Bracket[i].LeftBracket, @LeftBracket);
+	strcpy(@Bracket[i].RightBracket, @RightBracket);
+	Bracket[i].Type = Type;
+end
+
+/*****************************************************************************/
+
+word LookupBracket(word Type; char @LeftBracket)
+	word i = 0;
+	while i < nBracket do
+		if
+			(Bracket[i].Type == Type) &
+			str_eq(@Bracket[i].LeftBracket, @LeftBracket)
+		then
+			return i;
+		end:if
+		inc i;
+	end:while
+	return BRACKET_INVALID;
+end

@@ -3,7 +3,7 @@
 
 /*****************************************************************************/
 
-define nDIGRAPH 8
+define nDIGRAPH 12
 
 struct Digraph
 	char Name[3];
@@ -235,6 +235,9 @@ end
 /*****************************************************************************/
 
 void RegisterDigraph(char@ Name)
+	when nDigraph >= nDIGRAPH:
+		StopInternal(__FILE__, __LINE__);
+
 	if strlen(@Name) != 2 then
 		StopInternal(__FILE__, __LINE__);
 	end
