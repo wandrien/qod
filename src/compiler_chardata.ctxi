@@ -69,11 +69,18 @@ word SaveString0(char @Str)
 	return SaveString(@Str, strlen(@Str) + 1);
 end
 
+/*****************************************************************************/
+
+char @str_saved(word Value)
+	word Index = SaveString0(@str(Value));
+	return @Char[Index];
+end
 
 /*****************************************************************************/
 
 void InitCharData()
-	_nChar = 0;
+	Char[0] = #0;
+	_nChar = 1;
 end
 
 /*****************************************************************************/

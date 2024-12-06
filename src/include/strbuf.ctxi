@@ -1,0 +1,56 @@
+
+struct strbuf
+	char @Buff;
+	word BuffSize;
+	word BuffLen;
+end
+
+void strbuf_init(strbuf @Dst; char @Buff; word BuffSize)
+	when @Buff == NULL:
+		BuffSize = 0;
+	@Dst.Buff = @Buff;
+	Dst.BuffSize = BuffSize;
+	Dst.BuffLen = 0;
+	when BuffSize > 0:
+		Buff[0] = #0;
+end
+
+word strbuf_get_virtual_len(strbuf @Dst)
+	return Dst.BuffLen;
+end
+
+word strbuf_get_actual_len(strbuf @Dst)
+	word BuffSize = Dst.BuffSize;
+	if BuffSize == 0 then
+		return 0;
+	end
+	word MaxRoom = BuffSize - 1;
+	if Dst.BuffLen > MaxRoom then
+		return MaxRoom;
+	else
+		return Dst.BuffLen;
+	end
+end
+
+word strbuf_append_cstr(strbuf @Dst; char @Src)
+	word SrcLen = strlen(@Src);
+	word BuffSize = Dst.BuffSize;
+	word OldLen = Dst.BuffLen;
+	word NewLen = OldLen + SrcLen;
+	if OldLen + 1 >= BuffSize then
+		Dst.BuffLen = NewLen;
+		return NewLen;
+	end
+
+	word RoomSize;
+	if NewLen + 1 >= BuffSize then
+		RoomSize = BuffSize - OldLen - 1;
+	else
+		RoomSize = SrcLen;
+	end
+	memcpy(@Dst.Buff[OldLen], @Src, RoomSize); // FIXME: internal error
+	Dst.BuffLen = NewLen;
+	Dst.Buff[NewLen] = #0;
+	return NewLen;
+end
+

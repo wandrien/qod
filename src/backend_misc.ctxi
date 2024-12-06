@@ -101,7 +101,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iMOD    , "iMOD"    );
 
 	InitIDDesc2(iCALL   , "iCALL"   , vcDict, 0);
-	InitIDDesc2(iCALL2  , "iCALL2"  , vcDict, 0);
+	InitIDDesc1(iCALL2  , "iCALL2"  );
 	InitIDDesc1(iINDEX  , "iINDEX"  );
 	InitIDDesc1(iADDR   , "iADDR"   );
 	InitIDDesc2(iFIELD  , "iFIELD"  , vcDict, 0);
@@ -158,7 +158,7 @@ void EmitNodeValue(word P)
 	char @N;
 	select
 		case IDDesc[Node[P].ID].ValueClass == vcDict:
-			@N = @DictGetName(Node[P].Value);
+			@N = @DictGetFullyQualifiedName(Node[P].Value);
 		case IDDesc[Node[P].ID].ValueClass == vcChar:
 			@N = @Char[Node[P].Value];
 		default:

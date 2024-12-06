@@ -61,11 +61,40 @@ end
 /*****************************************************************************/
 
 char @DictGetName(word D)
-
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
 	return @Char[Dict[D].Name2];
+end
+
+/*****************************************************************************/
+
+void Dict_MakeFullyQualifiedName(strbuf @Buff; word D)
+	if D == nDICT then
+		return;
+	end
+	Dict_MakeFullyQualifiedName(@Buff, Dict[D].pNamespace);
+	when strbuf_get_virtual_len(@Buff) > 0:
+		strbuf_append_cstr(@Buff, ".");
+	strbuf_append_cstr(@Buff, @DictGetName(D));
+end
+
+char @DictGetFullyQualifiedName(word D)
+	when D >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	word Index = Dict[D].FullyQualifiedName;
+	when Index != 0:
+		return @Char[Index];
+
+	char Buff[nBUFF];
+	strbuf buf;
+	strbuf_init(@buf, @Buff, nBUFF);
+	Dict_MakeFullyQualifiedName(@buf, D);
+
+	Index = SaveString0(@Buff);
+	Dict[D].FullyQualifiedName = Index;
+	return @Char[Index];
 end
 
 /*****************************************************************************/
@@ -80,7 +109,9 @@ word DictAlloc()
 
 	DICT @d = @Dict[r];
 
+	d.Name2 = 0;
 	d.Used = 0;
+	d.FullyQualifiedName = 0;
 	d.pType = nDICT;
 	d.tCachedPtrToMe = nDICT;
 	d.tCachedFuncTypeOfMe = nDICT;
