@@ -154,6 +154,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 				EmitWithExprComment(@CodePushReg(@Buff, Reg_ALT_TARGET, 4),
 					"saved in Code_ADDR");
 			end:if
+			Buff[0] = #0;
 			Emit(@CodeXchgRegReg(@Buff, Ref.IX, Reg_ALT_TARGET, 4));
 			Reg_TARGET = Ref.IX;
 			Ref.IX = Reg_ALT_TARGET;
