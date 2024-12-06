@@ -118,27 +118,38 @@ word Code_PUSH(word P; char @Buff)
 	/* Оптимизация прямой загрузки числа. */
 	if NodeCanBeEncodedAsImm(P1) & (T_SizeOf(Node[P1].pType) == 4) then
 		word Value = Node[P1].Value;
+		word Size = T_SizeOf(Node[P1].pType);
 
-		/* Если какой-либо регистр уже содержит нужную константу... */
-		word Reg = PHO_FindRegWithConst(Value);
-		if Reg != PHO_REG_INVALID then
-			Emit(@strcpy2(@Buff, "push    ", @PHO_EncodeReg(Reg, 0xFFFF_FFFF)));
-			return nDICT;
+		if Size == 4 | Size == 2 | Size == 1 then
+			/* Если какой-либо регистр уже содержит нужную константу... */
+			/* FIXME: проверять только часть регистра при необходимости */
+			word Reg = PHO_FindRegWithConst(Value);
+			if Reg != PHO_REG_INVALID then
+				Emit(@strcpy2(@Buff, "push    ", @PHO_EncodeReg(Reg, 0xFFFF_FFFF)));
+				return nDICT;
+			end:if
 		end:if
 
-		/* Прямая загрузка числа. Кроме значения 0. Для 0 используем общий алгоритм,
-		   который позволяет оптимизировать до xor.
-		*/
-		if Value != 0 then
-			Emit(@strcpy2(@Buff, "push    dword ", @str(Value)));
-			return nDICT;
+		if Size == 4 then
+			/* Прямая загрузка числа. Кроме значения 0. Для 0 используем общий алгоритм,
+			   который позволяет оптимизировать до xor.
+			*/
+			if Value != 0 then
+				Emit(@strcpy2(@Buff, "push    dword ", @str(Value)));
+				return nDICT;
+			end:if
 		end:if
 	end:if
 
 	/* Все остальные варианты... */
 
-	Reg_TARGET = RegA;
-	word pType = Code(Node[P].pLeft);
+	/* Вариант с выбором регистра компилирует успешно, но особого толку нет. */
+	/*if !NodeCanBeEncodedAsImm(P1) & CodeRequiresSingleRegister(P1) then
+		Reg_TARGET = ChooseEmptyReg();
+	else*/
+		Reg_TARGET = RegA;
+	/*end:if*/
+	word pType = Code(P1);
 
 	word Size = target_size_of_pointer;
 	if pType<nDICT then
@@ -146,15 +157,13 @@ word Code_PUSH(word P; char @Buff)
 	end
 
 	select
-	case Size==1:
-		Emit("push    EAX");
-	case Size==2:
-		Emit("push    EAX");
-	case Size==4:
-		Emit("push    EAX");
+	case Size==1 | Size==2 | Size==4:
+		Buff[0] = #0;
+		Emit(@CodePushReg(@Buff, Reg_TARGET, 4));
 	default:
+		char @TX = @CodeReg(NULL, Reg_TARGET, 4);
 		Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(DefaultInStackAlign(Size))));
-		Emit("mov     ESI,  EAX");
+		Emit(@strcpy2(@Buff,"mov     ESI,  ",@TX));
 		Emit("mov     EDI,  ESP");
 		Emit("cld");
 		Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));

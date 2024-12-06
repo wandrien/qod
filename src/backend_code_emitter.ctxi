@@ -42,43 +42,72 @@ end
 
 /*****************************************************************************/
 
+word ChooseEmptyReg_IgnoreConsts()
+	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0:
+		return RegA;
+	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0:
+		return RegD;
+	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0:
+		return RegC;
+	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0:
+		return RegB;
+	return RegNone;
+end
+
 word ChooseEmptyReg()
 	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0 & !PHO_RegContainsAConst(RegA):
 		return RegA;
-
 	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0 & !PHO_RegContainsAConst(RegD):
 		return RegD;
-
 	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
 		return RegC;
-
 	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
 		return RegB;
+	return ChooseEmptyReg_IgnoreConsts();
+end
 
+word ChooseEmptyReg2_IgnoreConsts()
+	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0:
+		return RegA;
+	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0:
+		return RegB;
+	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0:
+		return RegD;
+	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0:
+		return RegC;
 	return RegNone;
 end
 
 word ChooseEmptyReg2()
 	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0 & !PHO_RegContainsAConst(RegA):
 		return RegA;
-
 	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
 		return RegB;
-
 	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0 & !PHO_RegContainsAConst(RegD):
 		return RegD;
-
 	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
 		return RegC;
-
-	return RegNone;
+	return ChooseEmptyReg2_IgnoreConsts();
 end
 
+/*****************************************************************************/
+
+word ChooseRegForLiteral(word P)
+	when !NodeCanBeEncodedAsImm(P):
+		return RegNone;
+
+	word Size = T_SizeOf(Node[P].pType);
+	when (Size != 4) & (Size != 2) & (Size != 1):
+		return RegNone;
+	/* FIXME: проверять только часть регистра при необходимости */
+	return PHO_FindRegWithConst(Node[P].Value);
+end
 
 /*****************************************************************************/
 
 word Code(word P);
 word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M);
+bool CodeRequiresSingleRegister(word P);
 
 /*****************************************************************************/
 
@@ -158,6 +187,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 			Reg_TARGET = Ref.IX;
 			Ref.IX = Reg_ALT_TARGET;
 		default:
+			Reg_ALT_TARGET = Ref.IX;
 			Reg_TARGET = ChooseEmptyReg2();
 			when Reg_TARGET == RegNone:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
@@ -308,6 +338,7 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 		StopInternal(__FILE__, __LINE__);
 	end:switch
 
+	Reg_TARGET = RegA;
 	Ref.pType = Node[pPrimary].pType;
 	Ref.ID = iREG;
 	Ref.IX = RegA;
@@ -1597,17 +1628,46 @@ end
 
 word Code_ASSIGN(word P)
 	word P1 = Node[P].pLeft;
-	Reg_TARGET = RegA;
-	Reg_ALT_TARGET = RegNone;
-
 	if Node[P1].pRight < nNODE then
-		Code(Node[P1].pRight);
-		Reg_ALT_TARGET = Reg_TARGET;
-		Reg_TARGET = RegB;
-		ValueRef Ref;
-		CodePrimary(Node[P1].pLeft, @Ref);
-		Code_STORE(@Ref);
+		word RegRight = ChooseRegForLiteral(Node[P1].pRight);
+		select
+		case RegRight != RegNone & CodeRequiresSingleRegister(Node[P1].pLeft):
+			Reg_ALT_TARGET = RegNone;
+			Reg_TARGET = RegRight;
+
+			Reg_ALT_TARGET = Reg_TARGET;
+			Reg_TARGET = ChooseEmptyReg2();
+			ValueRef Ref;
+			CodePrimary(Node[P1].pLeft, @Ref);
+			Code_STORE(@Ref);
+		case !CodeRequiresSingleRegister(Node[P1].pLeft)
+		& CodeRequiresSingleRegister(Node[P1].pRight):
+			Reg_TARGET = RegA;
+			Reg_ALT_TARGET = RegNone;
+			ValueRef Ref;
+			CodePrimary(Node[P1].pLeft, @Ref);
+
+			Reg_ALT_TARGET = Ref.IX;
+			Reg_TARGET = ChooseEmptyReg2();
+			Code(Node[P1].pRight);
+
+			Reg_ALT_TARGET = Reg_TARGET;
+			Reg_TARGET = RegNone;
+			Code_STORE(@Ref);
+		default:
+			Reg_ALT_TARGET = RegNone;
+			Reg_TARGET = RegA;
+			Code(Node[P1].pRight);
+
+			Reg_ALT_TARGET = Reg_TARGET;
+			Reg_TARGET = ChooseEmptyReg2();
+			ValueRef Ref;
+			CodePrimary(Node[P1].pLeft, @Ref);
+			Code_STORE(@Ref);
+		end
 	else
+		Reg_TARGET = RegA;
+		Reg_ALT_TARGET = RegNone;
 		Code(Node[P1].pLeft);
 	end
 
