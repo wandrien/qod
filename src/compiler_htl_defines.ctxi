@@ -43,6 +43,7 @@ define  sFUNCTYPE    9 // Функциональный тип
 //define  sCONST      10 // Константный подтип типа
 define  sPTR        11 // Указатель
 define  sARRAY      12 // Массив
+define  sNAMESPACE  13
 
 /*****************************************************************************/
 
@@ -55,7 +56,7 @@ define  sMAIN       15 // Главная функция
 define  iEMPTY       0 // Пустой узел
 define  iNULL        1 // NULL
 define  iLITERAL     2 // Литеральное значение
-//define  iUNUNSED3    3 //
+define  iTYPE        3 //
 //define  iUNUNSED4    4 //
 define  iFUNC        5 // Ссылка на функцию
 define  iSTRING      6 // Ссылка на стpоку

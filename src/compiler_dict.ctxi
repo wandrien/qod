@@ -186,8 +186,6 @@ end
 void DictAddToNamespace(word P; word pNamespace)
 	when P >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when pNamespace >= nDict:
-		StopInternal(__FILE__, __LINE__);
 	when Dict[P].pNamespace != nDICT:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[P].pNext != nDICT:
@@ -195,6 +193,11 @@ void DictAddToNamespace(word P; word pNamespace)
 	when Dict[pNamespace].pFirst != nDICT & Dict[pNamespace].pLast == nDICT:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[pNamespace].pFirst == nDICT & Dict[pNamespace].pLast != nDICT:
+		StopInternal(__FILE__, __LINE__);
+	/* FIXME: когда глобальное пространство имён будет реализовано отдельным объектом namespace, убрать этот return */
+	when pNamespace == nDICT:
+		return;
+	when pNamespace >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
 	Dict[P].pNamespace = pNamespace;
@@ -256,6 +259,14 @@ bool Dict_IsFunction(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[D].Class == cFUNC:
+		return true;
+	return false;
+end
+
+bool Dict_IsType(word D)
+	when D >= nDict:
+		StopInternal(__FILE__, __LINE__);
+	when Dict[D].Class == cTYPE:
 		return true;
 	return false;
 end

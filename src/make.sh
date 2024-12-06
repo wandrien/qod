@@ -22,6 +22,8 @@ export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER-$DEFAULT_BOOTSTRAP_COMPILER}"
 export FASM="${FASM-$DEFAULT_FASM}"
 
+STAGE_A_ONLY=f
+
 crop_known_differencies()
 {
 	sed "s/; #line .*//" "$1" > "$1.cleared"
@@ -226,10 +228,14 @@ do_test_with_compiler ()
 
 _run_test ()
 {
-	do_test_with_compiler a "$@" \
-	&& do_test_with_compiler c "$@" \
-	&& do_test_with_compiler c_debug "$@" \
-	&& do_test_with_compiler c_size "$@"
+	if [ "$STAGE_A_ONLY" = t ] ; then
+		do_test_with_compiler a "$@"
+	else
+		do_test_with_compiler a "$@" \
+		&& do_test_with_compiler c "$@" \
+		&& do_test_with_compiler c_debug "$@" \
+		&& do_test_with_compiler c_size "$@"
+	fi
 }
 
 do_test ()
@@ -340,13 +346,20 @@ printf "\
     Building B, C and D all should produce the same result both
     in the intermediate representation and the binary code.\n"
 
-stage_a
-stage_b
-stage_c
-stage_d
-build_samples
-do_tests
-run_valgrind
+if [ "x$1" = "xtest-stage-a" ] ; then
+	STAGE_A_ONLY=t
+	stage_a
+	do_tests
+else
+	stage_a
+	stage_b
+	stage_c
+	stage_d
+	build_samples
+	do_tests
+	run_valgrind
+fi
+
 
 if [ "x$1" = "x--save-to-precompiled" ] ; then
 	printf "=> ${CODE_COLOR_YELLOW}Saving binaries:${CODE_COLOR_NOCOLOR}\n"

@@ -212,6 +212,58 @@ word StringNode__FILE__()
 	return P;
 end
 
+/*****************************************************************************/
+
+word ResolveInNamespace(char @Buff; word pNamespace)
+	if pNamespace == pGlobalNamespace then
+		return Find(@Buff);
+	else
+		return FindInNamespace(@Buff, pNamespace);
+	end
+end
+
+word ResolveGlobal(char @Buff; word @_pNamespace)
+	/* Пробуем разрешить имя относительно текущего пространства имён */
+	word pNamespace = pEnteredNamespace;
+	word pName = ResolveInNamespace(@Buff, pNamespace);
+
+	if pName == nDICT & pNamespace != pGlobalNamespace then
+		/* Пробуем разрешить имя относительно глобального пространства имён */
+		pNamespace = pGlobalNamespace;
+		pName = ResolveInNamespace(@Buff, pNamespace);
+	end
+
+	if pName == nDICT then
+		when @_pNamespace != NULL:
+			_pNamespace = pEnteredNamespace;
+		return pName;
+	end
+
+	while true do
+		Scan(@Buff);
+		if !Dict_IsType(pName) | str_ne(@Buff,".") then
+			when @_pNamespace != NULL:
+				_pNamespace = pNamespace;
+			return pName;
+		end
+
+		Scan(@Buff);
+		pNamespace = pName;
+		pName = ResolveInNamespace(@Buff, pNamespace);
+		if pName == nDICT then
+			when @_pNamespace != NULL:
+				_pNamespace = pNamespace;
+			return pName;
+		end
+	end:while
+end
+
+void CheckDuplicate(char @Buff)
+	word pDuplicateName = ResolveInNamespace(@Buff, pEnteredNamespace);
+	if pDuplicateName != nDICT then
+		StopWithSubject(@eDUPLICATE, @Buff);
+	end
+end
 
 /*****************************************************************************/
 
@@ -236,12 +288,11 @@ void FuncArgs(char @Buff; word pFunc)
 
 	Scan(@Buff);
 	while strcmp(@Buff,")")!=0 do
-		word pType = Find(@Buff);
+		word pType = ResolveGlobal(@Buff, NULL);
 		when pType >= nDICT | Dict[pType].Class != cTYPE:
 			Stop(@eTYPEEXP);
 
 		do
-			Scan(@Buff);
 			word  nPtr=ReadPtrs(@Buff);
 
 			when pType == st_void & nPtr<1:
@@ -261,6 +312,8 @@ void FuncArgs(char @Buff; word pFunc)
 
 			when strcmp(@Scan(@Buff),",")!=0:
 				exit;
+
+			Scan(@Buff);
 		end
 
 		if strcmp(@Buff,")")!=0 then
@@ -350,7 +403,7 @@ word ParseXOfTypeArgs(char @Buff)
 	end:if
 
 	Scan(@Buff);
-	word I=Find(@Buff);
+	word I = ResolveGlobal(@Buff, NULL);
 	if I>=nDict then
 		StopWithSubject(@eUNDECLARED, @Buff);
 	end:if
@@ -358,7 +411,7 @@ word ParseXOfTypeArgs(char @Buff)
 	when Dict[I].Class != cTYPE:
 		StopWithSubject(@eNOTATYPE, @Buff);
 
-	if !str_eq(@Scan(@Buff),@Bracket[b].RightBracket) then
+	if !str_eq(@Buff,@Bracket[b].RightBracket) then
 		Stop(@eBRACKETEXP);
 	end:if
 
@@ -421,6 +474,8 @@ word Primary(word Prty; char @Buff)
 	word Call=0;
 	word P1;
 
+	bool SkipScan = false;
+
 	nPtr = ReadPtrs(@Buff);
 
 	if Flag == 0 then /* Это имя текущего файла? */
@@ -472,7 +527,7 @@ word Primary(word Prty; char @Buff)
 	end:if
 
 	if Flag == 0 then /* Значит это глобальное имя. */
-		word I=Find(@Buff);
+		word I = ResolveGlobal(@Buff, NULL);
 		if I>=nDict then
 			StopWithSubject(@eUNDECLARED, @Buff);
 		end:if
@@ -503,12 +558,13 @@ word Primary(word Prty; char @Buff)
 			end:select
 
 			//pType          = Dict[I].pType;
+			SkipScan = true;
 
 		case Dict[I].Class == cDATA | Dict[I].Class == cFUNC: /* Глобальная переменная/функция? */
 			P1 = Peek();
 
 			if Dict[I].Class == cFUNC then
-				word b = LookupBracket(BracketType_Parentheses, @Scan(@Buff));
+				word b = LookupBracket(BracketType_Parentheses, @Buff);
 				if b != BRACKET_INVALID then
 					Node[P1].ID = iCALL;
 					Node[P1].Value = I;
@@ -538,11 +594,12 @@ word Primary(word Prty; char @Buff)
 				Node[P1].ID = iDATA;
 				Node[P1].Value = I;
 				pType = Dict[I].pType;
+				SkipScan = true;
 			end:if
 
 		case Dict[I].Class == cTYPE: /* Тип данных? */
 			if Prty < PRIO_LVALUE then
-				if strcmp(@Scan(@Buff),"(")!=0 then
+				if strcmp(@Buff,"(")!=0 then
 					Stop(@eBRACKETEXP);
 				end:if
 
@@ -584,7 +641,11 @@ word Primary(word Prty; char @Buff)
 					Stop(@eUNDECLARED);
 				end:if
 
-				return nNODE;
+				P1 = Peek();
+				Node[P1].ID    = iTYPE;
+				Node[P1].Value = I;
+
+				return P1;
 			end:if
 		default:
 			StopWithSubject(@eUNDECLARED, @Buff);
@@ -602,7 +663,11 @@ word Primary(word Prty; char @Buff)
 	Node[P1].pType = pType;
 
 	do
-		Scan(@Buff);
+		if SkipScan then
+			SkipScan = false;
+		else
+			Scan(@Buff);
+		end
 		if strcmp(@Buff,"[")==0 & T_IsArray(pType) then /* Индексация массива. */
 			word P3 = Peek();
 			Node[P3].ID = iINDEX;

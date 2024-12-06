@@ -41,15 +41,13 @@ void AssignFieldOffset(word F; word @NextOffset; word @MaxAlign)
 end
 
 void DeclStruct(char @Buff)
-	word pType1 = Find(@Scan(@Buff));
-	if pType1 < nDict then
-		StopWithSubject(@eDUPLICATE, @Buff);
-	end
+	CheckDuplicate(@Scan(@Buff));
 
 	word pStruct = DictAlloc();
 	DictSetName(pStruct, @Buff);
 	Dict[pStruct].Class = cTYPE;
 	Dict[pStruct].Sub = sSTRUCT;
+	DictAddToNamespace(pStruct, pEnteredNamespace);
 
 	if str_eq(@Scan(@Buff),";") then
 		Stop(@eNOTAVAIL);
@@ -59,8 +57,8 @@ void DeclStruct(char @Buff)
 	word MaxAlign = 1;
 
 	do
-		word pType = Find(@Buff);
-		if pType >= nDict then
+		word pType = ResolveGlobal(@Buff, NULL);
+		if pType == nDICT then
 			Stop(@eTYPEEXP);
 		else
 			if Dict[pType].Class!=cTYPE then
@@ -69,10 +67,7 @@ void DeclStruct(char @Buff)
 		end
 
 		do
-			word  nPtr=0;
-			while str_eq(@Scan(@Buff),"@") do
-				inc nPtr;
-			end
+			word  nPtr = ReadPtrs(@Buff);
 
 			if pType==st_void & nPtr<1 then
 				Stop(@eNOVOID);
@@ -111,6 +106,8 @@ void DeclStruct(char @Buff)
 			if str_ne(@Buff,",") then
 				Stop(@eSEMICOLONEXP);
 			end
+
+			Scan(@Buff);
 		end
 
 		if str_eq(@Buff,"end") then
@@ -123,22 +120,22 @@ end
 
 /*****************************************************************************/
 
-void DeclSynonym(char @Buff)
-
-	if Find(@Scan(@Buff)) < nDict then
-		StopWithSubject(@eDUPLICATE, @Buff);
-	end
+bool DeclSynonym(char @Buff)
+	CheckDuplicate(@Scan(@Buff));
 
 	word D = DictAlloc();
 	DictSetName(D, @Buff);
 	Dict[D].Class = cNAME;
 
-	word pType = Find(@Scan(@Buff));
+	word pType = ResolveGlobal(@Scan(@Buff), NULL);
 	if pType >= nDict then
 		Stop(@eUNDECLARED);
 	end
 
+	DictAddToNamespace(D, pEnteredNamespace);
 	Dict[D].pType = pType;
+
+	return false;
 end
 
 /*****************************************************************************/
@@ -230,13 +227,10 @@ end
 /*****************************************************************************/
 
 void DeclVarFuncType(char @Buff; word pType)
-
 	Scan(@Buff);
 	word nPtr = ReadPtrs(@Buff);
 
-	if Find(@Buff) < nDict then
-		StopWithSubject(@eDUPLICATE, @Buff);
-	end
+	CheckDuplicate(@Buff);
 
 	word D = DictAlloc();
 
@@ -260,14 +254,14 @@ end
 /*****************************************************************************/
 
 void DeclVarFunc(char @Buff)
-
-	word pPrefixType = Find(@Buff);
-	if pPrefixType >= nDict | Dict[pPrefixType].Class != cTYPE then
+	word pPrefixType = ResolveGlobal(@Buff, NULL);
+	//pPrefixType = ResolveAlias(pPrefixType);
+	if pPrefixType == nDICT | Dict[pPrefixType].Class != cTYPE then
 		Stop(@eTYPEEXP);
 	end
 
 	/* Функтор-тип. */
-	if str_eq(@Scan(@Buff),"function") then
+	if str_eq(@Buff,"function") then
 		DeclVarFuncType(@Buff, pPrefixType);
 		return;
 	end
@@ -278,7 +272,7 @@ void DeclVarFunc(char @Buff)
 	do
 		word nPtr = ReadPtrs(@Buff);
 
-		word pForward = Find(@Buff);
+		word pForward = ResolveInNamespace(@Buff, pEnteredNamespace);
 		if pForward < nDict then
 			when !Dict_IsFunction(pForward):
 				StopWithSubject(@eDUPLICATE, @Buff);
@@ -290,6 +284,7 @@ void DeclVarFunc(char @Buff)
 
 		DictSetName(D, @Buff);
 		Dict[D].pType = T_nPtrTo(nPtr, pPrefixType);
+		DictAddToNamespace(D, pEnteredNamespace);
 
 		Scan(@Buff);
 
@@ -360,19 +355,18 @@ end
 
 /*****************************************************************************/
 
-word DeclDefine(char @Buff)
+bool DeclDefine(char @Buff)
 
 	word nPtr = ReadPtrs(@Scan(@Buff));
 
-	if Find(@Buff) < nDict then
-		StopWithSubject(@eDUPLICATE, @Buff);
-	end
+	CheckDuplicate(@Buff);
 
 	word D = DictAlloc();
 
 	DictSetName(D, @Buff);
 	Dict[D].Class = cLITERAL;
 	Dict[D].RO = 1;
+	DictAddToNamespace(D, pEnteredNamespace);
 
 	Scan(@Buff);
 	select
@@ -393,7 +387,7 @@ word DeclDefine(char @Buff)
 				Scan(@Buff);
 			end:if
 
-			return 1;
+			return false;
 
 		default:
 			if str_ne(@Buff,"~"") then
@@ -402,12 +396,12 @@ word DeclDefine(char @Buff)
 			ScanString(D);
 	end:select
 
-	return 0;
+	return true;
 end
 
 /*****************************************************************************/
 
-word DeclInclude(char @Buff)
+bool DeclInclude(char @Buff)
 
 	/* Читаем имя файла. */
 
@@ -439,7 +433,7 @@ word DeclInclude(char @Buff)
 	/* Проверка, подключался ли уже указанный файл. */
 	P = Find_cFILE(@FileName);
 	if P < nDict then
-		return 0;
+		return true;
 	end:if
 
 	/* Заносим имя файла в словарь. */
@@ -449,7 +443,52 @@ word DeclInclude(char @Buff)
 
 	IncludeFile(@FileName);
 
-	return 0;
+	return true;
+end
+
+/*****************************************************************************/
+
+void DeclNamespace(char @Buff)
+	CheckDuplicate(@Scan(@Buff));
+
+	word pNamespace = DictAlloc();
+	DictSetName(pNamespace, @Buff);
+	Dict[pNamespace].Class = cTYPE;
+	Dict[pNamespace].Sub = sNAMESPACE;
+	DictAddToNamespace(pNamespace, pEnteredNamespace);
+
+	if str_eq(@Scan(@Buff),";") then
+		Stop(@eNOTAVAIL);
+	end
+
+	word pPrevNamespace = pEnteredNamespace;
+	pEnteredNamespace = pNamespace;
+
+	do
+		bool DoScan = true;
+		select
+		case str_eq(@Buff,"include"):
+			DoScan = DeclInclude(@Buff);
+		case str_eq(@Buff,"define"):
+			DoScan = DeclDefine(@Buff);
+		case str_eq(@Buff,"struct"):
+			DeclStruct(@Buff);
+		case str_eq(@Buff,"namespace"):
+			DeclNamespace(@Buff);
+		case str_eq(@Buff,"synonym"):
+			DoScan = DeclSynonym(@Buff);
+		case str_eq(@Buff,"end"):
+			exit;
+		default: // Пеpеменная, функция, ...
+			DeclVarFunc(@Buff);
+		end:select
+
+		if DoScan then
+			Scan(@Buff);
+		end
+	end
+
+	pEnteredNamespace = pPrevNamespace;
 end
 
 /*****************************************************************************/
@@ -460,33 +499,28 @@ void Parse()
 	Scan(@Buff);
 
 	do
-		word R = 0;
+		bool DoScan = true;
 		select
-		case str_eq(@Buff,"begin"):         // Главная функция
+		case str_eq(@Buff,"begin"):
 			DeclMainFunc(@Buff);
 			exit;
-		case str_eq(@Buff,"include"):       // Включаемый файл
-			R = DeclInclude(@Buff);
-		case str_eq(@Buff,"define"):        // Константа
-			R = DeclDefine(@Buff);
-		case str_eq(@Buff,"struct"):        // Стpуктуpа
+		case str_eq(@Buff,"include"):
+			DoScan = DeclInclude(@Buff);
+		case str_eq(@Buff,"define"):
+			DoScan = DeclDefine(@Buff);
+		case str_eq(@Buff,"struct"):
 			DeclStruct(@Buff);
-		case str_eq(@Buff,"synonym"):       // Синоним
-			DeclSynonym(@Buff);
-		case str_eq(@Buff,"$qod.strong"):
-			Stop(@eQODSTRONGNOTIMPL);
-		case str_eq(@Buff,"$qod.strong.transitional"):
-			null;
-		case str_eq(@Buff,"$context2"):
-			Warn(@wDEPRECATED);
-		default:                            // Пеpеменная, функция, ...
+		case str_eq(@Buff,"namespace"):
+			DeclNamespace(@Buff);
+		case str_eq(@Buff,"synonym"):
+			DoScan = DeclSynonym(@Buff);
+		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select
 
-		if R == 0 then
+		if DoScan then
 			Scan(@Buff);
 		end
-
 	end:do
 
 end

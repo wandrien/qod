@@ -1,0 +1,13 @@
+// TEST: compilation_should_fail 'Повтор имени'
+
+struct A
+	int a;
+end
+
+struct A
+	int a;
+end
+
+begin
+	null;
+end

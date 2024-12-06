@@ -40,6 +40,8 @@ void CTE(word P);
 
 /*****************************************************************************/
 
+word pGlobalNamespace;
+word pEnteredNamespace;
 word pFunc;
 word pLoop;
 
@@ -191,7 +193,8 @@ void InitFrontEnd()
 	BeforeFirstFile = 1;
 
 	pLoop = nNODE;
-
+	pGlobalNamespace = nDICT; /* FIXME: should be actual namespace */
+	pEnteredNamespace = pGlobalNamespace;
 end
 
 /*****************************************************************************/

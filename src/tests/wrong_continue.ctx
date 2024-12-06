@@ -1,5 +1,4 @@
 // TEST: compilation_should_fail 'continue вне цикла'
-$context2
 
 begin
     continue;

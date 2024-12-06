@@ -465,40 +465,16 @@ end
 
 /*****************************************************************************/
 
-void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pType)
+	if pType>=nDict | Dict[pType].Class!=cTYPE then
+		StopInternal(__FILE__, __LINE__);
+	end:if
 
-	word pLValue = Expr(PRIO_LVALUE, @Buff);
-	if pLValue < nNODE then
-		word P3=Peek();
-		Node[P1].ID    = iASSIGN;
-		Node[P1].pLeft = P3;
+	word P1 = _P1;
 
-		Node[P3].ID    = iEMPTY;
-		Node[P3].pLeft = pLValue;
+	while true do
 
-		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
-			if !NodeIsLValue(Node[P3].pLeft) then
-				Error(@eLVALUE_IN_ASSIGNMENT);
-			end:if
-			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
-			ImplicitCast(Node[pLValue].pType, @Node[P3].pRight);
-		end:if
-
-		if Node[pLValue].pType == st_noreturn then
-			Node[P1].pType = st_noreturn;
-		else
-			Node[P1].pType = st_void;
-		end:if
-
-	else
-		word pType=Find(@Buff);
-		if pType>=nDict | Dict[pType].Class!=cTYPE then
-			Stop(@eUNDECLARED);
-		end:if
-
-//do
-
-		word  nPtr=ReadPtrs(@Scan(@Buff));
+		word nPtr=ReadPtrs(@Buff);
 		if pType==st_void & nPtr<1 then
 			Stop(@eNOVOID);
 		end:if
@@ -560,20 +536,48 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		end:if
 
 		inc nLocal;
-///*
-		if str_eq(@Buff,",") then
-			strcpy(@Buff,@DictGetName(pType));
-			SkipFinalScan = 1;
+
+		if str_ne(@Buff,",") then
 			return;
 		end:if
-//*/
+		Scan(@Buff);
 
-//        if str_ne(@Buff,",") then
-//          exit;
-//        end:if
-//end:do
+		word pNext = Peek();
+		Node[P1].pRight = pNext;
+		P1 = pNext;
+	end:while
+end
 
+void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
+	word pLValue = Expr(PRIO_LVALUE, @Buff);
+
+	when pLValue == nNODE:
+		StopInternal(__FILE__, __LINE__);
+
+	if Node[pLValue].ID == iTYPE then
+		Statement_DEF_LOCAL(@Buff, @P1, @SkipFinalScan, Node[pLValue].Value);
+	else
+		word P3=Peek();
+		Node[P1].ID    = iASSIGN;
+		Node[P1].pLeft = P3;
+
+		Node[P3].ID    = iEMPTY;
+		Node[P3].pLeft = pLValue;
+
+		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
+			if !NodeIsLValue(Node[P3].pLeft) then
+				Error(@eLVALUE_IN_ASSIGNMENT);
+			end:if
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			ImplicitCast(Node[pLValue].pType, @Node[P3].pRight);
+		end:if
+
+		if Node[pLValue].pType == st_noreturn then
+			Node[P1].pType = st_noreturn;
+		else
+			Node[P1].pType = st_void;
+		end:if
 	end:if
 
 	if str_ne(@Buff,";") then
@@ -645,8 +649,12 @@ word Statements(char @Buff; char @End1; char @End2; char @End3)
 	word @Backlink = @P;
 
 	repeat
-		Backlink = Ctrl(@Buff);
-		@Backlink =@Node[Backlink].pRight;
+		word pCtrl = Ctrl(@Buff);
+		Backlink = pCtrl;
+		while Node[pCtrl].pRight != nNODE do
+			pCtrl = Node[pCtrl].pRight;
+		end
+		@Backlink =@Node[pCtrl].pRight;
 
 		if @End2 != NULL & str_eq(@Buff, @End2) then
 			exit;

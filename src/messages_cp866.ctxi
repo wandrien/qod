@@ -78,7 +78,6 @@ define @eLVALUE_IN_INC   "Операнд инкремента должен быть lvalue-выражением" // l
 
 define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
-define @eQODSTRONGNOTIMPL "$qod.strong: не реализовано"
 
 define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
 define @wGLOBALVARUNUSED ": глобальная переменная не используется"     // a global variable is never used
