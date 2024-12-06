@@ -30,81 +30,95 @@ end
 
 /*****************************************************************************/
 
+void AssignFieldOffset(word F; word @NextOffset; word @MaxAlign)
+	word pType = Dict[F].pType;
+	word Align = 1; // FIXME: T_AlignOf(pType);
+	when Align > MaxAlign:
+		MaxAlign = Align;
+	word Offset = NextOffset + (Align - NextOffset % Align - 1);
+	Dict[F].Label = Offset;
+	NextOffset = Offset + T_SizeOf(pType);
+end
+
 void DeclStruct(char @Buff)
+	word pType1 = Find(@Scan(@Buff));
+	if pType1 < nDict then
+		StopWithSubject(@eDUPLICATE, @Buff);
+	end
 
-        word pType1 = Find(@Scan(@Buff));
-        if pType1 < nDict then
-          StopWithSubject(@eDUPLICATE, @Buff);
-        end
+	word pStruct = DictAlloc();
+	DictSetName(pStruct, @Buff);
+	Dict[pStruct].Class = cTYPE;
+	Dict[pStruct].Sub = sSTRUCT;
 
-        word pStruct = DictAlloc();
-        DictSetName(pStruct, @Buff);
-        Dict[pStruct].Class = cTYPE;
-        Dict[pStruct].Sub = sSTRUCT;
+	if str_eq(@Scan(@Buff),";") then
+		Stop(@eNOTAVAIL);
+	end
 
-        if str_eq(@Scan(@Buff),";") then
-          Stop(@eNOTAVAIL);
-        end
+	word NextOffset = 0;
+	word MaxAlign = 1;
 
-        do
-          word pType = Find(@Buff);
-          if pType >= nDict then
-            Stop(@eTYPEEXP);
-          else
-            if Dict[pType].Class!=cTYPE then
-              Stop(@eTYPEEXP);
-            end
-          end
+	do
+		word pType = Find(@Buff);
+		if pType >= nDict then
+			Stop(@eTYPEEXP);
+		else
+			if Dict[pType].Class!=cTYPE then
+				Stop(@eTYPEEXP);
+			end
+		end
 
-          do
-            word  nPtr=0;
-            while str_eq(@Scan(@Buff),"@") do
-              inc nPtr;
-            end
+		do
+			word  nPtr=0;
+			while str_eq(@Scan(@Buff),"@") do
+				inc nPtr;
+			end
 
-            if pType==st_void & nPtr<1 then
-              Stop(@eNOVOID);
-            end
+			if pType==st_void & nPtr<1 then
+				Stop(@eNOVOID);
+			end
 
-            if pType==pStruct & nPtr<1 then
-              Stop(@eNODATA);
-            end
+			if pType==pStruct & nPtr<1 then
+				Stop(@eNODATA);
+			end
 
-            if Dict[pType].Sub==sFUNCTYPE & nPtr<1 then
-              Stop(@eNOVAL);
-            end
+			if Dict[pType].Sub==sFUNCTYPE & nPtr<1 then
+				Stop(@eNOVAL);
+			end
 
-            word F = FindInNamespace(@Buff, pStruct);
-            when F < nDICT:
-              StopWithSubject(@eDUPLICATE, @Buff);
+			word F = FindInNamespace(@Buff, pStruct);
+			when F < nDICT:
+				StopWithSubject(@eDUPLICATE, @Buff);
 
-            F = DictAlloc();
-            DictSetName(F, @Buff);
-            Dict[F].Class = cFIELD;
-            Dict[F].pType = T_nPtrTo(nPtr, pType);
-            //Dict[F].nIndx = Tabl(@Scan(@Buff));
-            Dict[F].pType = Tabl_(@Scan(@Buff), Dict[F].pType);
-            DictAddToNamespace(F, pStruct);
+			F = DictAlloc();
+			DictSetName(F, @Buff);
+			Dict[F].Class = cFIELD;
+			Dict[F].pType = T_nPtrTo(nPtr, pType);
+			//Dict[F].nIndx = Tabl(@Scan(@Buff));
+			Dict[F].pType = Tabl_(@Scan(@Buff), Dict[F].pType);
+			DictAddToNamespace(F, pStruct);
+			AssignFieldOffset(F, @NextOffset, @MaxAlign);
 
-            if str_eq(@Buff,";") then
-              Scan(@Buff);
-              exit;
-            end
+			if str_eq(@Buff,";") then
+				Scan(@Buff);
+				exit;
+			end
 
-            if str_eq(@Buff,"end") then
-              exit;
-            end
+			if str_eq(@Buff,"end") then
+				exit;
+			end
 
-            if str_ne(@Buff,",") then
-              Stop(@eSEMICOLONEXP);
-            end
-          end
+			if str_ne(@Buff,",") then
+				Stop(@eSEMICOLONEXP);
+			end
+		end
 
-          if str_eq(@Buff,"end") then
-            exit;
-          end
-        end
+		if str_eq(@Buff,"end") then
+			exit;
+		end
+	end
 
+	Dict[pStruct].TypeSize = NextOffset;
 end
 
 /*****************************************************************************/

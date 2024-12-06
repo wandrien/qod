@@ -1,10 +1,9 @@
 
-
-
-
-void EmitUsageInfo(char @Name; word Used; word Total)
+void EmitUsageInfo(char @Name; word Used; word Total; word ItemSize)
 
 	char Buff[nBUFF];
+
+	word Bytes = Used * ItemSize;
 
 	strcpy(@Buff, "; ");
 	strcat(@Buff, @Name);
@@ -14,7 +13,9 @@ void EmitUsageInfo(char @Name; word Used; word Total)
 	strcat(@Buff, @str(Total));
 	strcat(@Buff, " (");
 	strcat(@Buff, @str(Used * 100 / Total));
-	strcat(@Buff, "%)");
+	strcat(@Buff, "%) ");
+	strcat(@Buff, @str(Bytes));
+	strcat(@Buff, " bytes");
 
 	EmitStringNL(@Buff);
 end
@@ -23,10 +24,10 @@ end
 void EmitInternalsInfo()
 
 	EmitNL();
-	EmitUsageInfo("Dict", nDict, nDICT);
-	EmitUsageInfo("Char", CharDataUsed(), CharDataTotal());
-	EmitUsageInfo("Node", nNode, nNODE);
-	EmitUsageInfo("Label", nLabel, nLABEL);
+	EmitUsageInfo("Dict", nDict, nDICT, sizeof(DICT));
+	EmitUsageInfo("Char", CharDataUsed(), CharDataTotal(), 1);
+	EmitUsageInfo("Node", nNode, nNODE, sizeof(NODE));
+	EmitUsageInfo("Label", nLabel, nLABEL, sizeof(LABEL));
 //	EmitUsageInfo("Text", nText, nTEXT);
 
 end

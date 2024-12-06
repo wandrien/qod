@@ -1,0 +1,22 @@
+// TEST: should_print '8 16 64 128 '
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+struct AAA
+	uint64 a;
+end
+
+struct BBB
+	AAA aaa;
+	uint64 b;
+end
+
+
+begin
+	puts(@str(sizeof(AAA))); puts(" ");
+	puts(@str(sizeof(BBB))); puts(" ");
+
+	puts(@str(bitsizeof(AAA))); puts(" ");
+	puts(@str(bitsizeof(BBB))); puts(" ");
+end

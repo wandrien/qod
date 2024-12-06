@@ -258,30 +258,6 @@ end
 /*****************************************************************************/
 
 
-void AssignLabels_Struct()
-
-	word I=0;
-	while I < nDict do
-		select
-		case Dict[I].Class == cTYPE & Dict[I].Sub == sSTRUCT:
-			word D1 = 0;
-			word P = Dict[I].pFirst;
-			while P < nDICT do
-				when Dict[P].Class != cFIELD:
-					StopInternal(__FILE__, __LINE__);
-				Dict[P].Label = D1;
-				D1 = D1 + SizeOfType(Dict[P].pType);
-
-				P = Dict[P].pNext;
-			end:while
-
-			Dict[I].TypeSize = D1;
-		end:select
-		inc I;
-	end:while
-end
-
-
 void AssignLabels_Func()
 
   word I=0;
