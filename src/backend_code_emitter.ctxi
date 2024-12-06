@@ -71,7 +71,6 @@ word ChooseEmptyReg2()
 	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
 		return RegC;
 
-
 	return RegNone;
 end
 
@@ -232,10 +231,6 @@ void Code_LPTR(word P1; ValueRef @Ref)
 	char @TX = @CodeReg(NULL, Reg_TARGET, 4);
 
 	if Ref.IX != RegNone then
-		if Reg_TARGET != Ref.IX then
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-		end:if
-
 		switch Ref.ID of
 		case iDATA, iSTRING:
 			strcpy3(@Buff,"add     ",@TX,",  ");
@@ -244,8 +239,17 @@ void Code_LPTR(word P1; ValueRef @Ref)
 			strcpy3(@Buff,"lea     ",@TX,",  ");
 			Emit(@ValueRef_Code_ForLEA(@Buff, @Ref));
 		case iREF:
-			when Ref.Offset != 0:
-				Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ref.Offset)));
+			if Reg_TARGET != Ref.IX then
+				if Ref.Offset != 0 then
+					strcpy3(@Buff,"lea     ",@TX,",  ");
+					Emit(@ValueRef_Code_ForLEA(@Buff, @Ref));
+				else
+					Emit(@CodeCmdRegReg(@Buff, "mov", Reg_TARGET, 4, Ref.IX, 4));
+				end
+			else
+				when Ref.Offset != 0:
+					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ref.Offset)));
+			end
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:switch
