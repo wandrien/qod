@@ -1,4 +1,4 @@
-// TEST: should_print '4 1 1 100 4 8 42 2 39 700 '
+// TEST: should_print '4 1 1 100 4 8 42 2 39 700 15 '
 
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
@@ -83,6 +83,10 @@ end
 AAA aaa;
 BBB.AAA.B3 bbb_aaa_b3;
 
+BBB.u32 foo2(BBB.u32 x; BBB.u16 y)
+	return x + y;
+end
+
 begin
 	B1 b1;
 	B2 b2;
@@ -98,6 +102,7 @@ begin
 
 	@BBB.pF = @BBB.AAA.foo2;
 	int foo_results = BBB.pF(BBB.AAA.foo2(foo() + BBB.foo() + BBB.AAA.foo()));
+	BBB.u32 foo2_results = foo2(BBB.u32(x1), BBB.u16(5));
 
 	puts(@str(sizeof(AAA))); puts(" ");
 	puts(@str(sizeof(B1))); puts(" ");
@@ -110,4 +115,5 @@ begin
 
 	puts(@istr(BBB.AAA.x2)); puts(" ");
 	puts(@istr(foo_results)); puts(" ");
+	puts(@str(foo2_results)); puts(" ");
 end

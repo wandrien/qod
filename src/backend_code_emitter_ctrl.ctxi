@@ -148,6 +148,8 @@ word Code_PUSH(word P; char @Buff)
 	select
 	case Size==1:
 		Emit("push    EAX");
+	case Size==2:
+		Emit("push    EAX");
 	case Size==4:
 		Emit("push    EAX");
 	default:
