@@ -341,7 +341,10 @@ void ValueRef_Apply_FIELD(ValueRef @Ref; word P)
 		StopInternalCodegen(__FILE__, __LINE__);
 
 	Ref.pType = Dict[F].pType;
-	Ref.Offset = Ref.Offset + Dict[F].Label;
+	int Offset = Ref.Offset + int(Dict[F].Label);
+	when Offset < Ref.Offset:
+		StopInternalCodegen(__FILE__, __LINE__);
+	Ref.Offset = Offset;
 end
 
 /*****************************************************************************/

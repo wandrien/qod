@@ -236,7 +236,7 @@ void EmitWithSourceNote(char @Inst; word P)
 		if
 			(@PrevSourceLocation.FileName != @SourceLocation.FileName |
 			PrevSourceLocation.Line != SourceLocation.Line) &
-			(SourceLocation.Line != -1)
+			(int(SourceLocation.Line) != -1)
 		then
 			strcpy4(@Buff, "#line ", @SourceLocation.FileName, ":", @str(SourceLocation.Line));
 			EmitLine(NULL, NULL, @Buff);

@@ -62,7 +62,7 @@ bool IsLiteralAutoCastPossible(word pTypeTo; word P)
 		int Value = Node[P].Value;
 		when T_IsUnsigned(pTypeFrom) & (word(Value) > Max):
 			return false;
-		when (Min <= Value) & (Value <= Max):
+		when (int(Min) <= Value) & (Value <= int(Max)):
 			return true;
 		return false;
 	end:if

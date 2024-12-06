@@ -403,9 +403,9 @@ word Code_SWITCH(word P; char @Buff)
 				case value == 2 & PreferIncDec(Reg, Size) > 1:
 					Emit(@CodeCmdReg(@Buff, "dec", Reg, Size));
 					Emit(@Buff);
-				case value == -1 & PreferIncDec(Reg, Size) > 0:
+				case value == word(-1) & PreferIncDec(Reg, Size) > 0:
 					Emit(@CodeCmdReg(@Buff, "inc", Reg, Size));
-				case value == -2 & PreferIncDec(Reg, Size) > 1:
+				case value == word(-2) & PreferIncDec(Reg, Size) > 1:
 					Emit(@CodeCmdReg(@Buff, "inc", Reg, Size));
 					Emit(@Buff);
 				default:

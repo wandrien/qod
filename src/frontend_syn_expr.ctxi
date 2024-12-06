@@ -792,8 +792,8 @@ void ApplyUACCastsForIntegers(word P_OP)
 	when T_IsInteger(pType1) == false | T_IsInteger(pType2) == false:
 		return;
 
-	bool do_integer_promotion = false; /* TODO: disabled now; should be configurable from the sources */
-	bool do_implicit_cast_uint_to_int = true; /* HACK: temporary rules to make self-compilation possible */
+	bool do_integer_promotion = false; /* TODO: disabled now; should be configurable with a pragma */
+	bool allow_implicit_cast_uint_to_int = true; /* TODO: should be configurable with a pragma */
 
 	if do_integer_promotion then
 		pType1 = IntegerPromotion(pType1);
@@ -860,7 +860,12 @@ void ApplyUACCastsForIntegers(word P_OP)
 		return;
 	end:if
 
-	if rankSigned == rankUnsigned & do_implicit_cast_uint_to_int == true then
+	if rankSigned == rankUnsigned then
+		if allow_implicit_cast_uint_to_int then
+			Warn(@wTYPE_SIGNED_UNSIGNED);
+		else
+			Error(@wTYPE_SIGNED_UNSIGNED);
+		end:if
 		word pTargetType = pTypeSigned;
 		ApplyCommonType(P_OP, pTypeSigned);
 		return;

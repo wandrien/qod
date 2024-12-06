@@ -226,7 +226,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 			strcpy(@Buff, "not     "); /* 2 bytes */
 			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
 			return 1;
-		case Reg1Const == -Const2:
+		case Reg1Const == word(-Const2):
 			strcpy(@Buff, "neg     "); /* 2 bytes */
 			strcat(@Buff, @PHO_EncodeReg(Reg1, Mask1));
 			return 1;

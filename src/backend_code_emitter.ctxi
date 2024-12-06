@@ -329,7 +329,7 @@ word CodePrimary(word pPrimary; ValueRef @Ref)
 
 		if NodeIsLiteralWord(P1) then
 			word IndexingOffset = Size * Node[P1].Value;
-			Ref.Offset = Ref.Offset + IndexingOffset;
+			Ref.Offset = Ref.Offset + int(IndexingOffset);
 		else
 			Code(P1);
 			Ref.IX = Reg_TARGET;
@@ -542,7 +542,7 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 
 		if NodeIsLiteralWord(pIndex) then
 			word IndexingOffset = Size * Node[pIndex].Value;
-			Ref.Offset = Ref.Offset + IndexingOffset;
+			Ref.Offset = Ref.Offset + int(IndexingOffset);
 		else
 			if Query != Query_SingleRegOperand then
 				return false;
