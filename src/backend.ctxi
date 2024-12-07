@@ -17,6 +17,7 @@ define Flag_Sign 2
 word MeaningfulFlags = 0;
 
 include "backend_pho.ctxi"
+include "backend_pho_node_links.ctxi"
 include "backend_lib.ctxi"
 include "backend_labels.ctxi"
 include "backend_emit.ctxi"

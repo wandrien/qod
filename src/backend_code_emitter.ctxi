@@ -92,7 +92,12 @@ end
 
 /*****************************************************************************/
 
-word ChooseRegForLiteral(word P)
+word LookupRegForNode(word P)
+	word Reg = PHO_LookupRegForNode(P);
+	if Reg != RegNone then
+		return Reg;
+	end:if
+
 	when !NodeCanBeEncodedAsImm(P):
 		return RegNone;
 
@@ -418,12 +423,13 @@ word Code_LOAD(word pPrimary; ValueRef @Ref)
 
 	Emit(@Buff);
 
+	PHO_LinkNode(Reg_TARGET, pPrimary);
 	return Ref.pType;
 end
 
 /*****************************************************************************/
 
-void Code_STORE(ValueRef @Ref)
+void Code_STORE(ValueRef @Ref; word pLinkStore, pLinkLoad)
 	char Buff[nBUFF];
 	Buff[0] = #0;
 
@@ -440,14 +446,18 @@ void Code_STORE(ValueRef @Ref)
 		select
 		case Reg_TARGET != Reg_ALT_TARGET:
 			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, Reg_ALT_TARGET, Size)));
-
+			PHO_LinkNode(Reg_ALT_TARGET, pLinkLoad);
+			PHO_LinkNode_Store(Reg_ALT_TARGET, pLinkStore);
 		case Ref.IX==RegA:
-			EmitWithExprComment("pop     EBX", "restored in CodePrimary (STORE)");
+			EmitWithExprComment("pop     EBX", "restored in Code_STORE");
 			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
-
+			PHO_LinkNode(RegB, pLinkLoad);
+			PHO_LinkNode_Store(RegB, pLinkStore);
 		case Ref.IX==RegB:
-			EmitWithExprComment("pop     EAX", "restored in CodePrimary (STORE)");
+			EmitWithExprComment("pop     EAX", "restored in Code_STORE");
 			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
+			PHO_LinkNode(RegA, pLinkLoad);
+			PHO_LinkNode_Store(RegA, pLinkStore);
 		end:select
 	default:
 		strcpy(@Buff,"lea     EDI,  ");
@@ -457,7 +467,7 @@ void Code_STORE(ValueRef @Ref)
 		if Reg_TARGET != Reg_ALT_TARGET then
 			Emit(@strcpy2(@Buff,"mov     ESI,  ",@CodeReg(NULL, Reg_ALT_TARGET, 4)));
 		else
-			EmitWithExprComment("pop     ESI", "restored in CodePrimary (STORE)");
+			EmitWithExprComment("pop     ESI", "restored in Code_STORE");
 		end:if
 
 		Emit("cld");
@@ -856,6 +866,22 @@ bool DoesOperationAllowRightRegD(word ID)
 	end:switch
 end
 
+bool DoesOperationAllowRightReg(word ID; word RegRight)
+	switch ID of
+	case
+		iDIV,
+		iMOD:
+		if RegRight == RegD then
+			return false;
+		else
+			return true;
+		end
+	default:
+		return true;
+	end:switch
+end
+
+
 /** A heuristic to determine whether it might be advantageous to change the order in which operands are evaluated.
     Returns NULL, if the operand evaluation should not be reordered.
     Returns a string describing the reason of reordering (for debugging purposes),
@@ -1137,6 +1163,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		pType=Code(pLeft);
 
+		word RegLinked = PHO_LookupRegForNode(pRight);
+		if RegLinked != RegNone & DoesOperationAllowRightReg(ID, RegLinked)then
+			EmitWithExprComment("", "Node link reuse in CodeBinOp");
+			rightOperand = operandReg;
+			rightReg = RegLinked;
+		end:if
+
 	case operandMemRef:
 		if leftOperand == operandNotReady then
 			if iLT <= ID & ID <= iGT then
@@ -1145,6 +1178,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			end:if
 
 			pType=Code(pLeft);
+		end:if
+
+		word RegLinked = PHO_LookupRegForNode(pRight);
+		if RegLinked != RegNone & DoesOperationAllowRightReg(ID, RegLinked)then
+			EmitWithExprComment("", "Node link reuse in CodeBinOp");
+			rightOperand = operandReg;
+			rightReg = RegLinked;
 		end:if
 
 	case operandReg:
@@ -1174,7 +1214,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			Reg_TARGET = RegA;
 		end
 		pType = Code(pLeft);
-		Reg_TARGET  = rightReg;
+		Reg_TARGET = rightReg;
 		Code(pRight);
 		when Reg_TARGET != rightReg & fSwap != 0:
 			StopInternalCodegen(__FILE__, __LINE__);
@@ -1293,6 +1333,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					else
 						Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, Size, Reg_TARGET, Size));
 						SkipCmp = true;
+						if fSwap==0 then
+							PHO_LinkNode(Reg_TARGET, pLeft);
+						end:if
 					end:if
 				case (MeaningfulFlags & (Flag_Zero | Flag_Sign)) == (Flag_Zero | Flag_Sign):
 					select
@@ -1324,13 +1367,23 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				else
 					Emit(@CodeCmdRegConst(@Buff, "cmp", Reg_TARGET, Size, Value));
 				end:if
+				if fSwap==0 then
+					PHO_LinkNode(Reg_TARGET, pLeft);
+				end:if
 			end:if
 			when (Size == 4) & (ID == iNE):
 				PHO_RegLoadConst(Reg_TARGET, PHO_Load_Value);
 		case rightOperand == operandMemRef:
 			Emit(@CodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand));
+			if fSwap==0 then
+				PHO_LinkNode(Reg_TARGET, pLeft);
+			end:if
 		case rightOperand == operandReg:
 			Emit(@CodeCmdRegReg(@Buff, "cmp", Reg_TARGET, Size, rightReg, Size));
+			if fSwap==0 then
+				PHO_LinkNode(Reg_TARGET, pLeft);
+				PHO_LinkNode(rightReg, pRight);
+			end:if
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
 		end
@@ -1519,6 +1572,15 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	return pType;
 end
 
+/*word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
+	when PHO_CheckRegForNode(Reg_TARGET, P):
+		return Node[P].pType;
+	word pType = CodeBinOp_(@Buff, P, @F, @T, @M);
+	when pType != nNODE:
+		PHO_LinkNode(Reg_TARGET, P);
+	return pType;
+end*/
+
 /*****************************************************************************/
 
 /*
@@ -1629,9 +1691,10 @@ end
 word Code_ASSIGN(word P)
 	word P1 = Node[P].pLeft;
 	if Node[P1].pRight < nNODE then
-		word RegRight = ChooseRegForLiteral(Node[P1].pRight);
+		word RegRight = LookupRegForNode(Node[P1].pRight);
 		select
 		case RegRight != RegNone & CodeRequiresSingleRegister(Node[P1].pLeft):
+			EmitWithExprComment("", "Node link reuse in Code_ASSIGN (1)");
 			Reg_ALT_TARGET = RegNone;
 			Reg_TARGET = RegRight;
 
@@ -1639,7 +1702,7 @@ word Code_ASSIGN(word P)
 			Reg_TARGET = ChooseEmptyReg2();
 			ValueRef Ref;
 			CodePrimary(Node[P1].pLeft, @Ref);
-			Code_STORE(@Ref);
+			Code_STORE(@Ref, Node[P1].pLeft, Node[P1].pRight);
 		case !CodeRequiresSingleRegister(Node[P1].pLeft)
 		& CodeRequiresSingleRegister(Node[P1].pRight):
 			Reg_TARGET = RegA;
@@ -1653,17 +1716,21 @@ word Code_ASSIGN(word P)
 
 			Reg_ALT_TARGET = Reg_TARGET;
 			Reg_TARGET = RegNone;
-			Code_STORE(@Ref);
+			Code_STORE(@Ref, Node[P1].pLeft, Node[P1].pRight);
 		default:
-			Reg_ALT_TARGET = RegNone;
-			Reg_TARGET = RegA;
-			Code(Node[P1].pRight);
+			Reg_ALT_TARGET = PHO_LookupRegForNode(Node[P1].pRight);
+			if Reg_ALT_TARGET == RegNone then
+				Reg_TARGET = RegA;
+				Code(Node[P1].pRight);
+				Reg_ALT_TARGET = Reg_TARGET;
+			else
+				EmitWithExprComment("", "Node link reuse in Code_ASSIGN (2)");
+			end
 
-			Reg_ALT_TARGET = Reg_TARGET;
 			Reg_TARGET = ChooseEmptyReg2();
 			ValueRef Ref;
 			CodePrimary(Node[P1].pLeft, @Ref);
-			Code_STORE(@Ref);
+			Code_STORE(@Ref, Node[P1].pLeft, Node[P1].pRight);
 		end
 	else
 		Reg_TARGET = RegA;
@@ -1679,6 +1746,11 @@ end
 /*****************************************************************************/
 
 word CodePrimaryWrapped(word P)
+	if PHO_CheckRegForNode(Reg_TARGET, P) then
+		EmitWithExprComment("", "Node link reuse in CodePrimaryWrapped");
+		return Node[P].pType;
+	end:if
+
 	ValueRef Ref;
 	CodePrimary(P, @Ref);
 	Code_LOAD(P, @Ref);

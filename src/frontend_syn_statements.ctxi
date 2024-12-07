@@ -531,6 +531,7 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pType)
 
 			Node[P6].ID    =iLOCAL;
 			Node[P6].Value =nLocal;
+			Node[P6].pType =Local[nLocal].pType;
 
 			ImplicitCast(T_nPtrTo(nPtr, pType), @Node[P5].pRight);
 		end:if

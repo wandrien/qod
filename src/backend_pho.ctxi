@@ -7,6 +7,8 @@ define PHO_REGS 4
 define PHO_FIRST_REG 1
 word PHO_ValidRegConst[PHO_REGS + 1];
 word PHO_RegConst[PHO_REGS + 1];
+word PHO_RegNodeLink1[PHO_REGS + 1];
+word PHO_RegNodeLink2[PHO_REGS + 1];
 
 /*****************************************************************************/
 
@@ -27,10 +29,17 @@ end
 
 /*****************************************************************************/
 
+void PHO_InvalidateRegNodeLink(word R)
+	PHO_RegNodeLink1[R] = nNODE;
+	PHO_RegNodeLink2[R] = nNODE;
+end
+
 void PHO_InvalidateReg(word R)
 	if R >= (PHO_FIRST_REG + PHO_REGS) then
 		StopInternal(__FILE__, __LINE__);
 	end:if
+
+	PHO_InvalidateRegNodeLink(R);
 
 	if PHO_ValidRegConst[R] != 0 then
 		char Buff[nBUFF]; Buff[0] = #0;
@@ -48,6 +57,16 @@ void PHO_InvalidateRegs()
 	word i = PHO_FIRST_REG;
 	while i < PHO_FIRST_REG + PHO_REGS do
 		PHO_InvalidateReg(i);
+		inc i;
+	end:while
+end
+
+/*****************************************************************************/
+
+void PHO_InvalidateRegNodeLinks()
+	word i = PHO_FIRST_REG;
+	while i < PHO_FIRST_REG + PHO_REGS do
+		PHO_InvalidateRegNodeLink(i);
 		inc i;
 	end:while
 end
@@ -108,6 +127,7 @@ void PHO_RegLoadConst(word R; word Data)
 
 	PHO_ValidRegConst[R] = 1;
 	PHO_RegConst[R] = Data;
+	PHO_InvalidateRegNodeLink(R);
 end
 
 /*****************************************************************************/

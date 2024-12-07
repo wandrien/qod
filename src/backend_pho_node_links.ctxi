@@ -1,0 +1,104 @@
+
+
+bool PHO_IsNodeLinkable_NoRecursion(word P)
+	switch Node[P].ID of
+	case
+		iDATA,iPARM,iLOCAL,iSTRING,iLITERAL,iNULL,iFUNC,
+		iLPTR,iADDR,iFIELD,iCAST,
+		iNEG,iBIT_NOT,
+		iADD,iSUB,iMUL,iDIV,iMOD,
+		iBIT_OR,iBIT_XOR,iBIT_AND:
+		return true;
+	default:
+		return false;
+	end
+end
+
+bool PHO_IsNodeLinkable(word P)
+	while P != nNODE do
+		when !PHO_IsNodeLinkable_NoRecursion(P):
+			return false;
+		when !PHO_IsNodeLinkable(Node[P].pLeft):
+			return false;
+		P = Node[P].pRight;
+	end
+	return true;
+end
+
+void PHO_LinkNode(word Reg; word P)
+	when PHOptimization == 0:
+		return;
+
+	if PHO_IsNodeLinkable(P) then
+		PHO_RegNodeLink1[Reg] = nNODE;
+		PHO_RegNodeLink2[Reg] = P;
+	else
+		PHO_RegNodeLink1[Reg] = nNODE;
+		PHO_RegNodeLink2[Reg] = nNODE;
+	end
+end
+
+void PHO_LinkNode_Store(word Reg; word P)
+	when PHOptimization == 0:
+		return;
+
+	if PHO_IsNodeLinkable(P) then
+		if PHO_RegNodeLink1[Reg] == nNODE then
+			PHO_RegNodeLink1[Reg] = P;
+		else
+			PHO_RegNodeLink2[Reg] = P;
+		end
+	end
+end
+
+bool PHO_MatchNodes(word P1, P2)
+	while true do
+		when P1 == P2:
+			return true;
+		when P1 == nNODE | P2 == nNODE:
+			return false;
+		when Node[P1].ID != Node[P2].ID:
+			return false;
+		when Node[P1].Value != Node[P2].Value:
+			return false;
+		when Node[P1].pType != Node[P2].pType:
+			return false;
+		when !PHO_MatchNodes(Node[P1].pLeft, Node[P2].pLeft):
+			return false;
+		P1 = Node[P1].pRight;
+		P2 = Node[P2].pRight;
+	end:while
+end
+
+bool PHO_CheckRegForNode(word Reg; word P1)
+	when PHO_MatchNodes(PHO_RegNodeLink1[Reg], P1):
+		return true;
+	when PHO_MatchNodes(PHO_RegNodeLink2[Reg], P1):
+		return true;
+	return false;
+end
+
+word PHO_LookupRegForNode(word P1)
+	when PHOptimization == 0:
+		return PHO_REG_INVALID;
+
+	word i = PHO_FIRST_REG;
+	while i < PHO_FIRST_REG + PHO_REGS do
+		when PHO_MatchNodes(PHO_RegNodeLink1[i], P1):
+			return i;
+		when PHO_MatchNodes(PHO_RegNodeLink2[i], P1):
+			return i;
+		inc i;
+	end:while
+	return PHO_REG_INVALID;
+end
+
+bool PHO_RegInvalidated(word Reg)
+	when PHO_RegContainsAConst(Reg):
+		return false;
+	when PHO_RegNodeLink1[Reg] != nNODE:
+		return false;
+	when PHO_RegNodeLink2[Reg] != nNODE:
+		return false;
+	return true;
+end
