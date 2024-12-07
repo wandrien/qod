@@ -810,8 +810,6 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 
 	char B[1024];
 	char @dump_prefix = "; ";
-	char @s_CLASS = "<UNK>";
-	char @s_SUB = "<UNK>";
 
 	strcpy(@B, "");
 
@@ -824,40 +822,7 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	strcat(@B, @dump_prefix);
 	strcat(@B, "  ");
 
-
-	select
-	case Dict[I].Class == cWORD: @s_CLASS = "cWORD";
-	case Dict[I].Class == cNAME: @s_CLASS = "cNAME";
-	case Dict[I].Class == cLITERAL: @s_CLASS = "cLITERAL";
-	case Dict[I].Class == cTYPE: @s_CLASS = "cTYPE";
-	case Dict[I].Class == cDATA: @s_CLASS = "cDATA";
-	case Dict[I].Class == cFUNC: @s_CLASS = "cFUNC";
-	case Dict[I].Class == cLIB: @s_CLASS = "cLIB";
-	case Dict[I].Class == cFILE: @s_CLASS = "cFILE";
-	case Dict[I].Class == cFIELD: @s_CLASS = "cFIELD";
-	case Dict[I].Class == cARGS: @s_CLASS = "cARGS";
-	case Dict[I].Class == cARG: @s_CLASS = "cARG";
-	end:select
-
-	select
-	case Dict[I].Sub == sNONE: @s_SUB = "sNONE";
-	case Dict[I].Sub == sBASE_VOID: @s_SUB = "sBASE_VOID";
-	case Dict[I].Sub == sBASE_BOOL: @s_SUB = "sBASE_BOOL";
-	case Dict[I].Sub == sBASE_CHAR: @s_SUB = "sBASE_CHAR";
-	case Dict[I].Sub == sBASE_SINT: @s_SUB = "sBASE_SINT";
-	case Dict[I].Sub == sBASE_UINT: @s_SUB = "sBASE_UINT";
-	case Dict[I].Sub == sBASE_FLOAT: @s_SUB = "sBASE_FLOAT";
-	case Dict[I].Sub == sSTRUCT: @s_SUB = "sSTRUCT";
-	case Dict[I].Sub == sFUNCTYPE: @s_SUB = "sFUNCTYPE";
-	case Dict[I].Sub == sPTR: @s_SUB = "sPTR";
-	case Dict[I].Sub == sARRAY: @s_SUB = "sARRAY";
-	case Dict[I].Sub == sSYS: @s_SUB = "sSYS";
-	case Dict[I].Sub == sFUNC: @s_SUB = "sFUNC";
-	case Dict[I].Sub == sMAIN: @s_SUB = "sMAIN";
-	end:select
-
-
-/*
+	char @s_CLASS;
 	switch Dict[I].Class of
 	case cWORD: @s_CLASS = "cWORD";
 	case cNAME: @s_CLASS = "cNAME";
@@ -870,10 +835,18 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	case cFIELD: @s_CLASS = "cFIELD";
 	case cARGS: @s_CLASS = "cARGS";
 	case cARG: @s_CLASS = "cARG";
+	default: @s_CLASS = "<UNK>";
 	end:switch
 
+	char @s_SUB;
 	switch Dict[I].Sub of
-	case sBASE: @s_SUB = "sBASE";
+	case sNONE: @s_SUB = "sNONE";
+	case sBASE_VOID: @s_SUB = "sBASE_VOID";
+	case sBASE_BOOL: @s_SUB = "sBASE_BOOL";
+	case sBASE_CHAR: @s_SUB = "sBASE_CHAR";
+	case sBASE_SINT: @s_SUB = "sBASE_SINT";
+	case sBASE_UINT: @s_SUB = "sBASE_UINT";
+	case sBASE_FLOAT: @s_SUB = "sBASE_FLOAT";
 	case sSTRUCT: @s_SUB = "sSTRUCT";
 	case sFUNCTYPE: @s_SUB = "sFUNCTYPE";
 	case sPTR: @s_SUB = "sPTR";
@@ -881,8 +854,8 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	case sSYS: @s_SUB = "sSYS";
 	case sFUNC: @s_SUB = "sFUNC";
 	case sMAIN: @s_SUB = "sMAIN";
+	default: @s_SUB = "<UNK>";
 	end:switch
-*/
 
 	strcat(@B, @s_CLASS);
 	strcat(@B, " ");
