@@ -113,7 +113,7 @@ word val(char @Buff)
 			Len  = StrLen;
 		/* Символ $ в начале строки - шестнадцатиричное. */
 		case k == 0:
-			Warn(@wDEPRECATED);
+			Deprecated(@dprHEXFORMAT);
 			Base = 16;
 			P    = 1;
 			Len  = StrLen - P;
@@ -1103,7 +1103,7 @@ end
 word ExprBinOp(word P1; word O; char @Buff)
 
 	if str_eq(@Buff, "=") then
-		Warn(@wDEPRECATED);
+		Deprecated(@dprEQL);
 	end:if
 
 	word P_OP = Peek();

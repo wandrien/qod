@@ -11,6 +11,18 @@ word HasErrors = 0;
 
 /*****************************************************************************/
 
+void ComposeMsg(char @Buff; word BuffSize; char @Msg1; char @Msg2)
+	strbuf buf;
+	strbuf_init(@buf, @Buff, BuffSize);
+	strbuf_append_cstr(@buf, @Msg1);
+	if @Msg2 != NULL then
+		strbuf_append_cstr2(@buf, ": ", @Msg2);
+	end
+end
+
+
+/*****************************************************************************/
+
 void PutLocation(SOURCELOCATION @SourceLocation)
 	if @SourceLocation != NULL & @SourceLocation.FileName != NULL then
 		puts(@SourceLocation.FileName);
@@ -31,6 +43,8 @@ void PutMessage(SOURCELOCATION @SourceLocation; char @MsgType; char @Msg)
 end
 
 void WarnAt(SOURCELOCATION @SourceLocation; char @Msg)
+	when @SourceLocation == NULL:
+		@SourceLocation = @CurrentFileInfo;
 	PutMessage(@SourceLocation, @msgWARNING, @Msg);
 end
 
@@ -51,10 +65,22 @@ end
 
 void ErrorWithSubject(char @Msg; char @Subject)
 	char Buff[nBUFF];
-	strcpy(@Buff, @Msg);
-	strcat(@Buff, ": ");
-	strcat(@Buff, @Subject);
+	ComposeMsg(@Buff, nBUFF, @Msg, @Subject);
 	Error(@Buff);
+end
+
+void DeprecatedAt(SOURCELOCATION @SourceLocation; char @Msg)
+	char Buff[nBUFF];
+	ComposeMsg(@Buff, nBUFF, @wDEPRECATED, @Msg);
+	if ErrorDeprecatedFeatures != 0 then
+		ErrorAt(@SourceLocation, @Buff);
+	else
+		WarnAt(@SourceLocation, @Buff);
+	end:if
+end
+
+void Deprecated(char @Msg)
+	DeprecatedAt(NULL, @Msg);
 end
 
 void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
@@ -70,9 +96,7 @@ end
 
 void StopWithSubject(char @Msg; char @Subject)
 	char Buff[nBUFF];
-	strcpy(@Buff, @Msg);
-	strcat(@Buff, ": ");
-	strcat(@Buff, @Subject);
+	ComposeMsg(@Buff, nBUFF, @Msg, @Subject);
 	Stop(@Buff);
 end
 
@@ -85,10 +109,9 @@ end
 
 void StopInternal(char @File; word Line)
 	char Buff[nBUFF];
-	strcpy(@Buff, @eINTERNAL);
-	strcat(@Buff, @File);
-	strcat(@Buff, ":");
-	strcat(@Buff, @str(Line));
+	strbuf buf;
+	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf_append_cstr4(@buf, @eINTERNAL, @File, ":", @str(Line));
 	Stop(@Buff);
 end
 
@@ -97,7 +120,6 @@ void StopMemory()
 end
 
 void ShowParseProgress(word nl)
-
 	if show_parse_progress == 0 then
 		return;
 	end:if
@@ -111,9 +133,17 @@ void ShowParseProgress(word nl)
 		@NL = "~r~n";
 	end
 	char Buff[nBUFF];
-	puts(@strcpy6(@Buff,
-		"~r", @CurrentFileInfo.FileName, "(", @str(CurrentFileInfo.Line), ")", @NL
-	));
+	strbuf buf;
+	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf_append_cstr6(@buf,
+		"~r",
+		@CurrentFileInfo.FileName,
+		"(",
+		@str(CurrentFileInfo.Line),
+		")",
+		@NL
+	);
+	puts(@Buff);
 end
 
 /*****************************************************************************/

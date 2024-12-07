@@ -37,10 +37,12 @@ void StopAtNodeInternalCodegen(char @File; word Line; word P)
 	CloseOutput();
 
 	char Buff[nBUFF];
-	strcpy(@Buff, @eINTERNAL_CODEGEN);
-	strcat(@Buff, @File);
-	strcat(@Buff, ":");
-	strcat(@Buff, @str(Line));
+	strbuf buf;
+	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf_append_cstr(@buf, @eINTERNAL_CODEGEN);
+	strbuf_append_cstr(@buf, @File);
+	strbuf_append_cstr(@buf, ":");
+	strbuf_append_cstr(@buf, @str(Line));
 
 	if P < nNODE then
 		StopAt(@Node[P].SourceLocation, @Buff);

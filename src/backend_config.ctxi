@@ -66,5 +66,4 @@ word EmitSourceLineNotes = 0;
 
 /* Вывод информации об анализе программы. */
 
-
 word WarnUnusedGlobals = 0;

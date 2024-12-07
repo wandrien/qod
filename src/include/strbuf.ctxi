@@ -33,6 +33,8 @@ word strbuf_get_actual_len(strbuf @Dst)
 end
 
 word strbuf_append_cstr(strbuf @Dst; char @Src)
+	when @Src == NULL:
+		return Dst.BuffLen;
 	word SrcLen = strlen(@Src);
 	word BuffSize = Dst.BuffSize;
 	word OldLen = Dst.BuffLen;
@@ -52,5 +54,43 @@ word strbuf_append_cstr(strbuf @Dst; char @Src)
 	Dst.BuffLen = NewLen;
 	Dst.Buff[NewLen] = #0;
 	return NewLen;
+end
+
+word strbuf_append_cstr2(strbuf @Dst; char @Src1; char @Src2)
+	strbuf_append_cstr(@Dst, @Src1);
+	return strbuf_append_cstr(@Dst, @Src2);
+end
+
+word strbuf_append_cstr3(strbuf @Dst; char @Src1; char @Src2; char @Src3)
+	strbuf_append_cstr(@Dst, @Src1);
+	strbuf_append_cstr(@Dst, @Src2);
+	return strbuf_append_cstr(@Dst, @Src3);
+end
+
+word strbuf_append_cstr4(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+                                      char @Src4)
+	strbuf_append_cstr(@Dst, @Src1);
+	strbuf_append_cstr(@Dst, @Src2);
+	strbuf_append_cstr(@Dst, @Src3);
+	return strbuf_append_cstr(@Dst, @Src4);
+end
+
+word strbuf_append_cstr5(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+                                      char @Src4; char @Src5)
+	strbuf_append_cstr(@Dst, @Src1);
+	strbuf_append_cstr(@Dst, @Src2);
+	strbuf_append_cstr(@Dst, @Src3);
+	strbuf_append_cstr(@Dst, @Src4);
+	return strbuf_append_cstr(@Dst, @Src5);
+end
+
+word strbuf_append_cstr6(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+                                      char @Src4; char @Src5; char @Src6)
+	strbuf_append_cstr(@Dst, @Src1);
+	strbuf_append_cstr(@Dst, @Src2);
+	strbuf_append_cstr(@Dst, @Src3);
+	strbuf_append_cstr(@Dst, @Src4);
+	strbuf_append_cstr(@Dst, @Src5);
+	return strbuf_append_cstr(@Dst, @Src6);
 end
 

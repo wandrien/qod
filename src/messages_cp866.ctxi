@@ -87,6 +87,9 @@ define @wTYPEUNUSED      ": тип данных не используется"                // a type
 
 define @wUNREACHABLE     "Недостижимый оператор"                       // Unreachable statement
 
+define @dprHEXFORMAT     "шестнадцатиричное число в формате $ABC"
+define @dprEQL           "запись сравнения как '=' вместо '=='"
+
 define @msgWARNING       "предупреждение: "                            // warning
 define @msgERROR         "ошибка: "                                    // error
 
