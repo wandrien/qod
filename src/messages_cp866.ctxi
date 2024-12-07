@@ -26,6 +26,7 @@ define @eSTRING          "Символ @ недопустим"                         // Illega
 define @eNOADDR          "Невозможно вычислить адрес"                  // Can't calculate address
 define @eOPERATOR        "Два оператора подряд"                        // Two operators togeter
 define @eARR_SIZE_TYPE   "Несоответствие типов: в качестве размера массива ожидается целое"
+define @eARR_SIZE_TYPE_2 "... тип выражения"
 define @eARR_SIZE_CONSTEXP "Выражение невычислимо на этапе компиляции: в качестве размера массива ожидается константное выражение"
 define @eARR_SIZE_LO_BOUND "В качестве размера массива ожидается значение больше нуля"
 define @eARR_SIZE_HI_BOUND "Размер массива превосходит максимально допустимое значение для целевой платформы"

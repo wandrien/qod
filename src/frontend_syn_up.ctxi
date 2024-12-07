@@ -9,7 +9,8 @@ void DeclMainFunc(char@ Buff)
 
 	word p = DictAlloc();
 
-	pFunc = p;
+	pCurrentFunc = p;
+	pMainFunc = p;
 	word Saved_nLocal = nLocal;
 
 	DictSetName(p, "");
@@ -23,9 +24,11 @@ void DeclMainFunc(char@ Buff)
 	DictAddToNamespace(pARGS, p);
 
 	Scan(@Buff);
-	Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
+	Dict[pCurrentFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 
 	nLocal = Saved_nLocal;
+
+	pCurrentFunc = nDICT;
 end
 
 /*****************************************************************************/
@@ -142,20 +145,20 @@ end
 
 void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
-	pFunc=_pFunc;
+	pCurrentFunc=_pFunc;
 
-	Dict[pFunc].Class = cFUNC;
-	Dict[pFunc].Sub   = sFUNC;
-	FuncArgs(@Buff, pFunc);
+	Dict[pCurrentFunc].Class = cFUNC;
+	Dict[pCurrentFunc].Sub   = sFUNC;
+	FuncArgs(@Buff, pCurrentFunc);
 
 	if pForward != nDICT then
-		word T1 = T_FuncTypeForFunction(pFunc);
+		word T1 = T_FuncTypeForFunction(pCurrentFunc);
 		word T2 = T_FuncTypeForFunction(pForward);
 		if !T_IsFuctTypesIdentical(T1, T2) then
 			Error(@eTYPE_FUNC_FWD);
 		else
-			DictFree(@pFunc);
-			pFunc = pForward;
+			DictFree(@pCurrentFunc);
+			pCurrentFunc = pForward;
 		end
 	end:if
 
@@ -163,7 +166,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 	select
 		case str_eq(@Buff,";"): /* Прототип. */
-			Dict[pFunc].Forward = 1;
+			Dict[pCurrentFunc].Forward = 1;
 
 		case str_eq(@Buff,"external"): /* Внешняя функция. */
 			select
@@ -197,17 +200,17 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 				word pAlias = DictAlloc();
 
-				DictSetName(pAlias, @DictGetName(pFunc));
+				DictSetName(pAlias, @DictGetName(pCurrentFunc));
 				Dict[pAlias].Class = cNAME;
-				Dict[pAlias].pType = pFunc;
+				Dict[pAlias].pType = pCurrentFunc;
 
-				DictSetName(pFunc, @Buff);
+				DictSetName(pCurrentFunc, @Buff);
 				Scan(@Buff);
 
 			end:if
 
-			Dict[pFunc].Sub   = sSYS;
-			Dict[pFunc].pNode = pLib;
+			Dict[pCurrentFunc].Sub   = sSYS;
+			Dict[pCurrentFunc].pNode = pLib;
 
 			if str_ne(@Buff,";") then
 				Stop(@eSEMICOLONEXP);
@@ -215,10 +218,10 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 		default: /* Тело функции. */
 			word Saved_nLocal = nLocal;
-			Dict[pFunc].pNode = Statements(@Buff, "end", NULL, NULL);
+			Dict[pCurrentFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 			nLocal = Saved_nLocal;
 
-			CTE_Function(pFunc);
+			CTE_Function(pCurrentFunc);
 
 	end:select
 
@@ -294,6 +297,7 @@ void DeclVarFunc(char @Buff)
 				Stop(@eNOFUNCTION);
 			end
 			DeclFunc1(@Buff, D, pForward);
+			pCurrentFunc = nDICT;
 			return;
 		end
 

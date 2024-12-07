@@ -77,7 +77,7 @@ void Translate()
 	/* Промежуточные операции *********************/
 
 	/* Отметка используемых объектов. */
-	DictMarkUsed(pFunc);
+	DictMarkUsed(pMainFunc);
 	select
 		case TargetFileFormat == tPE:
 			Dict[Find("ExitProcess")].Used = 1;

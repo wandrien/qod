@@ -1927,7 +1927,7 @@ void EmitFunction(char @Buff; word I)
 		end:while
 	end:if
 
-	pFunc = I;
+	pCurrentFunc = I;
 	ParmFrameSize = S1;
 	AllocatedFrameSize = 0;
 

@@ -6,6 +6,8 @@ char @LocalGetName(word I)
 end
 
 word ResolveLocal(char @Name)
+	when pCurrentFunc == nDICT:
+		return nLOCAL;
 	word  I=0;
 	while I<nLocal do
 		when strcmp(@LocalGetName(I),@Name) == 0:
@@ -17,7 +19,9 @@ end
 
 
 word ResolveParm(char @Name)
-	word pARGS = FindInNamespace("args", pFunc);
+	when pCurrentFunc == nDICT:
+		return nDICT;
+	word pARGS = FindInNamespace("args", pCurrentFunc);
 	when pARGS >= nDICT:
 		StopInternal(__FILE__, __LINE__);
 	return FindInNamespace(@Name, pARGS);

@@ -190,7 +190,7 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 	end:if
 
-	if Dict[pFunc].Sub == sMAIN then
+	if Dict[pCurrentFunc].Sub == sMAIN then
 		select
 		case TargetFileFormat == tPE:
 			Emit("xor     EAX,  EAX");

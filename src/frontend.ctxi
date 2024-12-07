@@ -42,7 +42,8 @@ void CTE(word P);
 
 word pGlobalNamespace;
 word pEnteredNamespace;
-word pFunc;
+word pCurrentFunc;
+word pMainFunc;
 word pLoop;
 
 /*****************************************************************************/
@@ -71,6 +72,12 @@ void InitFrontEnd()
 
 	nFile = 0;
 	pFile = 0;
+
+	pLoop = nNODE;
+	pCurrentFunc = nDICT;
+	pMainFunc = nDICT;
+	pGlobalNamespace = nDICT; /* FIXME: should be an actual namespace */
+	pEnteredNamespace = pGlobalNamespace;
 
 	RegisterDigraph("!=");
 	RegisterDigraph("<=");
@@ -192,10 +199,6 @@ void InitFrontEnd()
 	CurrentFileInfo.Column = 1;
 	@CurrentFileInfo.FileName = NULL;
 	BeforeFirstFile = 1;
-
-	pLoop = nNODE;
-	pGlobalNamespace = nDICT; /* FIXME: should be actual namespace */
-	pEnteredNamespace = pGlobalNamespace;
 end
 
 /*****************************************************************************/

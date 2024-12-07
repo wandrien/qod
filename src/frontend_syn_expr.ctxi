@@ -130,6 +130,7 @@ word Tabl(char @Buff)
 		select
 		case !T_IsInteger(Node[P].pType):
 			Error(@eARR_SIZE_TYPE);
+			ErrorWithSubject(@eARR_SIZE_TYPE_2, @T_GetName(Node[P].pType));
 			nIndx = 1;
 		case !NodeHasImmediateValue(P):
 			Error(@eARR_SIZE_CONSTEXP);
