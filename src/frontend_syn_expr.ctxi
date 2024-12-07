@@ -6,20 +6,22 @@
 /*****************************************************************************/
 
 /* Парсинг строки в целое число по указанному основанию. */
-word val2(char @Str; word Base)
-	if Str[0] == #0 then
+word val2(char @Str; int StrLen; word Base)
+	when StrLen < 1:
 		Stop(@eMALFORMEDINT);
-	end
 
-	if Base < 2 |  Base > 36 then
+	when Str[0] == #0:
+		Stop(@eMALFORMEDINT);
+
+	if Base < 2 | Base > 36 then
 		Stop(@eINVALIDBASE);
 	end
 
 	bool Overflow = false;
-	word i = 0;
+	int i = 0;
 
 	word Value = 0;
-	while Str[i] != #0 do
+	while i < StrLen & Str[i] != #0 do
 
 		while Str[i] == '_' do
 			inc i;
@@ -64,15 +66,19 @@ word val(char @Buff)
 	word  Base;
 	word  P;
 
+	int Len = 0;
+
 	do
-		word LastInd = strlen(@Buff) - 1;
-		char LastChar = Buff[LastInd];
-		if LastChar == 'h' | LastChar == 'H' then
-			/* Суффикс h - шестнадцатиричное. */
-			Buff[LastInd] = #0;
-			Base = 16;
-			P    = 0;
-			exit;
+		word StrLen = strlen(@Buff);
+		if StrLen > 1 then
+			char LastChar = Buff[StrLen - 1];
+			if StrLen > 1 & LastChar == 'h' | LastChar == 'H' then
+				/* Суффикс h - шестнадцатиричное. */
+				Base = 16;
+				P    = 0;
+				Len  = StrLen - 1;
+				exit;
+			end:if
 		end:if
 
 		if Buff[0] == '0' then
@@ -81,16 +87,19 @@ word val(char @Buff)
 			case 'x', 'X':
 				Base = 16;
 				P    = 2;
+				Len  = StrLen - P;
 				exit;
 			/* Префикс 0b - двоичное. */
 			case 'b', 'B':
 				Base = 2;
 				P    = 2;
+				Len  = StrLen - P;
 				exit;
 			/* Префикс 0o - восьмиричное. */
 			case 'o', 'O':
 				Base = 8;
 				P    = 2;
+				Len  = StrLen - P;
 				exit;
 			end:switch
 		end:if
@@ -101,23 +110,24 @@ word val(char @Buff)
 		case Buff[k] == #0:
 			Base = 10;
 			P    = 0;
+			Len  = StrLen;
 		/* Символ $ в начале строки - шестнадцатиричное. */
 		case k == 0:
 			Warn(@wDEPRECATED);
 			Base = 16;
 			P    = 1;
+			Len  = StrLen - P;
 		/* Символ $ в середине строки - слева от него основание в десятичном виде, справа - само число. */
 		default:
-			Buff[k] = #0;
-			Base = val2(@Buff, 10);
+			Base = val2(@Buff, k, 10);
 			P    = k + 1;
-			Buff[k] = '$';
+			Len  = StrLen - P;
 		end:select
 
 		exit;
 	end:do
 
-	return val2(@Buff[P], Base);
+	return val2(@Buff[P], Len, Base);
 end
 
 /*****************************************************************************/

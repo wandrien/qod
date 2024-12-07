@@ -1,0 +1,91 @@
+// TEST: should_print 'sFUNCTYPE'
+
+/*
+	A code snippet crushes the compiler.
+*/
+
+include "../sys4lnx.ctxi"
+include "../include/hosted.ctxi"
+
+define  nDICT   100000
+
+define  sNONE        0
+
+define  sBASE_VOID   1
+define  sBASE_BOOL   2
+define  sBASE_CHAR   3
+define  sBASE_SINT   4
+define  sBASE_UINT   5
+define  sBASE_FLOAT  6
+define  sBASE_NORET  7
+define  sBASE_MAX    7
+define  sSTRUCT      8
+define  sFUNCTYPE    9
+define  sPTR        11
+define  sARRAY      12
+define  sNAMESPACE  13
+define  sSYS        13
+define  sFUNC       14
+define  sMAIN       15
+
+struct   DICT
+	word   Name2;
+	word   NameHash;
+	word   FullyQualifiedName;
+	word  pNamespace;
+	word  pNext;
+	word  pFirst;
+	word  pLast;
+	byte   Class;
+	byte   Sub;
+	byte   Used;
+	byte   RO;
+	word  tCachedPtrToMe;
+	word  tCachedFuncTypeOfMe;
+	word  tCachedIntegerPair;
+	word  pType;
+	word  nLiteralSize;
+	word   LiteralValue;
+	word   TypeSize;
+	word   Label;
+	word   StackSize;
+	word  pNode;
+	word  tLink;
+	byte   Forward;
+end
+
+DICT Dict[nDICT];
+
+void foo(word I)
+	char B[1024];
+
+	char @s_SUB = "<UNK>";
+
+	switch Dict[I].Sub of
+	case sNONE: @s_SUB = "sNONE";
+	case sBASE_VOID: @s_SUB = "sBASE_VOID";
+	case sBASE_BOOL: @s_SUB = "sBASE_BOOL";
+	case sBASE_CHAR: @s_SUB = "sBASE_CHAR";
+	case sBASE_SINT: @s_SUB = "sBASE_SINT";
+	case sBASE_UINT: @s_SUB = "sBASE_UINT";
+	case sBASE_FLOAT: @s_SUB = "sBASE_FLOAT";
+	case sSTRUCT: @s_SUB = "sSTRUCT";
+	case sFUNCTYPE: @s_SUB = "sFUNCTYPE";
+	case sPTR: @s_SUB = "sPTR";
+	case sARRAY: @s_SUB = "sARRAY";
+	case sSYS: @s_SUB = "sSYS";
+	case sFUNC: @s_SUB = "sFUNC";
+	case sMAIN: @s_SUB = "sMAIN";
+	end:switch
+
+	strcat(@B, @s_SUB);
+
+	puts(@B);
+end
+
+begin
+	word I = 10;
+	Dict[I].Sub = sFUNCTYPE;
+	foo(I);
+end
+
