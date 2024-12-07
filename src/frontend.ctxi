@@ -67,6 +67,7 @@ void InitFrontEnd()
 	nDict = 0;
 	nLocal = 0;
 	nNode = 0;
+	tArrayTypes = nDICT;
 
 	nFile = 0;
 	pFile = 0;

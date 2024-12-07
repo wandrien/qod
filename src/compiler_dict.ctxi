@@ -3,6 +3,7 @@
 
 DICT     Dict [nDICT]; // Таблица имен
 word    nDict;
+word    tArrayTypes;
 
 /*****************************************************************************/
 
@@ -135,6 +136,17 @@ end
 
 /*****************************************************************************/
 
+word DictResolveAlias(word P)
+	while Dict[P].Class == cNAME do
+		P = Dict[P].pType;
+		when P >= nDict:
+			StopInternal(__FILE__, __LINE__);
+	end
+	return P;
+end
+
+/*****************************************************************************/
+
 /*
 	Поиск объекта в заданном пространстве по имени.
 	(Кроме объектов класса cFILE.)
@@ -151,12 +163,7 @@ word FindInNamespace(char @Name; word pNamespace)
 		if Dict[P].NameHash == hash
 		&  strcmp(@DictGetName(P), @Name) == 0
 		&  Dict[P].Class != cFILE then
-			while Dict[P].Class == cNAME do
-				P = Dict[P].pType;
-				when P >= nDict:
-					StopInternal(__FILE__, __LINE__);
-			end
-			return P;
+			return DictResolveAlias(P);
 		end
 		P = Dict[P].pNext;
 	end
@@ -174,16 +181,12 @@ word Find(char @Name)
 	word hash = str_hash(@Name);
 	word P = 0;
 	while P < nDict do
-		if Dict[P].NameHash == hash
+		DICT @d = @Dict[P];
+		if d.NameHash == hash
 		&  strcmp(@DictGetName(P), @Name) == 0
-		&  Dict[P].Class != cFILE
-		&  Dict[P].pNamespace == nDICT then
-			while Dict[P].Class == cNAME do
-				P = Dict[P].pType;
-				when P >= nDict:
-					StopInternal(__FILE__, __LINE__);
-			end
-			return P;
+		&  d.Class != cFILE
+		&  d.pNamespace == nDICT then
+			return DictResolveAlias(P);
 		end
 		inc P;
 	end
@@ -265,7 +268,6 @@ end
 /*****************************************************************************/
 
 word DictDupLiteral(word D1)
-
 	when D1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
@@ -274,12 +276,15 @@ word DictDupLiteral(word D1)
 
 	word D2 = DictAlloc();
 	DictSetName(D2, "");
-	Dict[D2].Class = Dict[D1].Class;
-	Dict[D2].Sub   = Dict[D1].Sub;
-	Dict[D2].RO    = Dict[D1].RO;
-	Dict[D2].pType = Dict[D1].pType;
-	Dict[D2].nLiteralSize = Dict[D1].nLiteralSize;
-	Dict[D2].LiteralValue = Dict[D1].LiteralValue;
+
+	DICT @d1 = @Dict[D1];
+	DICT @d2 = @Dict[D2];
+	d2.Class = d1.Class;
+	d2.Sub   = d1.Sub;
+	d2.RO    = d1.RO;
+	d2.pType = d1.pType;
+	d2.nLiteralSize = d1.nLiteralSize;
+	d2.LiteralValue = d1.LiteralValue;
 
 	return D2;
 end
@@ -521,24 +526,27 @@ word T_ArrayGetLenOr0(word T)
 	return T_ArrayGetLen(T);
 end
 
-
 word T_Array(word T; word S)
-	word P = 0;
+	word P = tArrayTypes;
 	while P < nDict do
-		if Dict[P].Class == cTYPE
-		 & Dict[P].Sub == sARRAY
-		 & Dict[P].pType == T
-		 & T_ArrayGetLen(P) == S then
+		DICT @d = @Dict[P];
+		when d.Class != cTYPE | d.Sub != sARRAY:
+			StopInternal(__FILE__, __LINE__);
+		if d.pType == T
+		 & d.TypeSize == S then
 			return P;
 		end:if
-		inc P;
+		P = d.tLink;
 	end:while
 
 	P = DictAlloc();
-	Dict[P].Class    = cTYPE;
-	Dict[P].Sub      = sARRAY;
-	Dict[P].pType    = T;
-	Dict[P].TypeSize = S;
+	DICT @d = @Dict[P];
+	d.Class    = cTYPE;
+	d.Sub      = sARRAY;
+	d.pType    = T;
+	d.TypeSize = S;
+	d.tLink    = tArrayTypes;
+	tArrayTypes = P;
 	return P;
 end
 
@@ -576,10 +584,11 @@ word T_PtrTo(word T)
 
 	if Dict[T].tCachedPtrToMe >= nDICT then
 		word PTR = DictAlloc();
-		Dict[PTR].Class    = cTYPE;
-		Dict[PTR].Sub      = sPTR;
-		Dict[PTR].TypeSize = target_size_of_pointer;
-		Dict[PTR].pType    = T;
+		DICT @dPtr = @Dict[PTR];
+		dPtr.Class    = cTYPE;
+		dPtr.Sub      = sPTR;
+		dPtr.TypeSize = target_size_of_pointer;
+		dPtr.pType    = T;
 		Dict[T].tCachedPtrToMe = PTR;
 	end
 
@@ -730,10 +739,11 @@ word DefineInteger(char @Name; word Type; word Value)
 
 	word D = DictAlloc();
 	DictSetName(D, @Name);
-	Dict[D].Class = cLITERAL;
-	Dict[D].RO = 1;
-	Dict[D].pType = Type;
-	Dict[D].LiteralValue = Value;
+	DICT @d = @Dict[D];
+	d.Class = cLITERAL;
+	d.RO = 1;
+	d.pType = Type;
+	d.LiteralValue = Value;
 
 	return D;
 end
@@ -749,11 +759,12 @@ word DefineString(char @Name; char @Value)
 
 	word D = DictAlloc();
 	DictSetName(D, @Name);
-	Dict[D].Class = cLITERAL;
-	Dict[D].RO = 1;
-	Dict[D].pType = T_PtrTo(st_char);
-	Dict[D].LiteralValue = SaveString(@Value, i);
-	Dict[D].nLiteralSize = i;
+	DICT @d = @Dict[D];
+	d.Class = cLITERAL;
+	d.RO = 1;
+	d.pType = T_PtrTo(st_char);
+	d.LiteralValue = SaveString(@Value, i);
+	d.nLiteralSize = i;
 
 	return D;
 end
