@@ -50,9 +50,9 @@ word strbuf_append_cstr(strbuf @Dst; char @Src)
 	else
 		RoomSize = SrcLen;
 	end
-	memcpy(@Dst.Buff[OldLen], @Src, RoomSize); // FIXME: internal error
+	memcpy(@Dst.Buff[OldLen], @Src, RoomSize);
 	Dst.BuffLen = NewLen;
-	Dst.Buff[NewLen] = #0;
+	Dst.Buff[OldLen + RoomSize] = #0;
 	return NewLen;
 end
 
