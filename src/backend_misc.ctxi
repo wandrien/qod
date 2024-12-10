@@ -183,11 +183,16 @@ void EmitType_(word T)
 end
 
 void EmitNodeType(word P)
-	EmitString("<");
-	EmitString(@str(Node[P].pType));
-	EmitString(" ");
-	EmitType_(Node[P].pType);
-	EmitString(">");
+	word pType = Node[P].pType;
+	if pType == nDICT then
+		EmitString("<>");
+	else
+		EmitString("<");
+		EmitString(@str(pType));
+		EmitString(" ");
+		EmitType_(pType);
+		EmitString(">");
+	end
 end
 
 void EmitTree_Prefix(int Pad; char @LinePrefix)
