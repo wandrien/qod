@@ -1,7 +1,7 @@
 @echo off
 
 set /p LATEST=<..\precompiled\latest
-set BOOTSTRAP_COMPILER="..\precompiled\"%LATEST%"\lcontext_c.exe"
+set BOOTSTRAP_COMPILER="..\precompiled\"%LATEST%"\qodc.exe"
 set FASM="..\3rd-party\fasm\FASM.exe"
 
 set BUILD_DIR=..\build

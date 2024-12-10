@@ -13,7 +13,7 @@ if which valgrind > /dev/null 2> /dev/null ; then
 	DEFAULT_VALGRIND="valgrind"
 fi
 
-DEFAULT_BOOTSTRAP_COMPILER="../precompiled/`cat ../precompiled/latest`/lcontext_c"
+DEFAULT_BOOTSTRAP_COMPILER="../precompiled/`cat ../precompiled/latest`/qodc"
 DEFAULT_FASM="../3rd-party/fasm/fasm"
 
 export WINE="${WINE-$DEFAULT_WINE}"
