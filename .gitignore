@@ -1,3 +1,2 @@
 /src/messages_utf8.ctxi
-/src/out/
-/src/tests/out/
+/build/

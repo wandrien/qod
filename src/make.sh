@@ -25,6 +25,17 @@ export FASM="${FASM:-$DEFAULT_FASM}"
 export QOD_FLAGS="${QOD_FLAGS:-}"
 export TESTS_QOD_FLAGS="${TESTS_QOD_FLAGS:-}"
 
+BUILD_DIR="../build"
+COMPILER_BUILD_DIR="$BUILD_DIR/compiler"
+TESTS_BUILD_DIR="$BUILD_DIR/tests"
+SAMPLES_BUILD_DIR="$BUILD_DIR/samples"
+
+compiler_name="lcontext"
+compiler_a="$COMPILER_BUILD_DIR/${compiler_name}_a"
+compiler_b="$COMPILER_BUILD_DIR/${compiler_name}_b"
+compiler_c="$COMPILER_BUILD_DIR/${compiler_name}_c"
+compiler_d="$COMPILER_BUILD_DIR/${compiler_name}_d"
+
 STAGE_A_ONLY=f
 
 crop_known_differencies()
@@ -57,61 +68,67 @@ diff_plain()
 
 mk()
 {
-	echo "    BUILD $4$5"
-    $1 $2.ctx $3 \
+	local compiler="$1" ; shift
+	local src="$1" ; shift
+	local platform="$1" ; shift
+	local dst="$1" ; shift
+	echo "    BUILD $dst"
+	mkdir -p "`dirname "$dst"`"
+    $compiler $src.ctx\
+		$platform \
 		--optimize speed \
-		--output $4.$5.asm \
-		--output-tree $4.$5.tree \
-		--output-include-list $4.$5.includes \
+		--output "$dst".asm \
+		--output-tree "$dst".tree \
+		--output-include-list "$dst".includes \
 		--emit-source-line-notes \
 		$QOD_FLAGS \
-		$6 $7 $8 && \
-    $FASM -m 200000 $4.$5.asm $4$5 >/dev/null && \
-	chmod a+x $4$5
+		"$@" && \
+    $FASM -m 200000 "$dst.asm" "$dst" >/dev/null && \
+	chmod a+x "$dst"
 }
 
 stage_a()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
-	mk $BOOTSTRAP_COMPILER ctx4lnx    --linux out/ lcontext_a
+	mk $BOOTSTRAP_COMPILER ctx4lnx --linux "$compiler_a"
 }
 
 stage_b()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage B${CODE_COLOR_NOCOLOR}\n"
-	mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b
-	mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b_debug --optimize none
-	mk out/lcontext_a ctx4lnx       --linux   out/ lcontext_b_size  --optimize size
-	mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b.exe
-	mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b_debug.exe --optimize none
-	mk out/lcontext_a ctx4win       --win32-c out/ lcontext_b_size.exe --optimize size
+	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"
+	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"_debug --optimize none
+	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"_size  --optimize size
+	mk "$compiler_a" ctx4win --win32-c "$compiler_b".exe
+	mk "$compiler_a" ctx4win --win32-c "$compiler_b"_debug.exe --optimize none
+	mk "$compiler_a" ctx4win --win32-c "$compiler_b"_size.exe --optimize size
 }
 
 stage_c()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage C${CODE_COLOR_NOCOLOR}\n"
-	mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c #--warn-unused-globals
-	mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_debug --optimize none
-	mk out/lcontext_b ctx4lnx       --linux   out/ lcontext_c_size --optimize size
-	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c.exe #--warn-unused-globals
-	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_debug.exe --optimize none
-	mk out/lcontext_b ctx4win       --win32-c out/ lcontext_c_size.exe --optimize size
+	mk "$compiler_b" ctx4lnx --linux   "$compiler_c" #--warn-unused-globals
+	mk "$compiler_b" ctx4lnx --linux   "$compiler_c"_debug --optimize none
+	mk "$compiler_b" ctx4lnx --linux   "$compiler_c"_size --optimize size
+	mk "$compiler_b" ctx4win --win32-c "$compiler_c".exe #--warn-unused-globals
+	mk "$compiler_b" ctx4win --win32-c "$compiler_c"_debug.exe --optimize none
+	mk "$compiler_b" ctx4win --win32-c "$compiler_c"_size.exe --optimize size
 
 	# Generated assembler listings for B and C stages should be identical.
-	diff_plain out/.lcontext_b.asm           out/.lcontext_c.asm
-	diff_plain out/.lcontext_b_debug.asm     out/.lcontext_c_debug.asm
-	diff_plain out/.lcontext_b_size.asm      out/.lcontext_c_size.asm
-	diff_plain out/.lcontext_b.exe.asm       out/.lcontext_c.exe.asm
-	diff_plain out/.lcontext_b_debug.exe.asm out/.lcontext_c_debug.exe.asm
-	diff_plain out/.lcontext_b_size.exe.asm  out/.lcontext_c_size.exe.asm
+	diff_plain "$compiler_b".asm           "$compiler_c".asm
+	diff_plain "$compiler_b"_debug.asm     "$compiler_c"_debug.asm
+	diff_plain "$compiler_b"_size.asm      "$compiler_c"_size.asm
+	diff_plain "$compiler_b".exe.asm       "$compiler_c".exe.asm
+	diff_plain "$compiler_b"_debug.exe.asm "$compiler_c"_debug.exe.asm
+	diff_plain "$compiler_b"_size.exe.asm  "$compiler_c"_size.exe.asm
 
 	# The binaries should be identical too.
-	diff_plain out/lcontext_b           out/lcontext_c
-	diff_plain out/lcontext_b_debug     out/lcontext_c_debug
-	diff_plain out/lcontext_b_size      out/lcontext_c_size
-	diff_pe out/lcontext_b.exe       out/lcontext_c.exe
-	diff_pe out/lcontext_b_debug.exe out/lcontext_c_debug.exe
-	diff_pe out/lcontext_b_size.exe  out/lcontext_c_size.exe
+	diff_plain "$compiler_b"           "$compiler_c"
+	diff_plain "$compiler_b"_debug     "$compiler_c"_debug
+	diff_plain "$compiler_b"_size      "$compiler_c"_size
+	diff_pe "$compiler_b".exe       "$compiler_c".exe
+	diff_pe "$compiler_b"_debug.exe "$compiler_c"_debug.exe
+	diff_pe "$compiler_b"_size.exe  "$compiler_c"_size.exe
 }
 
 stage_d()
@@ -122,57 +139,57 @@ stage_d()
 	fi
 
 	printf "=> ${CODE_COLOR_YELLOW}Stage D${CODE_COLOR_NOCOLOR}\n"
-	mk "$WINE out/lcontext_b.exe" ctx4lnx       --linux   out/ lcontext_d
-	mk "$WINE out/lcontext_b.exe" ctx4lnx       --linux   out/ lcontext_d_debug --optimize none
-	mk "$WINE out/lcontext_b.exe" ctx4lnx       --linux   out/ lcontext_d_size --optimize size
-	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d.exe
-	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d_debug.exe --optimize none
-	mk "$WINE out/lcontext_b.exe" ctx4win       --win32-c out/ lcontext_d_size.exe --optimize size
+	mk "$WINE $compiler_b" ctx4lnx --linux   "$compiler_d"
+	mk "$WINE $compiler_b" ctx4lnx --linux   "$compiler_d"_debug --optimize none
+	mk "$WINE $compiler_b" ctx4lnx --linux   "$compiler_d"_size --optimize size
+	mk "$WINE $compiler_b" ctx4win --win32-c "$compiler_d".exe
+	mk "$WINE $compiler_b" ctx4win --win32-c "$compiler_d"_debug.exe --optimize none
+	mk "$WINE $compiler_b" ctx4win --win32-c "$compiler_d"_size.exe --optimize size
 
 	# We have some minor differences between asm listings generated
 	# under different platforms, so we postprocess the listings now
 	# to delete those differences.
-	crop_known_differencies out/.lcontext_b.asm
-	crop_known_differencies out/.lcontext_b_debug.asm
-	crop_known_differencies out/.lcontext_b_size.asm
-	crop_known_differencies out/.lcontext_b.exe.asm
-	crop_known_differencies out/.lcontext_b_debug.exe.asm
-	crop_known_differencies out/.lcontext_b_size.exe.asm
+	crop_known_differencies "$compiler_b".asm
+	crop_known_differencies "$compiler_b"_debug.asm
+	crop_known_differencies "$compiler_b"_size.asm
+	crop_known_differencies "$compiler_b".exe.asm
+	crop_known_differencies "$compiler_b"_debug.exe.asm
+	crop_known_differencies "$compiler_b"_size.exe.asm
 
-	crop_known_differencies out/.lcontext_d.asm
-	crop_known_differencies out/.lcontext_d_debug.asm
-	crop_known_differencies out/.lcontext_d_size.asm
-	crop_known_differencies out/.lcontext_d.exe.asm
-	crop_known_differencies out/.lcontext_d_debug.exe.asm
-	crop_known_differencies out/.lcontext_d_size.exe.asm
+	crop_known_differencies "$compiler_d".asm
+	crop_known_differencies "$compiler_d"_debug.asm
+	crop_known_differencies "$compiler_d"_size.asm
+	crop_known_differencies "$compiler_d".exe.asm
+	crop_known_differencies "$compiler_d"_debug.exe.asm
+	crop_known_differencies "$compiler_d"_size.exe.asm
 
 	# Generated assembler listings for B and D stages should be identical.
-	diff_plain out/.lcontext_b.asm.cleared           out/.lcontext_d.asm.cleared
-	diff_plain out/.lcontext_b_debug.asm.cleared     out/.lcontext_d_debug.asm.cleared
-	diff_plain out/.lcontext_b_size.asm.cleared      out/.lcontext_d_size.asm.cleared
-	diff_plain out/.lcontext_b.exe.asm.cleared       out/.lcontext_d.exe.asm.cleared
-	diff_plain out/.lcontext_b_debug.exe.asm.cleared out/.lcontext_d_debug.exe.asm.cleared
-	diff_plain out/.lcontext_b_size.exe.asm.cleared  out/.lcontext_d_size.exe.asm.cleared
+	diff_plain "$compiler_b".asm.cleared           "$compiler_d".asm.cleared
+	diff_plain "$compiler_b"_debug.asm.cleared     "$compiler_d"_debug.asm.cleared
+	diff_plain "$compiler_b"_size.asm.cleared      "$compiler_d"_size.asm.cleared
+	diff_plain "$compiler_b".exe.asm.cleared       "$compiler_d".exe.asm.cleared
+	diff_plain "$compiler_b"_debug.exe.asm.cleared "$compiler_d"_debug.exe.asm.cleared
+	diff_plain "$compiler_b"_size.exe.asm.cleared  "$compiler_d"_size.exe.asm.cleared
 
 	# The binaries should be identical too.
-	diff_plain out/lcontext_b           out/lcontext_d
-	diff_plain out/lcontext_b_debug     out/lcontext_d_debug
-	diff_plain out/lcontext_b_size      out/lcontext_d_size
-	diff_pe out/lcontext_b.exe       out/lcontext_d.exe
-	diff_pe out/lcontext_b_debug.exe out/lcontext_d_debug.exe
-	diff_pe out/lcontext_b_size.exe  out/lcontext_d_size.exe
+	diff_plain "$compiler_b"           "$compiler_d"
+	diff_plain "$compiler_b"_debug     "$compiler_d"_debug
+	diff_plain "$compiler_b"_size      "$compiler_d"_size
+	diff_pe "$compiler_b".exe       "$compiler_d".exe
+	diff_pe "$compiler_b"_debug.exe "$compiler_d"_debug.exe
+	diff_pe "$compiler_b"_size.exe  "$compiler_d"_size.exe
 }
 
 build_samples()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
 
-	mk out/lcontext_c samples/z_t1  --win32-c out/ z_t1.exe
-	mk out/lcontext_c samples/z_t2  --win32-w out/ z_t2.exe
-	mk out/lcontext_c samples/z_t3  --win32-c out/ z_t3.exe
-	mk out/lcontext_c samples/z_t4  --win32-c out/ z_t4.exe
-	mk out/lcontext_c samples/z_t5  --win32-c out/ z_t5.exe
-	mk out/lcontext_c samples/z_t6  --win32-c out/ z_t6.exe
+	mk "$compiler_c" samples/z_t1  --win32-c "$SAMPLES_BUILD_DIR/z_t1.exe"
+	mk "$compiler_c" samples/z_t2  --win32-w "$SAMPLES_BUILD_DIR/z_t2.exe"
+	mk "$compiler_c" samples/z_t3  --win32-c "$SAMPLES_BUILD_DIR/z_t3.exe"
+	mk "$compiler_c" samples/z_t4  --win32-c "$SAMPLES_BUILD_DIR/z_t4.exe"
+	mk "$compiler_c" samples/z_t5  --win32-c "$SAMPLES_BUILD_DIR/z_t5.exe"
+	mk "$compiler_c" samples/z_t6  --win32-c "$SAMPLES_BUILD_DIR/z_t6.exe"
 }
 
 do_test_with_compiler ()
@@ -183,7 +200,7 @@ do_test_with_compiler ()
 	local test_name="$1" ; shift
 	local condition="$1" ; shift
 
-	local tests_out_dir="tests/out/$c"
+	local tests_out_dir="$TESTS_BUILD_DIR/$c"
 	mkdir -p "$tests_out_dir"
 
 	local stdout_log="$tests_out_dir"/"$test_name".stdout
@@ -191,9 +208,11 @@ do_test_with_compiler ()
 
 	local COMPILER_FLAGS="`grep -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
 
+	local COMPILER="$COMPILER_BUILD_DIR/${compiler_name}_$c"
+
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
-		if (mk out/lcontext_"$c" tests/"$test_name"\
-				--linux "$tests_out_dir"/ "$test_name" \
+		if (mk "$COMPILER" tests/"$test_name"\
+				--linux "$tests_out_dir/$test_name" \
 				$TESTS_QOD_FLAGS \
 				$COMPILER_FLAGS \
 				1> "$stdout_log" \
@@ -210,8 +229,8 @@ do_test_with_compiler ()
 			return $failed
 		fi
 	elif [ "x$condition" = "xshould_print" ] ; then
-		if ! (mk out/lcontext_"$c" tests/"$test_name"\
-				--linux "$tests_out_dir"/ "$test_name" \
+		if ! (mk "$COMPILER" tests/"$test_name"\
+				--linux "$tests_out_dir/$test_name" \
 				$TESTS_QOD_FLAGS \
 				$COMPILER_FLAGS \
 				1> "$stdout_log" \
@@ -330,16 +349,14 @@ run_valgrind()
 
 	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR}\n"
 	"$VALGRIND" --tool=callgrind \
-		--callgrind-out-file=callgrind.out.lcontext_c \
+		--callgrind-out-file=callgrind.out."$compiler_name" \
 		--dump-instr=yes \
-		out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.callgrind.asm
+		"$compiler_c" ctx4lnx.ctx --optimize speed --linux --output "$compiler_c".callgrind.asm
 
 	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
 	"$VALGRIND" --tool=memcheck \
-		out/lcontext_c ctx4lnx.ctx --optimize speed --linux --output out/lcontext_c.memcheck.asm
+		"$compiler_c" ctx4lnx.ctx --optimize speed --linux --output "$compiler_c".memcheck.asm
 }
-
-mkdir -p out
 
 iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
 
@@ -390,10 +407,10 @@ if [ "x$1" = "x--save-to-precompiled" ] ; then
 
 	mkdir "$save_path"
 	cp -a \
-		out/lcontext_c \
-		out/lcontext_c_debug \
-		out/lcontext_c_debug.exe \
-		out/lcontext_c.exe \
+		"$compiler_c" \
+		"$compiler_c"_debug \
+		"$compiler_c"_debug.exe \
+		"$compiler_c".exe \
 		"$save_path"
 	chmod a-x "$save_path"/*.exe
 
