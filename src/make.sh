@@ -30,7 +30,7 @@ COMPILER_BUILD_DIR="$BUILD_DIR/compiler"
 TESTS_BUILD_DIR="$BUILD_DIR/tests"
 SAMPLES_BUILD_DIR="$BUILD_DIR/samples"
 
-compiler_name="lcontext"
+compiler_name="qodc"
 compiler_a="$COMPILER_BUILD_DIR/${compiler_name}_a"
 compiler_b="$COMPILER_BUILD_DIR/${compiler_name}_b"
 compiler_c="$COMPILER_BUILD_DIR/${compiler_name}_c"
@@ -411,7 +411,14 @@ if [ "x$1" = "x--save-to-precompiled" ] ; then
 		"$compiler_c"_debug \
 		"$compiler_c"_debug.exe \
 		"$compiler_c".exe \
-		"$save_path"
+		"$save_path" && \
+	(
+		cd "$save_path" && \
+		mv "$compiler_name"_c "$compiler_name" && \
+		mv "$compiler_name"_c_debug "$compiler_name"_debug && \
+		mv "$compiler_name"_c_debug.exe "$compiler_name"_debug.exe && \
+		mv "$compiler_name"_c.exe "$compiler_name".exe
+	)
 	chmod a-x "$save_path"/*.exe
 
 	echo "$save_dir" > "../precompiled/latest.tmp" && mv "../precompiled/latest.tmp" "../precompiled/latest"

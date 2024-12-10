@@ -13,7 +13,7 @@ begin
 	puts("Target is ");
 	puts(@__TRANSLATOR_TARGET__);
 	puts("~r~n");
-	puts("Context2 Version is ");
-	puts(@__CONTEXT2_VERSION_STR__);
+	puts("Qod Version is ");
+	puts(@__QOD_VERSION_STR__);
 	puts("~r~n");
 end

@@ -1,6 +1,6 @@
-define @msgVERSION "2.2.2-CURRENT"
-define @msgPRODUCT "Lightning Context Compiler"
+define @msgVERSION "0.1.0-CURRENT"
+define @msgPRODUCT "Qod Compiler"
 define @msgCOPYRIGHT
 "Copyright (C) 1995-2007 Andrei Hohlov.~r~n"
-"Copyright (C) 2008-2009 Vadim Ushakov.~r~n"
+"Copyright (C) 2008-2025 Vadim Ushakov.~r~n"
 "All rights reserved.~r~n"

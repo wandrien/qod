@@ -68,7 +68,7 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
     case Message == WM_COMMAND:
       select
         case (wParam & 0xFFFF) == 101:
-          MessageBox(hWnd,"Context-2 demonstration program",@Class,MB_OK);
+          MessageBox(hWnd,"Qod demonstration program",@Class,MB_OK);
           return 0;
 
         case (wParam & 0xFFFF) == 102:

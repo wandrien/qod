@@ -1,7 +1,7 @@
 
-Lightning Context Compiler
+Qod Compiler
 Copyright (С) 1995-2007 Andrei Hohlov.
-Copyright (С) 2008-2016 Vadim Ushakov.
+Copyright (С) 2008-2025 Vadim Ushakov.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

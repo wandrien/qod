@@ -6,10 +6,13 @@ set FASM="..\3rd-party\fasm\FASM.exe"
 
 set BUILD_DIR=..\build
 set COMPILER_BUILD_DIR=%BUILD_DIR%\compiler
-set TESTS_BUILD_DIR=%BUILD_DIR%\tests
 set SAMPLES_BUILD_DIR=%BUILD_DIR%\samples
 
-set compiler_name=lcontext
+mkdir %BUILD_DIR%
+mkdir %COMPILER_BUILD_DIR%
+mkdir %SAMPLES_BUILD_DIR%
+
+set compiler_name=qodc
 set compiler_a=%COMPILER_BUILD_DIR%\%compiler_name%_a
 set compiler_b=%COMPILER_BUILD_DIR%\%compiler_name%_b
 set compiler_c=%COMPILER_BUILD_DIR%\%compiler_name%_c
