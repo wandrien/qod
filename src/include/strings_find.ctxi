@@ -79,7 +79,7 @@ end
 
 word str_rfind_chars_from(char @S; char @Chars; word P)
 	word i = P;
-	do
+	forever do
 		word j = 0;
 		while Chars[j] != #0 do
 			if S[i] == Chars[j] then
@@ -91,7 +91,7 @@ word str_rfind_chars_from(char @S; char @Chars; word P)
 			return INDEX_INVALID;
 		end:if
 		dec i;
-	end:do
+	end:forever
 end
 
 /*****************************************************************************/

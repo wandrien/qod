@@ -68,7 +68,7 @@ word val(char @Buff)
 
 	int Len = 0;
 
-	do
+	forever do
 		word StrLen = strlen(@Buff);
 		if StrLen > 1 then
 			char LastChar = Buff[StrLen - 1];
@@ -125,7 +125,7 @@ word val(char @Buff)
 		end:select
 
 		exit;
-	end:do
+	end:forever
 
 	return val2(@Buff[P], Len, Base);
 end
@@ -303,7 +303,7 @@ void FuncArgs(char @Buff; word pFunc)
 		when pType >= nDICT | Dict[pType].Class != cTYPE:
 			Stop(@eTYPEEXP);
 
-		do
+		forever do
 			word  nPtr=ReadPtrs(@Buff);
 
 			when pType == st_void & nPtr<1:
@@ -325,7 +325,7 @@ void FuncArgs(char @Buff; word pFunc)
 				exit;
 
 			Scan(@Buff);
-		end
+		end:forever
 
 		if strcmp(@Buff,")")!=0 then
 			when strcmp(@Buff,";") != 0:
@@ -673,7 +673,7 @@ word Primary(word Prty; char @Buff)
 
 	Node[P1].pType = pType;
 
-	do
+	forever do
 		if SkipScan then
 			SkipScan = false;
 		else
@@ -793,7 +793,7 @@ word Primary(word Prty; char @Buff)
 		default:
 			exit;
 		end:select
-	end:do
+	end:forever
 
 	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) & (strcmp(@Buff,":=") != 0) then
 		if Call == 0 | nPtr > 0 then
@@ -970,17 +970,17 @@ void Cast2(word P_OP)
 
 	/* Оба типа - указатели. */
 	case T_IsPtr(pType1) & T_IsPtr(pType2):
-		null;
+		pass;
 
 	/* С обеих сторон - один и тот же тип... */
 	case pType1 == pType2:
 		select
 		case T_IsInteger(pType1): /* ...целочисленный */
-			null;
+			pass;
 		case T_IsChar(pType1): /* ...символьный */
-			null;
+			pass;
 		case T_IsBool(pType1): /* ...булевый */
-			null;
+			pass;
 		default:
 			StopAtNode(P_OP, @eTYPE);
 		end:select
@@ -998,7 +998,7 @@ void Cast2(word P_OP)
 		case T_IsUnsigned(pTypeOp):
 			Node[P_OP].ID=iBIT_OR;
 		case pTypeOp == st_bool:
-			null;
+			pass;
 		case T_IsSigned(pTypeOp):
 			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
 		default:
@@ -1022,7 +1022,7 @@ void Cast2(word P_OP)
 		case T_IsUnsigned(pTypeOp):
 			Node[P_OP].ID=iBIT_AND;
 		case pTypeOp == st_bool:
-			null;
+			pass;
 		case T_IsSigned(pTypeOp):
 			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
 		default:
@@ -1086,14 +1086,14 @@ word Expr(word Prio; char @Buff)
 		P1 = Operator[O].Handler(nNODE, O, @Buff);
 	end:if
 
-	do
+	forever do
 		O = FindOperator(@Buff, Prio, OPERATOR_BLEFT);
 		if O == OPERATOR_INVALID then
 			exit;
 		end
 
 		P1 = Operator[O].Handler(P1, O, @Buff);
-	end:do
+	end:forever
 
 	return P1;
 end
@@ -1150,7 +1150,7 @@ word ExprConstExpr(word P1; word O; char @Buff)
 
 	switch Node[P2].ID of
 	case iLITERAL:
-		null;
+		pass;
 	default:
 		Error(@eNOTACONSTEXPR);
 	end

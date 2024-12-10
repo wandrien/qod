@@ -79,7 +79,7 @@ bool DeclStruct(char @Buff)
 	word NextOffset = 0;
 	word MaxAlign = 1;
 
-	do
+	forever do
 		word pType = ResolveGlobal(@Buff, NULL);
 		if pType == nDICT then
 			Stop(@eTYPEEXP);
@@ -89,7 +89,7 @@ bool DeclStruct(char @Buff)
 			end
 		end
 
-		do
+		forever do
 			word  nPtr = ReadPtrs(@Buff);
 
 			if pType==st_void & nPtr<1 then
@@ -139,7 +139,7 @@ bool DeclStruct(char @Buff)
 			end
 
 			Scan(@Buff);
-		end:do
+		end:forever
 
 		if str_eq(@Buff,@End) then
 			if CurlyBraces then
@@ -150,7 +150,7 @@ bool DeclStruct(char @Buff)
 			end
 			exit;
 		end:if
-	end:do
+	end:forever
 
 	Dict[pStruct].TypeSize = NextOffset;
 
@@ -212,7 +212,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 		case str_eq(@Buff,"external"): /* Внешняя функция. */
 			select
 				case TargetFileFormat == tPE:
-					null;
+					pass;
 				default:
 					Stop(@eNOTALLOWED);
 			end
@@ -319,7 +319,7 @@ void DeclVarFunc(char @Buff)
 
 	word FirstName = 1;
 
-	do
+	forever do
 		word nPtr = ReadPtrs(@Buff);
 
 		word pForward = ResolveInNamespace(@Buff, pEnteredNamespace);
@@ -400,7 +400,7 @@ void DeclVarFunc(char @Buff)
 
 		Scan(@Buff);
 
-	end:do
+	end:forever
 
 end
 
@@ -535,7 +535,7 @@ bool DeclNamespace(char @Buff)
 		Deprecated(@dptMISSINGOF_NAMESPACE);
 	end
 
-	do
+	forever do
 		bool DoScan = true;
 		select
 		case str_eq(@Buff,"include"):
@@ -565,7 +565,7 @@ bool DeclNamespace(char @Buff)
 		if DoScan then
 			Scan(@Buff);
 		end
-	end
+	end:forever
 
 	if str_eq(@Buff,@End) then
 		if CurlyBraces then
@@ -589,11 +589,10 @@ end
 /*****************************************************************************/
 
 void Parse()
-
 	char Buff[nBUFF];
 	Scan(@Buff);
 
-	do
+	forever do
 		bool DoScan = true;
 		select
 		case str_eq(@Buff,"begin"):
@@ -616,8 +615,7 @@ void Parse()
 		if DoScan then
 			Scan(@Buff);
 		end
-	end:do
-
+	end:forever
 end
 
 /*****************************************************************************/

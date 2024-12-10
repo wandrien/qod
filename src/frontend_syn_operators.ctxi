@@ -18,7 +18,7 @@ define OPERATOR_UPOST  8 // Унарная постфиксная.
 /* Тип обработчика операции. */
 word function __Operator(word P1; word O; char @Buff)
 
-struct OPERATOR
+struct OPERATOR of
 	char        Name[OPERATOR_NAME_SIZE]; // Имя операции
 	word        NameLen;  // Длина имени
 	word        Prio;     // Приоритет операции.

@@ -78,19 +78,19 @@ define   FALSE                           0
 define   TRUE                            1
 
 
-struct   POINT
+struct   POINT of
   LONG     x;
   LONG     y;
 end
 
-struct   RECT
+struct   RECT of
   LONG     left;
   LONG     top;
   LONG     right;
   LONG     bottom;
 end
 
-struct   WNDCLASS
+struct   WNDCLASS of
   UINT     style;
   void    @lpfnWndProc;
   int      cbClsExtra;
@@ -103,7 +103,7 @@ struct   WNDCLASS
   char    @lpszClassName;
 end
 
-struct   PAINTSTRUCT
+struct   PAINTSTRUCT of
   HDC      hdc;
   BOOL     fErase;
   RECT     rcPaint;
@@ -112,7 +112,7 @@ struct   PAINTSTRUCT
   BYTE     rgbReserved[32];
 end
 
-struct   LOGFONT
+struct   LOGFONT of
   LONG     lfHeight;
   LONG     lfWidth;
   LONG     lfEscapement;
@@ -129,12 +129,12 @@ struct   LOGFONT
   TCHAR    lfFaceName[LF_FACESIZE];
 end
 
-struct   SIZE
+struct   SIZE of
   LONG     cx;
   LONG     cy;
 end
 
-struct   MSG
+struct   MSG of
   HWND     hWnd;
   UINT     message;
   WPARAM   wParam;

@@ -3,7 +3,7 @@
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
 
-struct XX
+struct XX of
 	char @Buff;
 end
 

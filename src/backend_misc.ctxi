@@ -37,7 +37,7 @@ define vcNone 0;
 define vcDict 1;
 define vcChar 2;
 
-struct ID_DESC
+struct ID_DESC of
 	char @Name;
 	word ValueClass;
 	word RightList;
@@ -277,7 +277,7 @@ void EmitTree(word P; int Pad; char @LinePrefix)
 
 	EmitString("(");
 
-	do
+	forever do
 		word RightList = IDDesc[Node[P].ID].RightList;
 /*
 		word RightList = 0;
@@ -302,7 +302,7 @@ void EmitTree(word P; int Pad; char @LinePrefix)
 
 		EmitTree_Prefix(Pad, @LinePrefix);
 		EmitString("*");
-	end
+	end:forever
 
 	EmitTree_Prefix(Pad, @LinePrefix);
 	EmitString(")");

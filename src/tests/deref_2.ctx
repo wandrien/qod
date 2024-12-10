@@ -3,7 +3,7 @@
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
 
-struct AAA
+struct AAA of
 	word field1;
 	word field2;
 	word@ pointer;

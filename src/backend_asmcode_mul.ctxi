@@ -1,7 +1,7 @@
 
 /*****************************************************************************/
 
-struct MUL_TRICKS
+struct MUL_TRICKS of
 	word Value;
 	word Multipliers[3];
 	word PowerOfTwo;
@@ -94,7 +94,7 @@ void PrepareMulTricks()
 		word n2 = 0;
 		while n2 < nBaseTricks do
 			if MulTricks[n1].PowerOfTwo > 0 & MulTricks[n2].PowerOfTwo > 0 then
-				null;
+				pass;
 			else
 				PrepareDoubleMulTrick(MulTricks[n1].Value, MulTricks[n2].Value);
 			end:if
@@ -157,7 +157,7 @@ word Emit_MUL_Reg_Const(word Reg; word RegMode; word Value)
 		return 0;
 
 	word i = 0;
-	do
+	forever do
 		/* FIXME: causes internal error: */
 		// word Mult = MulTricks[n].Multipliers[i];
 		word@ Mults = @MulTricks[n].Multipliers;
@@ -166,7 +166,7 @@ word Emit_MUL_Reg_Const(word Reg; word RegMode; word Value)
 			return 1;
 		Emit_Trick_MUL_Reg_Const(Reg, RegMode, Mult);
 		inc i;
-	end
+	end:forever
 
 end
 

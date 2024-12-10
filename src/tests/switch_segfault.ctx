@@ -30,7 +30,7 @@ define  sSYS        13
 define  sFUNC       14
 define  sMAIN       15
 
-struct   DICT
+struct   DICT of
 	word   Name2;
 	word   NameHash;
 	word   FullyQualifiedName;

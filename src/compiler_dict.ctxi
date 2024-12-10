@@ -649,7 +649,7 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 
 	word P1 = Dict[pARGS1].pFirst;
 	word P2 = Dict[pARGS2].pFirst;
-	do
+	forever do
 		when P1 == nDICT & P2 == nDICT:
 			return true;
 
@@ -662,7 +662,7 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 
 		P1 = Dict[P1].pNext;
 		P2 = Dict[P2].pNext;
-	end:do
+	end:forever
 
 	return false;
 end
@@ -703,7 +703,7 @@ word T_FuncTypeForFunction(word F)
 	DictAddToNamespace(P_ARGS, P);
 
 	word F_ARG = Dict[F_ARGS].pFirst;
-	do
+	forever do
 		when F_ARG == nDICT:
 			exit;
 
@@ -714,7 +714,7 @@ word T_FuncTypeForFunction(word F)
 		DictAddToNamespace(P_ARG, P_ARGS);
 
 		F_ARG = Dict[F_ARG].pNext;
-	end:do
+	end:forever
 
 	Dict[F].tCachedFuncTypeOfMe = P;
 

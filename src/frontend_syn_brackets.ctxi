@@ -5,7 +5,7 @@ define BRACKET_LEX_SIZE 3 /* Максимальный размер лексем�
 
 define BracketType_Parentheses 0
 
-struct BRACKET
+struct BRACKET of
 	char LeftBracket[BRACKET_LEX_SIZE];
 	char RightBracket[BRACKET_LEX_SIZE];
 	word Type;

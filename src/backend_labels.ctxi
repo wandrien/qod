@@ -40,13 +40,13 @@ end
 
 LABEL @LabelResolve(word N; word Name)
 	word L = Node[N].pLabel;
-	do
+	forever do
 		when L == 0 | L >= nLabel:
 			StopInternal(__FILE__, __LINE__);
 		when Label[L].Name == Name:
 			exit;
 		L = Label[L].pNext;
-	end:do
+	end:forever
 	return @Label[L];
 end
 

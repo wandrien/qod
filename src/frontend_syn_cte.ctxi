@@ -378,7 +378,7 @@ void CTE_SWITCH(word P)
 		while VALUE_I < nNode do
 			switch Node[VALUE_I].ID of
 			case iVALUE:
-				null;
+				pass;
 			case iDEFAULT:
 				DefaultBranchPresent = true;
 			case iBODY:

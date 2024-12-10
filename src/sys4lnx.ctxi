@@ -65,6 +65,6 @@ noreturn halt(word Code)
   inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
   inline 0xCD, 0x80;                          // int     80H
   while true do
-    null;
+    pass;
   end
 end

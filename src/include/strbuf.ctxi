@@ -1,5 +1,5 @@
 
-struct strbuf
+struct strbuf of
 	char @Buff;
 	word BuffSize;
 	word BuffLen;

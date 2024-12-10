@@ -94,14 +94,14 @@ char @strn_cpy(char @Dst, @Src; word DstSize)
 	word i = 0;
 	while Src[i] != #0 do
 		if i >= DstSize then
-			null; /* FIXME: assert */
+			pass; /* FIXME: assert */
 		end:if
 		Dst[i] = Src[i];
 		inc i;
 	end
 	
 	if i >= DstSize then
-		null; /* FIXME: assert */
+		pass; /* FIXME: assert */
 	end:if
 
 	Dst[i] = #0;
@@ -114,7 +114,7 @@ end
 char @strn_cat(char @Dst, @Src; word DstSize)
 	word DstLen = strlen(@Dst);
 	if DstLen >= DstSize then
-		null; /* FIXME: assert */
+		pass; /* FIXME: assert */
 	end:if
 	strn_cpy(@Dst[strlen(@Dst)], @Src, DstSize - DstLen);
 	return @Dst;

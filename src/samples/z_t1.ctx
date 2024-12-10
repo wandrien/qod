@@ -42,11 +42,11 @@ begin
 	case 4:
 		b = 0;
 	case 5:
-		null;
+		pass;
 	case 6:
-		null;
+		pass;
 	case 7:
-		null;
+		pass;
 	case 8:
 		b = 1;
 	default:

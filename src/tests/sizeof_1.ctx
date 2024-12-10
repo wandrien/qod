@@ -3,11 +3,11 @@
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
 
-struct AAA
+struct AAA of
 	uint64 a;
 end
 
-struct BBB
+struct BBB of
 	AAA aaa;
 	uint64 b;
 end

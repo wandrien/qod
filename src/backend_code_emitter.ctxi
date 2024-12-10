@@ -116,7 +116,7 @@ bool CodeRequiresSingleRegister(word P);
 
 /*****************************************************************************/
 
-struct CODEBLOCK
+struct CODEBLOCK of
 	word Saved_nLocal;
 	word Saved_AllocatedFrameSize;
 end
@@ -177,7 +177,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 	if pIndex < nNODE then
 		select
 		case Ref.IX == RegNone:
-			null;
+			pass;
 		case Ref.IX == Reg_ALT_TARGET:
 			Reg_TARGET = ChooseEmptyReg2();
 			when Reg_TARGET == RegNone:
@@ -233,7 +233,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 			end:if
 		else
 			//Reg_TARGET = Ref.IX;
-			null;
+			pass;
 		end:if
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
@@ -297,7 +297,7 @@ void Code_LPTR(word P1; ValueRef @Ref)
 			strcpy3(@Buff,"lea     ",@TX,",  ");
 			Emit(@ValueRef_Code_ForLEA(@Buff, @Ref));
 		case iREF:
-			null;
+			pass;
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:switch
@@ -490,9 +490,9 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 	case pTypeTo == st_void:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	case pTypeTo == pTypeFrom:
-		null;
+		pass;
 	case T_Equal(pTypeTo, pTypeFrom):
-		null;
+		pass;
 	case (T_IsInteger(pTypeTo) | pTypeTo == st_char)&
 	     (T_IsInteger(pTypeFrom) | pTypeFrom == st_char):
 		word SizeTo = T_SizeOf(pTypeTo);
@@ -510,9 +510,9 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 			end:if
 		end:if
 	case T_IsPtr(pTypeTo) & T_IsPtr(pTypeFrom):
-		null;
+		pass;
 	case (pTypeTo == st_intptr | pTypeTo == st_uintptr) & T_IsPtr(pTypeFrom):
-		null;
+		pass;
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end
@@ -536,7 +536,7 @@ end
 define Query_MemoryOperand 0
 define Query_SingleRegOperand 1
 
-struct OperandQuery
+struct OperandQuery of
 	word Query;
 	ValueRef Ref;
 end
@@ -668,7 +668,7 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 				return false;
 			end:select
 		case Query_SingleRegOperand:
-			null;
+			pass;
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 		end:switch
@@ -944,7 +944,7 @@ word TryCodeFastMult(char @Buff; word P)
 
 	select
 	case NodeCanBeEncodedAsImm(pRight):
-		null;
+		pass;
 	case NodeCanBeEncodedAsImm(pLeft):
 		word tmp = pLeft; pLeft = pRight; pRight = tmp;
 	default:
@@ -985,12 +985,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		Reg_TARGET=RegA;
 	end
 
-	do
+	forever do
 		word pType = TryCodeFastMult(@Buff,P);
 		when pType < nDICT:
 			return pType;
 		exit;
-	end:do
+	end:forever
 
 	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
@@ -1007,7 +1007,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word leftOperand  = operandNotReady;
 	word rightOperand = operandNotReady;
 
-	do
+	forever do
 		/*
 			The usual calculation scheme is:
 				Reg1  <- LeftOperand
@@ -1097,7 +1097,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:if
 
 		exit;
-	end:do
+	end:forever
 
 	word rightReg = RegNone;
 	word fSwap=0;
@@ -1207,7 +1207,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	/* Check the cases for the operands arrived in swapped order: */
 	if fSwap==1 then
-		do
+		forever do
 			/* We can handle it by changing the operation ID */
 			word swappedID = CheckOperationSwappable(ID);
 			if swappedID != 0 then
@@ -1224,7 +1224,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 			/* In other cases, swapped operands shouldn't happen. */
 			StopInternalCodegen(__FILE__, __LINE__);
-		end:do
+		end:forever
 	end:if
 
 	word Size=SizeOfType(pType);
@@ -1301,7 +1301,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				select
 				case (ID == iEQ) | (ID == iNE):
 					if (MeaningfulFlags & Flag_Zero) != 0 then
-						null;
+						pass; /* ! */
 						SkipCmp = true;
 					else
 						Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, Size, Reg_TARGET, Size));
@@ -1649,7 +1649,7 @@ word Code_INCDEC(word pPrimary)
 	word Size = T_SizeOf(Ref.pType);
 	select
 	case IsNativeOperandSize(Size):
-		null;
+		pass;
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 	end:select
@@ -1836,7 +1836,7 @@ word Code(word P)
 	case iEXIT:
 		return Code_EXIT(P, @Buff);
 	case iEMPTY, iVIRTUAL_JUMP:
-		null;
+		pass;
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end:switch

@@ -19,13 +19,13 @@ bool IsNativeOperandSize(word Size)
 	word S = NativeRegSize;
 	when Size > NativeRegSize:
 		return false;
-	do
+	forever do
 		when S == 0:
 			return false;
 		when S == Size:
 			return true;
 		S = S / 2;
-	end:do
+	end:forever
 end
 
 /*****************************************************************************/
@@ -255,7 +255,7 @@ iREG                           IX + Offset     No        No
 iCONST                              Offset     No        No
 */
 
-struct ValueRef
+struct ValueRef of
 	word ID;
 	word RO;
 	word pType;

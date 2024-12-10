@@ -3,7 +3,7 @@
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
 
-namespace XXX
+namespace XXX of
 	synonym u16 uint16
 	synonym u32 uint32
 end

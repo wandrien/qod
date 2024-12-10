@@ -35,7 +35,7 @@ word fpath_first_part(char@ S)
 	
 	word P = 0; /* Текущая позиция поиска разделителя. */
 	
-	do
+	forever do
 		word P1 = str_find_chars_from(@S, @fpath_p_dir_separators, P); /*  Ищем следующий разделитель. */
 		if P1 == L then /* Если конец строки, заканчиваем. */
 			return P;
@@ -53,7 +53,7 @@ word fpath_first_part(char@ S)
 			так что пробуем следующую позицию.
 		*/
 		P = P1 + 1;
-	end:do
+	end:forever
 	
 	return P;
 end
@@ -78,7 +78,7 @@ word fpath_last_part(char@ S)
 	
 	word P = L - 1;
 	word P1;
-	do
+	forever do
 		P1 = str_rfind_chars_from(@S, @fpath_p_dir_separators, P); /*  Ищем следующий разделитель. */
 		if P == INDEX_INVALID then /* Если всю строку просканировали, заканчиваем. */
 			return 0;
@@ -96,7 +96,7 @@ word fpath_last_part(char@ S)
 			так что пробуем следующую позицию.
 		*/
 		P = P1 - 1;
-	end:do
+	end:forever
 	
 	return P1 + 1;
 	

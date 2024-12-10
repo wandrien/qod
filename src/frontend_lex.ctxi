@@ -5,7 +5,7 @@
 
 define nDIGRAPH 12
 
-struct Digraph
+struct Digraph of
 	char Name[3];
 end
 
@@ -16,7 +16,7 @@ word nDigraph;
 
 define nCOMMENT 2
 define nCOMMENT_AFFIX 4
-struct Comment
+struct Comment of
 	char Prefix[nCOMMENT_AFFIX];
 	char Suffix[nCOMMENT_AFFIX];
 	word PrefixLen;
@@ -75,9 +75,8 @@ void ScanString(word D)
 	char Buff[nMAX_STR_LEN];
 
 	word i = 0;
-	do
-
-		do
+	forever do
+		forever do
 			char Ch = Read();
 			when Ch == '"':
 				exit;
@@ -92,7 +91,7 @@ void ScanString(word D)
 
 			Buff[i] = ScanChar();
 			inc  i;
-		end:do
+		end:forever
 
 		Next();
 		SkipWhitespaces();
@@ -101,8 +100,7 @@ void ScanString(word D)
 			exit;
 		end
 		Next();
-
-	end:do
+	end:forever
 
 	if i >= nMAX_STR_LEN then
 		StopMemory();
@@ -121,7 +119,7 @@ end
 
 void ScanAlphaNum(char@ Buff; word @Len)
 	word P = 0;
-	do
+	forever do
 		char Ch = Read();
 		when isalpha(Ch) == 0 & isdigit(Ch) == 0:
 			exit;
@@ -133,7 +131,7 @@ void ScanAlphaNum(char@ Buff; word @Len)
 		end
 
 		Next();
-	end:do
+	end:forever
 	Len = P;
 	Buff[P] = #0;
 end
@@ -173,8 +171,7 @@ end
 /*****************************************************************************/
 
 char@ Scan(char@ Buff)
-
-	do
+	forever do
 		word LexLen = 0;
 		Scan1(@Buff, @LexLen);
 
@@ -228,7 +225,7 @@ char@ Scan(char@ Buff)
 			end:select
 			Next();
 		end:while
-	end:do
+	end:forever
 
 	return @Buff;
 end
