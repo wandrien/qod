@@ -111,8 +111,8 @@ define @msgNOWAYTOCAST_2 " в "
 
 define @msgUSAGE
 "~r~n"
-"Компилятор языков Context и Context-2 в язык ассемблера FASM.~r~n"
-"Использование: lcontext <src> [<target>] [--output <filename>] [--output-tree <filename>] [--output-include-list <filename>]~r~n"
+"Компилятор языка Qod в язык ассемблера FASM.~r~n"
+"Использование: qodc <src> [<target>] [--output <filename>] [--output-tree <filename>] [--output-include-list <filename>]~r~n"
 "~r~n"
 "<src>~r~n"
 "Исходный файл.~r~n"

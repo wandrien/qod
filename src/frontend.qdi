@@ -177,9 +177,6 @@ void InitFrontEnd()
 	DefineInteger("__QOD_VERSION_MAJOR__ ", st_word, 0);
 	DefineInteger("__QOD_VERSION_MINOR__ ", st_word, 1);
 	DefineString("__QOD_VERSION_STR__", "0.1");
-	DefineInteger("__CONTEXT2_VERSION_MAJOR__ ", st_word, 0);
-	DefineInteger("__CONTEXT2_VERSION_MINOR__ ", st_word, 1);
-	DefineString("__CONTEXT2_VERSION_STR__", "0.1");
 	DefineString("__TRANSLATOR__", @msgPRODUCT);
 	DefineString("__TRANSLATOR_VERSION__", @msgVERSION);
 	DefineString("__TRANSLATOR_HOST__", @__TRANSLATOR_TARGET__);
