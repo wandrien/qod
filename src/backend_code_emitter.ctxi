@@ -788,22 +788,15 @@ end
 
 /*****************************************************************************/
 
-/** Returns true if the operands can be swapped for no cost. */
-bool IsOperationCommutative(word ID)
-	switch ID of
-	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iMUL, iEQ, iNE:
-		return true;
-	default:
-		return false;
-	end:switch
-end
-
 /** Checks if the operands can be swapped for no cost, but we should change the operation ID as well.
-    Returns the code of swapped operation, if the operation is swappable.
+    Returns the ID of swapped operation, if the operation is swappable.
+    Returns the same ID, if the operation is commutative.
     Returns zero otherwise.
 */
 word CheckOperationSwappable(word ID)
 	switch ID of
+	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iMUL, iEQ, iNE:
+		return ID;
 	case iLT: return iGT;
 	case iLE: return iGE;
 	case iGE: return iLE;
@@ -811,6 +804,8 @@ word CheckOperationSwappable(word ID)
 	end:switch
 	return 0;
 end
+
+/*****************************************************************************/
 
 bool DoesOperationAllowRightMemRef(word ID)
 	switch ID of
@@ -1051,18 +1046,11 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					Reg2  <- RightOperand
 					Op    Reg1,  Reg2
 			*/
-			if IsOperationCommutative(ID) & NodeCanBeEncodedAsImm(pLeft) then
-				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				rightOperand = operandImm;
-				exit;
-			end:if
-
-			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
 			word swappedID = CheckOperationSwappable(ID);
 			if swappedID != 0 & NodeCanBeEncodedAsImm(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				rightOperand = operandImm;
 				ID = swappedID;
+				rightOperand = operandImm;
 				exit;
 			end:if
 
@@ -1097,18 +1085,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					Reg2  <- RightOperand
 					Op    Reg1,  Reg2
 			*/
-			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
-				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				rightOperand = operandMemRef;
-				exit;
-			end:if
-
-			/* Operation isn't commutative. Check if the operands can be swapped by just changing the op ID.*/
 			word swappedID = CheckOperationSwappable(ID);
-			if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
+			if (swappedID != 0) & NodeCanBeEncodedAsMemoryOperand(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				rightOperand = operandMemRef;
+				CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL);
 				ID = swappedID;
+				rightOperand = operandMemRef;
 				exit;
 			end:if
 
@@ -1121,33 +1103,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word fSwap=0;
 	word pType;
 
-	if (rightOperand == operandImm) &
-	   (T_SizeOf(Node[pRight].pType) == 4) &
-	   (PHO_RegContainsConst(Reg_TARGET, Node[pRight].Value))
-	then
-		do
-			if IsOperationCommutative(ID) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
-				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				rightOperand = operandMemRef;
-				leftOperand = operandReg;
-				pType = Node[pLeft].pType;
-				EmitWithExprComment("", "Const reuse in CodeBinOp");
-				exit;
-			end:if
+	word regReuse = 0;
+	select
+	case (rightOperand == operandImm) &
+	     (T_SizeOf(Node[pRight].pType) == 4) &
+	     (PHO_RegContainsConst(Reg_TARGET, Node[pRight].Value)):
+		 regReuse = 1;
+	case PHO_CheckRegForNode(Reg_TARGET, pRight):
+		 regReuse = 2;
+	end:select
 
-			word swappedID = CheckOperationSwappable(ID);
-			if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
-				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				rightOperand = operandMemRef;
-				ID = swappedID;
-				leftOperand = operandReg;
-				pType = Node[pLeft].pType;
+	if regReuse != 0 then
+		word swappedID = CheckOperationSwappable(ID);
+		if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
+			word tmp = pLeft; pLeft = pRight; pRight = tmp;
+			ID = swappedID;
+			leftOperand = operandReg;
+			rightOperand = operandMemRef;
+			pType = Node[pLeft].pType;
+			if regReuse == 1 then
 				EmitWithExprComment("", "Const reuse in CodeBinOp");
-				exit;
-			end:if
-
-			exit;
-		end:do
+			else
+				EmitWithExprComment("", "Node link reuse in CodeBinOp");
+			end
+		end:if
 	end:if
 
 	switch rightOperand of
@@ -1163,24 +1142,21 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		pType=Code(pLeft);
 
-		word RegLinked = PHO_LookupRegForNode(pRight);
-		if RegLinked != RegNone & DoesOperationAllowRightReg(ID, RegLinked)then
-			EmitWithExprComment("", "Node link reuse in CodeBinOp");
-			rightOperand = operandReg;
-			rightReg = RegLinked;
-		end:if
-
 	case operandMemRef:
 		if leftOperand == operandNotReady then
-			if iLT <= ID & ID <= iGT then
-				when CodeRequiresSingleRegister(pLeft):
-					Reg_TARGET = ChooseEmptyReg();
-			end:if
+			if PHO_CheckRegForNode(Reg_TARGET, pLeft) then
+				pType = Node[pLeft].pType;
+			else
+				if iLT <= ID & ID <= iGT then
+					when CodeRequiresSingleRegister(pLeft):
+						Reg_TARGET = ChooseEmptyReg();
+				end:if
 
-			pType=Code(pLeft);
+				pType=Code(pLeft);
+			end:if
 		end:if
 
-		word RegLinked = PHO_LookupRegForNode(pRight);
+		word RegLinked = LookupRegForNode(pRight);
 		if RegLinked != RegNone & DoesOperationAllowRightReg(ID, RegLinked)then
 			EmitWithExprComment("", "Node link reuse in CodeBinOp");
 			rightOperand = operandReg;
@@ -1188,7 +1164,8 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:if
 
 	case operandReg:
-		null;
+		when leftOperand != operandReg:
+			StopInternalCodegen(__FILE__, __LINE__);
 
 	case operandNotReady:
 		char @reorderingReason = @CheckOperandReordering(pLeft, pRight);
@@ -1244,10 +1221,6 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				Emit(@CodeCmdRegReg(@Buff, "xchg", Reg_TARGET, 4, rightReg, 4));
 				exit;
 			end:switch
-
-			/* If the operation is commutative, we don't care about the order. */
-			when IsOperationCommutative(ID):
-				exit;
 
 			/* In other cases, swapped operands shouldn't happen. */
 			StopInternalCodegen(__FILE__, __LINE__);
