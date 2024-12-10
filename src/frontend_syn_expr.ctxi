@@ -543,8 +543,15 @@ word Primary(word Prty; char @Buff)
 			StopWithSubject(@eUNDECLARED, @Buff);
 		end:if
 
-		select
-		case Dict[I].Class == cLITERAL: /* Именованный литерал? */
+		switch Dict[I].Class of
+		case cDATA:
+			P1 = Peek();
+			Node[P1].ID = iDATA;
+			Node[P1].Value = I;
+			pType = Dict[I].pType;
+			SkipScan = true;
+
+		case cLITERAL:
 			P1=Peek();
 			select
 			case
@@ -571,44 +578,37 @@ word Primary(word Prty; char @Buff)
 			//pType          = Dict[I].pType;
 			SkipScan = true;
 
-		case Dict[I].Class == cDATA | Dict[I].Class == cFUNC: /* Глобальная переменная/функция? */
+		case cFUNC:
 			P1 = Peek();
 
-			if Dict[I].Class == cFUNC then
-				word b = LookupBracket(BracketType_Parentheses, @Buff);
-				if b != BRACKET_INVALID then
-					Node[P1].ID = iCALL;
-					Node[P1].Value = I;
-					pType = Dict[I].pType;
-					Call = 1;
-
-					Scan(@Buff);
-
-					ParseCallArgs(I, @Node[P1].pLeft, @Buff, b);
-				else
-					if nPtr != 1 then
-						when Prty == PRIO_INC:
-							Stop(@eLVALUE_IN_INC);
-						when Prty == PRIO_LVALUE:
-							Stop(@eLVALUE_IN_ASSIGNMENT);
-						when Prty >= PRIO_INC:
-							Stop(@eNOADDR);
-					end
-
-					Node[P1].ID = iFUNC;
-					Node[P1].Value = I;
-					Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
-
-					return P1;
-				end:if
-			else
-				Node[P1].ID = iDATA;
+			word b = LookupBracket(BracketType_Parentheses, @Buff);
+			if b != BRACKET_INVALID then
+				Node[P1].ID = iCALL;
 				Node[P1].Value = I;
 				pType = Dict[I].pType;
-				SkipScan = true;
+				Call = 1;
+
+				Scan(@Buff);
+
+				ParseCallArgs(I, @Node[P1].pLeft, @Buff, b);
+			else
+				if nPtr != 1 then
+					when Prty == PRIO_INC:
+						Stop(@eLVALUE_IN_INC);
+					when Prty == PRIO_LVALUE:
+						Stop(@eLVALUE_IN_ASSIGNMENT);
+					when Prty >= PRIO_INC:
+						Stop(@eNOADDR);
+				end
+
+				Node[P1].ID = iFUNC;
+				Node[P1].Value = I;
+				Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
+
+				return P1;
 			end:if
 
-		case Dict[I].Class == cTYPE: /* Тип данных? */
+		case cTYPE:
 			if Prty < PRIO_LVALUE then
 				if strcmp(@Buff,"(")!=0 then
 					Stop(@eBRACKETEXP);
@@ -660,7 +660,7 @@ word Primary(word Prty; char @Buff)
 			end:if
 		default:
 			StopWithSubject(@eUNDECLARED, @Buff);
-		end:select
+		end:switch
 	end:if
 
 
