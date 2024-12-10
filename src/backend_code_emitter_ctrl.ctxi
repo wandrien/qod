@@ -116,7 +116,7 @@ word Code_PUSH(word P; char @Buff)
 	end:if
 
 	/* Оптимизация прямой загрузки числа. */
-	if NodeCanBeEncodedAsImm(P1) & (T_SizeOf(Node[P1].pType) == 4) then
+	if NodeCanBeEncodedAsImm(P1) then
 		word Value = Node[P1].Value;
 		word Size = T_SizeOf(Node[P1].pType);
 
