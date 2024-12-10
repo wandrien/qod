@@ -1,0 +1,22 @@
+// TEST: should_print '15 7 11 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+void f1()
+	puts(@str(__LINE__)); puts(" ");
+end
+
+word f2()
+	return __LINE__;
+end
+
+void foo()
+	puts(@str(__LINE__)); puts(" ");
+	f1();
+	puts(@str(f2())); puts(" ");
+end
+
+begin
+	foo();
+end

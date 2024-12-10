@@ -1,0 +1,43 @@
+// TEST: should_print '130 131 132 8100 8101 8102 65400 65401 65402 65403 65404 65405 193 14228 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+begin
+	int v130 = 0b1000_0010;
+	int v131 = 0B1000_0011;
+
+	int v132 = 2$1000_0100;
+
+	int v8100 = 0o17644;
+	int v8101 = 0O_17_645;
+	int v8102 = 8$17_646;
+
+	int v65400 = 0XfF78;
+	int v65401 = 0x0000000ff79;
+	int v65402 = 0xFF7a;
+
+	int v65403 = 0fF7bh;
+	int v65404 = 0ff7cH;
+
+	int v65405 = 16$FF7d;
+
+	int v193 = 10$0_0_0_0_0_0_00000000000000000000000000000000000000000000000000000000000000000000000193;
+
+	int v14228 = 36$Az8;
+
+	put_word(v130); puts(" ");
+	put_word(v131); puts(" ");
+	put_word(v132); puts(" ");
+	put_word(v8100); puts(" ");
+	put_word(v8101); puts(" ");
+	put_word(v8102); puts(" ");
+	put_word(v65400); puts(" ");
+	put_word(v65401); puts(" ");
+	put_word(v65402); puts(" ");
+	put_word(v65403); puts(" ");
+	put_word(v65404); puts(" ");
+	put_word(v65405); puts(" ");
+	put_word(v193); puts(" ");
+	put_word(v14228); puts(" ");
+end

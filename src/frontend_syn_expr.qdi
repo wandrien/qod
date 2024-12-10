@@ -1,0 +1,1323 @@
+
+/*
+	Анализатор выражений.
+*/
+
+/*****************************************************************************/
+
+/* Парсинг строки в целое число по указанному основанию. */
+word val2(char @Str; int StrLen; word Base)
+	when StrLen < 1:
+		Stop(@eMALFORMEDINT);
+
+	when Str[0] == #0:
+		Stop(@eMALFORMEDINT);
+
+	if Base < 2 | Base > 36 then
+		Stop(@eINVALIDBASE);
+	end
+
+	bool Overflow = false;
+	int i = 0;
+
+	word Value = 0;
+	while i < StrLen & Str[i] != #0 do
+
+		while Str[i] == '_' do
+			inc i;
+		end
+
+		word Digit;
+		word ch = word(Str[i]);
+
+		select
+		case ch >= word('0') & ch <= word('9'):
+			Digit = ch - word('0');
+		case ch >= word('A') & ch <= word('Z'):
+			Digit = ch - word('A') + 10;
+		case ch >= word('a') & ch <= word('z'):
+			Digit = ch - word('a') + 10;
+		default:
+			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
+		end:select
+
+		when Digit >= Base:
+			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
+
+		word NewValue = Value * Base + Digit;
+
+		if !Overflow & NewValue < Value then
+			Overflow = true;
+			Error(@eINTTOOBIG);
+		end:if
+
+		Value = NewValue;
+
+		inc i;
+	end:while
+
+	return Value;
+end
+
+/*****************************************************************************/
+
+/* Парсинг строки в число. */
+word val(char @Buff)
+	word  Base;
+	word  P;
+
+	int Len = 0;
+
+	forever do
+		word StrLen = strlen(@Buff);
+		if StrLen > 1 then
+			char LastChar = Buff[StrLen - 1];
+			if StrLen > 1 & LastChar == 'h' | LastChar == 'H' then
+				/* Суффикс h - шестнадцатиричное. */
+				Base = 16;
+				P    = 0;
+				Len  = StrLen - 1;
+				exit;
+			end:if
+		end:if
+
+		if Buff[0] == '0' then
+			switch Buff[1] of
+			/* Префикс 0x - шестнадцатиричное. */
+			case 'x', 'X':
+				Base = 16;
+				P    = 2;
+				Len  = StrLen - P;
+				exit;
+			/* Префикс 0b - двоичное. */
+			case 'b', 'B':
+				Base = 2;
+				P    = 2;
+				Len  = StrLen - P;
+				exit;
+			/* Префикс 0o - восьмиричное. */
+			case 'o', 'O':
+				Base = 8;
+				P    = 2;
+				Len  = StrLen - P;
+				exit;
+			end:switch
+		end:if
+
+		word k = str_find_chars(@Buff, "$");
+		select
+		/* Символ $ не найден - десятичное. */
+		case Buff[k] == #0:
+			Base = 10;
+			P    = 0;
+			Len  = StrLen;
+		/* Символ $ в начале строки - шестнадцатиричное. */
+		case k == 0:
+			Deprecated(@dprHEXFORMAT);
+			Base = 16;
+			P    = 1;
+			Len  = StrLen - P;
+		/* Символ $ в середине строки - слева от него основание в десятичном виде, справа - само число. */
+		default:
+			Base = val2(@Buff, k, 10);
+			P    = k + 1;
+			Len  = StrLen - P;
+		end:select
+
+		exit;
+	end:forever
+
+	return val2(@Buff[P], Len, Base);
+end
+
+/*****************************************************************************/
+
+word Tabl(char @Buff)
+	word nIndx = 0;
+	if strcmp(@Buff,"[") == 0 then
+		word P = Expr(PRIO_ZERO, @Scan(@Buff));
+
+		select
+		case !T_IsInteger(Node[P].pType):
+			Error(@eARR_SIZE_TYPE);
+			ErrorWithSubject(@eARR_SIZE_TYPE_2, @T_GetName(Node[P].pType));
+			nIndx = 1;
+		case !NodeHasImmediateValue(P):
+			Error(@eARR_SIZE_CONSTEXP);
+			nIndx = 1;
+		default:
+			nIndx = NodeGetImmediateValue(P);
+		end:select
+
+		if nIndx < 1 then
+			Error(@eARR_SIZE_LO_BOUND);
+			nIndx = 1;
+		end
+
+		if T_IsSigned(Node[P].pType) then
+			int i = nIndx;
+			if i < 1 then
+				Error(@eARR_SIZE_LO_BOUND);
+				nIndx = 1;
+			end
+		end
+
+		/*
+		TODO:
+		if nIndx > SIZE_MAX then
+			Error(@eARR_SIZE_HI_BOUND);
+			nIndx = 1;
+		end
+		*/
+
+		when strcmp(@Buff,"]")!=0:
+			Stop(@eBRACKETEXP);
+	    Scan(@Buff);
+	end:if
+
+	return nIndx;
+end
+
+word Tabl_(char @Buff; word T)
+	word S = Tabl(@Buff);
+	if S > 0 then
+		return T_Array(T, S);
+	end:if
+	return T;
+end
+
+/*****************************************************************************/
+
+/* Читает строковой литерал и создаёт синтаксический узел для него. */
+
+word StringNode()
+	word D = DictAlloc();
+	Dict[D].Class = cLITERAL;
+	Dict[D].RO = ROStrings;
+	DictSetName(D, "");
+	ScanString(D);
+
+	word P = Peek();
+	Node[P].ID    = iSTRING;
+	NodeSetDict(P, D);
+
+	return P;
+end
+
+word StringNode__FILE__()
+	char @Value = @CurrentFileInfo.FileName;
+	word i = strlen(@Value) + 1;
+
+	word D = DictAlloc();
+	Dict[D].Class = cLITERAL;
+	Dict[D].RO = ROStrings;
+	DictSetName(D, "");
+	Dict[D].pType = T_PtrTo(st_char);
+	Dict[D].LiteralValue = SaveString(@Value, i);
+	Dict[D].nLiteralSize = i;
+
+	word P = Peek();
+	Node[P].ID    = iSTRING;
+	NodeSetDict(P, D);
+
+	return P;
+end
+
+/*****************************************************************************/
+
+word ResolveInNamespace(char @Buff; word pNamespace)
+	if pNamespace == pGlobalNamespace then
+		return Find(@Buff);
+	else
+		return FindInNamespace(@Buff, pNamespace);
+	end
+end
+
+word ResolveGlobal(char @Buff; word @_pNamespace)
+	/* Пробуем разрешить имя относительно текущего пространства имён */
+	word pNamespace = pEnteredNamespace;
+	word pName = ResolveInNamespace(@Buff, pNamespace);
+
+	if pName == nDICT & pNamespace != pGlobalNamespace then
+		/* Пробуем разрешить имя относительно глобального пространства имён */
+		pNamespace = pGlobalNamespace;
+		pName = ResolveInNamespace(@Buff, pNamespace);
+	end
+
+	if pName == nDICT then
+		when @_pNamespace != NULL:
+			_pNamespace = pEnteredNamespace;
+		return pName;
+	end
+
+	while true do
+		Scan(@Buff);
+		if !Dict_IsType(pName) | str_ne(@Buff,".") then
+			when @_pNamespace != NULL:
+				_pNamespace = pNamespace;
+			return pName;
+		end
+
+		Scan(@Buff);
+		pNamespace = pName;
+		pName = ResolveInNamespace(@Buff, pNamespace);
+		if pName == nDICT then
+			when @_pNamespace != NULL:
+				_pNamespace = pNamespace;
+			return pName;
+		end
+	end:while
+end
+
+void CheckDuplicate(char @Buff)
+	word pDuplicateName = ResolveInNamespace(@Buff, pEnteredNamespace);
+	if pDuplicateName != nDICT then
+		StopWithSubject(@eDUPLICATE, @Buff);
+	end
+end
+
+/*****************************************************************************/
+
+/* Парсит последовательность операций разыменования указателя, возвращает количество операций. */
+
+word ReadPtrs(char @Buff)
+	word nPtr=0;
+	while strcmp(@Buff,"@") == 0 do
+		inc nPtr;
+		Scan(@Buff);
+	end
+	return nPtr;
+end
+
+/*****************************************************************************/
+
+void FuncArgs(char @Buff; word pFunc)
+	word pARGS = DictAlloc();
+	DictSetName(pARGS, "args");
+	Dict[pARGS].Class = cARGS;
+	DictAddToNamespace(pARGS, pFunc);
+
+	Scan(@Buff);
+	while strcmp(@Buff,")")!=0 do
+		word pType = ResolveGlobal(@Buff, NULL);
+		when pType >= nDICT | Dict[pType].Class != cTYPE:
+			Stop(@eTYPEEXP);
+
+		forever do
+			word  nPtr=ReadPtrs(@Buff);
+
+			when pType == st_void & nPtr<1:
+				Stop(@eNOVOID);
+			when Dict[pType].Sub == sFUNCTYPE & nPtr<1:
+				Stop(@eNOVAL);
+
+			word pARG = FindInNamespace(@Buff, pARGS);
+			when pARG < nDICT:
+				StopWithSubject(@eDUPLICATE, @Buff);
+
+			pARG = DictAlloc();
+			DictSetName(pARG, @Buff);
+			Dict[pARG].Class = cARG;
+			Dict[pARG].pType = T_nPtrTo(nPtr, pType);
+			DictAddToNamespace(pARG, pARGS);
+
+			when strcmp(@Scan(@Buff),",")!=0:
+				exit;
+
+			Scan(@Buff);
+		end:forever
+
+		if strcmp(@Buff,")")!=0 then
+			when strcmp(@Buff,";") != 0:
+				Stop(@eSEMICOLONEXP);
+			when strcmp(@Scan(@Buff),")") == 0:
+				Stop(@eTYPEEXP);
+		end
+
+	end:while
+
+end
+
+/*****************************************************************************/
+
+include "frontend_syn_cast.qdi"
+include "frontend_syn_cte.qdi"
+
+/*****************************************************************************/
+
+/*
+	Вычисление логического НЕ преобразованием исходной форумулы.
+
+	FIXME: Эта функция должна быть частью подсистемы CTE.
+*/
+
+word Not(word P)
+	switch Node[P].ID of
+	case iOR:   Node[P].ID = iAND; Not(Node[P].pLeft); Not(Node[P].pRight);
+	case iAND:  Node[P].ID = iOR;  Not(Node[P].pLeft); Not(Node[P].pRight);
+	case iXOR:  Node[P].ID = iEQV;
+	case iEQV:  Node[P].ID = iXOR;
+	case iLT:   Node[P].ID = iGE;
+	case iLE:   Node[P].ID = iGT;
+	case iEQ:   Node[P].ID = iNE;
+	case iNE:   Node[P].ID = iEQ;
+	case iGE:   Node[P].ID = iLT;
+	case iGT:   Node[P].ID = iLE;
+	default:
+		word P2 = Peek();
+		Node[P2].ID    = iNOT;
+		Node[P2].pLeft = P;
+		return P2;
+	end:switch
+
+	return P;
+end
+
+/*****************************************************************************/
+
+void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
+	word pARGS = FindInNamespace("args", pFunc);
+	when pARGS >= nDICT:
+		StopInternal(__FILE__, __LINE__);
+	word pARG = Dict[pARGS].pFirst;
+
+	while pARG < nDICT do
+		word P8=Peek();
+		Node[P8].ID   =iPUSH;
+		Node[P8].pLeft=Expr(PRIO_ZERO, @Buff);
+
+		ImplicitCast(Dict[pARG].pType, @Node[P8].pLeft);
+
+		P7 = P8;
+		@P7=@Node[P8].pRight;
+
+		pARG = Dict[pARG].pNext;
+
+		if  pARG < nDICT then
+			when strcmp(@Buff,",")!=0:
+				Stop(@eCOMMAEXP);
+			Scan(@Buff);
+		end:if
+
+	end:while
+
+	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
+		Stop(@eBRACKETEXP);
+end
+
+/*****************************************************************************/
+
+word ParseXOfTypeArgs(char @Buff)
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	if b == BRACKET_INVALID then
+		Stop(@eBRACKETEXP);
+	end:if
+
+	Scan(@Buff);
+	word I = ResolveGlobal(@Buff, NULL);
+	if I>=nDict then
+		StopWithSubject(@eUNDECLARED, @Buff);
+	end:if
+
+	when Dict[I].Class != cTYPE:
+		StopWithSubject(@eNOTATYPE, @Buff);
+
+	if !str_eq(@Buff,@Bracket[b].RightBracket) then
+		Stop(@eBRACKETEXP);
+	end:if
+
+	return I;
+end
+
+/*****************************************************************************/
+
+word Primary(word Prty; char @Buff)
+	if isdigit(Buff[0])!=0 then /* Число. */
+		word P1 = Peek();
+		NodeAssignWord(P1, val(@Buff));
+		Scan(@Buff);
+		return P1;
+	end
+
+	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
+		word P1 = Peek();
+		NodeAssignWord(P1, CurrentFileInfo.Line);
+		Scan(@Buff);
+		return P1;
+	end
+
+	if str_eq(@Buff,"sizeof") then /* sizeof(type) */
+		word I = ParseXOfTypeArgs(@Scan(@Buff));
+		word P1 = Peek();
+		NodeAssignWord(P1, T_SizeOf(I));
+		Scan(@Buff);
+		return P1;
+	end
+
+	if str_eq(@Buff,"bitsizeof") then /* bitsizeof(type) */
+		word I = ParseXOfTypeArgs(@Scan(@Buff));
+		word P1 = Peek();
+		word Size = T_SizeOf(I);
+		word BitSize = Size * 8;
+		when BitSize < Size:
+			Stop(@eBITSIZEOVERFLOW);
+		NodeAssignWord(P1, BitSize);
+		Scan(@Buff);
+		return P1;
+	end
+
+	if str_eq(@Buff,"countof") then /* countof(type) */
+		/* TODO: Невозможно протестировать, не реализован конструктор типа. */
+		word I = ParseXOfTypeArgs(@Scan(@Buff));
+		word P1 = Peek();
+		when !T_IsArray(I):
+			Stop(@eCOUNTOFREQARR);
+		NodeAssignWord(P1, T_ArrayGetLen(I));
+		Scan(@Buff);
+		return P1;
+	end
+
+
+	word pType;
+	word nPtr;
+
+	word Flag=0;
+	word Call=0;
+	word P1;
+
+	bool SkipScan = false;
+
+	nPtr = ReadPtrs(@Buff);
+
+	if Flag == 0 then /* Это имя текущего файла? */
+		if str_eq(@Buff,"__FILE__") then
+			if nPtr>0 then
+				Stop(@eSTRING);
+			end
+
+			P1    = StringNode__FILE__();
+			nPtr  = 1;
+			pType = st_char;
+			Flag  = 1;
+		end:if
+	end:if
+
+	if Flag == 0 then /* Это строка? */
+		if strcmp(@Buff,"~"") == 0 then
+			if nPtr>0 then
+				Stop(@eSTRING);
+			end
+
+			P1    = StringNode();
+			nPtr  = 1;
+			pType = st_char;
+			Flag  = 1;
+		end:if
+	end:if
+
+	if Flag == 0 then /* Это локальная переменная? */
+		word I = ResolveLocal(@Buff);
+		if I < nLOCAL then
+			P1=Peek();
+			Node[P1].ID    = iLOCAL;
+			Node[P1].Value = I;
+			pType          = Local[I].pType;
+			Flag           = 1;
+		end:if
+	end:if
+
+	if Flag == 0 then /* Это параметр функции? */
+		word I = ResolveParm(@Buff);
+		if I < nDICT then
+			P1=Peek();
+			Node[P1].ID    = iPARM;
+			Node[P1].Value = I;
+			pType          = Dict[I].pType;
+			Flag           = 1;
+		end:if
+	end:if
+
+	if Flag == 0 then /* Значит это глобальное имя. */
+		word I = ResolveGlobal(@Buff, NULL);
+		if I>=nDict then
+			StopWithSubject(@eUNDECLARED, @Buff);
+		end:if
+
+		switch Dict[I].Class of
+		case cDATA:
+			P1 = Peek();
+			Node[P1].ID = iDATA;
+			Node[P1].Value = I;
+			pType = Dict[I].pType;
+			SkipScan = true;
+
+		case cLITERAL:
+			P1=Peek();
+			select
+			case
+				(Dict[I].pType == st_word) |
+				(Dict[I].pType == st_int)  |
+				(Dict[I].pType == st_char) :
+				pType = Dict[I].pType;
+				NodeAssignLiteral(P1, pType, Dict[I].LiteralValue);
+
+			case Dict[I].pType == T_PtrTo(st_char):
+				Node[P1].ID    =iSTRING;
+				if ROStrings != 0 then
+					Node[P1].Value = I;
+				else
+					word NewLiteral = DictDupLiteral(I);
+					Dict[NewLiteral].RO = 0;
+					Node[P1].Value = NewLiteral;
+				end
+				pType          = st_char;
+			default:
+				StopInternal(__FILE__, __LINE__);
+			end:select
+
+			//pType          = Dict[I].pType;
+			SkipScan = true;
+
+		case cFUNC:
+			P1 = Peek();
+
+			word b = LookupBracket(BracketType_Parentheses, @Buff);
+			if b != BRACKET_INVALID then
+				Node[P1].ID = iCALL;
+				Node[P1].Value = I;
+				pType = Dict[I].pType;
+				Call = 1;
+
+				Scan(@Buff);
+
+				ParseCallArgs(I, @Node[P1].pLeft, @Buff, b);
+			else
+				if nPtr != 1 then
+					when Prty == PRIO_INC:
+						Stop(@eLVALUE_IN_INC);
+					when Prty == PRIO_LVALUE:
+						Stop(@eLVALUE_IN_ASSIGNMENT);
+					when Prty >= PRIO_INC:
+						Stop(@eNOADDR);
+				end
+
+				Node[P1].ID = iFUNC;
+				Node[P1].Value = I;
+				Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
+
+				return P1;
+			end:if
+
+		case cTYPE:
+			if Prty < PRIO_LVALUE then
+				if strcmp(@Buff,"(")!=0 then
+					Stop(@eBRACKETEXP);
+				end:if
+
+				P1 = Expr(PRIO_ZERO, @Scan(@Buff));
+
+				if strcmp(@Buff,")")!=0 then
+					Stop(@eBRACKETEXP);
+				end:if
+
+				if IsExplicitCastPossible(Node[P1].pType, I) then
+					AddCast(I, @P1);
+				else
+					AddFakeCast(I, @P1);
+					char Buff2[nBUFF];
+					strcpy4(@Buff2,
+						@msgNOWAYTOCAST_1,
+						@T_GetName(Node[P1].pType),
+						@msgNOWAYTOCAST_2,
+						@T_GetName(I)
+					);
+					ErrorWithSubject(@eTYPE, @Buff2);
+				end:if
+
+				pType = Node[P1].pType;
+
+				/*
+					TODO:
+						Старый код построения Primary портил дерево для iCAST,
+						поэтому здесь стоял принудительный выход из функции.
+						Код был переписан, но сейчас iCAST поддерживается только для типов,
+						для которых операции точки, индексации массива и вызова
+						функции не имеют смысла.
+						Поэтому принудительный выход пока оставлен как есть.
+				*/
+				Scan(@Buff);
+				return P1;
+			else
+				if nPtr>0 then
+					Stop(@eUNDECLARED);
+				end:if
+
+				P1 = Peek();
+				Node[P1].ID    = iTYPE;
+				Node[P1].Value = I;
+
+				return P1;
+			end:if
+		default:
+			StopWithSubject(@eUNDECLARED, @Buff);
+		end:switch
+	end:if
+
+
+	/*
+		В этом месте имеем следующие поля:
+		P1 - дочерний узел
+		pType - тип дочернего узла
+		nPtr - количество операций @ перед узлом.
+	*/
+
+	Node[P1].pType = pType;
+
+	forever do
+		if SkipScan then
+			SkipScan = false;
+		else
+			Scan(@Buff);
+		end
+		if strcmp(@Buff,"[")==0 & T_IsArray(pType) then /* Индексация массива. */
+			word P3 = Peek();
+			Node[P3].ID = iINDEX;
+			Node[P3].Value = T_ArrayGetLen(pType);
+			Node[P3].pLeft = P1;
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			pType = T_ArrayDeref(pType);
+			Node[P3].pType = pType;
+
+			if strcmp(@Buff,"]")!=0 then
+				Stop(@eBRACKETEXP);
+			end:if
+
+			ImplicitCast(st_word, @Node[P3].pRight);
+
+			P1 = P3;
+			//P2 = P3;
+			//@P2 = @Node[P3].pRight;
+
+			Scan(@Buff);
+		end:if
+
+		while strcmp(@Buff,"[") == 0 do /* Индексация указателя. */
+			if !T_IsPtr(pType) then
+				Stop(@eNOADDR);
+			end:if
+			word P3 = Peek();
+			Node[P3].ID = iADDR;
+			Node[P3].pLeft = P1;
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+
+			if strcmp(@Buff,"]")!=0 then
+				Stop(@eBRACKETEXP);
+			end:if
+
+			ImplicitCast(st_word, @Node[P3].pRight);
+
+			pType = T_DerefPtr(pType);
+			Node[P3].pType = pType;
+			Call = 0;
+			P1 = P3;
+
+			Scan(@Buff);
+		end:while
+
+		word b = LookupBracket(BracketType_Parentheses, @Buff);
+		select
+		case b != BRACKET_INVALID: /* Вызов функтора. */
+
+			while T_IsPtr(pType) do
+				word P3=Peek();
+				Node[P3].ID = iADDR;
+				Node[P3].pLeft = P1;
+				pType = T_DerefPtr(pType);
+				Node[P3].pType = pType;
+				Call = 0;
+				P1 = P3;
+			end:while
+
+			if Dict[pType].Sub!=sFUNCTYPE then
+				Stop(@eHEADEREXP);
+			end
+
+			P1 = Peek3(iLPTR, P1);
+			Node[P1].pType = T_nPtrTo(1, pType);
+			word P_CALL2 = Peek5(iCALL2, nNODE, P1, Dict[pType].pType);
+
+			Scan(@Buff);
+			ParseCallArgs(pType, @Node[P_CALL2].pLeft, @Buff, b);
+
+			pType = Dict[pType].pType;
+			Call = 1;
+			P1 = P_CALL2;
+
+		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры. */
+
+			while T_IsPtr(pType) do
+				word P3=Peek();
+				Node[P3].ID = iADDR;
+				Node[P3].pLeft = P1;
+				pType = T_DerefPtr(pType);
+				Node[P3].pType = pType;
+				Call = 0;
+				P1 = P3;
+			end:while
+
+			if Dict[pType].Sub!=sSTRUCT then
+				Stop(@eSTRUCTEXP);
+			end:if
+
+			if Call!=0 then
+				Stop(@eNOTAVAIL);
+			end:if
+
+			Scan(@Buff);
+
+			word F = FindInNamespace(@Buff, pType);
+			when F >= nDICT:
+				StopWithSubject(@eUNDECLARED_FIELD, @Buff);
+			when Dict[F].Class != cFIELD:
+				StopInternal(__FILE__, __LINE__);
+
+			word P3=Peek();
+			Node[P3].ID = iFIELD;
+			Node[P3].pLeft = P1;
+			Node[P3].Value = F;
+			pType = Dict[F].pType;
+			Node[P3].pType = pType;
+			P1 = P3;
+			Call = 0;
+
+		default:
+			exit;
+		end:select
+	end:forever
+
+	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) & (strcmp(@Buff,":=") != 0) then
+		if Call == 0 | nPtr > 0 then
+			Stop(@eASSIGNEXP);
+		end:if
+
+		while T_IsPtr(pType) do
+			pType = T_DerefPtr(pType);
+		end:while
+	end:if
+
+	word pTypeDeref = pType;
+	word nPtr1 = 0;
+	while T_IsPtr(pTypeDeref) do
+		inc nPtr1;
+		pTypeDeref = T_DerefPtr(pTypeDeref);
+	end:while
+
+	word P4=nNODE;
+	if Prty < PRIO_INC then
+		if nPtr>nPtr1+1 then
+			Stop(@eNOADDR);
+		end:if
+
+		if nPtr>nPtr1 then
+			P4=Peek();
+			Node[P4].ID = iLPTR;
+			Node[P4].pType = T_nPtrTo(1, pType);
+		end:if
+	end:if
+
+	while nPtr1>nPtr do
+		pType = T_DerefPtr(pType);
+		P1 = Peek5(iADDR, P1, nNODE, pType);
+		dec nPtr1;
+	end:while
+
+	if P4 != nNODE then
+		Node[P4].pLeft = P1;
+		P1 = P4;
+	end:if
+
+	return P1;
+
+end
+
+/*****************************************************************************/
+
+word IntegerPromotion(word pType)
+	when T_SizeOf(pType) < T_SizeOf(st_int):
+			return st_int;
+	return pType;
+end
+
+void ApplyCommonType(word P_OP; word pType)
+	AddImplicitCast(pType, @Node[P_OP].pLeft);
+	AddImplicitCast(pType, @Node[P_OP].pRight);
+	Node[P_OP].pType = pType;
+end
+
+void ApplyUACCastsForIntegers(word P_OP)
+
+	/* Usual arithmetic conversions */
+
+	word P1 = Node[P_OP].pLeft;
+	word P2 = Node[P_OP].pRight;
+
+	word pType1 = Node[P1].pType;
+	word pType2 = Node[P2].pType;
+
+	/* Skip for non-integers. */
+	when T_IsInteger(pType1) == false | T_IsInteger(pType2) == false:
+		return;
+
+	bool do_integer_promotion = false; /* TODO: disabled now; should be configurable with a pragma */
+	bool allow_implicit_cast_uint_to_int = true; /* TODO: should be configurable with a pragma */
+
+	if do_integer_promotion then
+		pType1 = IntegerPromotion(pType1);
+		pType2 = IntegerPromotion(pType2);
+		AddImplicitCast(pType1, @Node[P_OP].pLeft);
+		AddImplicitCast(pType2, @Node[P_OP].pRight);
+		P1 = Node[P_OP].pLeft;
+		P2 = Node[P_OP].pRight;
+	end:if
+
+	/* Эквивалентные типы. */
+	if T_Equal(pType1, pType2) then
+		ApplyCommonType(P_OP, pType1);
+		return;
+	end:if
+
+	bool P1_IsLiteralAutocastPossible = IsLiteralAutoCastPossible(pType2, P1);
+	bool P2_IsLiteralAutocastPossible = IsLiteralAutoCastPossible(pType1, P2);
+	if P1_IsLiteralAutocastPossible & !P2_IsLiteralAutocastPossible then
+		AddImplicitCast(pType2, @Node[P_OP].pLeft);
+		return;
+	end
+	if P2_IsLiteralAutocastPossible & !P1_IsLiteralAutocastPossible then
+		AddImplicitCast(pType1, @Node[P_OP].pRight);
+		return;
+	end
+
+	/* signed + signed OR unsigned + unsigned */
+	if T_IsSigned(pType1) == T_IsSigned(pType2) then
+		word rank1 = T_SizeOf(pType1);
+		word rank2 = T_SizeOf(pType2);
+		word pTargetType;
+		if rank1 > rank2 then
+			pTargetType = pType1;
+		else
+			pTargetType = pType2;
+		end
+		ApplyCommonType(P_OP, pTargetType);
+		return;
+	end:if
+
+	/* signed + unsigned */
+
+	word pTypeSigned;
+	word pTypeUnsigned;
+
+	select
+	case T_IsSigned(pType1) & T_IsUnsigned(pType2):
+		pTypeSigned = pType1;
+		pTypeUnsigned = pType2;
+	case T_IsSigned(pType2) & T_IsUnsigned(pType1):
+		pTypeSigned = pType2;
+		pTypeUnsigned = pType1;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+
+	word rankSigned = T_SizeOf(pTypeSigned);
+	word rankUnsigned = T_SizeOf(pTypeUnsigned);
+
+	if rankSigned > rankUnsigned then
+		word pTargetType = pTypeSigned;
+		ApplyCommonType(P_OP, pTypeSigned);
+		return;
+	end:if
+
+	if rankSigned == rankUnsigned then
+		if allow_implicit_cast_uint_to_int then
+			Warn(@wTYPE_SIGNED_UNSIGNED);
+		else
+			Error(@wTYPE_SIGNED_UNSIGNED);
+		end:if
+		word pTargetType = pTypeSigned;
+		ApplyCommonType(P_OP, pTypeSigned);
+		return;
+	end:if
+
+end
+
+void Cast2(word P_OP)
+
+	ApplyUACCastsForIntegers(P_OP);
+
+	word ID = Node[P_OP].ID;
+
+	word P1 = Node[P_OP].pLeft;
+	word P2 = Node[P_OP].pRight;
+
+	word pType1 = Node[P1].pType;
+	word pType2 = Node[P2].pType;
+
+	word pTypeOp = pType1;
+
+	/**************************************************************************/
+
+	/* Допустимые сочетания операндов: */
+	select
+
+	/* Оба типа - указатели. */
+	case T_IsPtr(pType1) & T_IsPtr(pType2):
+		pass;
+
+	/* С обеих сторон - один и тот же тип... */
+	case pType1 == pType2:
+		select
+		case T_IsInteger(pType1): /* ...целочисленный */
+			pass;
+		case T_IsChar(pType1): /* ...символьный */
+			pass;
+		case T_IsBool(pType1): /* ...булевый */
+			pass;
+		default:
+			StopAtNode(P_OP, @eTYPE);
+		end:select
+
+	default:
+		AddFakeCast(pType1, @Node[P_OP].pRight);
+		ErrorAtNode(P_OP, @eTYPE);
+	end:select
+
+	/**************************************************************************/
+
+	select
+	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
+		select
+		case T_IsUnsigned(pTypeOp):
+			Node[P_OP].ID=iBIT_OR;
+		case pTypeOp == st_bool:
+			pass;
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+		end
+
+	case ID == iXOR: /* Аналогично предыдущему. */
+		select
+		case T_IsUnsigned(pTypeOp):
+			Node[P_OP].ID=iBIT_XOR;
+		case pTypeOp == st_bool:
+			Stop(@eXORNOTIMPL);
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+		end
+
+	case ID == iAND: /* Аналогично предыдущему. */
+		select
+		case T_IsUnsigned(pTypeOp):
+			Node[P_OP].ID=iBIT_AND;
+		case pTypeOp == st_bool:
+			pass;
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+		end
+
+	case iLT<=ID & ID<=iGT:
+		if ID == iEQ | ID == iNE then
+			/* Сравнение равенство/неравенство... */
+			/* ...возможно только между целыми, булевыми, символами, указателями. */
+			if
+				!T_IsInteger(pTypeOp) &
+				!T_IsChar(pTypeOp) &
+				!T_IsBool(pTypeOp) &
+				!T_IsPtr(pTypeOp) then
+				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+			end
+		else
+			/* Сравнение больше/меньше */
+			/* ...возможно только между целыми, символами. */
+			if
+				!T_IsInteger(pTypeOp) &
+				!T_IsChar(pTypeOp) then
+				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+			end
+		end:if
+		pTypeOp = st_bool;
+
+	case iADD<=ID & ID<=iDIV:
+		/* Арифметические операции только с целыми. */
+		if !T_IsInteger(pTypeOp) then
+			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
+		end
+		CTE(P_OP);
+
+	case ID == iMOD:
+		if pTypeOp!=st_byte & pTypeOp!=st_word then
+			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
+		end
+		CTE(P_OP);
+
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+
+	Node[P_OP].pType = pTypeOp;
+
+end
+
+/*****************************************************************************/
+
+word Expr(word Prio; char @Buff)
+
+	word P1;
+	word O;
+
+	O = FindOperator(@Buff, Prio, OPERATOR_UPRE);
+	if O == OPERATOR_INVALID then
+		P1 = Primary(Prio, @Buff);
+	else
+		P1 = Operator[O].Handler(nNODE, O, @Buff);
+	end:if
+
+	forever do
+		O = FindOperator(@Buff, Prio, OPERATOR_BLEFT);
+		if O == OPERATOR_INVALID then
+			exit;
+		end
+
+		P1 = Operator[O].Handler(P1, O, @Buff);
+	end:forever
+
+	return P1;
+end
+
+/*****************************************************************************/
+
+word ExprBinOp(word P1; word O; char @Buff)
+
+	if str_eq(@Buff, "=") then
+		Deprecated(@dprEQL);
+	end:if
+
+	word P_OP = Peek();
+	word ID = Operator[O].ID;
+	Node[P_OP].ID = ID;
+
+	if P1 >= nNODE then
+		StopInternal(__FILE__, __LINE__);
+	else
+		Node[P_OP].pLeft  = P1;
+		Node[P_OP].pRight = Expr(Operator[O].Prio, @Scan(@Buff));
+		Cast2(P_OP);
+	end:if
+
+	return P_OP;
+end
+
+/*****************************************************************************/
+
+word ExprParentheses(word P1; word O; char @Buff)
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	when b == BRACKET_INVALID:
+		StopInternal(__FILE__, __LINE__);
+
+	word P2 = Expr(PRIO_ZERO, @Scan(@Buff));
+	if !str_eq(@Buff,@Bracket[b].RightBracket) then
+		Stop(@eBRACKETEXP);
+	end
+	Scan(@Buff);
+	return P2;
+end
+
+/*****************************************************************************/
+
+word ExprConstExpr(word P1; word O; char @Buff)
+	Scan(@Buff);
+
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	if b == BRACKET_INVALID then
+		Stop(@eBRACKETEXP);
+	end
+
+	word P2 = ExprParentheses(P1, O, @Buff);
+
+	switch Node[P2].ID of
+	case iLITERAL:
+		pass;
+	default:
+		Error(@eNOTACONSTEXPR);
+	end
+
+	return P2;
+
+end
+
+/*****************************************************************************/
+
+word ExprLitChar(word P_; word O; char @Buff)
+
+	word P1=Peek();
+
+	select
+	case strcmp(@Buff,"#") == 0: /* Символ в #-виде. */
+		word N=val(@Scan(@Buff));
+		if   N>255 then
+			Stop(@eOVERFLOW);
+		end
+		NodeAssignChar(P1, N);
+
+	case strcmp(@Buff,"'") == 0: /* Символ. */
+		NodeAssignChar(P1, word(ScanChar()));
+		if Read()!='~'' then
+			Stop(@eQUOTEXP);
+		end
+		Next();
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+
+	Scan(@Buff);
+
+	return P1;
+end
+
+word ExprLitNULL(word P_; word O; char @Buff)
+	word P1=Peek();
+	Node[P1].ID = iNULL;
+	Node[P1].pType = T_PtrTo(st_void);
+	Node[P1].Value = 0;
+	Scan(@Buff);
+	return P1;
+end
+
+word ExprLitFALSE(word P_; word O; char @Buff)
+	word P1 = Peek();
+	Node[P1].ID    = iLITERAL;
+	Node[P1].Value = 0;
+	Node[P1].pType = st_bool;
+	Scan(@Buff);
+	return P1;
+end
+
+word ExprLitTRUE(word P_; word O; char @Buff)
+	word P1 = Peek();
+	Node[P1].ID    = iLITERAL;
+	Node[P1].Value = 1;
+	Node[P1].pType = st_bool;
+	Scan(@Buff);
+	return P1;
+end
+
+/*****************************************************************************/
+
+word ExprNOT(word P_; word O; char @Buff)
+
+	word P1;
+
+	word P2=Expr(Operator[O].Prio, @Scan(@Buff));
+	word pType = Node[P2].pType;
+
+	select
+	case pType == st_byte | pType == st_word:
+		P1=Peek();
+		Node[P1].ID    =iBIT_NOT;
+		Node[P1].pLeft = P2;
+
+	case pType == st_bool:
+		P1 = Not(P2);
+
+	default:
+		Stop(@eTYPE);
+	end:select
+
+	Node[P1].pType = pType;
+
+	return P1;
+end
+
+/*****************************************************************************/
+
+word ExprNEG(word P_; word O; char @Buff)
+
+	word pLeft = Expr(Operator[O].Prio, @Scan(@Buff));
+	word pTargetType;
+	select
+	case T_IsSigned(Node[pLeft].pType):
+		pTargetType = Node[pLeft].pType;
+	case T_IsUnsigned(Node[pLeft].pType):
+		pTargetType = T_GetIntegerPair(Node[pLeft].pType);
+	default:
+		ImplicitCast(st_int, @pLeft);
+		pTargetType = Node[pLeft].pType;
+	end:select
+
+	word P1 = Peek();
+	Node[P1].ID    = iNEG;
+	Node[P1].pLeft = pLeft;
+	Node[P1].pType = pTargetType;
+
+	select
+	case (Node[pLeft].ID == iLITERAL) & (Node[pLeft].pType == st_word | Node[pLeft].pType == st_int):
+		if Node[pLeft].pType == st_word & Node[pLeft].Value > 0x80000000 then
+			Stop(@eCALCERR);
+		end
+		NodeAssignInt(P1, -Node[pLeft].Value);
+	end:select
+
+	return P1;
+
+end
+
+/*****************************************************************************/
+
+void RegisterOperators()
+
+	RegisterOperator("|"    , PRIO_BOOL , OPERATOR_BLEFT, iOR , @ExprBinOp);
+	RegisterOperator("^"    , PRIO_BOOL , OPERATOR_BLEFT, iXOR, @ExprBinOp);
+	RegisterOperator("&"    , PRIO_BOOL , OPERATOR_BLEFT, iAND, @ExprBinOp);
+
+	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
+	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
+	RegisterOperator("="    , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
+	RegisterOperator("=="   , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
+	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
+	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);
+	RegisterOperator(">="   , PRIO_COMP , OPERATOR_BLEFT, iGE , @ExprBinOp);
+
+	RegisterOperator("+"    , PRIO_ADD  , OPERATOR_BLEFT, iADD, @ExprBinOp);
+	RegisterOperator("-"    , PRIO_ADD  , OPERATOR_BLEFT, iSUB, @ExprBinOp);
+
+	RegisterOperator("*"    , PRIO_MUL  , OPERATOR_BLEFT, iMUL, @ExprBinOp);
+	RegisterOperator("/"    , PRIO_MUL  , OPERATOR_BLEFT, iDIV, @ExprBinOp);
+	RegisterOperator("%"    , PRIO_MUL  , OPERATOR_BLEFT, iMOD, @ExprBinOp);
+
+	RegisterOperator("-"    , PRIO_NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
+	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
+
+	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("(*"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("(%"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0   , @ExprConstExpr);
+
+	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
+	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
+	RegisterOperator("NULL" , PRIO_LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
+	RegisterOperator("null" , PRIO_LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
+	RegisterOperator("false", PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitFALSE);
+	RegisterOperator("true" , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitTRUE);
+end
+
+/*****************************************************************************/
+
+void RegisterBrackets()
+	RegisterBracket(BracketType_Parentheses, "(", ")");
+	RegisterBracket(BracketType_Parentheses, "(*", "*)");
+	RegisterBracket(BracketType_Parentheses, "(%", "%)");
+end

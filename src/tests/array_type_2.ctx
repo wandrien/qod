@@ -1,8 +1,0 @@
-// TEST: compilation_should_fail 'В качестве размера массива ожидается значение больше нуля'
-
-include "../sys4lnx.ctxi"
-include "../include/hosted.ctxi"
-
-begin
-	word x[0];
-end

@@ -1,0 +1,20 @@
+// TEST: should_print '1010 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+word f1(word x);
+
+word a = 1000;
+
+word f2(word x)
+	return f1(x);
+end
+
+word f1(word x)
+	return a + x;
+end
+
+begin
+	put_word(f2(10)); puts(" ");
+end

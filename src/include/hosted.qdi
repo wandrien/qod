@@ -1,0 +1,15 @@
+
+include "freestanding.qdi"
+include "fpath.qdi"
+
+
+void put_word(word i)
+	puts(@str(i));
+end
+
+void putc(char c)
+	char s[2];
+	s[0] = c;
+	s[1] = #0;
+	puts(@s);
+end

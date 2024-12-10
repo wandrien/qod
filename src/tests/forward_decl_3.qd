@@ -1,0 +1,16 @@
+// TEST: compilation_should_fail 'Тип функции не соответствует типу предварительного объявления'
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+int f1(word x);
+
+word a = 1000;
+
+word f1(word x)
+	return a;
+end
+
+begin
+	put_word(f1()); puts(" ");
+end

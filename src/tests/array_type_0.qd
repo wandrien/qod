@@ -1,0 +1,8 @@
+// TEST: compilation_should_fail 'Несоответствие типов: в качестве размера массива ожидается целое'
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+begin
+	word x["a"];
+end

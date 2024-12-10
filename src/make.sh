@@ -74,7 +74,7 @@ mk()
 	local dst="$1" ; shift
 	echo "    BUILD $dst"
 	mkdir -p "`dirname "$dst"`"
-    $compiler $src.ctx\
+    $compiler $src.qd\
 		$platform \
 		--optimize speed \
 		--output "$dst".asm \
@@ -304,7 +304,7 @@ do_tests ()
 	nr_expected_to_fail=0
 	nr_passed_expected_to_fail=0
 	for f in `(cd tests && grep -l  -- 'TEST:' *.* )` ; do
-		local t="`basename -s .ctx  -- "$f"`"
+		local t="`basename -s .qd  -- "$f"`"
 		local c="`grep  -- 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
 		local expected_to_fail="`grep -- 'EXPECTED-TO-FAIL:' "tests/$f"`"
 		if ! (eval do_test $t $c) ; then
@@ -351,14 +351,14 @@ run_valgrind()
 	"$VALGRIND" --tool=callgrind \
 		--callgrind-out-file=callgrind.out."$compiler_name" \
 		--dump-instr=yes \
-		"$compiler_c" ctx4lnx.ctx --optimize speed --linux --output "$compiler_c".callgrind.asm
+		"$compiler_c" ctx4lnx.qd --optimize speed --linux --output "$compiler_c".callgrind.asm
 
 	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
 	"$VALGRIND" --tool=memcheck \
-		"$compiler_c" ctx4lnx.ctx --optimize speed --linux --output "$compiler_c".memcheck.asm
+		"$compiler_c" ctx4lnx.qd --optimize speed --linux --output "$compiler_c".memcheck.asm
 }
 
-iconv -f cp866 -t utf8 < messages_cp866.ctxi > messages_utf8.ctxi
+iconv -f cp866 -t utf8 < messages_cp866.qdi > messages_utf8.qdi
 
 printf "=> ${CODE_COLOR_YELLOW}INFO:${CODE_COLOR_NOCOLOR}\n"
 printf "\

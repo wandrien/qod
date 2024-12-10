@@ -1,0 +1,119 @@
+// TEST: should_print '4 1 1 100 4 8 42 2 39 700 15 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+namespace XXX of
+	synonym u16 uint16
+	synonym u32 uint32
+	synonym i16 int16
+	synonym i32 int32
+	synonym ch char
+end:namespace
+
+struct AAA of
+	XXX.u32 aaa;
+end:struct
+
+struct B1 {
+	XXX.ch b1;
+};
+
+struct B2 {
+	XXX.ch b2;
+};
+
+int x1;
+
+int foo()
+	return 100;
+end
+
+namespace BBB of
+	synonym u16 XXX.u16
+	synonym u32 XXX.u32
+	synonym i16 int16
+	synonym i32 int32
+
+	int x1;
+
+	int foo()
+		return 200;
+	end
+
+	int function F(int x)
+
+	F @pF;
+
+	define Const4 4
+
+	struct BBB of
+		char bbb[100];
+	end:struct
+	struct B1 of
+		uint32 b1;
+	end:B1
+	struct B2 of
+		uint64 b2;
+	end
+
+	namespace AAA {
+		int x1;
+		int x2;
+
+		int foo()
+			return 300;
+		end
+
+		int foo2(int x)
+			return 50 + x;
+		end
+
+		struct B3 of
+			char b3[42];
+		end
+
+		synonym u16 uint16
+	};
+
+	XXX.u32 v_u32;
+	AAA.u16 v_u16;
+end:BBB
+
+AAA aaa;
+BBB.AAA.B3 bbb_aaa_b3;
+
+BBB.u32 foo2(BBB.u32 x; BBB.u16 y)
+	return x + y;
+end
+
+begin
+	B1 b1;
+	B2 b2;
+	BBB.BBB bbb_bbb;
+	BBB.B1 bbb_b1;
+	BBB.B2 bbb_b2;
+
+	x1 = 10;
+	BBB.x1 = x1 + 10;
+	BBB.AAA.x1 = BBB.x1 + 10;
+	BBB.AAA.x2 = BBB.AAA.x1 + 5;
+	BBB.AAA.x2 = BBB.AAA.x2 + BBB.Const4;
+
+	@BBB.pF = @BBB.AAA.foo2;
+	int foo_results = BBB.pF(BBB.AAA.foo2(foo() + BBB.foo() + BBB.AAA.foo()));
+	BBB.u32 foo2_results = foo2(BBB.u32(x1), BBB.u16(5));
+
+	puts(@str(sizeof(AAA))); puts(" ");
+	puts(@str(sizeof(B1))); puts(" ");
+	puts(@str(sizeof(B2))); puts(" ");
+	puts(@str(sizeof(BBB.BBB))); puts(" ");
+	puts(@str(sizeof(BBB.B1))); puts(" ");
+	puts(@str(sizeof(BBB.B2))); puts(" ");
+	puts(@str(sizeof(BBB.AAA.B3))); puts(" ");
+	puts(@str(sizeof(BBB.AAA.u16))); puts(" ");
+
+	puts(@istr(BBB.AAA.x2)); puts(" ");
+	puts(@istr(foo_results)); puts(" ");
+	puts(@str(foo2_results)); puts(" ");
+end

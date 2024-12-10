@@ -1,0 +1,32 @@
+// TEST: should_print '9950 100 5 25 15 '
+// COMPILER_FLAGS: --optimize size
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+int f1(int a; int b; int c; int d)
+	return 10000 - (a * b) - (c * d);
+end
+
+int f2(int a; int b; int c; int d)
+	return 10000 / ((a * b) - (c * d));
+end
+
+void f3(int @a1; int @a2; int @a3; int b)
+	a1 = 5;
+	a2 = b + 5;
+	a3 = b - 5;
+end
+
+begin
+	put_word(f1(4, 10, 2, 5)); puts(" ");
+	put_word(f2(11, 10, 2, 5)); puts(" ");
+
+	int a1 = 0;
+	int a2 = 0;
+	int a3 = 0;
+	f3(@a1, @a2, @a3, 20);
+	put_word(a1); puts(" ");
+	put_word(a2); puts(" ");
+	put_word(a3); puts(" ");
+end

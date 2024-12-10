@@ -1,0 +1,154 @@
+
+/*
+	Таблица операций.
+	Только хранит информацию об операциях.
+	Всё, что относится к парсингу операций, находится в модуле frontend_syn_expr.qdi.
+*/
+
+/*****************************************************************************/
+
+define OPERATOR_NAME_SIZE 16 /* Максимальный размер имени операции. */
+
+/* Режимы операций. */
+define OPERATOR_BLEFT  1 // Бинарная левоассоциативная.
+define OPERATOR_BRIGHT 2 // Бинарная правоассоциативная.
+define OPERATOR_UPRE   4 // Унарная префиксная.
+define OPERATOR_UPOST  8 // Унарная постфиксная.
+
+/* Тип обработчика операции. */
+word function __Operator(word P1; word O; char @Buff)
+
+struct OPERATOR of
+	char        Name[OPERATOR_NAME_SIZE]; // Имя операции
+	word        NameLen;  // Длина имени
+	word        Prio;     // Приоритет операции.
+	word        Mode;     // Режим операции.
+	word        ID;       // Идентификатор создаваемого узла.
+	__Operator@ Handler;  // Функция-обработчик.
+end
+
+/*****************************************************************************/
+
+define nOPERATOR 64
+OPERATOR Operator[nOPERATOR];
+
+word nOperator;
+word NeedToSortOperators;
+
+define OPERATOR_INVALID 64
+
+/*****************************************************************************/
+
+void InitOperator()
+	nOperator = 0;
+
+	word i = 0;
+	while i < nOPERATOR do
+		Operator[i].Name[0] = #0;
+		Operator[i].NameLen = 0;
+		Operator[i].Prio = 0;
+		inc i;
+	end
+	NeedToSortOperators = 1;
+end
+
+/*****************************************************************************/
+
+/* Сортировка операций по приоритету для алгоритма поиска. */
+void SortOperators()
+
+	if NeedToSortOperators == 0 then
+		return;
+	end:if
+
+	word i = 0;
+	while i < nOperator do
+		word j = i + 1;
+		while j < nOperator do
+			if Operator[i].Prio < Operator[j].Prio then
+				OPERATOR O  = Operator[i];
+				Operator[i] = Operator[j];
+				Operator[j] = O;
+			end:if
+			inc j;
+		end:while
+		inc i;
+	end:while
+
+	NeedToSortOperators = 0;
+end
+
+/*****************************************************************************/
+
+/* Регистрация новой операции. */
+word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Handler)
+
+	if strlen(@Name) >= OPERATOR_NAME_SIZE then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	if nOperator >= nOPERATOR then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	word i = nOperator;
+	inc nOperator;
+
+	strcpy(@Operator[i].Name, @Name);
+	Operator[i].NameLen = strlen(@Name);
+	Operator[i].Prio = Prio;
+	Operator[i].Mode = Mode;
+	Operator[i].ID   = ID;
+	@Operator[i].Handler = @Handler;
+	NeedToSortOperators = 1;
+
+	return i;
+end
+
+/*****************************************************************************/
+
+/*
+	Поиск операции с именем Name, приоритетом выше Prio и с режимом соотвествующем маске ModeMask.
+*/
+word FindOperator(char@ Name; word Prio; word ModeMask)
+
+	SortOperators();
+	word NameLen = strlen(@Name);
+
+	word i = 0;
+	while i < nOperator do
+		if Operator[i].Prio > Prio then
+			if
+				((Operator[i].Mode & ModeMask) != 0) &
+				(Operator[i].NameLen == NameLen) &
+				(strcmp(@Operator[i].Name, @Name) == 0)
+			then
+				return i;
+			end:if
+		end:if
+		inc i;
+	end:while
+
+	return OPERATOR_INVALID;
+end
+
+/*****************************************************************************/
+
+/* Возвращает следующий (более высокий) приоритет, для которого есть операции. */
+word NextOperatorPrio(word Prio)
+
+	SortOperators();
+
+	word i = 0;
+	while i < nOperator do
+		if Operator[i].Prio > Prio then
+			return Operator[i].Prio;
+		end:if
+		inc i;
+	end:while
+
+	return Prio;
+end
+
+/*****************************************************************************/
+

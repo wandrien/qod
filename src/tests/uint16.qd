@@ -1,0 +1,45 @@
+// TEST: should_print '428 200 300 400 1500 2000 8100 1827 500 500 0 205 600 1602 53 310 210 510 '
+// COMPILER_FLAGS: --optimize size
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+begin
+	uint16 v0 = 0;
+	uint16 v1 = 1;
+	uint16 v2 = 2;
+	uint16 v3 = 3;
+	uint16 v5 = 5;
+	uint16 v100 = 100;
+	uint16 v200 = 200;
+	uint16 v328 = 328;
+
+	put_word(v100 * 1 +  v328); puts(" ");
+	put_word(v100 * 2); puts(" ");
+	put_word(v100 * 3); puts(" ");
+	put_word(v100 * 4); puts(" ");
+	put_word(v100 * 15); puts(" ");
+	put_word(v100 * 20); puts(" ");
+	put_word(v100 * 81); puts(" ");
+
+	put_word(v100 * 18 + v1 * 27); puts(" ");
+
+	uint16 v500 = v2 * v100 + v3 * v100;
+
+	put_word(v500); puts(" ");
+	put_word((v2 * v100 + v3 * v100) ^ v0 ^ v0); puts(" ");
+	put_word(v500 - v100 * v5); puts(" ");
+
+	uint16 v200_2 = 2 * v100 + v100 * 3 - (v5 + v3 + v2) * 10 - v200;
+
+	put_word(v200_2 + v5); puts(" ");
+
+	put_word((v200 - 100) * 10 - 100 - v200 - v100); puts(" ");
+	put_word((v500 * 2 + v2) + (v200 & v1) + (v200 - 100) * 10 - 100 - v200 - v100); puts(" ");
+
+	put_word(100 - (v5 * 10) + (v1 & 100) + (v5 - 2)); puts(" ");
+
+	put_word((uint16(-v100) + 5 + v5 + v200) + (v200 + v5 - v3 - v2)); puts(" ");
+	put_word((uint16(-v100) + 5 + v5 + v200) + (v200 / v2)); puts(" ");
+	put_word((uint16(-v100) + 5 + v5 + v200) + (v200 * v2)); puts(" ");
+end

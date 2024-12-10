@@ -1,0 +1,16 @@
+// TEST: should_print '1 1 4 4 8 8 32 32 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+begin
+	puts(@str(sizeof(char))); puts(" ");
+	puts(@str(sizeof(byte))); puts(" ");
+	puts(@str(sizeof(word))); puts(" ");
+	puts(@str(sizeof(int))); puts(" ");
+
+	puts(@str(bitsizeof(char))); puts(" ");
+	puts(@str(bitsizeof(byte))); puts(" ");
+	puts(@str(bitsizeof(word))); puts(" ");
+	puts(@str(bitsizeof(int))); puts(" ");
+end

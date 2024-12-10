@@ -1,0 +1,70 @@
+include "include/freestanding.qdi"
+include "sys4win_typedefs.qdi"
+
+define FILE_SHARE_DELETE 0x00000004	
+define FILE_SHARE_READ   0x00000001	
+define FILE_SHARE_WRITE  0x00000002
+
+char    @GetCommandLine()                              external KERNEL32.GetCommandLineA;
+
+HANDLE   GetStdHandle  (DWORD  nStdHandle)             external KERNEL32;
+
+HANDLE   CreateFile    (char  @lpFileName;
+                        DWORD  dwDesiredAccess;
+                        DWORD  dwShareMode;
+                        void  @SecurityAttributes;
+                        DWORD  dwCreationDistribution;
+                        DWORD  dwFlagsAndAttributes;
+                        HANDLE hTemplateFile)          external KERNEL32.CreateFileA;
+
+BOOL     ReadFile      (HANDLE hFile;
+                        void  @Buff;
+                        DWORD  nNumberOfBytesToRead;
+                        DWORD @lpNumberOfBytesRead;
+                        void  @lpOverlapped)           external KERNEL32;
+
+BOOL     WriteFile     (HANDLE hFile;
+                        void  @Buff;
+                        DWORD  nNumberOfBytesToWrite;
+                        DWORD @lpNumberOfBytesWritten;
+                        void  @lpOverlapped)           external KERNEL32;
+
+BOOL     CloseHandle   (HANDLE hObject)                external KERNEL32;
+
+
+word     open(char @Name)
+	return CreateFile(@Name,0x80000000,FILE_SHARE_READ,NULL,3,0x80,0);
+end
+
+
+word     create(char @Name)
+	return CreateFile(@Name,0x40000000,0,NULL,2,0x80,0);
+end
+
+
+word     read(word F; void @Buff; word N)
+	ReadFile(F,@Buff,N,@N,NULL);
+	return N;
+end
+
+
+word     write(word F; void @Buff; word N)
+	WriteFile(F,@Buff,N,@N,NULL);
+	return N;
+end
+
+
+void     close(word F)
+	CloseHandle(F);
+end
+
+
+void     puts(char @S)
+	word N;
+	WriteFile(GetStdHandle(0xFFFFFFF5),@S,strlen(@S),@N,NULL);
+end
+
+
+noreturn halt(word Code)
+	ExitProcess(Code);
+end

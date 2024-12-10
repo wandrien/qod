@@ -1,0 +1,31 @@
+
+/*****************************************************************************/
+
+void EmitLine(LABEL @Label; char @Inst; char @Comment);
+char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
+bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
+bool CodeRequiresSingleRegister_(word P);
+void NodeMarkUsed(word P);
+
+bool EmitDebugComments_PHO = false;
+bool EmitDebugComments_Jumps = false;
+bool EmitDebugComments_Expr = false;
+bool EmitDebugComments_LocalDefs = false;
+
+define Flag_Zero 1
+define Flag_Sign 2
+word MeaningfulFlags = 0;
+
+include "backend_pho.qdi"
+include "backend_pho_node_links.qdi"
+include "backend_lib.qdi"
+include "backend_labels.qdi"
+include "backend_emit.qdi"
+include "backend_asmcode.qdi"
+include "backend_asmcode_mul.qdi"
+include "backend_data_emitter.qdi"
+include "backend_code_emitter.qdi"
+include "backend_misc.qdi"
+
+/*****************************************************************************/
+

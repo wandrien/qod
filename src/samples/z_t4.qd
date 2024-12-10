@@ -1,0 +1,14 @@
+include "../sys4win.qdi"
+include "../include/hosted.qdi"
+
+
+begin
+
+	word i = 0;
+	while i < 16000 do
+		puts("~n~rword N"); puts(@str(i)); puts(";");
+		puts("~n~rword M"); puts(@str(i)); puts(";");
+		inc i;
+	end:while
+	puts("~n~rbegin N10000=0; end");
+end

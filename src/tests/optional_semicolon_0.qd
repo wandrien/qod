@@ -1,0 +1,41 @@
+// TEST: should_print 'aaaa'
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+struct S1 of
+	int x;
+end // no semicolon
+
+struct S2 of
+	int x;
+end; // optional semicolon
+
+namespace N1 of
+	int x;
+end // no semicolon
+
+namespace N2 of
+	int x;
+end; // optional semicolon
+
+begin
+	pass;
+	word a = 1;
+	if a == 1 then
+		puts("a");
+	end // no semicolon
+
+	if a == 1 then
+		puts("a");
+	end; // optional semicolon
+
+	if a == 1 then
+		puts("a");
+	end:if // no semicolon
+
+	if a == 1 then
+		puts("a");
+	end:if; // optional semicolon
+end
+

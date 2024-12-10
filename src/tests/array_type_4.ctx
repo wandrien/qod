@@ -1,9 +1,0 @@
-// TEST: should_print 'OK'
-
-include "../sys4lnx.ctxi"
-include "../include/hosted.ctxi"
-
-begin
-	word x[-(-10)];
-	puts("OK");
-end

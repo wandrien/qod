@@ -1,0 +1,112 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 OK7 OK8 OK9 OK10 OK11 OK12 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+bool t()
+	return true;
+end
+
+bool f()
+	return false;
+end
+
+void foo()
+
+	if !t() then
+		puts("OOPS ");
+	else
+		puts("OK1 ");
+	end:if
+
+	if !f() then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	when !t():
+		puts("OOPS");
+
+	when !f():
+		puts("OK3 ");
+
+
+	if !f() & !f() then
+		puts("OK4 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if !t() & !t() then
+		puts("OOPS ");
+	else
+		puts("OK5 ");
+	end:if
+
+	if !f() & !t() then
+		puts("OOPS ");
+	else
+		puts("OK6 ");
+	end:if
+
+	if !t() & !f() then
+		puts("OOPS ");
+	else
+		puts("OK7 ");
+	end:if
+
+	if !t() | !t() then
+		puts("OOPS ");
+	else
+		puts("OK8 ");
+	end:if
+
+	if !f() | !t() then
+		puts("OK9 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if !t() | !f() then
+		puts("OK10 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if !f() | !f() then
+		puts("OK11 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if f() | f() | t() then
+		puts("OK12 ");
+	else
+		puts("OOPS ");
+	end:if
+
+/*
+	if !!f() & t() then
+		puts("OK12 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if !!t() then
+		puts("OOPS ");
+	else
+		puts("OK13 ");
+	end:if
+
+	if !!f() then
+		puts("OK14 ");
+	else
+		puts("OOPS ");
+	end:if
+*/
+end
+
+begin
+	foo();
+end

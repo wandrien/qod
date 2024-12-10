@@ -1,0 +1,30 @@
+// TEST: should_print '1000 1001 102 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+word a = 0;
+int  b = 0;
+byte c = 0;
+
+word @ret_a()
+	return @a;
+end
+
+int  @ret_b()
+	return @b;
+end
+
+byte @ret_c()
+	return @c;
+end
+
+
+begin
+	ret_a() = 1000;
+	ret_b() = 1001;
+	ret_c() = 102;
+	puts(@str(a)); puts(" ");
+	puts(@str(b)); puts(" ");
+	puts(@str(c)); puts(" ");
+end

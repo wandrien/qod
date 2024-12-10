@@ -1,0 +1,98 @@
+
+include "sys4win.qdi"
+include "messages_cp866.qdi"
+include "ctx4all.qdi"
+
+define nCMDLINEBUFF 1024
+char CmdLineBuff[nCMDLINEBUFF];
+word nCmdLineBuff = nCMDLINEBUFF;
+
+define nARGV 40
+ARG ArgV[nARGV];
+
+/*
+	Парсит первое слово в строке S и помещает его в буфер Buff.
+	Если слово превышает размер буфера (BuffLen) или содержит незакрытую кавычку,
+	завершает работу программы с сообщением об ошибке.
+
+	Возвращает длину слова в буфере, включая #0-символ.
+	В len возвращает количество обработанных символов S.
+*/
+word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
+
+	word s_i = 0;
+	word b_i = 0;
+	word quoted = 0;
+
+	while S[s_i] != #0 do
+		char c = S[s_i];
+
+		select
+		case c == '"':
+			quoted = !quoted;
+		case quoted == 0 & (c == ' ' | c == '~t' | c == '~r' | c == '~n') :
+			Buff[b_i] = #0;
+			inc b_i;
+			exit;
+		default:
+			Buff[b_i] = c;
+			inc b_i;
+		end:select
+
+		if b_i >= BuffLen then
+			StopMemory();
+		end
+
+		inc s_i;
+	end:while
+
+	if quoted != 0 then
+		Stop(@eCMDLINEQUOTE);
+	end:if
+
+	len = s_i;
+	return b_i;
+end
+
+void ParseCmdLine(char@ S)
+	if S[0] == #0 then
+		return;
+	end:if
+
+	@S = @S[str_skip_wspace(@S)];
+
+	if S[0] == #0 then
+		return;
+	end:if
+
+	word i;
+	word l = StrParseFirstWord(@CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff], nCmdLineBuff, @S, @i);
+
+	@ArgV[Argc].Arg = @CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff];
+	inc Argc;
+	if Argc >= nARGV then
+		StopMemory();
+	end:if
+
+	nCmdLineBuff = nCmdLineBuff - l;
+
+	ParseCmdLine(@S[i]);
+end
+
+
+begin
+
+	@fpath_p_dir_separator = "\";
+	@fpath_p_dir_separators = "/\";
+
+	@Argv = @ArgV;
+	Argc  = 0;
+
+	char @CmdLine = @GetCommandLine();
+	ParseCmdLine(@CmdLine);
+
+	@DefaultTarget = "--win32-c";
+
+	__main();
+
+end

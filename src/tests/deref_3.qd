@@ -1,0 +1,35 @@
+// TEST: should_print 'abc'
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+struct XX of
+	char @Buff;
+end
+
+void set_char(char @pCh; char Value)
+	pCh = Value;
+end
+
+word foo(XX @xx; word I; char Value)
+	set_char(@xx.Buff[I], Value);
+	return I;
+end
+
+word foo2(XX @xx; word I; char Value)
+	@xx.Buff[I] = char(Value);
+	return I;
+end
+
+begin
+	char Buff[100];
+	XX xx;
+	@xx.Buff = @Buff;
+
+	foo(@xx, 5, 'a');
+	putc(xx.Buff[5]);
+	foo(@xx, 5, 'b');
+	putc(xx.Buff[5]);
+	foo2(@xx, 5, 'c');
+	putc(xx.Buff[5]);
+end

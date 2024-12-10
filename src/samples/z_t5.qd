@@ -1,0 +1,14 @@
+include "../sys4win.qdi"
+include "../include/hosted.qdi"
+
+
+begin
+	word i = 0;
+	forever do
+		when (i & 1) == 1:
+			puts(@str(i));
+		when i >= 10:
+			exit;
+		inc i;
+	end:forever
+end

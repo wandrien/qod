@@ -30,7 +30,7 @@ call :mk %compiler_c%.exe samples\z_t1  --win32-c %SAMPLES_BUILD_DIR%\z_t1.exe
 call :mk %compiler_c%.exe samples\z_t2  --win32-w %SAMPLES_BUILD_DIR%\z_t2.exe
 call :mk %compiler_c%.exe samples\z_t3  --win32-c %SAMPLES_BUILD_DIR%\z_t3.exe
 call :mk %compiler_c%.exe samples\z_t4  --win32-c %SAMPLES_BUILD_DIR%\z_t4.exe
-rem out\z_t4.exe > out\z_t4_1.ctx
+rem out\z_t4.exe > out\z_t4_1.qd
 rem call :mk out\lcontext_c.exe out\z_t4_1    --win32-c out\ z_t4_1.exe --show-parse-progress
 call :mk %compiler_c%.exe samples\z_t5  --win32-c %SAMPLES_BUILD_DIR%\z_t5.exe
 
@@ -39,7 +39,7 @@ goto :end
 
 :mk
 echo %2 ==^> %4.asm
-%1 %2.ctx %3 --output %4.asm --output-tree %4.tree --output-include-list %4.includes %5 %6 %7 %8 %9
+%1 %2.qd %3 --output %4.asm --output-tree %4.tree --output-include-list %4.includes %5 %6 %7 %8 %9
 if not %ERRORLEVEL%==0 goto err
 %FASM% -m 200000 %4.asm %4 > nul
 if not %ERRORLEVEL%==0 goto err

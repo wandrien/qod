@@ -1,0 +1,39 @@
+// TEST: should_print '10 11 12 13 14 15 16 17 18 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+word v0 = 0;
+word v1 = 1;
+word arr1[30];
+
+word @ret_arr1()
+	return @arr1;
+end
+
+word f10()
+	return v0 + 10;
+end
+
+begin
+	ret_arr1()[0] = 10;
+	ret_arr1()[1] = 11;
+	ret_arr1()[2] = 12;
+	word @p = @arr1[3];
+	p[v0 + v0] = 13;
+	ret_arr1()[27 - ret_arr1()[2] - ret_arr1()[1]] = 4 + f10() + v0;
+	ret_arr1()[5 + v0 * f10()] = ret_arr1()[27 - ret_arr1()[2] - ret_arr1()[1]] + 1;
+	ret_arr1()[f10() + v1 * 10 - 14] = 16;
+	ret_arr1()[v1 * 10 - v0 * 3 - 3] = 17;
+	p[v1 * 10 - v0 * 3 - 2 - 3] = 19;
+	dec p[v1 * 10 - v0 * 3 - 2 - 3];
+	put_word(arr1[0]); puts(" ");
+	put_word(arr1[1]); puts(" ");
+	put_word(arr1[2]); puts(" ");
+	put_word(arr1[3]); puts(" ");
+	put_word(arr1[4]); puts(" ");
+	put_word(arr1[5]); puts(" ");
+	put_word(arr1[6]); puts(" ");
+	put_word(arr1[7]); puts(" ");
+	put_word(arr1[8]); puts(" ");
+end

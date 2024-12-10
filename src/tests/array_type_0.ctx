@@ -1,8 +1,0 @@
-// TEST: compilation_should_fail 'Несоответствие типов: в качестве размера массива ожидается целое'
-
-include "../sys4lnx.ctxi"
-include "../include/hosted.ctxi"
-
-begin
-	word x["a"];
-end

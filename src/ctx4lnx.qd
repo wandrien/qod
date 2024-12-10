@@ -1,0 +1,27 @@
+
+include "sys4lnx.qdi"
+include "messages_utf8.qdi"
+include "ctx4all.qdi"
+
+
+begin
+
+	@fpath_p_dir_separator = "/";
+	@fpath_p_dir_separators = "/";
+
+	word _Argc;
+	inline 0x8B, 0x45, 0x04; // mov     EAX,  [EBP+ 4]
+	inline 0x89, 0x45, 0xFC; // mov    [nArg], EAX
+
+	ARG@ _Argv;
+	inline 0x8D, 0x45, 0x08; // mov EAX, [EBP + 8]
+	inline 0x89, 0x45, 0xF8; // mov [_Argv], EAX
+
+	Argc  = _Argc;
+	@Argv = @_Argv;
+
+	@DefaultTarget = "--linux";
+
+	__main();
+
+end

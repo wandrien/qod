@@ -1,0 +1,18 @@
+// TEST: should_print '1000 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+noreturn nr1(word a)
+	put_word(a); puts(" ");
+	halt(1);
+end
+
+void f1(word a)
+	nr1(a);
+	nr1(a + 1);
+end
+
+begin
+	f1(1000);
+end

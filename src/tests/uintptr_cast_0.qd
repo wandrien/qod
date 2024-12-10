@@ -1,0 +1,39 @@
+// TEST: should_print '42 OK1 OK2 OK3 OK4 25 10 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+word A = 42;
+word B = 0;
+
+char Arr[256];
+
+begin
+	word @p = @A;
+	puts(@str(p)); puts(" ");
+	uintptr a1 = uintptr(@A);
+	uintptr a2 = uintptr(@p);
+	uintptr b1 = uintptr(@B);
+
+	word w_a1 = word(a1);
+	word w_a2 = word(a2);
+
+	when w_a1 == w_a2:
+		puts("OK1 ");
+
+	when a1 == a2:
+		puts("OK2 ");
+
+	when b1 - a1 == sizeof(word):
+		puts("OK3 ");
+
+	when b1 > a1:
+		puts("OK4 ");
+
+	uintptr arr0 = uintptr(@Arr[0]);
+	uintptr arr15 = uintptr(@Arr[15]);
+	uintptr arr25 = uintptr(@Arr[25]);
+
+	puts(@str(arr25 - arr0)); puts(" ");
+	puts(@str(arr25 - arr15)); puts(" ");
+end

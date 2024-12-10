@@ -1,0 +1,19 @@
+include "../sys4win.qdi"
+include "../include/hosted.qdi"
+
+
+begin
+	puts("This program is compiled with ");
+	puts(@__TRANSLATOR__);
+	puts(" ");
+	puts(@__TRANSLATOR_VERSION__);
+	puts(" on host ");
+	puts(@__TRANSLATOR_HOST__);
+	puts("~r~n");
+	puts("Target is ");
+	puts(@__TRANSLATOR_TARGET__);
+	puts("~r~n");
+	puts("Qod Version is ");
+	puts(@__QOD_VERSION_STR__);
+	puts("~r~n");
+end

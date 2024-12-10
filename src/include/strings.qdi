@@ -1,0 +1,23 @@
+$comment DOCUMENTATION ********************************************************
+
+
+Все функции, определённые в этом модуле, начинаются с префиксов str_ или strn_,
+за исключением следующего ограниченного списка:
+word strlen(char @St);
+word strcmp(char @S1, @S2);
+char @strcpy(char @Dst, @Src);
+char @strcat(char @Dst, @Src);
+char @str2(word Value; word Base);
+char @str(word Value);
+char @memcpy(char @Dst, @Src; word N);
+
+***************************************************************** DOCUMENTATION
+
+define INDEX_INVALID 0xFFFF_FFFF
+
+include "strings_base.qdi"
+include "strings_mem.qdi"
+include "strings_cmp.qdi"
+include "strings_find.qdi"
+include "strings_misc.qdi"
+
