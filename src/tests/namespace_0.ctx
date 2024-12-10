@@ -3,25 +3,25 @@
 include "../sys4lnx.ctxi"
 include "../include/hosted.ctxi"
 
-namespace XXX
+namespace XXX of
 	synonym u16 uint16
 	synonym u32 uint32
 	synonym i16 int16
 	synonym i32 int32
 	synonym ch char
-end
+end:namespace
 
-struct AAA
+struct AAA of
 	XXX.u32 aaa;
-end
+end:struct
 
-struct B1
+struct B1 {
 	XXX.ch b1;
-end
+};
 
-struct B2
+struct B2 {
 	XXX.ch b2;
-end
+};
 
 int x1;
 
@@ -29,7 +29,7 @@ int foo()
 	return 100;
 end
 
-namespace BBB
+namespace BBB of
 	synonym u16 XXX.u16
 	synonym u32 XXX.u32
 	synonym i16 int16
@@ -47,17 +47,17 @@ namespace BBB
 
 	define Const4 4
 
-	struct BBB
+	struct BBB of
 		char bbb[100];
-	end
-	struct B1
+	end:struct
+	struct B1 of
 		uint32 b1;
-	end
-	struct B2
+	end:B1
+	struct B2 of
 		uint64 b2;
 	end
 
-	namespace AAA
+	namespace AAA {
 		int x1;
 		int x2;
 
@@ -69,16 +69,16 @@ namespace BBB
 			return 50 + x;
 		end
 
-		struct B3
+		struct B3 of
 			char b3[42];
 		end
 
 		synonym u16 uint16
-	end
+	};
 
 	XXX.u32 v_u32;
 	AAA.u16 v_u16;
-end
+end:BBB
 
 AAA aaa;
 BBB.AAA.B3 bbb_aaa_b3;

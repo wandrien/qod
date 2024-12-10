@@ -69,6 +69,12 @@ define @eINVALIDBASE     "Недопустимое основание системы счисления"    //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
 define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"
 
+define @eWRONGEND_STRUCT "Получен 'end' в объявлении структуры, но ожидалось '}'"
+define @eWRONGBRACE_STRUCT "Получен '}' в объявлении структуры, но ожидалось 'end'"
+define @eWRONGEND_NAMESPACE "Получен 'end' в объявлении пространства имён, но ожидалось '}'"
+define @eWRONGBRACE_NAMESPACE "Получен '}' в объявлении пространства имён, но ожидалось 'end'"
+
+
 define @eRETINNORET      "Оператор return в теле noreturn функции"     // Return statement inside noreturn function
 define @eRETINNORET2     "Управление достигает конца noreturn функции" // Control flow reaches the end of noreturn function
 define @eMISSINGRET      "Функция должна возвращать значение"          // Function should return a value
@@ -87,8 +93,11 @@ define @wTYPEUNUSED      ": тип данных не используется"                // a type
 
 define @wUNREACHABLE     "Недостижимый оператор"                       // Unreachable statement
 
-define @dprHEXFORMAT     "шестнадцатиричное число в формате $ABC"
-define @dprEQL           "запись сравнения как '=' вместо '=='"
+define @dprHEXFORMAT     "Шестнадцатиричное число в формате $ABC"
+define @dprEQL           "Запись сравнения как '=' вместо '=='"
+define @dptMISSINGOF_STRUCT    "Отсутствует ключевое слово 'of' в объявлении структуры"
+define @dptMISSINGOF_NAMESPACE "Отсутствует ключевое слово 'of' в объявлении пространства имён"
+define @dprNULL          "Оператор null"
 
 define @msgWARNING       "предупреждение: "                            // warning
 define @msgERROR         "ошибка: "                                    // error

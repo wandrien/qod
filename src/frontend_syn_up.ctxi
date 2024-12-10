@@ -43,7 +43,8 @@ void AssignFieldOffset(word F; word @NextOffset; word @MaxAlign)
 	NextOffset = Offset + T_SizeOf(pType);
 end
 
-void DeclStruct(char @Buff)
+bool DeclStruct(char @Buff)
+	word SkipFinalScan;
 	CheckDuplicate(@Scan(@Buff));
 
 	word pStruct = DictAlloc();
@@ -52,8 +53,27 @@ void DeclStruct(char @Buff)
 	Dict[pStruct].Sub = sSTRUCT;
 	DictAddToNamespace(pStruct, pEnteredNamespace);
 
+	char @TypeName = @DictGetName(pStruct);
+
 	if str_eq(@Scan(@Buff),";") then
 		Stop(@eNOTAVAIL);
+	end
+
+	char @End;
+	bool CurlyBraces;
+	select
+	case str_eq(@Buff, "of"):
+		CurlyBraces = false;
+		@End = "end";
+		Scan(@Buff);
+	case str_eq(@Buff, "{"):
+		CurlyBraces = true;
+		@End = "}";
+		Scan(@Buff);
+	default:
+		CurlyBraces = false;
+		@End = "end";
+		Deprecated(@dptMISSINGOF_STRUCT);
 	end
 
 	word NextOffset = 0;
@@ -103,7 +123,15 @@ void DeclStruct(char @Buff)
 			end
 
 			if str_eq(@Buff,"end") then
-				exit;
+				when !CurlyBraces:
+					exit;
+				Stop(@eWRONGEND_STRUCT);
+			end
+
+			if str_eq(@Buff,"}") then
+				when CurlyBraces:
+					exit;
+				Stop(@eWRONGBRACE_STRUCT);
 			end
 
 			if str_ne(@Buff,",") then
@@ -111,14 +139,27 @@ void DeclStruct(char @Buff)
 			end
 
 			Scan(@Buff);
-		end
+		end:do
 
-		if str_eq(@Buff,"end") then
+		if str_eq(@Buff,@End) then
+			if CurlyBraces then
+				MatchSemicolon(@Buff);
+				SkipFinalScan = 0;
+			else
+				SkipFinalScan = EndOf(@Buff, "struct", @TypeName, true);
+			end
 			exit;
-		end
-	end
+		end:if
+	end:do
 
 	Dict[pStruct].TypeSize = NextOffset;
+
+	/* FIXME: "return SkipFinalScan == 0" не реализовано. Заменить этот код после поддержки в кодогенераторе. */
+	if SkipFinalScan == 0 then
+		return true;
+	else
+		return false;
+	end:if
 end
 
 /*****************************************************************************/
@@ -217,6 +258,12 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 			end:if
 
 		default: /* Тело функции. */
+
+			if str_eq(@Buff, "of") then
+				/* Optional 'of'. */
+				Scan(@Buff);
+			end
+
 			word Saved_nLocal = nLocal;
 			Dict[pCurrentFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 			nLocal = Saved_nLocal;
@@ -452,7 +499,8 @@ end
 
 /*****************************************************************************/
 
-void DeclNamespace(char @Buff)
+bool DeclNamespace(char @Buff)
+	word SkipFinalScan;
 	CheckDuplicate(@Scan(@Buff));
 
 	word pNamespace = DictAlloc();
@@ -461,12 +509,31 @@ void DeclNamespace(char @Buff)
 	Dict[pNamespace].Sub = sNAMESPACE;
 	DictAddToNamespace(pNamespace, pEnteredNamespace);
 
+	char @TypeName = @DictGetName(pNamespace);
+
 	if str_eq(@Scan(@Buff),";") then
 		Stop(@eNOTAVAIL);
 	end
 
 	word pPrevNamespace = pEnteredNamespace;
 	pEnteredNamespace = pNamespace;
+
+	char @End;
+	bool CurlyBraces;
+	select
+	case str_eq(@Buff, "of"):
+		CurlyBraces = false;
+		@End = "end";
+		Scan(@Buff);
+	case str_eq(@Buff, "{"):
+		CurlyBraces = true;
+		@End = "}";
+		Scan(@Buff);
+	default:
+		CurlyBraces = false;
+		@End = "end";
+		Deprecated(@dptMISSINGOF_NAMESPACE);
+	end
 
 	do
 		bool DoScan = true;
@@ -476,12 +543,20 @@ void DeclNamespace(char @Buff)
 		case str_eq(@Buff,"define"):
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
-			DeclStruct(@Buff);
+			DoScan = DeclStruct(@Buff);
 		case str_eq(@Buff,"namespace"):
-			DeclNamespace(@Buff);
+			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
 		case str_eq(@Buff,"end"):
+			when !CurlyBraces:
+				exit;
+			Stop(@eWRONGEND_NAMESPACE);
+		case str_eq(@Buff,"}"):
+			when CurlyBraces:
+				exit;
+			Stop(@eWRONGBRACE_NAMESPACE);
+		case str_eq(@Buff,@End):
 			exit;
 		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
@@ -492,7 +567,23 @@ void DeclNamespace(char @Buff)
 		end
 	end
 
+	if str_eq(@Buff,@End) then
+		if CurlyBraces then
+			MatchSemicolon(@Buff);
+			SkipFinalScan = 0;
+		else
+			SkipFinalScan = EndOf(@Buff, "namespace", @TypeName, true);
+		end
+	end:if
+
 	pEnteredNamespace = pPrevNamespace;
+
+	/* FIXME: "return SkipFinalScan == 0" не реализовано. Заменить этот код после поддержки в кодогенераторе. */
+	if SkipFinalScan == 0 then
+		return true;
+	else
+		return false;
+	end:if
 end
 
 /*****************************************************************************/
@@ -513,9 +604,9 @@ void Parse()
 		case str_eq(@Buff,"define"):
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
-			DeclStruct(@Buff);
+			DoScan = DeclStruct(@Buff);
 		case str_eq(@Buff,"namespace"):
-			DeclNamespace(@Buff);
+			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
 		default: // Пеpеменная, функция, ...

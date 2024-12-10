@@ -22,6 +22,9 @@ export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER:-$DEFAULT_BOOTSTRAP_COMPILER}"
 export FASM="${FASM:-$DEFAULT_FASM}"
 
+export QOD_FLAGS="${QOD_FLAGS:-}"
+export TESTS_QOD_FLAGS="${TESTS_QOD_FLAGS:-}"
+
 STAGE_A_ONLY=f
 
 crop_known_differencies()
@@ -61,6 +64,7 @@ mk()
 		--output-tree $4.$5.tree \
 		--output-include-list $4.$5.includes \
 		--emit-source-line-notes \
+		$QOD_FLAGS \
 		$6 $7 $8 && \
     $FASM -m 200000 $4.$5.asm $4$5 >/dev/null && \
 	chmod a+x $4$5
@@ -190,6 +194,7 @@ do_test_with_compiler ()
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
 		if (mk out/lcontext_"$c" tests/"$test_name"\
 				--linux "$tests_out_dir"/ "$test_name" \
+				$TESTS_QOD_FLAGS \
 				$COMPILER_FLAGS \
 				1> "$stdout_log" \
 				2> "$stderr_log") ; then
@@ -207,6 +212,7 @@ do_test_with_compiler ()
 	elif [ "x$condition" = "xshould_print" ] ; then
 		if ! (mk out/lcontext_"$c" tests/"$test_name"\
 				--linux "$tests_out_dir"/ "$test_name" \
+				$TESTS_QOD_FLAGS \
 				$COMPILER_FLAGS \
 				1> "$stdout_log" \
 				2> "$stderr_log") ; then

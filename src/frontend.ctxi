@@ -110,6 +110,7 @@ void InitFrontEnd()
 	Word("then");
 	Word("else");
 	Word("while");
+	Word("forever");
 	Word("do");
 	Word("repeat");
 	Word("until");

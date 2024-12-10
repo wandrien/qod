@@ -7,6 +7,8 @@ SOURCELOCATION CurrentFileInfo;
 
 /*****************************************************************************/
 
+define  nMSGBUFF 512
+
 word HasErrors = 0;
 
 /*****************************************************************************/
@@ -64,14 +66,14 @@ void Error(char @Msg)
 end
 
 void ErrorWithSubject(char @Msg; char @Subject)
-	char Buff[nBUFF];
-	ComposeMsg(@Buff, nBUFF, @Msg, @Subject);
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
 	Error(@Buff);
 end
 
 void DeprecatedAt(SOURCELOCATION @SourceLocation; char @Msg)
-	char Buff[nBUFF];
-	ComposeMsg(@Buff, nBUFF, @wDEPRECATED, @Msg);
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @wDEPRECATED, @Msg);
 	if ErrorDeprecatedFeatures != 0 then
 		ErrorAt(@SourceLocation, @Buff);
 	else
@@ -95,8 +97,8 @@ void Stop(char @Msg)
 end
 
 void StopWithSubject(char @Msg; char @Subject)
-	char Buff[nBUFF];
-	ComposeMsg(@Buff, nBUFF, @Msg, @Subject);
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
 	Stop(@Buff);
 end
 
@@ -108,9 +110,9 @@ void StopWithSubjectChar(char @Msg; char Char)
 end
 
 void StopInternal(char @File; word Line)
-	char Buff[nBUFF];
+	char Buff[nMSGBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf_init(@buf, @Buff, nMSGBUFF);
 	strbuf_append_cstr4(@buf, @eINTERNAL, @File, ":", @str(Line));
 	Stop(@Buff);
 end
@@ -132,9 +134,9 @@ void ShowParseProgress(word nl)
 	if nl != 0 then
 		@NL = "~r~n";
 	end
-	char Buff[nBUFF];
+	char Buff[nMSGBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf_init(@buf, @Buff, nMSGBUFF);
 	strbuf_append_cstr6(@buf,
 		"~r",
 		@CurrentFileInfo.FileName,

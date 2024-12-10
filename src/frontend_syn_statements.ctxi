@@ -5,43 +5,40 @@
 
 /*****************************************************************************/
 
-void MatchCStyleSemicolon(char @Buff)
-	if c_style_semicolons != 0 then
-		Scan(@Buff);
-		if str_ne(@Buff,";") then
-			Stop(@eSEMICOLONEXP);
-		end
-	end:if
+void MatchSemicolon(char @Buff)
+	Scan(@Buff);
+	if str_ne(@Buff,";") then
+		Stop(@eSEMICOLONEXP);
+	end
 end
 
 
 /*****************************************************************************/
 
-word EndOf(char @Buff, @A1, @A2)
-
-	word SkipScan = 0;
-
-	if str_eq(@Buff, "end") then
-		Scan(@Buff);
-		if str_eq(@Buff, ":") then
-			Scan(@Buff);
-			if @A2 != NULL then
-				if str_eq(@Buff, @A2) then
-					return SkipScan;
-				end
-			end
-
-			if str_ne(@Buff, @A1) then
-				Stop(@eNOTALLOWED);
-			end
-		else
-			SkipScan = 1;
-		end
-	else
+word EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
+	when str_ne(@Buff, "end"):
 		StopInternal(__FILE__, __LINE__);
+
+	Scan(@Buff);
+	if EatSemicolon & str_eq(@Buff, ";") then
+		return 0;
 	end
 
-	return SkipScan;
+	if str_eq(@Buff, ":") then
+		Scan(@Buff);
+		if str_eq(@Buff, @A1)
+		| (@A2 != NULL & str_eq(@Buff, @A2)) then
+			Scan(@Buff);
+			if EatSemicolon & str_eq(@Buff, ";") then
+				return 0;
+			else
+				return 1;
+			end
+		else
+			Stop(@eNOTALLOWED);
+		end:if
+	end:if
+	return 1;
 end
 
 /*****************************************************************************/
@@ -107,7 +104,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		Node[BODY].pLeft = Statements(@Buff, @Case, @Else, "end");
 	end:while
 
-	SkipFinalScan = EndOf(@Buff, @End1, NULL);
+	SkipFinalScan = EndOf(@Buff, @End1, NULL, true);
 
 	CTE_SELECT(P1);
 end
@@ -264,7 +261,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 	end:if
 
-	SkipFinalScan = EndOf(@Buff, "switch", NULL);
+	SkipFinalScan = EndOf(@Buff, "switch", NULL, true);
 
 	CTE_SWITCH(P1);
 end
@@ -285,19 +282,30 @@ void Statement_WHILE(char @Buff; word @P1; word @SkipFinalScan)
 
 	char @End2 = NULL;
 
-	if str_eq(@Buff,"while") then
+	select
+	case str_eq(@Buff,"while"):
 		@End2 = "while";
 		Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
 		word pType = Node[Node[COND].pLeft].pType;
 
+		if pType != st_bool then
+			Error(@eTYPE);
+		end
+
 		if str_ne(@Buff,"do") then
 			Stop(@eDOEXP);
 		end
-
-		if pType != st_bool then
-			Stop(@eTYPE);
+	case str_eq(@Buff,"forever"):
+		@End2 = "forever";
+		Scan(@Buff);
+		if str_ne(@Buff,"do") then
+			Stop(@eDOEXP);
 		end
-	end:if
+	case str_eq(@Buff,"do"):
+		Deprecated("'do' should be replaced with 'forever do'");
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
 
 	word pLoop1=pLoop;
 	pLoop=P1;
@@ -305,7 +313,7 @@ void Statement_WHILE(char @Buff; word @P1; word @SkipFinalScan)
 	Scan(@Buff);
 	Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 
-	SkipFinalScan = EndOf(@Buff, "do", @End2);
+	SkipFinalScan = EndOf(@Buff, "do", @End2, true);
 
 	pLoop=pLoop1;
 
@@ -361,7 +369,7 @@ void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].Value = pLoop;
 	Node[P1].pType = st_noreturn;
 
-	MatchCStyleSemicolon(@Buff);
+	MatchSemicolon(@Buff);
 end
 
 /*****************************************************************************/
@@ -378,7 +386,7 @@ void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].Value = pLoop;
 	Node[P1].pType = st_noreturn;
 
-	MatchCStyleSemicolon(@Buff);
+	MatchSemicolon(@Buff);
 end
 
 /*****************************************************************************/
@@ -416,8 +424,6 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	Node[P1].ID   =iRETURN;
 	Scan(@Buff);
 
-	word need_semicolon = 0;
-
 	if Dict[pCurrentFunc].pType == st_noreturn then
 		Stop(@eRETINNORET);
 	end:if
@@ -425,16 +431,11 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	if Dict[pCurrentFunc].pType != st_void then
 		Node[P1].pLeft=Expr(PRIO_ZERO, @Buff);
 		ImplicitCast(Dict[pCurrentFunc].pType, @Node[P1].pLeft);
-		need_semicolon = 1;
 	end:if
 
-	if c_style_semicolons != 0 | need_semicolon != 0 then
-		if str_ne(@Buff,";") then
-			Stop(@eSEMICOLONEXP);
-		end
-	else
-		SkipFinalScan = 1;
-	end:if
+	if str_ne(@Buff,";") then
+		Stop(@eSEMICOLONEXP);
+	end
 
 	Node[P1].pType = st_noreturn;
 end
@@ -598,7 +599,7 @@ word Ctrl(char @Buff)
 		case str_eq(@Buff,"if") | str_eq(@Buff,"select"):
 			Statement_IF(@Buff, @P1, @SkipFinalScan);
 
-		case str_eq(@Buff,"while") | str_eq(@Buff,"do"):
+		case str_eq(@Buff,"while") | str_eq(@Buff,"do") | str_eq(@Buff,"forever"):
 			Statement_WHILE(@Buff, @P1, @SkipFinalScan);
 
 		case str_eq(@Buff,"when"):
@@ -625,9 +626,14 @@ word Ctrl(char @Buff)
 		case str_eq(@Buff,"return"):
 			Statement_RETURN(@Buff, @P1, @SkipFinalScan);
 
+		case str_eq(@Buff,"pass"):
+			Node[P1].ID   =iEMPTY;
+			MatchSemicolon(@Buff);
+
 		case str_eq(@Buff,"null"):
 			Node[P1].ID   =iEMPTY;
-			MatchCStyleSemicolon(@Buff);
+			MatchSemicolon(@Buff);
+			Warn(@dprNULL);
 
 		default:
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
