@@ -1,7 +1,14 @@
 define @eWRONGOPTION     "Неизвестный параметр командной строки"       // unrecognized command line option
 define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
 define @eNOFILE          "Невозможно открыть файл"                     // Can't open file
-define @eINCLUDE         "Некорректная вставка файла"                  // Incorrect file include
+
+//define @eINCLUDE         "Некорректная вставка файла"                  // Incorrect file include
+define @eINCLUDE_GUARD_CONST_EXP "Условие в директиве includeonce должно быть вычислимо во время компиляции"
+define @eINCLUDE_GUARD_WRONG_TYPE "Условие в директиве includeonce должно быть булевым выражением"
+define @eINCLUDE_NAME_CONST_EXP "Имя файла в include должно быть вычислимо во время компиляции"
+define @eINCLUDE_NAME_WRONG_TYPE "Имя файла в include должно быть строкой"
+define @eINCLUDEWHEN_COMMA_EXP "Пропущена запятая в директиве includewhen"
+
 define @eEOF             "Конец файла"                                 // Unexpected EOF
 define @eNOMEMORY        "Недостаточно памяти"                         // Not enough memory
 define @eWRONGCHARININT  "Недопустимый символ в целочисленном литерале"// Illegal character in integer literal
@@ -98,6 +105,7 @@ define @eLVALUE_IN_INC   "Операнд инкремента должен быть lvalue-выражением" // l
 define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
 
+define @wDANGLING_SEMICOLON "Висячая точка с запятой"
 define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
 define @wGLOBALVARUNUSED ": глобальная переменная не используется"     // a global variable is never used
 define @wFUNCUNUSED      ": функция не используется"                   // a function is never used

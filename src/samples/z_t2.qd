@@ -1,5 +1,5 @@
-include "../windows.qdi"
-include "../include/hosted.qdi"
+include "../windows.qdi";
+include "../include/hosted.qdi";
 
 
 define  @Class "Hello"

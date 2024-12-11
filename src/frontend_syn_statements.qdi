@@ -12,6 +12,11 @@ void MatchSemicolon(char @Buff)
 	end
 end
 
+void MatchOptionalSemicolon(char @Buff)
+	if str_eq(@Buff,";") then
+		Scan(@Buff);
+	end
+end
 
 /*****************************************************************************/
 

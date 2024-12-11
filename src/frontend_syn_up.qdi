@@ -456,7 +456,81 @@ bool DeclDefine(char @Buff)
 end
 
 /*****************************************************************************/
+/*
+void Include(word pFileName; word pGuard; bool Once)
+	bool DoInclude = true;
 
+	if pGuard != nNODE then
+		if !IsConstExpr(pGuard) then
+			Error(@eINCLUDE_GUARD_CONST_EXP);
+			DoInclude = false;
+		end:if
+
+		if !NodeIsTrue(pGuard) | !NodeIsTrue(pGuard) then
+			Error(@eINCLUDE_GUARD_WRONG_TYPE);
+			DoInclude = false;
+		end:if
+
+		if !NodeIsTrue(pGuard) then
+			DoInclude = false;
+		end:if
+	end:if
+
+	if !IsConstExpr(pFileName) then
+		Error(@eINCLUDE_NAME_CONST_EXP);
+		DoInclude = false;
+	end:if
+
+	if !NodeIsLiteralString(pFileName) then
+		Error(@eINCLUDE_NAME_WRONG_TYPE);
+		DoInclude = false;
+	end:if
+
+	when !DoInclude:
+		return;
+
+	char@ FileName = @NodeGetLiteralString(pFileName);
+	word dFile = Find_cFILE(@FileName);
+	if dFile == nDICT & Once then
+		return;
+	end:if
+
+	if dFile == nDICT then
+		dFile = DictAlloc();
+		DictSetName(dFile, @FileName);
+		Dict[dFile].Class = cFILE;
+	end
+
+	IncludeFile(@FileName);
+end
+
+bool DeclInclude(char @Buff)
+	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
+	MatchOptionalSemicolon(@Buff);
+	Include(pFileName, nNODE, false);
+	return false;
+end
+
+bool DeclIncludeWhen(char @Buff)
+	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
+	if str_ne(@Buff, ",") then
+		Error(@eINCLUDEWHEN_COMMA_EXP);
+		MatchOptionalSemicolon(@Buff);
+		return false;
+	end:if
+	word pGuard = Expr(PRIO_ZERO, @Scan(@Buff));
+	MatchOptionalSemicolon(@Buff);
+	Include(pFileName, pGuard, false);
+	return false;
+end
+
+bool DeclIncludeOnce(char @Buff)
+	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
+	MatchOptionalSemicolon(@Buff);
+	Include(pFileName, nNODE, true);
+	return false;
+end
+*/
 bool DeclInclude(char @Buff)
 
 	/* Читаем имя файла. */
@@ -545,6 +619,10 @@ bool DeclNamespace(char @Buff)
 		select
 		case str_eq(@Buff,"include"):
 			DoScan = DeclInclude(@Buff);
+		/*case str_eq(@Buff,"includewhen"):
+			DoScan = DeclIncludeWhen(@Buff);
+		case str_eq(@Buff,"includeonce"):
+			DoScan = DeclIncludeOnce(@Buff);*/
 		case str_eq(@Buff,"define"):
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
@@ -563,6 +641,8 @@ bool DeclNamespace(char @Buff)
 			Stop(@eWRONGBRACE_NAMESPACE);
 		case str_eq(@Buff,@End):
 			exit;
+		case str_eq(@Buff, ";"):
+			Warn(@wDANGLING_SEMICOLON);
 		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select
@@ -605,6 +685,10 @@ void Parse()
 			exit;
 		case str_eq(@Buff,"include"):
 			DoScan = DeclInclude(@Buff);
+		/*case str_eq(@Buff,"includewhen"):
+			DoScan = DeclIncludeWhen(@Buff);
+		case str_eq(@Buff,"includeonce"):
+			DoScan = DeclIncludeOnce(@Buff);*/
 		case str_eq(@Buff,"define"):
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
@@ -613,6 +697,8 @@ void Parse()
 			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
+		case str_eq(@Buff, ";"):
+			Warn(@wDANGLING_SEMICOLON);
 		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select

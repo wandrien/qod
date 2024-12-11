@@ -117,6 +117,8 @@ void InitFrontEnd()
 	Word("if");
 	Word("inc");
 	Word("include");
+	Word("includeonce");
+	Word("includewhen");
 	Word("inline");
 	Word("__LINE__");
 	Word("null");

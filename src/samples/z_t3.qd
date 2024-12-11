@@ -1,5 +1,5 @@
-include "../sys4win.qdi"
-include "../include/hosted.qdi"
+include "../sys4win.qdi";
+include "../include/hosted.qdi";
 
 
 begin

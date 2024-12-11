@@ -64,6 +64,33 @@ end
 
 /*****************************************************************************/
 
+word NodeGetDict(word P)
+	when P >= nNode:
+		StopInternal(__FILE__, __LINE__);
+
+	switch Node[P].ID of
+	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
+		return Node[P].Value;
+	end
+
+	StopInternal(__FILE__, __LINE__);
+end
+
+void NodeSetDict(word P; word D)
+
+	when P >= nNode:
+		StopInternal(__FILE__, __LINE__);
+
+	switch Node[P].ID of
+	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
+		Node[P].Value = D;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end
+end
+
+/*****************************************************************************/
+
 bool NodeHasImmediateValue(word P)
 
 	when P >= nNode:
@@ -123,6 +150,12 @@ bool NodeIsTrue(word P)
 	return false;
 end
 
+bool NodeIsLiteralString(word P)
+	when Node[P].ID == iSTRING:
+		return true;
+	return false;
+end
+
 /*****************************************************************************/
 
 void NodeAssignLiteral(word P; word pType; word Value)
@@ -151,6 +184,12 @@ void NodeAssignBool(word P; bool Value)
 	else
 		NodeAssignLiteral(P, st_bool, 0);
 	end
+end
+
+char @NodeGetLiteralString(word P)
+	when !NodeIsLiteralString(P):
+		StopInternal(__FILE__, __LINE__);
+	return @Char[Dict[NodeGetDict(P)].LiteralValue];
 end
 
 /*****************************************************************************/
@@ -211,33 +250,6 @@ bool NodeIsLValue(word P)
 		return false;
 	end
 	return true;
-end
-
-/*****************************************************************************/
-
-word NodeGetDict(word P)
-	when P >= nNode:
-		StopInternal(__FILE__, __LINE__);
-
-	switch Node[P].ID of
-	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
-		return Node[P].Value;
-	end
-
-	StopInternal(__FILE__, __LINE__);
-end
-
-void NodeSetDict(word P; word D)
-
-	when P >= nNode:
-		StopInternal(__FILE__, __LINE__);
-
-	switch Node[P].ID of
-	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
-		Node[P].Value = D;
-	default:
-		StopInternal(__FILE__, __LINE__);
-	end
 end
 
 /*****************************************************************************/
