@@ -1,5 +1,5 @@
-include "include/freestanding.qdi"
-include "sys4win_typedefs.qdi"
+include "include/freestanding.qdi";
+include "sys4win_typedefs.qdi";
 
 define FILE_SHARE_DELETE 0x00000004	
 define FILE_SHARE_READ   0x00000001	

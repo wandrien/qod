@@ -1,7 +1,7 @@
 
-include "sys4win.qdi"
-include "messages_cp866.qdi"
-include "ctx4all.qdi"
+include "sys4win.qdi";
+include "messages_cp866.qdi";
+include "ctx4all.qdi";
 
 define nCMDLINEBUFF 1024
 char CmdLineBuff[nCMDLINEBUFF];

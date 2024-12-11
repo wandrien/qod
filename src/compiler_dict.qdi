@@ -191,7 +191,6 @@ word Find(char @Name)
 		end
 		inc P;
 	end
-
 	return nDICT;
 end
 
@@ -787,6 +786,28 @@ word DefineInteger(char @Name; word Type; word Value)
 	d.RO = 1;
 	d.pType = Type;
 	d.LiteralValue = Value;
+
+	return D;
+end
+
+/*****************************************************************************/
+
+word DefineBool(char @Name; bool Value)
+	if Find(@Name) < nDict then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	DICT @d = @Dict[D];
+	d.Class = cLITERAL;
+	d.RO = 1;
+	d.pType = st_bool;
+	if Value then
+		d.LiteralValue = 1;
+	else
+		d.LiteralValue = 0;
+	end:if
 
 	return D;
 end

@@ -1,7 +1,6 @@
 // TEST: should_print '10 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 define _nCHAR 256
 word    _nChar = 100;

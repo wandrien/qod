@@ -1,7 +1,6 @@
 // TEST: should_print '1000 1001 102 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 word a = 0;
 int  b = 0;

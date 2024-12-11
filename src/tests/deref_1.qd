@@ -1,7 +1,6 @@
 // TEST: should_print '10 11 12 13 14 15 16 17 18 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 word v0 = 0;
 word v1 = 1;

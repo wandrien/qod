@@ -456,7 +456,7 @@ bool DeclDefine(char @Buff)
 end
 
 /*****************************************************************************/
-/*
+
 void Include(word pFileName; word pGuard; bool Once)
 	bool DoInclude = true;
 
@@ -466,7 +466,7 @@ void Include(word pFileName; word pGuard; bool Once)
 			DoInclude = false;
 		end:if
 
-		if !NodeIsTrue(pGuard) | !NodeIsTrue(pGuard) then
+		if !NodeIsTrue(pGuard) & !NodeIsFalse(pGuard) then
 			Error(@eINCLUDE_GUARD_WRONG_TYPE);
 			DoInclude = false;
 		end:if
@@ -476,10 +476,8 @@ void Include(word pFileName; word pGuard; bool Once)
 		end:if
 	end:if
 
-	if !IsConstExpr(pFileName) then
-		Error(@eINCLUDE_NAME_CONST_EXP);
-		DoInclude = false;
-	end:if
+	when Node[pFileName].ID == iLPTR:
+		pFileName = Node[pFileName].pLeft;
 
 	if !NodeIsLiteralString(pFileName) then
 		Error(@eINCLUDE_NAME_WRONG_TYPE);
@@ -490,89 +488,47 @@ void Include(word pFileName; word pGuard; bool Once)
 		return;
 
 	char@ FileName = @NodeGetLiteralString(pFileName);
-	word dFile = Find_cFILE(@FileName);
-	if dFile == nDICT & Once then
+	char@ FullFileName = @ResolveFileName(@FileName);
+
+	word dFile = Find_cFILE(@FullFileName);
+	if dFile != nDICT & Once then
 		return;
 	end:if
 
 	if dFile == nDICT then
 		dFile = DictAlloc();
-		DictSetName(dFile, @FileName);
+		DictSetName(dFile, @FullFileName);
 		Dict[dFile].Class = cFILE;
 	end
 
-	IncludeFile(@FileName);
+	IncludeFile(@FullFileName);
 end
 
 bool DeclInclude(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
-	MatchOptionalSemicolon(@Buff);
-	Include(pFileName, nNODE, false);
-	return false;
+	when str_ne(@Buff, ";"):
+		Stop(@eINCLUDE_SEMICOLON_EXP);
+	//Include(pFileName, nNODE, false);
+	Include(pFileName, nNODE, true); /* FIXME: temporary until next commit */
+	return true;
 end
 
 bool DeclIncludeWhen(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
-	if str_ne(@Buff, ",") then
-		Error(@eINCLUDEWHEN_COMMA_EXP);
-		MatchOptionalSemicolon(@Buff);
-		return false;
-	end:if
+	when str_ne(@Buff, ","):
+		Stop(@eINCLUDE_WHEN_COMMA_EXP);
 	word pGuard = Expr(PRIO_ZERO, @Scan(@Buff));
-	MatchOptionalSemicolon(@Buff);
+	when str_ne(@Buff, ";"):
+		Stop(@eINCLUDE_WHEN_SEMICOLON_EXP);
 	Include(pFileName, pGuard, false);
-	return false;
+	return true;
 end
 
 bool DeclIncludeOnce(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
-	MatchOptionalSemicolon(@Buff);
+	when str_ne(@Buff, ";"):
+		Stop(@eINCLUDE_ONCE_SEMICOLON_EXP);
 	Include(pFileName, nNODE, true);
-	return false;
-end
-*/
-bool DeclInclude(char @Buff)
-
-	/* Читаем имя файла. */
-
-	if str_ne(@Scan(@Buff),"~"") then
-		Stop(@eQUOTEXP);
-	end
-
-	word P=0;
-	while Read()!='"' do
-		if iswhitespace(Read()) != 0 then
-			Stop(@eQUOTEXP);
-		end
-
-		Buff[P]=Read();
-		inc  P;
-
-		if P >= nBUFF then
-			Stop(@eLONGNAME);
-		end
-
-		Next();
-	end:while
-
-	Buff[P]=#0;
-	Next();
-
-	char@ FileName = @ResolveFileName(@Buff);
-
-	/* Проверка, подключался ли уже указанный файл. */
-	P = Find_cFILE(@FileName);
-	if P < nDict then
-		return true;
-	end:if
-
-	/* Заносим имя файла в словарь. */
-	word D = DictAlloc();
-	DictSetName(D, @FileName);
-	Dict[D].Class = cFILE;
-
-	IncludeFile(@FileName);
-
 	return true;
 end
 
@@ -619,10 +575,10 @@ bool DeclNamespace(char @Buff)
 		select
 		case str_eq(@Buff,"include"):
 			DoScan = DeclInclude(@Buff);
-		/*case str_eq(@Buff,"includewhen"):
+		case str_eq(@Buff,"include_when"):
 			DoScan = DeclIncludeWhen(@Buff);
-		case str_eq(@Buff,"includeonce"):
-			DoScan = DeclIncludeOnce(@Buff);*/
+		case str_eq(@Buff,"include_once"):
+			DoScan = DeclIncludeOnce(@Buff);
 		case str_eq(@Buff,"define"):
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
@@ -680,15 +636,12 @@ void Parse()
 	forever do
 		bool DoScan = true;
 		select
-		case str_eq(@Buff,"begin"):
-			DeclMainFunc(@Buff);
-			exit;
 		case str_eq(@Buff,"include"):
 			DoScan = DeclInclude(@Buff);
-		/*case str_eq(@Buff,"includewhen"):
+		case str_eq(@Buff,"include_when"):
 			DoScan = DeclIncludeWhen(@Buff);
-		case str_eq(@Buff,"includeonce"):
-			DoScan = DeclIncludeOnce(@Buff);*/
+		case str_eq(@Buff,"include_once"):
+			DoScan = DeclIncludeOnce(@Buff);
 		case str_eq(@Buff,"define"):
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
@@ -697,6 +650,9 @@ void Parse()
 			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
+		case str_eq(@Buff,"begin"):
+			DeclMainFunc(@Buff);
+			exit;
 		case str_eq(@Buff, ";"):
 			Warn(@wDANGLING_SEMICOLON);
 		default: // Пеpеменная, функция, ...

@@ -1,7 +1,6 @@
 // TEST: should_print '130 131 132 8100 8101 8102 65400 65401 65402 65403 65404 65405 193 14228 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	int v130 = 0b1000_0010;

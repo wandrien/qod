@@ -354,8 +354,8 @@ end
 
 /*****************************************************************************/
 
-include "frontend_syn_cast.qdi"
-include "frontend_syn_cte.qdi"
+include "frontend_syn_cast.qdi";
+include "frontend_syn_cte.qdi";
 
 /*****************************************************************************/
 
@@ -597,15 +597,17 @@ word Primary(word Prty; char @Buff)
 
 		case cLITERAL:
 			P1=Peek();
+			word pTypeI = Dict[I].pType;
 			select
 			case
-				(Dict[I].pType == st_word) |
-				(Dict[I].pType == st_int)  |
-				(Dict[I].pType == st_char) :
-				pType = Dict[I].pType;
+				(pTypeI == st_word) |
+				(pTypeI == st_int)  |
+				(pTypeI == st_char) |
+				(pTypeI == st_bool) :
+				pType = pTypeI;
 				NodeAssignLiteral(P1, pType, Dict[I].LiteralValue);
 
-			case Dict[I].pType == T_PtrTo(st_char):
+			case pTypeI == T_PtrTo(st_char):
 				Node[P1].ID    =iSTRING;
 				if ROStrings != 0 then
 					Node[P1].Value = I;
@@ -614,7 +616,7 @@ word Primary(word Prty; char @Buff)
 					Dict[NewLiteral].RO = 0;
 					Node[P1].Value = NewLiteral;
 				end
-				pType          = st_char;
+				pType = st_char;
 			default:
 				StopInternal(__FILE__, __LINE__);
 			end:select

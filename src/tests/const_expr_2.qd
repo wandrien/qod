@@ -1,7 +1,6 @@
 // TEST: should_print '10 11 12 254 30974 254 4294967294 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	puts(@str(const_expr(byte(10)))); puts(" ");

@@ -1,7 +1,6 @@
 // TEST: compilation_should_fail 'В качестве размера массива ожидается значение больше нуля'
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	word x[-10];

@@ -1,7 +1,7 @@
 // TEST: should_print '15 7 11 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
+/****/
 
 void f1()
 	puts(@str(__LINE__)); puts(" ");

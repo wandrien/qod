@@ -1,8 +1,7 @@
 // TEST: should_print '9950 100 5 25 15 '
 // COMPILER_FLAGS: --optimize size
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 int f1(int a; int b; int c; int d)
 	return 10000 - (a * b) - (c * d);

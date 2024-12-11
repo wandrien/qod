@@ -1,7 +1,6 @@
 // TEST: should_print '3 3 18 6 10 14 8 12 70 1 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	puts(@str(const_expr(1 + 2))); puts(" ");

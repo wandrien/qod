@@ -1,7 +1,6 @@
 // TEST: should_print '8 16 64 128 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 struct AAA of
 	uint64 a;

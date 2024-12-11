@@ -1,9 +1,9 @@
 
 /*****************************************************************************/
 
-include "frontend_charid.qdi"
-include "frontend_node.qdi"
-include "frontend_lex.qdi"
+include "frontend_charid.qdi";
+include "frontend_node.qdi";
+include "frontend_lex.qdi";
 
 /*****************************************************************************/
 
@@ -48,12 +48,12 @@ word pLoop;
 
 /*****************************************************************************/
 
-include "frontend_local.qdi"
-include "frontend_syn_brackets.qdi"
-include "frontend_syn_operators.qdi"
-include "frontend_syn_expr.qdi"
-include "frontend_syn_statements.qdi"
-include "frontend_syn_up.qdi"
+include "frontend_local.qdi";
+include "frontend_syn_brackets.qdi";
+include "frontend_syn_operators.qdi";
+include "frontend_syn_expr.qdi";
+include "frontend_syn_statements.qdi";
+include "frontend_syn_up.qdi";
 
 /*****************************************************************************/
 
@@ -117,8 +117,8 @@ void InitFrontEnd()
 	Word("if");
 	Word("inc");
 	Word("include");
-	Word("includeonce");
-	Word("includewhen");
+	Word("include_once");
+	Word("include_when");
 	Word("inline");
 	Word("__LINE__");
 	Word("null");
@@ -177,8 +177,8 @@ void InitFrontEnd()
 
 	strcpy(@Text,"");
 
-	DefineInteger("__QOD_VERSION_MAJOR__ ", st_word, 0);
-	DefineInteger("__QOD_VERSION_MINOR__ ", st_word, 1);
+	DefineInteger("__QOD_VERSION_MAJOR__", st_word, 0);
+	DefineInteger("__QOD_VERSION_MINOR__", st_word, 1);
 	DefineString("__QOD_VERSION_STR__", "0.1");
 	DefineString("__TRANSLATOR__", @msgPRODUCT);
 	DefineString("__TRANSLATOR_VERSION__", @msgVERSION);
@@ -187,9 +187,13 @@ void InitFrontEnd()
 	select
 	case TargetFileFormat == tPE:
 		DefineString("__TRANSLATOR_TARGET__", "i386-win32-pe");
+		DefineBool("__LINUX__", false);
+		DefineBool("__WIN32__", true);
 		strcat(@Text,"noreturn ExitProcess(word uExitCode) external KERNEL32;");
 	case TargetFileFormat == tELF:
 		DefineString("__TRANSLATOR_TARGET__", "i386-linux-elf");
+		DefineBool("__LINUX__", true);
+		DefineBool("__WIN32__", false);
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select

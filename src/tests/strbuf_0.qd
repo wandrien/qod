@@ -1,7 +1,6 @@
 // TEST: should_print '14 9 012345678 14 0 abc.def '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	char charBuff[10];

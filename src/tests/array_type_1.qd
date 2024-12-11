@@ -1,7 +1,6 @@
 // TEST: compilation_should_fail 'Выражение невычислимо на этапе компиляции: в качестве размера массива ожидается константное выражение'
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	word a = 5;

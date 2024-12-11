@@ -1,6 +1,6 @@
 
-include "freestanding.qdi"
-include "fpath.qdi"
+include "freestanding.qdi";
+include "fpath.qdi";
 
 
 void put_word(word i)

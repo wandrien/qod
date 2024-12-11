@@ -1,8 +1,7 @@
 // TEST: should_print '100 200 44 144 235 123 250 205 53 210 210 254 '
 // COMPILER_FLAGS: --optimize size
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	uint8 v0 = 0;

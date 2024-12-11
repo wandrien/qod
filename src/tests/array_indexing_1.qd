@@ -1,8 +1,7 @@
 // TEST: should_print '100 101 102 '
 // EXPECTED-TO-FAIL: FIXME: Not implemented
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 word v5 = 6;
 word v6 = 6;

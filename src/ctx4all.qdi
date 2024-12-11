@@ -1,20 +1,20 @@
 
-include "version.qdi"
+include "version.qdi";
 
-include "include/hosted.qdi"
-include "sys.qdi"
+include "include/hosted.qdi";
+include "sys.qdi";
 
-include "compiler_htl_defines.qdi"
-include "compiler_htl_structs.qdi"
-include "compiler_str.qdi"
-include "compiler_config.qdi"
-include "compiler_msg.qdi"
-include "compiler_chardata.qdi"
-include "compiler_input.qdi"
-include "compiler_dict.qdi"
+include "compiler_htl_defines.qdi";
+include "compiler_htl_structs.qdi";
+include "compiler_str.qdi";
+include "compiler_config.qdi";
+include "compiler_msg.qdi";
+include "compiler_chardata.qdi";
+include "compiler_input.qdi";
+include "compiler_dict.qdi";
 
-include "frontend_config.qdi"
-include "backend_config.qdi"
+include "frontend_config.qdi";
+include "backend_config.qdi";
 
 /*****************************************************************************/
 
@@ -45,11 +45,11 @@ end
 
 /*****************************************************************************/
 
-include "frontend.qdi"
+include "frontend.qdi";
 
 /*****************************************************************************/
 
-include "backend.qdi"
+include "backend.qdi";
 
 /*****************************************************************************/
 

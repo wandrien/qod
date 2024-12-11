@@ -1,7 +1,6 @@
 // TEST: should_print '2 3 | OK1 OK2 | OK1 OK2 | OK1 OK2 | OK1 OK2 OK3 | OK1 OK2 OK3 OK4 OK5 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 word arr[20];
 

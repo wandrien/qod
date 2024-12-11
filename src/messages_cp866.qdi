@@ -2,12 +2,14 @@ define @eWRONGOPTION     "Неизвестный параметр командной строки"       // unreco
 define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
 define @eNOFILE          "Невозможно открыть файл"                     // Can't open file
 
-//define @eINCLUDE         "Некорректная вставка файла"                  // Incorrect file include
 define @eINCLUDE_GUARD_CONST_EXP "Условие в директиве includeonce должно быть вычислимо во время компиляции"
 define @eINCLUDE_GUARD_WRONG_TYPE "Условие в директиве includeonce должно быть булевым выражением"
-define @eINCLUDE_NAME_CONST_EXP "Имя файла в include должно быть вычислимо во время компиляции"
 define @eINCLUDE_NAME_WRONG_TYPE "Имя файла в include должно быть строкой"
-define @eINCLUDEWHEN_COMMA_EXP "Пропущена запятая в директиве includewhen"
+define @eINCLUDE_WHEN_COMMA_EXP "Пропущена запятая в директиве includewhen"
+define @eINCLUDE_SEMICOLON_EXP "Пропущена точка с запятой в директиве include"
+define @eINCLUDE_WHEN_SEMICOLON_EXP "Пропущена точка с запятой в директиве includewhen"
+define @eINCLUDE_ONCE_SEMICOLON_EXP "Пропущена точка с запятой в директиве includeonce"
+
 
 define @eEOF             "Конец файла"                                 // Unexpected EOF
 define @eNOMEMORY        "Недостаточно памяти"                         // Not enough memory

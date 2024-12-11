@@ -1,7 +1,6 @@
 // TEST: should_print '42 OK1 OK2 OK3 OK4 25 10 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 word A = 42;
 word B = 0;

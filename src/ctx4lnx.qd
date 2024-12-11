@@ -1,7 +1,7 @@
 
-include "sys4lnx.qdi"
-include "messages_utf8.qdi"
-include "ctx4all.qdi"
+include "sys4lnx.qdi";
+include "messages_utf8.qdi";
+include "ctx4all.qdi";
 
 
 begin

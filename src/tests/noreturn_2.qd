@@ -1,7 +1,6 @@
 // TEST: compilation_should_fail 'Оператор return в теле noreturn функции'
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 noreturn nr1(word a)
 	when a == 0:

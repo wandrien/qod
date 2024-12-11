@@ -1,7 +1,6 @@
 // TEST: should_print '0 A 10 20 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	word zero = const_expr(word('0'));

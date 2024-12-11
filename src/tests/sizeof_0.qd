@@ -1,7 +1,6 @@
 // TEST: should_print '1 1 4 4 8 8 32 32 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 	puts(@str(sizeof(char))); puts(" ");

@@ -6,8 +6,7 @@
 	Fixed in 31df7989656338e8681e577297e96468b7346311.
 */
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 define  nDICT   100000
 

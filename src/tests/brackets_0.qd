@@ -1,7 +1,6 @@
 // TEST: should_print 'OK1 OK2 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 word f1(word x; word y)
 	word a = (%(x) + (*1*)%);

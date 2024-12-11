@@ -1,7 +1,6 @@
 // TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 OK7 OK8 OK9 OK10 OK11 '
 
-include "../sys4lnx.qdi"
-include "../include/hosted.qdi"
+include "../include/test_env.qdi";
 
 begin
 
