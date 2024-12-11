@@ -12,7 +12,15 @@ define @eEXPECTED        "Пропущен идентификатор"                      // Identi
 define @eUNDECLARED      "Идентификатор не описан"                     // undeclared identifier
 define @eUNDECLARED_FIELD "Структура не содержит такого элемента"      // Struct has no such member
 define @eDUPLICATE       "Повтор имени"                                // Duplicate identifier
+
+define @eKEYWORDUNEXP    "Недопустимое ключевое слово внутри выражения"
+
 define @eBRACKETEXP      "Пропущена скобка"                            // Bracket expected
+define @eOPENBRACKETEXP  "Пропущена открывающая скобка"
+define @eOPENBRACKETEXPAFTER "Пропущена открывающая скобка после "
+define @eCLOSEBRACKETEXPBEFORE "Пропущена закрывающая скобка перед "
+define @eMISSINGBRACKETIN "Пропущена закрывающая скобка в выражении "
+
 define @eCASEEXP         "Пропущено case"                              // case expected
 define @eTHENEXP         "Пропущено then или двоеточие"                // then or colon expected
 define @eCOLONEXP        "Пропущено двоеточие"                         // Colon expected
@@ -62,12 +70,16 @@ define @eNOTAVAIL        "Не реализовано"                              // Featur
 define @eINTERNAL        "Внутренняя ошибка: "                         // Internal error
 define @eINTERNAL_CODEGEN "Внутренняя ошибка в генераторе кода: "      // Internal error
 define @eWRITEERR        "Ошибка записи"                               // Write error
-define @eFNAMEEXP        "Пропушено имя файла"                         // File name expected
+define @eFNAMEEXP        "Пропущено имя файла"                         // File name expected
 define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote expected
 define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param expected
 define @eINVALIDBASE     "Недопустимое основание системы счисления"    //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
+
+define @eNOTATYPEEXPR    "Значение выражения не является типом"
 define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"
+define @eNOTASTATICEXPR  "Значение выражения не является статическим"
+define @eNOTATANGIBLEEXPR "Значение выражения не материализуемо"
 
 define @eWRONGEND_STRUCT "Получен 'end' в объявлении структуры, но ожидалось '}'"
 define @eWRONGBRACE_STRUCT "Получен '}' в объявлении структуры, но ожидалось 'end'"

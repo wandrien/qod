@@ -7,7 +7,7 @@
 
 /*****************************************************************************/
 
-define OPERATOR_NAME_SIZE 16 /* Максимальный размер имени операции. */
+define OPERATOR_NAME_SIZE 32 /* Максимальный размер имени операции. */
 
 /* Режимы операций. */
 define OPERATOR_BLEFT  1 // Бинарная левоассоциативная.
@@ -35,7 +35,7 @@ OPERATOR Operator[nOPERATOR];
 word nOperator;
 word NeedToSortOperators;
 
-define OPERATOR_INVALID 64
+define OPERATOR_INVALID nOPERATOR
 
 /*****************************************************************************/
 
@@ -152,3 +152,8 @@ end
 
 /*****************************************************************************/
 
+char @OperatorGetName(word O)
+	return @Operator[O].Name;
+end
+
+/*****************************************************************************/

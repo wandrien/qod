@@ -304,7 +304,12 @@ end
 /*****************************************************************************/
 
 void DeclVarFunc(char @Buff)
-	word pPrefixType = ResolveGlobal(@Buff, NULL);
+	word pPrefixExpr = Expr(PRIO_LVALUE, @Buff);
+	if Node[pPrefixExpr].ID != iTYPE then
+		Stop(@eTYPEEXP);
+	end
+
+	word pPrefixType = Node[pPrefixExpr].Value;
 	//pPrefixType = ResolveAlias(pPrefixType);
 	if pPrefixType == nDICT | Dict[pPrefixType].Class != cTYPE then
 		Stop(@eTYPEEXP);

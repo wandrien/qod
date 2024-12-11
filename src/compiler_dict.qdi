@@ -9,6 +9,7 @@ word    tArrayTypes;
 
 /* Индексы встроенных типов данных. */
 
+word st_type;
 word st_noreturn;
 word st_void;
 word st_bool;
@@ -337,6 +338,15 @@ bool T_Equal(word T1, T2)
 end
 
 /*****************************************************************************/
+
+bool T_IsType(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_TYPE:
+		return true;
+	return false;
+end
 
 bool T_IsChar(word T)
 	when T >= nDict:

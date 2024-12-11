@@ -225,6 +225,20 @@ end
 
 /*****************************************************************************/
 
+word BoolNode(bool value)
+	word P1 = Peek();
+	Node[P1].ID    = iLITERAL;
+	Node[P1].pType = st_bool;
+	if value then
+		Node[P1].Value = 1;
+	else
+		Node[P1].Value = 0;
+	end
+	return P1;
+end
+
+/*****************************************************************************/
+
 word ResolveInNamespace(char @Buff; word pNamespace)
 	if pNamespace == pGlobalNamespace then
 		return Find(@Buff);
@@ -364,10 +378,17 @@ word Not(word P)
 	case iGE:   Node[P].ID = iLT;
 	case iGT:   Node[P].ID = iLE;
 	default:
-		word P2 = Peek();
-		Node[P2].ID    = iNOT;
-		Node[P2].pLeft = P;
-		return P2;
+		select
+		case NodeIsFalse(P):
+			NodeAssignBool(P, true);
+		case NodeIsTrue(P):
+			NodeAssignBool(P, false);
+		default:
+			word P2 = Peek();
+			Node[P2].ID    = iNOT;
+			Node[P2].pLeft = P;
+			return P2;
+		end:select
 	end:switch
 
 	return P;
@@ -431,6 +452,30 @@ end
 
 /*****************************************************************************/
 
+word ExprInParentheses(char @Buff; char @ExprName)
+	word b = LookupBracket(BracketType_Parentheses, @Buff);
+	if b == BRACKET_INVALID then
+		if @ExprName != NULL then
+			StopWithSubject(@eOPENBRACKETEXPAFTER, @ExprName);
+		else
+			Stop(@eOPENBRACKETEXP);
+		end:if
+	end:if
+
+	word P = Expr(PRIO_ZERO, @Scan(@Buff));
+	if !str_eq(@Buff,@Bracket[b].RightBracket) then
+		ErrorWithSubject(@eCLOSEBRACKETEXPBEFORE, @Buff);
+		if @ExprName != NULL then
+			ErrorWithSubject(@eMISSINGBRACKETIN, @ExprName);
+		end:if
+	else
+		Scan(@Buff);
+	end
+	return P;
+end
+
+/*****************************************************************************/
+
 word Primary(word Prty; char @Buff)
 	if isdigit(Buff[0])!=0 then /* Число. */
 		word P1 = Peek();
@@ -439,14 +484,14 @@ word Primary(word Prty; char @Buff)
 		return P1;
 	end
 
-	if str_eq(@Buff,"__LINE__") then /* Номер текущей строки */
+	if str_eq(@Buff,"__LINE__") then
 		word P1 = Peek();
 		NodeAssignWord(P1, CurrentFileInfo.Line);
 		Scan(@Buff);
 		return P1;
 	end
 
-	if str_eq(@Buff,"sizeof") then /* sizeof(type) */
+	if str_eq(@Buff,"sizeof") then
 		word I = ParseXOfTypeArgs(@Scan(@Buff));
 		word P1 = Peek();
 		NodeAssignWord(P1, T_SizeOf(I));
@@ -454,7 +499,7 @@ word Primary(word Prty; char @Buff)
 		return P1;
 	end
 
-	if str_eq(@Buff,"bitsizeof") then /* bitsizeof(type) */
+	if str_eq(@Buff,"bitsizeof") then
 		word I = ParseXOfTypeArgs(@Scan(@Buff));
 		word P1 = Peek();
 		word Size = T_SizeOf(I);
@@ -466,7 +511,7 @@ word Primary(word Prty; char @Buff)
 		return P1;
 	end
 
-	if str_eq(@Buff,"countof") then /* countof(type) */
+	if str_eq(@Buff,"countof") then
 		/* TODO: Невозможно протестировать, не реализован конструктор типа. */
 		word I = ParseXOfTypeArgs(@Scan(@Buff));
 		word P1 = Peek();
@@ -476,7 +521,6 @@ word Primary(word Prty; char @Buff)
 		Scan(@Buff);
 		return P1;
 	end
-
 
 	word pType;
 	word nPtr;
@@ -609,14 +653,11 @@ word Primary(word Prty; char @Buff)
 			end:if
 
 		case cTYPE:
-			if Prty < PRIO_LVALUE then
-				if strcmp(@Buff,"(")!=0 then
-					Stop(@eBRACKETEXP);
-				end:if
+			if Prty < PRIO_LVALUE & str_eq(@Buff,"(") then
 
 				P1 = Expr(PRIO_ZERO, @Scan(@Buff));
 
-				if strcmp(@Buff,")")!=0 then
+				if str_ne(@Buff,")") then
 					Stop(@eBRACKETEXP);
 				end:if
 
@@ -654,12 +695,15 @@ word Primary(word Prty; char @Buff)
 
 				P1 = Peek();
 				Node[P1].ID    = iTYPE;
+				Node[P1].pType = st_type;
 				Node[P1].Value = I;
 
 				return P1;
 			end:if
+		case cWORD:
+			StopWithSubject(@eKEYWORDUNEXP, @DictGetName(I));
 		default:
-			StopWithSubject(@eUNDECLARED, @Buff);
+			StopWithSubject(@eUNDECLARED, @DictGetName(I));
 		end:switch
 	end:if
 
@@ -973,13 +1017,15 @@ void Cast2(word P_OP)
 		pass;
 
 	/* С обеих сторон - один и тот же тип... */
-	case pType1 == pType2:
+	case T_Equal(pType1, pType2):
 		select
 		case T_IsInteger(pType1): /* ...целочисленный */
 			pass;
 		case T_IsChar(pType1): /* ...символьный */
 			pass;
 		case T_IsBool(pType1): /* ...булевый */
+			pass;
+		case T_IsType(pType1): /* ...булевый */
 			pass;
 		default:
 			StopAtNode(P_OP, @eTYPE);
@@ -1005,6 +1051,8 @@ void Cast2(word P_OP)
 			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
+		CTE(P_OP);
+
 	case ID == iXOR: /* Аналогично предыдущему. */
 		select
 		case T_IsUnsigned(pTypeOp):
@@ -1016,6 +1064,8 @@ void Cast2(word P_OP)
 		default:
 			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
+
+		CTE(P_OP);
 
 	case ID == iAND: /* Аналогично предыдущему. */
 		select
@@ -1029,15 +1079,18 @@ void Cast2(word P_OP)
 			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
 		end
 
+		CTE(P_OP);
+
 	case iLT<=ID & ID<=iGT:
 		if ID == iEQ | ID == iNE then
 			/* Сравнение равенство/неравенство... */
-			/* ...возможно только между целыми, булевыми, символами, указателями. */
+			/* ...возможно только между целыми, булевыми, символами, указателями, типами. */
 			if
 				!T_IsInteger(pTypeOp) &
 				!T_IsChar(pTypeOp) &
 				!T_IsBool(pTypeOp) &
-				!T_IsPtr(pTypeOp) then
+				!T_IsPtr(pTypeOp) &
+				!T_IsType(pTypeOp) then
 				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
 			end
 		else
@@ -1050,6 +1103,8 @@ void Cast2(word P_OP)
 			end
 		end:if
 		pTypeOp = st_bool;
+
+		CTE(P_OP);
 
 	case iADD<=ID & ID<=iDIV:
 		/* Арифметические операции только с целыми. */
@@ -1138,25 +1193,65 @@ end
 
 /*****************************************************************************/
 
+word Expr_GuardedExpr(char @Buff; ExprGuard @Guard; char @Msg; char @ExprName)
+	word P = ExprInParentheses(@Buff, @ExprName);
+	if !Guard(P) then
+		ErrorAtNode(P, @Msg);
+	end
+	return P;
+end
+
+word Expr_BoolFromGuard(char @Buff; ExprGuard @Guard; char @ExprName)
+	word P = ExprInParentheses(@Buff, @ExprName);
+	return BoolNode(Guard(P));
+end
+
+/*****************************************************************************/
+
+word ExprTypeExpr(word P1; word O; char @Buff)
+	return Expr_GuardedExpr(@Scan(@Buff), IsTypeExpr, @eNOTATYPEEXPR, @OperatorGetName(O));
+end
+
 word ExprConstExpr(word P1; word O; char @Buff)
-	Scan(@Buff);
+	return Expr_GuardedExpr(@Scan(@Buff), IsConstExpr, @eNOTACONSTEXPR, @OperatorGetName(O));
+end
 
-	word b = LookupBracket(BracketType_Parentheses, @Buff);
-	if b == BRACKET_INVALID then
-		Stop(@eBRACKETEXP);
-	end
+word ExprStaticExpr(word P1; word O; char @Buff)
+	return Expr_GuardedExpr(@Scan(@Buff), IsStaticExpr, @eNOTASTATICEXPR, @OperatorGetName(O));
+end
 
-	word P2 = ExprParentheses(P1, O, @Buff);
+word ExprTangibleExpr(word P1; word O; char @Buff)
+	return Expr_GuardedExpr(@Scan(@Buff), IsTangibleExpr, @eNOTATANGIBLEEXPR, @OperatorGetName(O));
+end
 
-	switch Node[P2].ID of
-	case iLITERAL:
-		pass;
-	default:
-		Error(@eNOTACONSTEXPR);
-	end
+/*****************************************************************************/
 
-	return P2;
+word ExprIsTypeExpr(word P1; word O; char @Buff)
+	return Expr_BoolFromGuard(@Scan(@Buff), IsTypeExpr, @OperatorGetName(O));
+end
 
+word ExprIsConstExpr(word P1; word O; char @Buff)
+	return Expr_BoolFromGuard(@Scan(@Buff), IsConstExpr, @OperatorGetName(O));
+end
+
+word ExprIsStaticExpr(word P1; word O; char @Buff)
+	return Expr_BoolFromGuard(@Scan(@Buff), IsStaticExpr, @OperatorGetName(O));
+end
+
+word ExprIsTangibleExpr(word P1; word O; char @Buff)
+	return Expr_BoolFromGuard(@Scan(@Buff), IsTangibleExpr, @OperatorGetName(O));
+end
+
+/*****************************************************************************/
+
+word ExprTypeOf(word _P1; word O; char @Buff)
+	word P = ExprInParentheses(@Scan(@Buff), @OperatorGetName(O));
+
+	word P1 = Peek();
+	Node[P1].ID    = iTYPE;
+	Node[P1].pType = st_type;
+	Node[P1].Value = Node[P].pType;
+	return P1;
 end
 
 /*****************************************************************************/
@@ -1198,19 +1293,13 @@ word ExprLitNULL(word P_; word O; char @Buff)
 end
 
 word ExprLitFALSE(word P_; word O; char @Buff)
-	word P1 = Peek();
-	Node[P1].ID    = iLITERAL;
-	Node[P1].Value = 0;
-	Node[P1].pType = st_bool;
+	word P1 = BoolNode(false);
 	Scan(@Buff);
 	return P1;
 end
 
 word ExprLitTRUE(word P_; word O; char @Buff)
-	word P1 = Peek();
-	Node[P1].ID    = iLITERAL;
-	Node[P1].Value = 1;
-	Node[P1].pType = st_bool;
+	word P1 = BoolNode(true);
 	Scan(@Buff);
 	return P1;
 end
@@ -1304,7 +1393,18 @@ void RegisterOperators()
 	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("(*"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("(%"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
-	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0   , @ExprConstExpr);
+
+	RegisterOperator("type_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprTypeExpr);
+	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprConstExpr);
+	RegisterOperator("static_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprStaticExpr);
+	RegisterOperator("tangible_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprTangibleExpr);
+
+	RegisterOperator("is_type_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsTypeExpr);
+	RegisterOperator("is_const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsConstExpr);
+	RegisterOperator("is_static_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsStaticExpr);
+	RegisterOperator("is_tangible_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsTangibleExpr);
+
+	RegisterOperator("typeof", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprTypeOf);
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
 	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);

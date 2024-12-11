@@ -145,6 +145,30 @@ void NodeAssignInt(word P; int Value)
 	NodeAssignLiteral(P, st_int, Value);
 end
 
+void NodeAssignBool(word P; bool Value)
+	if Value then
+		NodeAssignLiteral(P, st_bool, 1);
+	else
+		NodeAssignLiteral(P, st_bool, 0);
+	end
+end
+
+/*****************************************************************************/
+
+bool NodeEqual(word P1; word P2)
+	when Node[P1].ID != iLITERAL:
+		StopInternal(__FILE__, __LINE__);
+	when Node[P2].ID != iLITERAL:
+		StopInternal(__FILE__, __LINE__);
+
+	if (Node[P1].Value == Node[P2].Value)
+	&  T_Equal(Node[P1].pType, Node[P2].pType) then
+		return true;
+	else
+		return false;
+	end
+end
+
 /*****************************************************************************/
 
 bool NodeIsLValue(word P)

@@ -1,0 +1,105 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 OK7 OK8 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+struct X of
+    int x;
+end
+
+X x;
+typeof(x) x2;
+
+void foo()
+	x.x = 10;
+	x2.x = x.x * 2;
+	type_expr(int) y = 15;
+
+	if const_expr(
+	   is_type_expr(int)
+	&  is_type_expr(void)
+	&  is_type_expr(type)
+	&  is_type_expr(X)
+	&  is_type_expr(typeof(x2))
+	) then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(is_const_expr(sizeof(int) * 10 + sizeof(long))) then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(
+	   is_static_expr(int)
+	&  is_static_expr(void)
+	&  is_static_expr(type)
+	&  is_static_expr(X)
+	&  is_static_expr(sizeof(int) * 10 + sizeof(long))
+	) then
+		puts("OK3 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(
+	   is_tangible_expr(x)
+	&  is_tangible_expr(x.x)
+	&  is_tangible_expr(x.x + 10)
+	&  is_tangible_expr(@x)
+	&  is_tangible_expr(y)
+	&  is_tangible_expr(sizeof(int) * 10 + sizeof(long))
+	) then
+		puts("OK4 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(!(
+	   is_const_expr(int)
+	|  is_const_expr(void)
+	|  is_const_expr(type)
+	|  is_const_expr(X)
+	)) then
+		puts("OK5 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(!(
+	   is_tangible_expr(int)
+	|  is_tangible_expr(void)
+	|  is_tangible_expr(type)
+	|  is_tangible_expr(X)
+	)) then
+		puts("OK6 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(!(
+	   is_const_expr(x)
+	|  is_const_expr(x.x)
+	|  is_const_expr(x.x + 10)
+	|  is_const_expr(@x)
+	|  is_const_expr(y)
+	)) then
+		puts("OK7 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	y = tangible_expr(x.x) + tangible_expr(y);
+	if is_tangible_expr(y == 15) then
+		puts("OK8 ");
+	else
+		puts("OOPS ");
+	end:if
+end
+
+begin
+	foo();
+end

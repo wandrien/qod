@@ -7,6 +7,38 @@
 
 /*****************************************************************************/
 
+bool function ExprGuard(word P)
+
+bool IsTypeExpr(word P)
+	if Node[P].ID == iTYPE then
+		return true;
+	else
+		return false;
+	end
+end
+
+bool IsConstExpr(word P)
+	return NodeHasImmediateValue(P);
+end
+
+bool IsStaticExpr(word P)
+	if IsTypeExpr(P) | IsConstExpr(P) then
+		return true;
+	else
+		return false;
+	end
+end
+
+bool IsTangibleExpr(word P)
+	if Node[P].ID == iTYPE then
+		return false;
+	else
+		return true;
+	end
+end
+
+/*****************************************************************************/
+
 word MakeBitMaskFromSize(word Size)
 	switch Size of
 	case 1: return 0xFF;
@@ -137,6 +169,47 @@ void CTE(word P)
 	word pLeft = Node[P].pLeft;
 	word pRight = Node[P].pRight;
 
+	switch ID of
+	case iOR:
+		select
+		case NodeIsTrue(pLeft):
+			NodeAssignBool(P, true);
+		case NodeIsFalse(pLeft) & NodeIsFalse(pRight):
+			NodeAssignBool(P, false);
+		end
+		return;
+	case iAND:
+		select
+		case NodeIsFalse(pLeft):
+			NodeAssignBool(P, false);
+		case NodeIsTrue(pLeft) & NodeIsTrue(pRight):
+			NodeAssignBool(P, true);
+		end
+		return;
+	end
+
+	if Node[pLeft].ID == iTYPE & Node[pRight].ID == iTYPE then
+		switch ID of
+		case iEQ:
+			NodeAssignBool(P, T_Equal(Node[pLeft].Value, Node[pRight].Value));
+			return;
+		case iNE:
+			bool Value;
+			if T_Equal(Node[pLeft].Value, Node[pRight].Value) then
+				Value = false;
+			else
+				Value = true;
+			end
+			NodeAssignBool(P, Value);
+			return;
+		/* FIXME: ошибка в генераторе кода
+		case iNE:
+			NodeAssignBool(P, !T_Equal(Node[pLeft].Value, Node[pRight].Value));
+			return;
+		*/
+		end
+	end
+
 	if ID == iDIV | ID == iMOD then
 		if NodeHasImmediateValue(pRight) then
 			if NodeGetImmediateValue(pRight) == 0 then
@@ -150,8 +223,8 @@ void CTE(word P)
 	when Node[pLeft].ID != iLITERAL | Node[pRight].ID != iLITERAL:
 		return;
 
-	select
-	case ID == iADD:
+	switch ID of
+	case iADD:
 		select
 		case Node[pLeft].pType == st_word:
 			word v1 = Node[pLeft].Value;
@@ -162,7 +235,7 @@ void CTE(word P)
 			int v2 = Node[pRight].Value;
 			NodeAssignInt(P, v1 + v2);
 		end:select
-	case ID == iSUB:
+	case iSUB:
 		select
 		case Node[pLeft].pType == st_word:
 			word v1 = Node[pLeft].Value;
@@ -173,7 +246,7 @@ void CTE(word P)
 			int v2 = Node[pRight].Value;
 			NodeAssignInt(P, v1 - v2);
 		end:select
-	case ID == iMUL:
+	case iMUL:
 		select
 		case Node[pLeft].pType == st_word:
 			word v1 = Node[pLeft].Value;
@@ -184,7 +257,7 @@ void CTE(word P)
 			int v2 = Node[pRight].Value;
 			NodeAssignInt(P, v1 * v2);
 		end:select
-	case ID == iDIV:
+	case iDIV:
 		select
 		case Node[pLeft].pType == st_word:
 			word v1 = Node[pLeft].Value;
@@ -195,14 +268,27 @@ void CTE(word P)
 			int v2 = Node[pRight].Value;
 			NodeAssignInt(P, v1 / v2);
 		end:select
-	case ID == iMOD:
+	case iMOD:
 		select
 		case Node[pLeft].pType == st_word:
 			word v1 = Node[pLeft].Value;
 			word v2 = Node[pRight].Value;
 			NodeAssignWord(P, v1 % v2);
 		end:select
-	end:select
+	case iEQ:
+		NodeAssignBool(P, NodeEqual(pLeft, pRight));
+	case iNE:
+		bool Value;
+		if NodeEqual(pLeft, pRight) then
+			Value = false;
+		else
+			Value = true;
+		end
+		NodeAssignBool(P, Value);
+	/* FIXME: ошибка в генераторе кода
+	case iNE:
+		NodeAssignBool(P, !NodeEqual(pLeft, pRight));*/
+	end:switch
 end
 
 /*****************************************************************************/

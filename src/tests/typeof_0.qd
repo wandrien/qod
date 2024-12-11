@@ -1,0 +1,63 @@
+// TEST: should_print 'OK1 OK2 OK3 '
+
+include "../sys4lnx.qdi"
+include "../include/hosted.qdi"
+
+struct X of
+    int x;
+end
+
+X x;
+typeof(x) x2;
+typeof(x2.x) i;
+
+void foo()
+	typeof(i) y = 15;
+	typeof(false) b = true;
+
+	if const_expr(
+	   typeof(int) == type
+	&  typeof(void) == type
+	&  typeof(noreturn) == type
+	&  typeof(bool) == type
+	&  typeof(X) == type
+	&  typeof(type) == type
+	&  void == void
+	&  uint16 == uint16
+	&  uint16 != void
+	&  uint16 != int16
+	&  uint16 != char
+	) then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(
+	   typeof(x.x) == typeof(i)
+	&  typeof(x.x) == int
+	&  typeof(y) == int
+	&  typeof(x) == X
+	&  typeof(b) == bool
+	) then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if const_expr(
+	   typeof(0) == typeof(10)
+	&  typeof(false) == typeof(true)
+	&  typeof(uint16(0)) == typeof(uint16(10))
+	&  typeof(uint16(0)) != typeof(uint32(10))
+	&  typeof(uint16(0)) != typeof(true)
+	) then
+		puts("OK3 ");
+	else
+		puts("OOPS ");
+	end:if
+end
+
+begin
+	foo();
+end
