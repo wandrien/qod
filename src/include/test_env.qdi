@@ -1,3 +1,3 @@
 include_when "../sys4lnx.qdi", __LINUX__;
 include_when "../sys4win.qdi", __WIN32__;
-include "hosted.qdi";
+include_once "hosted.qdi";

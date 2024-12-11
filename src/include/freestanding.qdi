@@ -1,4 +1,4 @@
 
-include "strings.qdi";
-include "strbuf.qdi";
-include "intmath.qdi";
+include_once "strings.qdi";
+include_once "strbuf.qdi";
+include_once "intmath.qdi";

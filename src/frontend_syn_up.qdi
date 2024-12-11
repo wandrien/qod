@@ -508,8 +508,7 @@ bool DeclInclude(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
 		Stop(@eINCLUDE_SEMICOLON_EXP);
-	//Include(pFileName, nNODE, false);
-	Include(pFileName, nNODE, true); /* FIXME: temporary until next commit */
+	Include(pFileName, nNODE, false);
 	return true;
 end
 

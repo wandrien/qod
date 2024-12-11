@@ -15,9 +15,8 @@ char @memcpy(char @Dst, @Src; word N);
 
 define INDEX_INVALID 0xFFFF_FFFF
 
-include "strings_base.qdi";
-include "strings_mem.qdi";
-include "strings_cmp.qdi";
-include "strings_find.qdi";
-include "strings_misc.qdi";
-
+include_once "strings_base.qdi";
+include_once "strings_mem.qdi";
+include_once "strings_cmp.qdi";
+include_once "strings_find.qdi";
+include_once "strings_misc.qdi";
