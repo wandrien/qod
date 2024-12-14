@@ -1,5 +1,4 @@
 // TEST: compilation_should_fail 'Левая часть присваивания должна быть lvalue-выражением'
-// EXPECTED-TO-FAIL: FIXME: Misrecognized as rvalue in the current partial implementation.
 
 word foo()
     return 2;

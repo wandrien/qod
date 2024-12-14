@@ -211,45 +211,20 @@ end
 /*****************************************************************************/
 
 bool NodeIsLValue(word P)
-	/*
-		FIXME: Incomplete implementation.
-		Сначала требуется избавиться от постфиксных деревьев в Primary.
-	*/
 	when P >= nNode:
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
 	case
-		iEMPTY,
-		iNULL,
-		iLITERAL,
-		iFUNC,
-		iSTRING,
-		iBIT_NOT,
-		iNEG,
-		iOR,
-		iXOR,
-		iEQV,
-		iAND,
-		iBIT_OR,
-		iBIT_XOR,
-		iBIT_AND,
-		iLT,
-		iLE,
-		iEQ,
-		iNE,
-		iGE,
-		iGT,
-		iADD,
-		iSUB,
-		iMUL,
-		iDIV,
-		iMOD,
-		iCAST,
-		iNOT:
-		return false;
+		iDATA,
+		iPARM,
+		iLOCAL,
+		iINDEX,
+		iADDR,
+		iFIELD:
+		return true;
 	end
-	return true;
+	return false;
 end
 
 /*****************************************************************************/

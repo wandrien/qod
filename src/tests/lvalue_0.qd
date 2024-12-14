@@ -1,0 +1,17 @@
+// TEST: should_print '109 '
+
+include "../include/test_env.qdi";
+
+word x;
+
+word @foo()
+    return @x;
+end
+
+begin
+	x = 10;
+	word a = 100;
+	foo() = foo() + a;
+	dec foo();
+	put_word(x); puts(" ");
+end
