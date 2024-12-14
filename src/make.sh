@@ -293,8 +293,6 @@ do_tests ()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Running tests${CODE_COLOR_NOCOLOR}\n"
 
-	mkdir -p tests/out
-
 	passed_tests=
 	failed_tests=
 	expected_to_fail_tests=

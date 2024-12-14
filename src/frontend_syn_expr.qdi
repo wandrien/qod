@@ -1396,17 +1396,17 @@ void RegisterOperators()
 	RegisterOperator("(*"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("(%"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 
-	RegisterOperator("type_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprTypeExpr);
-	RegisterOperator("const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprConstExpr);
-	RegisterOperator("static_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprStaticExpr);
-	RegisterOperator("tangible_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprTangibleExpr);
+	RegisterOperator("type_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeExpr);
+	RegisterOperator("const_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprConstExpr);
+	RegisterOperator("static_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprStaticExpr);
+	RegisterOperator("tangible_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTangibleExpr);
 
-	RegisterOperator("is_type_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsTypeExpr);
-	RegisterOperator("is_const_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsConstExpr);
-	RegisterOperator("is_static_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsStaticExpr);
-	RegisterOperator("is_tangible_expr", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprIsTangibleExpr);
+	RegisterOperator("is_type_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTypeExpr);
+	RegisterOperator("is_const_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsConstExpr);
+	RegisterOperator("is_static_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsStaticExpr);
+	RegisterOperator("is_tangible_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTangibleExpr);
 
-	RegisterOperator("typeof", PRIO_CONSTEXPR , OPERATOR_UPRE , 0, @ExprTypeOf);
+	RegisterOperator("typeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeOf);
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
 	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);

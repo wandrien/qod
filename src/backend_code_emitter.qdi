@@ -1846,6 +1846,8 @@ end
 
 /*****************************************************************************/
 
+word pReturnVoid = nNODE;
+
 void EmitFunction(char @Buff; word I)
 	EmitStringNL("");
 	strcpy(@Buff,"## ");
@@ -1917,9 +1919,11 @@ void EmitFunction(char @Buff; word I)
 	end
 
 	if pType != st_noreturn then
-		word pRet = Peek();
-		Node[pRet].ID = iRETURN;
-		Code(pRet);
+		if pReturnVoid == nNODE then
+			pReturnVoid = Peek();
+			Node[pReturnVoid].ID = iRETURN;
+		end
+		Code(pReturnVoid);
 	end
 
 	Code_EndBlock(@CB);

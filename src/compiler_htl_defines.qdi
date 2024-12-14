@@ -146,7 +146,7 @@ define  PRIO_NEG         5 // unary minus
 define  PRIO_INC         6 // inc/dec
 define  PRIO_LVALUE      7 // LVALUE
 define  PRIO_EXPR       10 // an expression in parentheses
-define  PRIO_CONSTEXPR  15 // const_expr
+define  PRIO_FUNCCALL   15 // foo(x)
 define  PRIO_LITER      20 // literals
 
 /*****************************************************************************/
