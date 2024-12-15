@@ -35,23 +35,23 @@ However, the intermediate layer between these two is effectively absent. The com
 Supported and planned targets:
 
 * ISAs:
-  [x] i386
-  [ ] TDB: AMD64 aka x86_64
-  [ ] TDB: 16-bit x86
-  [ ] TDB: ARM32, ARM64 aka AArch64
-  [ ] TDB: RISC-V32, RISC-V64
-  [ ] TDB: m68k (a 32-bit ISA)
-  [ ] TDB: PDP-11 (a 16-bit ISA)
-  [ ] TDB: Z80/i8080 (a 8-bit ISA)
+  * [x] i386
+  * [ ] TBD: AMD64 aka x86_64
+  * [ ] TBD: 16-bit x86
+  * [ ] TBD: ARM32, ARM64 aka AArch64
+  * [ ] TBD: RISC-V32, RISC-V64
+  * [ ] TBD: m68k (a 32-bit ISA)
+  * [ ] TBD: PDP-11 (a 16-bit ISA)
+  * [ ] TBD: Z80/i8080 (a 8-bit ISA)
 * Non-hardware ISAs:
-  [ ] TDB: [QBE](https://c9x.me/compile/)
+  * [ ] TBD: [QBE](https://c9x.me/compile/)
 * OS specific:
-  [x] Linux
-  [x] Windows
-  [x] TBD: 16-bit DOS applications
-  [x] TBD: 32-bit DOS applications under a DOS extender
-  [ ] TBD: FreeBSD
-  [ ] TBD: NetBSD
+  * [x] Linux
+  * [x] Windows
+  * [ ] TBD: 16-bit DOS applications
+  * [ ] TBD: 32-bit DOS applications under a DOS extender
+  * [ ] TBD: FreeBSD
+  * [ ] TBD: NetBSD
 
 **Details:**
 
