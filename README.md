@@ -67,10 +67,9 @@ Supported and planned targets:
 
 ## Licensing
 
-* [src/](src/), [precompiled/](precompiled/): The qodc source codes and binaries are provided under the term specified in [LICENSE.TXT](LICENSE.TXT)
-* [src/tests/](src/tests/): The qodc test files are provided under the term of [0BSD license](src/tests/LICENSE.TXT). (See also: https://opensource.org/license/0bsd)
+* [src/](src/), [precompiled/](precompiled/): The qodc source codes and binaries are provided under the terms specified in [LICENSE.TXT](LICENSE.TXT)
+* [src/tests/](src/tests/): The qodc test files are provided under the terms of [0BSD license](src/tests/LICENSE.TXT). (See also: https://opensource.org/license/0bsd)
 * Any files in the [extra/](extra/) directory are provided under the terms of 0BSD license, unless otherwise stated.
 * Third party software included in this repository:
-  * [3rd-party/fasm/](3rd-party/fasm/): FASM is a software by Tomasz Grysztar, provided under the term specified in [3rd-party/fasm/license.txt](3rd-party/fasm/license.txt). The project's web site: https://flatassembler.net/
-  * [3rd-party/context/](3rd-party/context/): Context Compiler is a software by Andrei Hohlov, provided under the term specified in [3rd-party/context/README](3rd-party/context/README). The project's web site: https://avhohlov.narod.ru/
-
+  * [3rd-party/fasm/](3rd-party/fasm/): FASM is a software by Tomasz Grysztar, provided under the terms specified in [3rd-party/fasm/license.txt](3rd-party/fasm/license.txt). The project's web site: https://flatassembler.net/
+  * [3rd-party/context/](3rd-party/context/): Context Compiler is a software by Andrei Hohlov, provided under the terms specified in [3rd-party/context/README](3rd-party/context/README). The project's web site: https://avhohlov.narod.ru/
