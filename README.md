@@ -4,7 +4,7 @@ Qod is an experimental system-level compiled language, that I slowly develop in 
 
 The source code origins root deep into history. I took as a basis the source code of [the educational language Context by Andrei Hohlov](https://avhohlov.narod.ru/). Context was initially developed for MS-DOS in the mid 90's. Later it was ported to Win32 and Linux.
 
-The sources isn't well-designed nor perfectly suited for my purposes, but hacking it was fun. So I spent a fair amount of time refactoring the codebase, improving the generated code optimization, and redesigning the language. The language itself is still far from what I planned, and the languages design is in development. So no language specification is available right now.
+The source code wasn't well-designed nor perfectly suited for my purposes, but hacking on it was fun. So I spent a fair amount of time refactoring the codebase, improving the generated code, and redesigning the language. The language itself is still far from what I planned, and the languages design is in development. So no language specification is available right now.
 
 The compiler is intended to remain hobby-scale and pleasant to hack on. Although the project is being developed with the expectation of becoming a practical tool some day, the primary goal of the project is fun.
 
@@ -24,13 +24,13 @@ Instead the code generation is directed by the abstract syntax tree.
 
 That kind of code generation is typically done in rather straightforward and simple manner. However, as the code base evolved, and I tried to optimize the generated code for "this obvious case and that obvious case", it may have gotten a little out of control.
 
-I'm not sure what this kind of code generation is properly called, so let name it just AST/PHO codegen for short. *(Abstract Syntax Tree-directed translation with Peephole Optimization)*
+I'm not sure what this kind of code generation is properly called, so let's name it just AST/PHO codegen for short. *(Abstract Syntax Tree-directed translation with Peephole Optimization)*
 
-The compiler is capable of producing good enough code at the level of individual expressions or a short sequence of expressions.
+The compiler is capable of producing good enough code at the level of individual expressions or short sequences of expressions.
 
 The compiler is also able to analyze functions and take into account the resulting characteristics. For example, optimize the case where a function never returns control.
 
-However, the intermediate layer between these two is effectively absent. The compiler does not break the algorithm into a graph of basic blocks, does not discover the actual lifetime of variables, and does not perform global register allocation etc. This limitation is due to the lack of a suitable intermediate representation.
+However, the intermediate layer between these two is effectively absent. The compiler does not break the algorithm into a graph of basic blocks, does not discover the actual lifetime of variables, and does not perform global register allocation and so on. This limitation is due to the lack of a suitable intermediate representation.
 
 Supported and planned targets:
 
