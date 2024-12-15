@@ -1,0 +1,22 @@
+Qod
+    filter rm_comments_in_strings " /* */
+    filter rm_comments_in_strings " // 
+    filter call_regexp_common C++
+    extension QOD
+    extension QD
+    extension qod
+    extension qd
+    extension qodi
+    extension qdi
+    extension qodm
+    extension qdm
+    3rd_gen_scale 1.51
+    end_of_line_continuation \\$
+Qod Header
+    filter rm_comments_in_strings " /* */
+    filter rm_comments_in_strings " // 
+    filter call_regexp_common C++
+    extension qodh
+    extension qdh
+    3rd_gen_scale 1.00
+    end_of_line_continuation \\$
