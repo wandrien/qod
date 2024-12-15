@@ -30,7 +30,7 @@ The compiler is capable of producing good enough code at the level of individual
 
 The compiler is also able to analyze functions and take into account the resulting characteristics. For example, optimize the case where a function never returns control.
 
-However, the intermediate layer between these two is effectively absent. The compiler does not break the algorithm into a graph of basic blocks, does not discover the actual lifetime of variables, and does not perform global register allocation and so on. This limitation is due to the lack of a suitable intermediate representation.
+However, the intermediate layer between these two is effectively absent. The compiler does not break the algorithm into a graph of basic blocks, does not discover the actual lifetime of variables, does not perform global register allocation and so on. This limitation is due to the lack of a suitable intermediate representation.
 
 Supported and planned targets:
 
@@ -63,4 +63,14 @@ Supported and planned targets:
 
 **Why ARM, RISC-V.** These are modern platforms. The compiler have to support them in order to be more than a toy. Although the architecture of the code generator doesn't seem very suitable for these ISAs.
 
-**Why QBE?** QBE is an independent backend that provides a proper level of abstractions for performing optimizations. It is also small and simple that fits well with the Qod design and goals. It supports AMD64, ARM64, RISC-V64 out of box. With a well-defined intermediate language, it is theoretically possible to transparently replace vanilla QBE with another implementation that provides a better level of optimizations.
+**Why QBE.** QBE is an independent backend that provides a proper level of abstractions for performing optimizations. It is also small and simple that fits well with the Qod design and goals. It supports AMD64, ARM64, RISC-V64 out of box. With a well-defined intermediate language, it is theoretically possible to transparently replace vanilla QBE with another implementation that provides a better level of optimizations.
+
+## Licensing
+
+* [src/](src/), [precompiled/](precompiled/): The qodc source codes and binaries are provided under the term specified in [LICENSE.TXT](LICENSE.TXT)
+* [src/tests/](src/tests/): The qodc test files are provided under the term of [0BSD license](src/tests/LICENSE.TXT). (See also: https://opensource.org/license/0bsd)
+* Any files in the [extra/](extra/) directory are provided under the terms of 0BSD license, unless otherwise stated.
+* Third party software included in this repository:
+  * [3rd-party/fasm/](3rd-party/fasm/): FASM is a software by Tomasz Grysztar, provided under the term specified in [3rd-party/fasm/license.txt](3rd-party/fasm/license.txt). The project's web site: https://flatassembler.net/
+  * [3rd-party/context/](3rd-party/context/): Context Compiler is a software by Andrei Hohlov, provided under the term specified in [3rd-party/context/README](3rd-party/context/README). The project's web site: https://avhohlov.narod.ru/
+
