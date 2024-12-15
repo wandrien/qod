@@ -2,7 +2,7 @@
 
 Qod is an experimental system-level compiled language, that I slowly develop in my spare time.
 
-The source code origins root deep into history. I took as a basis the source code of [the educational language Context by Andrei Hohlov](https://avhohlov.narod.ru/). Context was initially developed for MS-DOS in the mid 90's. Later it was ported to Win32 and Linux.
+The source code origins root deep into history. I took as a basis the source code of [the educational language Context by Andrei Hohlov](https://web.archive.org/web/20161209204032/http://www.avhohlov.narod.ru/). Context was initially developed for MS-DOS in the mid 90's. Later it was ported to Win32 and Linux.
 
 The source code wasn't well-designed nor perfectly suited for my purposes, but hacking on it was fun. So I spent a fair amount of time refactoring the codebase, improving the generated code, and redesigning the language. The language itself is still far from what I planned, and the languages design is in development. So no language specification is available right now.
 
@@ -72,4 +72,4 @@ Supported and planned targets:
 * Any files in the [extra/](extra/) directory are provided under the terms of 0BSD license, unless otherwise stated.
 * Third party software included in this repository:
   * [3rd-party/fasm/](3rd-party/fasm/): FASM is a software by Tomasz Grysztar, provided under the terms specified in [3rd-party/fasm/license.txt](3rd-party/fasm/license.txt). The project's web site: https://flatassembler.net/
-  * [3rd-party/context/](3rd-party/context/): Context Compiler is a software by Andrei Hohlov, provided under the terms specified in [3rd-party/context/README](3rd-party/context/README). The project's web site: https://avhohlov.narod.ru/
+  * [3rd-party/context/](3rd-party/context/): Context Compiler is a software by Andrei Hohlov, provided under the terms specified in [3rd-party/context/README](3rd-party/context/README). The project's web site: https://web.archive.org/web/20161209204032/http://www.avhohlov.narod.ru/
