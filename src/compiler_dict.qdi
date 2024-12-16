@@ -458,8 +458,11 @@ word T_GetIntegerPair(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	when Dict[T].tCachedIntegerPair == nDICT:
+	if Dict[T].tCachedIntegerPair == nDICT then
+		word tPair = T_GetIntegerPair_(T);
 		Dict[T].tCachedIntegerPair = T_GetIntegerPair_(T);
+		Dict[tPair].tCachedIntegerPair = tPair;
+	end
 
 	return Dict[T].tCachedIntegerPair;
 end
@@ -662,18 +665,16 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 		when P1 == nDICT & P2 == nDICT:
 			return true;
 
-		when P1 == nDICT & P2 != nDICT:
-			exit;
-		when P1 != nDICT & P2 == nDICT:
-			exit;
-		when Dict[P1].pType != Dict[P2].pType:
-			exit;
+		when P1 == nDICT:
+			return false;
+		when P2 == nDICT:
+			return false;
+		when !T_Equal(Dict[P1].pType, Dict[P2].pType):
+			return false;
 
 		P1 = Dict[P1].pNext;
 		P2 = Dict[P2].pNext;
 	end:forever
-
-	return false;
 end
 
 word T_FuncTypeForFunction(word F)
