@@ -198,7 +198,7 @@ word StringNode()
 	ScanString(D);
 
 	word P = Peek();
-	Node[P].ID    = iSTRING;
+	Node[P].ID = iSTRING;
 	NodeSetDict(P, D);
 
 	return P;
@@ -208,17 +208,20 @@ word StringNode__FILE__()
 	char @Value = @CurrentFileInfo.FileName;
 	word i = strlen(@Value) + 1;
 
-	word D = DictAlloc();
-	Dict[D].Class = cLITERAL;
-	Dict[D].RO = ROStrings;
-	DictSetName(D, "");
-	Dict[D].pType = T_PtrTo(st_char);
-	Dict[D].LiteralValue = SaveString(@Value, i);
-	Dict[D].nLiteralSize = i;
+	if pCurrentFileLiteral == nDICT & ROStrings == 1 then
+		word D = DictAlloc();
+		Dict[D].Class = cLITERAL;
+		Dict[D].RO = ROStrings;
+		DictSetName(D, "");
+		Dict[D].pType = T_PtrTo(st_char);
+		Dict[D].LiteralValue = SaveString(@Value, i);
+		Dict[D].nLiteralSize = i;
+		pCurrentFileLiteral = D;
+	end
 
 	word P = Peek();
-	Node[P].ID    = iSTRING;
-	NodeSetDict(P, D);
+	Node[P].ID = iSTRING;
+	NodeSetDict(P, pCurrentFileLiteral);
 
 	return P;
 end

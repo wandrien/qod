@@ -1,0 +1,3 @@
+void inc2()
+	puts(__FILE__); puts(" ");
+end

@@ -12,12 +12,13 @@ struct FILE of
 	word     nText;     // Длина блока
 	word     pText;     // Текущая позиция
 	SOURCELOCATION Info;
+	word     pCurrentFileLiteral;
 end
 
 /*****************************************************************************/
 
 FILE     File[nFILE]; /* Стек включаемых файлов. */
-word    nFile;        /* Количество объектов в стеке. */
+int     nFile;        /* Количество объектов в стеке. */
 
 /*****************************************************************************/
 
@@ -64,6 +65,7 @@ void PopCurrentFile()
 	nText = File[nFile].nText;
 	pText = File[nFile].pText;
 	CurrentFileInfo = File[nFile].Info;
+	pCurrentFileLiteral = File[nFile].pCurrentFileLiteral;
 	pFile = pFile - nTEXT;
 end
 
@@ -165,7 +167,10 @@ void IncludeFile(char @FileName)
 	File[nFile].nText = nText;
 	File[nFile].pText = pText;
 	File[nFile].Info = CurrentFileInfo;
+	File[nFile].pCurrentFileLiteral = pCurrentFileLiteral;
 	inc  nFile;
+
+	pCurrentFileLiteral = nDICT;
 
 	/* Выделяем новый кусок под буфер для чтения данных из файла. */
 	pFile = pFile + nTEXT;

@@ -1,0 +1,6 @@
+
+include "__FILE__.inc2.qdi";
+
+void inc1()
+	puts(__FILE__); puts(" ");
+end

@@ -1,10 +1,12 @@
-// TEST: should_print 'tests/__FILE__.qd tests/__FILE__.qd tests/__FILE__.qd '
+// TEST: should_print 'tests/__FILE__.qd tests/__FILE__.qd tests/__FILE__.qd tests/__FILE__.inc1.qdi tests/__FILE__.inc2.qdi '
 
 include "../include/test_env.qdi";
 
 void f1()
 	puts(__FILE__); puts(" ");
 end
+
+include "__FILE__.inc1.qdi";
 
 char@ f2()
 	return __FILE__;
@@ -18,4 +20,6 @@ end
 
 begin
 	foo();
+	inc1();
+	inc2();
 end

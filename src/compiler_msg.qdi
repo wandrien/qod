@@ -4,6 +4,7 @@
 /* Информация о текущем файле. */
 
 SOURCELOCATION CurrentFileInfo;
+word pCurrentFileLiteral = nDICT;
 
 /*****************************************************************************/
 
