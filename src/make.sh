@@ -345,11 +345,15 @@ run_valgrind()
 		return
 	fi
 
-	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR}\n"
-	"$VALGRIND" --tool=callgrind \
-		--callgrind-out-file=callgrind.out."$compiler_name" \
-		--dump-instr=yes \
-		"$compiler_c" ctx4lnx.qd --optimize speed --linux --output "$compiler_c".callgrind.asm
+	for optim in speed size none ; do
+		local callgrind_out="$compiler_c".$optim.callgrind.out
+		local asm="$compiler_c".callgrind.$optim.asm
+		printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=callgrind${CODE_COLOR_NOCOLOR} (--optimize $optim)\n"
+		"$VALGRIND" --tool=callgrind \
+			--callgrind-out-file="$callgrind_out" \
+			--dump-instr=yes \
+			"$compiler_c" ctx4lnx.qd --optimize $optim --linux --output "$asm"
+	done
 
 	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
 	"$VALGRIND" --tool=memcheck \
