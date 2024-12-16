@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Тип выражения в операторе as_signed может быть только целым'
+
+include "../include/test_env.qdi";
+
+begin
+	char c = 'a';
+	int i = as_signed(c);
+	put_int(i); puts(" ");
+end

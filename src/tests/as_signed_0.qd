@@ -1,0 +1,51 @@
+// TEST: should_print '10 -10 10 -10 10 -10 '
+
+include "../include/test_env.qdi";
+
+void f1() of
+	uint8 a1 = 10;
+	int8 a2 = as_signed(a1);
+	a1 = as_unsigned(-a2);
+	int8 a3 = as_signed(a1);
+	put_int(a2); puts(" ");
+	put_int(a3); puts(" ");
+
+	when typeof(as_signed(a1)) != int8:
+		puts("OOPS ");
+	when typeof(as_unsigned(as_signed(a1))) != uint8:
+		puts("OOPS ");
+end
+
+void f2() of
+	uint16 a1 = 10;
+	int16 a2 = as_signed(a1);
+	a1 = as_unsigned(-a2);
+	int16 a3 = as_signed(a1);
+	put_int(a2); puts(" ");
+	put_int(a3); puts(" ");
+
+	when typeof(as_signed(a1)) != int16:
+		puts("OOPS ");
+	when typeof(as_unsigned(as_signed(a1))) != uint16:
+		puts("OOPS ");
+end
+
+void f3() of
+	uint32 a1 = 10;
+	int32 a2 = as_signed(a1);
+	a1 = as_unsigned(-a2);
+	int32 a3 = as_signed(a1);
+	put_int(a2); puts(" ");
+	put_int(a3); puts(" ");
+
+	when typeof(as_signed(a1)) != int32:
+		puts("OOPS ");
+	when typeof(as_unsigned(as_signed(a1))) != uint32:
+		puts("OOPS ");
+end
+
+begin
+	f1();
+	f2();
+	f3();
+end
