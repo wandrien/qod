@@ -460,8 +460,8 @@ word T_GetIntegerPair(word T)
 
 	if Dict[T].tCachedIntegerPair == nDICT then
 		word tPair = T_GetIntegerPair_(T);
-		Dict[T].tCachedIntegerPair = T_GetIntegerPair_(T);
-		Dict[tPair].tCachedIntegerPair = tPair;
+		Dict[T].tCachedIntegerPair = tPair;
+		Dict[tPair].tCachedIntegerPair = T;
 	end
 
 	return Dict[T].tCachedIntegerPair;

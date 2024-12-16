@@ -489,24 +489,35 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	case pTypeTo == st_void:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-	case pTypeTo == pTypeFrom:
-		pass;
 	case T_Equal(pTypeTo, pTypeFrom):
 		pass;
 	case (T_IsInteger(pTypeTo) | pTypeTo == st_char)&
 	     (T_IsInteger(pTypeFrom) | pTypeFrom == st_char):
 		word SizeTo = T_SizeOf(pTypeTo);
 		word SizeFrom = T_SizeOf(pTypeFrom);
+		/*
+			unsigned(16) into unsigned(32)  zero-extension
+			unsigned(16) into signed(32)    zero-extension
+			signed(16) into signed(32)      sign-extension
+			signed(16) into unsigned(32)    sign-extension
+		*/
 		if SizeTo > SizeFrom then
-			Complexity = 1;
-			word Mask;
-			switch SizeFrom of
-			case 1: Mask = 0xFF;
-			case 2: Mask = 0xFFFF;
-			default: StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			end:switch
-			if @Buff != NULL then
-				Emit(@CodeCmdRegConst(@Buff, "and", Reg, SizeTo, Mask));
+			if T_IsSigned(pTypeFrom) then
+				Complexity = 1;
+				if @Buff != NULL then
+					Emit(@CodeCmdRegReg(@Buff, "movsx", Reg, SizeTo, Reg, SizeFrom));
+				end:if
+			else
+				Complexity = 1;
+				word Mask;
+				switch SizeFrom of
+				case 1: Mask = 0xFF;
+				case 2: Mask = 0xFFFF;
+				default: StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+				end:switch
+				if @Buff != NULL then
+					Emit(@CodeCmdRegConst(@Buff, "and", Reg, SizeTo, Mask));
+				end:if
 			end:if
 		end:if
 	case T_IsPtr(pTypeTo) & T_IsPtr(pTypeFrom):
@@ -633,7 +644,7 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 			return RecursiveResult;
 		ValueRef_Apply_FIELD(@Ref, pPrimary);
 
-	case iCAST:
+	case iCAST, iREINTERPRET_CAST:
 		return QueryOperandStatus_CAST(pPrimary, @_Q);
 	default:
 		return false;
@@ -759,7 +770,7 @@ bool CodeRequiresSingleRegister_(word P)
 		return false;
 	case iBIT_NOT, iNEG:
 		return CodeRequiresSingleRegister_(Node[P].pLeft);
-	case iCAST:
+	case iCAST, iREINTERPRET_CAST:
 		word pTypeFrom = Node[Node[P].pLeft].pType;
 		word pTypeTo = Node[P].pType;
 		when !CodeRequiresSingleRegister_(Node[P].pLeft):
@@ -912,7 +923,7 @@ word TryDropCastBeforeCmp(word P)
 	when Node[pRight].Value > 255: /* TODO: this case should be optimized out on the semantic analysis phase */
 		return nNODE;
 
-	when Node[pLeft].ID != iCAST:
+	when Node[pLeft].ID != iCAST & Node[pLeft].ID != iREINTERPRET_CAST:
 		return nNODE;
 
 	word pTypeFrom = Node[Node[pLeft].pLeft].pType;
@@ -1766,7 +1777,7 @@ word Code(word P)
 	     iCALL, iCALL2, iINDEX, iLPTR, iADDR, iFIELD:
 		return CodePrimaryWrapped(P);
 
-	case iCAST:
+	case iCAST, iREINTERPRET_CAST:
 		word pTypeFrom = Code(Node[P].pLeft);
 		word pTypeTo = Node[P].pType;
 		word Complexity = 0;

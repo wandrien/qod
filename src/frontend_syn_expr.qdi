@@ -1195,6 +1195,44 @@ end
 
 /*****************************************************************************/
 
+word ExprAsSigned(word P1; word O; char @Buff)
+	word P = ExprInParentheses(@Scan(@Buff), @OperatorGetName(O));
+	select
+	case T_IsUnsigned(Node[P].pType):
+		word pTypeCastTo = T_GetIntegerPair(Node[P].pType);
+		when !T_IsSigned(pTypeCastTo):
+			StopInternal(__FILE__, __LINE__);
+		AddReinterpretCast(pTypeCastTo, @P);
+	case T_IsSigned(Node[P].pType):
+		pass;
+	default:
+		Error(@eWRONGTYPE_AS_SIGNED);
+		ErrorWithSubject(@eWRONGTYPE_2NDLINE, @T_GetName(Node[P].pType));
+		AddFakeCast(st_int, @P);
+	end:select
+	return P;
+end
+
+word ExprAsUnsigned(word P1; word O; char @Buff)
+	word P = ExprInParentheses(@Scan(@Buff), @OperatorGetName(O));
+	select
+	case T_IsSigned(Node[P].pType):
+		word pTypeCastTo = T_GetIntegerPair(Node[P].pType);
+		when !T_IsUnsigned(pTypeCastTo):
+			StopInternal(__FILE__, __LINE__);
+		AddReinterpretCast(pTypeCastTo, @P);
+	case T_IsUnsigned(Node[P].pType):
+		pass;
+	default:
+		Error(@eWRONGTYPE_AS_SIGNED);
+		ErrorWithSubject(@eWRONGTYPE_2NDLINE, @T_GetName(Node[P].pType));
+		AddFakeCast(st_int, @P);
+	end:select
+	return P;
+end
+
+/*****************************************************************************/
+
 word Expr_GuardedExpr(char @Buff; ExprGuard @Guard; char @Msg; char @ExprName)
 	word P = ExprInParentheses(@Buff, @ExprName);
 	if !Guard(P) then
@@ -1395,6 +1433,9 @@ void RegisterOperators()
 	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("(*"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("(%"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+
+	RegisterOperator("as_signed", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprAsSigned);
+	RegisterOperator("as_unsigned", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprAsUnsigned);
 
 	RegisterOperator("type_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeExpr);
 	RegisterOperator("const_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprConstExpr);

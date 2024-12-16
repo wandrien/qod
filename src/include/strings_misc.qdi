@@ -47,11 +47,11 @@ char @istr(int Value)
 
 	if Value >= 0 then
 		return @str2(Value, 10);
+	else
+		istr_return_buff[0] = '-';
+		strcpy(@istr_return_buff[1], @str2(-Value, 10));
+		return @istr_return_buff;
 	end:if
-
-	istr_return_buff[0] = '-';
-	strcpy(@istr_return_buff[1], @str2(-Value, 10));
-	return @istr_return_buff;
 end
 
 /*****************************************************************************/

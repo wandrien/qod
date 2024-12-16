@@ -90,6 +90,10 @@ define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе ко
 define @eNOTASTATICEXPR  "Значение выражения не является статическим"
 define @eNOTATANGIBLEEXPR "Значение выражения не материализуемо"
 
+define @eWRONGTYPE_AS_UNSIGNED "Тип выражения в операторе as_unsigned может быть только целым"
+define @eWRONGTYPE_AS_SIGNED "Тип выражения в операторе as_signed может быть только целым"
+define @eWRONGTYPE_2NDLINE "... тип выражения"
+
 define @eWRONGEND_STRUCT "Получен 'end' в объявлении структуры, но ожидалось '}'"
 define @eWRONGBRACE_STRUCT "Получен '}' в объявлении структуры, но ожидалось 'end'"
 define @eWRONGEND_NAMESPACE "Получен 'end' в объявлении пространства имён, но ожидалось '}'"

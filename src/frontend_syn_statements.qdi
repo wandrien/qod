@@ -557,6 +557,15 @@ end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
+	/*
+		TODO: complete scheme to be implemented:
+		name : expr [ = expr2 ]
+		name : expr [ of codeblock ]
+		expr = expr2
+		expr [@] name [suffix] [ = expr2 ]
+		expr [@] name [suffix] [ of codeblock ]
+	*/
+
 	word pLValue = Expr(PRIO_LVALUE, @Buff);
 
 	when pLValue == nNODE:

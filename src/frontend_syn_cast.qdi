@@ -13,17 +13,30 @@ end
 
 /*****************************************************************************/
 
-void AddCast(word pType1; word @P)
+void AddReinterpretCast(word pTypeCastTo; word @P)
+	word P1 = Peek();
+	Node[P1].ID    = iREINTERPRET_CAST;
+	Node[P1].pType = pTypeCastTo;
+	Node[P1].pLeft = P;
+
+	P = P1;
+
+	CTE(P);
+end
+
+/*****************************************************************************/
+
+void AddCast(word pTypeCastTo; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
-	if pType1 == st_int & Node[P].ID == iLITERAL & Node[P].pType == st_word then
-		Node[P].pType = pType1;
+	if pTypeCastTo == st_int & Node[P].ID == iLITERAL & Node[P].pType == st_word then
+		Node[P].pType = pTypeCastTo;
 		return;
 	end
 
 	word P1 = Peek();
 	Node[P1].ID    = iCAST;
-	Node[P1].pType = pType1;
+	Node[P1].pType = pTypeCastTo;
 	Node[P1].pLeft = P;
 
 	P = P1;

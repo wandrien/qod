@@ -58,7 +58,7 @@ define  iEMPTY       0 // Пустой узел
 define  iNULL        1 // NULL
 define  iLITERAL     2 // Литеральное значение
 define  iTYPE        3 //
-//define  iUNUNSED4    4 //
+//define  iUNUSED4    4 //
 define  iFUNC        5 // Ссылка на функцию
 define  iSTRING      6 // Ссылка на стpоку
 define  iDATA        7 // Глобальная пеpеменная
@@ -94,7 +94,7 @@ define  iCALL2      32 // Косвенный вызов функции
 define  iINDEX      33 // Индексация массива
 define  iADDR       34 // Индексация указателя
 define  iFIELD      35 // Обращение к полю структуры
-//define  iUNUNSED36  36 //
+//define  iUNUSED36  36 //
 define  iLPTR       37 // Загpузка адpеса переменной
 
 define  iDEF_LOCAL  38 // Опpеделение локальной пеpеменной
@@ -118,7 +118,7 @@ define  iCASE       54 // ветка select или switch
 define  iVALUE      55 //
 define  iDEFAULT    56 //
 
-//define  iUNUNSED57  57 //
+define  iREINTERPRET_CAST 57
 
 define  iNOT        58
 

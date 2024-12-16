@@ -116,6 +116,7 @@ void InitializeIDDesc()
 	InitIDDesc1(iCONTINUE, "iCONTINUE");
 	InitIDDesc1(iEXIT   , "iEXIT"   );
 	InitIDDesc1(iCAST   , "iCAST"   );
+	InitIDDesc1(iREINTERPRET_CAST, "iREINTERPRET_CAST");
 	InitIDDesc1(iFAKE_CAST, "iFAKE_CAST");
 	InitIDDesc2(iINC    , "iINC"    , vcNone, 1);
 	InitIDDesc2(iDEC    , "iDEC"    , vcNone, 1);

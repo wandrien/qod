@@ -96,6 +96,8 @@ void InitFrontEnd()
 	RegisterComment("//", "~n");
 	RegisterHereCommentPrefix("$comment");
 
+	Word("as_signed");
+	Word("as_unsigned");
 	Word("begin");
 	Word("bitsizeof");
 	Word("case");
