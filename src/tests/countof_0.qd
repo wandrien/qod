@@ -1,0 +1,9 @@
+// TEST: should_print '10 '
+
+include "../include/test_env.qdi";
+
+begin
+	uint32 arr[10];
+
+	puts(@str(countof(arr))); puts(" ");
+end

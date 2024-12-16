@@ -1,4 +1,4 @@
-// TEST: should_print '8 16 64 128 '
+// TEST: should_print '8 8 16 16 64 64 128 128 '
 
 include "../include/test_env.qdi";
 
@@ -11,11 +11,17 @@ struct BBB of
 	uint64 b;
 end
 
+AAA a;
+BBB b;
 
 begin
 	puts(@str(sizeof(AAA))); puts(" ");
+	puts(@str(sizeof(a))); puts(" ");
 	puts(@str(sizeof(BBB))); puts(" ");
+	puts(@str(sizeof(b))); puts(" ");
 
 	puts(@str(bitsizeof(AAA))); puts(" ");
+	puts(@str(bitsizeof(a))); puts(" ");
 	puts(@str(bitsizeof(BBB))); puts(" ");
+	puts(@str(bitsizeof(b))); puts(" ");
 end

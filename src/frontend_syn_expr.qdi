@@ -431,30 +431,6 @@ end
 
 /*****************************************************************************/
 
-word ParseXOfTypeArgs(char @Buff)
-	word b = LookupBracket(BracketType_Parentheses, @Buff);
-	if b == BRACKET_INVALID then
-		Stop(@eBRACKETEXP);
-	end:if
-
-	Scan(@Buff);
-	word I = ResolveGlobal(@Buff, NULL);
-	if I>=nDict then
-		StopWithSubject(@eUNDECLARED, @Buff);
-	end:if
-
-	when Dict[I].Class != cTYPE:
-		StopWithSubject(@eNOTATYPE, @Buff);
-
-	if !str_eq(@Buff,@Bracket[b].RightBracket) then
-		Stop(@eBRACKETEXP);
-	end:if
-
-	return I;
-end
-
-/*****************************************************************************/
-
 word ExprInParentheses(char @Buff; char @ExprName)
 	word b = LookupBracket(BracketType_Parentheses, @Buff);
 	if b == BRACKET_INVALID then
@@ -490,37 +466,6 @@ word Primary(word Prty; char @Buff)
 	if str_eq(@Buff,"__LINE__") then
 		word P1 = Peek();
 		NodeAssignWord(P1, CurrentFileInfo.Line);
-		Scan(@Buff);
-		return P1;
-	end
-
-	if str_eq(@Buff,"sizeof") then
-		word I = ParseXOfTypeArgs(@Scan(@Buff));
-		word P1 = Peek();
-		NodeAssignWord(P1, T_SizeOf(I));
-		Scan(@Buff);
-		return P1;
-	end
-
-	if str_eq(@Buff,"bitsizeof") then
-		word I = ParseXOfTypeArgs(@Scan(@Buff));
-		word P1 = Peek();
-		word Size = T_SizeOf(I);
-		word BitSize = Size * 8;
-		when BitSize < Size:
-			Stop(@eBITSIZEOVERFLOW);
-		NodeAssignWord(P1, BitSize);
-		Scan(@Buff);
-		return P1;
-	end
-
-	if str_eq(@Buff,"countof") then
-		/* TODO: Невозможно протестировать, не реализован конструктор типа. */
-		word I = ParseXOfTypeArgs(@Scan(@Buff));
-		word P1 = Peek();
-		when !T_IsArray(I):
-			Stop(@eCOUNTOFREQARR);
-		NodeAssignWord(P1, T_ArrayGetLen(I));
 		Scan(@Buff);
 		return P1;
 	end
@@ -1299,6 +1244,43 @@ end
 
 /*****************************************************************************/
 
+word TypeOrTypeOf(word P)
+	if IsTypeExpr(P) then
+		return Node[P].Value;
+	else
+		return Node[P].pType;
+	end:if
+end
+
+word ExprSizeOf(word _P1; word O; char @Buff)
+	word pType = TypeOrTypeOf(ExprInParentheses(@Scan(@Buff), @OperatorGetName(O)));
+	word P1 = Peek();
+	NodeAssignWord(P1, T_SizeOf(pType));
+	return P1;
+end
+
+word ExprBitsizeOf(word _P1; word O; char @Buff)
+	word pType = TypeOrTypeOf(ExprInParentheses(@Scan(@Buff), @OperatorGetName(O)));
+	word Size = T_SizeOf(pType);
+	word BitSize = Size * 8;
+	when BitSize < Size:
+		Stop(@eBITSIZEOVERFLOW);
+	word P1 = Peek();
+	NodeAssignWord(P1, BitSize);
+	return P1;
+end
+
+word ExprCountOf(word _P1; word O; char @Buff)
+	word pType = TypeOrTypeOf(ExprInParentheses(@Scan(@Buff), @OperatorGetName(O)));
+	when !T_IsArray(pType):
+		Stop(@eCOUNTOFREQARR);
+	word P1 = Peek();
+	NodeAssignWord(P1, T_ArrayGetLen(pType));
+	return P1;
+end
+
+/*****************************************************************************/
+
 word ExprLitChar(word P_; word O; char @Buff)
 
 	word P1=Peek();
@@ -1451,6 +1433,9 @@ void RegisterOperators()
 	RegisterOperator("is_tangible_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTangibleExpr);
 
 	RegisterOperator("typeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeOf);
+	RegisterOperator("sizeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprSizeOf);
+	RegisterOperator("bitsizeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprBitsizeOf);
+	RegisterOperator("countof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprCountOf);
 
 	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
 	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);

@@ -1,15 +1,30 @@
-// TEST: should_print '1 1 4 4 8 8 32 32 '
+// TEST: should_print '1 1 4 4 | 4 40 | 8 8 32 32 | 32 320 '
 
 include "../include/test_env.qdi";
 
 begin
+	uint32 x;
+	uint32 arr[10];
+
 	puts(@str(sizeof(char))); puts(" ");
 	puts(@str(sizeof(byte))); puts(" ");
-	puts(@str(sizeof(word))); puts(" ");
-	puts(@str(sizeof(int))); puts(" ");
+	puts(@str(sizeof(uint32))); puts(" ");
+	puts(@str(sizeof(int32))); puts(" ");
+
+	puts("| ");
+
+	puts(@str(sizeof(x))); puts(" ");
+	puts(@str(sizeof(arr))); puts(" ");
+
+	puts("| ");
 
 	puts(@str(bitsizeof(char))); puts(" ");
 	puts(@str(bitsizeof(byte))); puts(" ");
-	puts(@str(bitsizeof(word))); puts(" ");
-	puts(@str(bitsizeof(int))); puts(" ");
+	puts(@str(bitsizeof(uint32))); puts(" ");
+	puts(@str(bitsizeof(int32))); puts(" ");
+
+	puts("| ");
+
+	puts(@str(bitsizeof(x))); puts(" ");
+	puts(@str(bitsizeof(arr))); puts(" ");
 end

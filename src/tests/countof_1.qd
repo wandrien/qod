@@ -1,0 +1,9 @@
+// TEST: compilation_should_fail 'Для countof() требуется тип массива'
+
+include "../include/test_env.qdi";
+
+begin
+	uint32 x;
+
+	puts(@str(countof(x))); puts(" ");
+end
