@@ -231,9 +231,9 @@ char CodeOffsetAddenum_Buff[nBUFF];
 char @CodeOffsetAddenum(int Offset)
 	select
 	case Offset > 0:
-		strcpy2(@CodeOffsetAddenum_Buff,"+",@str(Offset));
+		strcpy2(@CodeOffsetAddenum_Buff,"+",@istr(Offset));
 	case Offset < 0:
-		strcpy2(@CodeOffsetAddenum_Buff,"-",@str(-Offset));
+		strcpy2(@CodeOffsetAddenum_Buff,"-",@istr(-Offset));
 	default:
 		CodeOffsetAddenum_Buff[0] = #0;
 	end:select
@@ -305,14 +305,16 @@ void ValueRef_ExtractDataInfo(ValueRef @Ref; word P)
 	switch Ref.ID of
 	case iDATA:
 		Ref.pType  = Dict[Value].pType;
-		Ref.Offset = Dict[Value].Label;
+		Ref.Offset = as_signed(Dict[Value].Label);
+		when Ref.Offset < 0:
+			StopInternal(__FILE__, __LINE__);
 		Ref.RO     = 0;
 
 	case iPARM:
 		when Dict[Value].Class != cARG:
 			StopInternal(__FILE__, __LINE__);
 		Ref.pType  = Dict[Value].pType;
-		Ref.Offset = Dict[Value].Label;
+		Ref.Offset = as_signed(Dict[Value].Label);
 		Ref.RO     = 0;
 
 	case iLOCAL:
@@ -322,7 +324,7 @@ void ValueRef_ExtractDataInfo(ValueRef @Ref; word P)
 
 	case iSTRING:
 		Ref.pType  = Dict[Value].pType;
-		Ref.Offset = Dict[Value].Label;
+		Ref.Offset = as_signed(Dict[Value].Label);
 		Ref.RO     = Dict[Value].RO;
 
 	default:
@@ -467,12 +469,12 @@ char @CodeMemRef_Reg_Mult_Reg_Offset(char @Buff; word Size; word Reg1; word Reg2
 
 	select
 	case Offset > 0:
-		strcat2(@Buff, "+", @str(Offset));
+		strcat3(@Buff, "+", @istr(Offset), "]");
 	case Offset < 0:
-		strcat2(@Buff, "-", @str(-Offset));
+		strcat3(@Buff, "-", @istr(-Offset), "]");
+	default:
+		strcat(@Buff, "]");
 	end:select
-
-	strcat(@Buff, "]");
 
 	return @Buff;
 end

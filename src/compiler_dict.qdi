@@ -129,7 +129,7 @@ end
 
 void DictFree(word @D)
 	Dict[D].Used = 0;
-	Dict[D].Class = word(-1);
+	Dict[D].Class = cNONE;
 	Dict[D].Sub = sNONE;
 	DictSetName(D, "<None>");
 	@D = NULL;
@@ -256,7 +256,7 @@ end
 /*****************************************************************************/
 
 /* Регистрирует базовый тип. */
-word BaseType(char @Name; word TypeDomain; word Size)
+word BaseType(char @Name; byte TypeDomain; word Size)
 	word p = DictAlloc();
 	DictSetName(p, @Name);
 	Dict[p].Class    = cTYPE;

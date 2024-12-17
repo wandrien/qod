@@ -231,8 +231,8 @@ void CTE(word P)
 			word v2 = Node[pRight].Value;
 			NodeAssignWord(P, v1 + v2);
 		case Node[pLeft].pType == st_int:
-			int v1 = Node[pLeft].Value;
-			int v2 = Node[pRight].Value;
+			int v1 = as_signed(Node[pLeft].Value);
+			int v2 = as_signed(Node[pRight].Value);
 			NodeAssignInt(P, v1 + v2);
 		end:select
 	case iSUB:
@@ -242,8 +242,8 @@ void CTE(word P)
 			word v2 = Node[pRight].Value;
 			NodeAssignWord(P, v1 - v2);
 		case Node[pLeft].pType == st_int:
-			int v1 = Node[pLeft].Value;
-			int v2 = Node[pRight].Value;
+			int v1 = as_signed(Node[pLeft].Value);
+			int v2 = as_signed(Node[pRight].Value);
 			NodeAssignInt(P, v1 - v2);
 		end:select
 	case iMUL:
@@ -253,8 +253,8 @@ void CTE(word P)
 			word v2 = Node[pRight].Value;
 			NodeAssignWord(P, v1 * v2);
 		case Node[pLeft].pType == st_int:
-			int v1 = Node[pLeft].Value;
-			int v2 = Node[pRight].Value;
+			int v1 = as_signed(Node[pLeft].Value);
+			int v2 = as_signed(Node[pRight].Value);
 			NodeAssignInt(P, v1 * v2);
 		end:select
 	case iDIV:
@@ -264,8 +264,8 @@ void CTE(word P)
 			word v2 = Node[pRight].Value;
 			NodeAssignWord(P, v1 / v2);
 		case Node[pLeft].pType == st_int:
-			int v1 = Node[pLeft].Value;
-			int v2 = Node[pRight].Value;
+			int v1 = as_signed(Node[pLeft].Value);
+			int v2 = as_signed(Node[pRight].Value);
 			NodeAssignInt(P, v1 / v2);
 		end:select
 	case iMOD:

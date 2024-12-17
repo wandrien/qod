@@ -40,8 +40,8 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
   select
     case Message == WM_SIZE:
       if wParam!=SIZE_MINIMIZED then
-        Width =lParam % 0x10000;
-        Height=lParam / 0x10000;
+        Width =as_signed(lParam % 0x10000);
+        Height=as_signed(lParam / 0x10000);
 
         DeleteObject(hFont);
         CreateFont  ();
@@ -56,8 +56,8 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
 
       SIZE    s;
 
-      GetTextExtentPoint(hDC,@Hello,strlen(@Hello),@s);
-      TextOut(hDC,(Width-s.cx)/2,(Height-s.cy)/2,@Hello,strlen(@Hello));
+      GetTextExtentPoint(hDC,@Hello,int(strlen(@Hello)),@s);
+      TextOut(hDC,(Width-s.cx)/2,(Height-s.cy)/2,@Hello,int(strlen(@Hello)));
 
       SetBkMode   (hDC, BkMode0);
       SelectObject(hDC, hFont0);

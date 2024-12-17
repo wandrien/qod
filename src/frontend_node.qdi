@@ -175,7 +175,7 @@ void NodeAssignWord(word P; word Value)
 end
 
 void NodeAssignInt(word P; int Value)
-	NodeAssignLiteral(P, st_int, Value);
+	NodeAssignLiteral(P, st_int, as_unsigned(Value));
 end
 
 void NodeAssignBool(word P; bool Value)

@@ -13,17 +13,18 @@ define  _nCHAR  200000 // Длина таблицы CHAR.
 
 /*****************************************************************************/
 
-define  cWORD        0 // Заpезеpвиpованное слово
-define  cNAME        1 // Имя
-define  cLITERAL     2 // Литерал
-define  cTYPE        3 // Тип
-define  cDATA        4 // Глобальная пеpеменная
-define  cFUNC        5 // Функция
-define  cLIB         6 // Библиотека
-define  cFILE        7 // Включаемый файл
-define  cFIELD       8 // Поле структуры
-define  cARGS        9 // Пространство имён с аргументами функции
-define  cARG        10 // Аргумент функции
+define  cNONE        0
+define  cWORD        1 // Заpезеpвиpованное слово
+define  cNAME        2 // Имя
+define  cLITERAL     3 // Литерал
+define  cTYPE        4 // Тип
+define  cDATA        5 // Глобальная пеpеменная
+define  cFUNC        6 // Функция
+define  cLIB         7 // Библиотека
+define  cFILE        8 // Включаемый файл
+define  cFIELD       9 // Поле структуры
+define  cARGS       10 // Пространство имён с аргументами функции
+define  cARG        11 // Аргумент функции
 
 /*****************************************************************************/
 

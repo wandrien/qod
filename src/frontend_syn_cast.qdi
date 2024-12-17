@@ -72,10 +72,10 @@ bool IsLiteralAutoCastPossible(word pTypeTo; word P)
 			return true;
 		return false;
 	else
-		int Value = Node[P].Value;
-		when T_IsUnsigned(pTypeFrom) & (word(Value) > Max):
+		word Value = Node[P].Value;
+		when T_IsUnsigned(pTypeFrom) & (Value > Max):
 			return false;
-		when (int(Min) <= Value) & (Value <= int(Max)):
+		when (as_signed(Min) <= as_signed(Value)) & (as_signed(Value) <= as_signed(Max)):
 			return true;
 		return false;
 	end:if
@@ -86,7 +86,7 @@ end
 bool IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 
 	select
-	case pTypeFrom == pTypeTo:
+	case T_Equal(pTypeFrom, pTypeTo):
 		return true;
 	case T_IsPtr(pTypeFrom) & T_IsPtr(pTypeTo):
 		when pTypeFrom == T_PtrTo(st_void):
@@ -104,13 +104,7 @@ bool IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 		end:if
 
 		/* HACK: temporary rules to make self-compilation possible */
-		when pTypeFrom == st_word & pTypeTo == st_int:
-			return true;
-
 		when pTypeFrom == st_int & pTypeTo == st_word:
-			return true;
-
-		when pTypeFrom == st_word & pTypeTo == st_byte:
 			return true;
 		/* END HACK */
 	end:select

@@ -225,7 +225,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 				char @RX = @CodeReg(NULL, Ref.IX, 4);
 				if Ref.Offset != 0 then
 					strcpy3(@Buff,"lea     ",@TX,",  dword ");
-					strcat7(@Buff,"[",@TX,"+",@RX,"+",@str(Ref.Offset),"]");
+					strcat7(@Buff,"[",@TX,"+",@RX,"+",@istr(Ref.Offset),"]");
 					Emit(@Buff);
 				else
 					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@RX));
@@ -283,7 +283,7 @@ void Code_LPTR(word P1; ValueRef @Ref)
 				end
 			else
 				when Ref.Offset != 0:
-					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@str(Ref.Offset)));
+					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@istr(Ref.Offset)));
 			end
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
@@ -1245,7 +1245,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		word Value = Node[pRight].Value;
 		when ID == iSUB:
-			Value = -Value;
+			Value = as_unsigned(-Value);
 
 		switch Value of
 		case 1:
@@ -1792,7 +1792,7 @@ word Code(word P)
 
 	case iNEG:
 		if NodeIsLiteralWord(Node[P].pLeft) then
-			Emit_Load_Constant(Reg_TARGET, 4, -Node[Node[P].pLeft].Value);
+			Emit_Load_Constant(Reg_TARGET, 4, as_unsigned(-Node[Node[P].pLeft].Value));
 			return Node[P].pType;
 		end
 

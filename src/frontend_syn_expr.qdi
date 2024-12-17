@@ -63,13 +63,14 @@ end
 
 /* Парсинг строки в число. */
 word val(char @Buff)
-	word  Base;
-	word  P;
-
+	word Base;
+	int P;
 	int Len = 0;
 
 	forever do
-		word StrLen = strlen(@Buff);
+		int StrLen = int(strlen(@Buff));
+		when StrLen < 0:
+			StopInternal(__FILE__, __LINE__);
 		if StrLen > 1 then
 			char LastChar = Buff[StrLen - 1];
 			if StrLen > 1 & LastChar == 'h' | LastChar == 'H' then
@@ -104,7 +105,7 @@ word val(char @Buff)
 			end:switch
 		end:if
 
-		word k = str_find_chars(@Buff, "$");
+		int k = int(str_find_chars(@Buff, "$"));
 		select
 		/* Символ $ не найден - десятичное. */
 		case Buff[k] == #0:
@@ -155,7 +156,7 @@ word Tabl(char @Buff)
 		end
 
 		if T_IsSigned(Node[P].pType) then
-			int i = nIndx;
+			int i = as_signed(nIndx);
 			if i < 1 then
 				Error(@eARR_SIZE_LO_BOUND);
 				nIndx = 1;
@@ -193,7 +194,7 @@ end
 word StringNode()
 	word D = DictAlloc();
 	Dict[D].Class = cLITERAL;
-	Dict[D].RO = ROStrings;
+	Dict[D].RO = byte(ROStrings);
 	DictSetName(D, "");
 	ScanString(D);
 
@@ -211,7 +212,7 @@ word StringNode__FILE__()
 	if pCurrentFileLiteral == nDICT & ROStrings == 1 then
 		word D = DictAlloc();
 		Dict[D].Class = cLITERAL;
-		Dict[D].RO = ROStrings;
+		Dict[D].RO = byte(ROStrings);
 		DictSetName(D, "");
 		Dict[D].pType = T_PtrTo(st_char);
 		Dict[D].LiteralValue = SaveString(@Value, i);
@@ -848,7 +849,7 @@ void ApplyCommonType(word P_OP; word pType)
 	Node[P_OP].pType = pType;
 end
 
-void ApplyUACCastsForIntegers(word P_OP)
+void ApplyUACCastsForIntegers(word P_OP; word O)
 
 	/* Usual arithmetic conversions */
 
@@ -943,9 +944,9 @@ void ApplyUACCastsForIntegers(word P_OP)
 
 end
 
-void Cast2(word P_OP)
+void Cast2(word P_OP; word O)
 
-	ApplyUACCastsForIntegers(P_OP);
+	ApplyUACCastsForIntegers(P_OP, O);
 
 	word ID = Node[P_OP].ID;
 
@@ -1120,7 +1121,7 @@ word ExprBinOp(word P1; word O; char @Buff)
 	else
 		Node[P_OP].pLeft  = P1;
 		Node[P_OP].pRight = Expr(Operator[O].Prio, @Scan(@Buff));
-		Cast2(P_OP);
+		Cast2(P_OP, O);
 	end:if
 
 	return P_OP;

@@ -179,7 +179,9 @@ void EmitROData()
 		I = 0;
 		while I < nDict do
 			if (Dict[I].Class == cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
-				word len = Dict[I].nLiteralSize;
+				int len = as_signed(Dict[I].nLiteralSize);
+				when len < 0:
+					StopInternalCodegen(__FILE__, __LINE__);
 				next_len = int_max(next_len, len);
 			end
 			inc I;

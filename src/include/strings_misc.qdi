@@ -33,9 +33,9 @@ end
 
 char @istr(int Value)
 	if Value >= 0 then
-		return @str2(Value, 10, #0);
+		return @str2(as_unsigned(Value), 10, #0);
 	else
-		return @str2(-Value, 10, '-');
+		return @str2(as_unsigned(-Value), 10, '-');
 	end:if
 end
 
