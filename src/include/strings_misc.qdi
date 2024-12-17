@@ -1,56 +1,41 @@
 
 /*****************************************************************************/
 
-char str2_return_buff[40];
+char str2_return_buff[bitsizeof(word) + 2];
 
-char @str2(word Value; word Base)
+char @str2(word Value; word Base; char Sign)
 	char @Buff = @str2_return_buff;
 	char @Digit="0123456789ABCDEF";
 
-	word   I = 0;
-	while  Value > 0 | I == 0 do
-		Buff[I] = Digit[Value % Base];
-		inc  I;
-		Value = Value / Base;
-	end
-
+	word I = countof(str2_return_buff) - 1;
 	Buff[I] = #0;
+	repeat
+		dec I;
+		Buff[I] = Digit[Value % Base];
+		Value = Value / Base;
+	until Value == 0;
 
-	word J = 0;
-	word K = I - 1;
-	while J < K do
-		char C  = Buff[J];
-		Buff[J] = Buff[K];
-		Buff[K] = C;
-
-		dec  K;
-		inc  J;
+	if Sign != #0 then
+		dec I;
+		Buff[I] = Sign;
 	end
 
-	return @Buff;
+	return @Buff[I];
 end
 
 /*****************************************************************************/
 
 char @str(word Value)
-	return @str2(Value, 10);
+	return @str2(Value, 10, #0);
 end
 
 /*****************************************************************************/
 
-char istr_return_buff[40];
-
 char @istr(int Value)
-	if Value == -2147483648 then
-		return "-2147483648";
-	end:if
-
 	if Value >= 0 then
-		return @str2(Value, 10);
+		return @str2(Value, 10, #0);
 	else
-		istr_return_buff[0] = '-';
-		strcpy(@istr_return_buff[1], @str2(-Value, 10));
-		return @istr_return_buff;
+		return @str2(-Value, 10, '-');
 	end:if
 end
 

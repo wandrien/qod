@@ -1828,7 +1828,7 @@ word Code(word P)
 		return Code_ASSIGN(P);
 
 	case iINLINE:
-		Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16)));
+		Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16, #0)));
 
 	case iPUSH:
 		Code_PUSH(P, @Buff);
