@@ -509,14 +509,8 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 				end:if
 			else
 				Complexity = 1;
-				word Mask;
-				switch SizeFrom of
-				case 1: Mask = 0xFF;
-				case 2: Mask = 0xFFFF;
-				default: StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-				end:switch
 				if @Buff != NULL then
-					Emit(@CodeCmdRegConst(@Buff, "and", Reg, SizeTo, Mask));
+					Emit(@CodeCmdRegReg(@Buff, "movzx", Reg, SizeTo, Reg, SizeFrom));
 				end:if
 			end:if
 		end:if
@@ -1432,7 +1426,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				pass;
 			case ResultSize <= 4:
 				Buff[0] = #0;
-				Emit(@CodeCmdRegReg(@Buff, "movsx", Reg_TARGET, 4, Reg_TARGET, 1));
+				Emit(@CodeCmdRegReg(@Buff, "movzx", Reg_TARGET, 4, Reg_TARGET, 1));
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end
