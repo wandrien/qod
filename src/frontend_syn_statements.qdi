@@ -521,7 +521,7 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pType)
 		Node[P4].ID    =iEMPTY;
 		Node[P4].Value = N;
 
-		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
+		if str_eq(@Buff,"=") then
 			/*if Local[nLocal].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end:if*/
@@ -559,11 +559,10 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 	/*
 		TODO: complete scheme to be implemented:
-		name : expr [ = expr2 ]
-		name : expr [ of codeblock ]
 		expr = expr2
 		expr [@] name [suffix] [ = expr2 ]
 		expr [@] name [suffix] [ of codeblock ]
+		expr name [ = expr2 ] {, name [ = expr2 ]}
 	*/
 
 	word pLValue = Expr(PRIO_LVALUE, @Buff);
@@ -581,7 +580,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P3].ID    = iEMPTY;
 		Node[P3].pLeft = pLValue;
 
-		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
+		if str_eq(@Buff,"=") then
 			if !NodeIsLValue(Node[P3].pLeft) then
 				Error(@eLVALUE_IN_ASSIGNMENT);
 			end:if

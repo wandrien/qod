@@ -790,7 +790,7 @@ word Primary(word Prty; char @Buff)
 		end:select
 	end:forever
 
-	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) & (strcmp(@Buff,":=") != 0) then
+	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) then
 		if Call == 0 | nPtr > 0 then
 			Stop(@eASSIGNEXP);
 		end:if
@@ -1108,10 +1108,6 @@ end
 
 word ExprBinOp(word P1; word O; char @Buff)
 
-	if str_eq(@Buff, "=") then
-		Deprecated(@dprEQL);
-	end:if
-
 	word P_OP = Peek();
 	word ID = Operator[O].ID;
 	Node[P_OP].ID = ID;
@@ -1400,7 +1396,6 @@ void RegisterOperators()
 
 	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
 	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
-	RegisterOperator("="    , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
 	RegisterOperator("=="   , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
 	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
 	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);

@@ -120,7 +120,6 @@ define @wTYPEUNUSED      ": тип данных не используется"                // a type
 define @wUNREACHABLE     "Недостижимый оператор"                       // Unreachable statement
 
 define @dprHEXFORMAT     "Шестнадцатиричное число в формате $ABC"
-define @dprEQL           "Запись сравнения как '=' вместо '=='"
 define @dptMISSINGOF_STRUCT    "Отсутствует ключевое слово 'of' в объявлении структуры"
 define @dptMISSINGOF_NAMESPACE "Отсутствует ключевое слово 'of' в объявлении пространства имён"
 define @dprNULL          "Оператор null"

@@ -371,7 +371,7 @@ void DeclVarFunc(char @Buff)
 		Dict[D].pType = Tabl_(@Buff, Dict[D].pType);
 		Dict[D].pNode =nNODE;
 
-		if str_eq(@Buff,"=") | str_eq(@Buff,":=") then
+		if str_eq(@Buff,"=") then
 			/*if Dict[D].nIndx > 0 then
 				Stop(@eNOTAVAIL);
 			end*/
