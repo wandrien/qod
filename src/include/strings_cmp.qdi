@@ -15,19 +15,13 @@ bool str_has_suffix(char @S; char @Suffix);
 ***************************************************************** DOCUMENTATION
 
 bool str_eq(char @S1; char @S2)
-	if strcmp(@S1, @S2) == 0 then
-		return true;
-	end
-	return false;
+	return strcmp(@S1, @S2) == 0;
 end
 
 /*****************************************************************************/
 
 bool str_ne(char @S1; char @S2)
-	if strcmp(@S1, @S2) == 0 then
-		return false;
-	end
-	return true;
+	return strcmp(@S1, @S2) != 0;
 end
 
 /*****************************************************************************/

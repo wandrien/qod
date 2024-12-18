@@ -10,11 +10,7 @@
 bool function ExprGuard(word P)
 
 bool IsTypeExpr(word P)
-	if Node[P].ID == iTYPE then
-		return true;
-	else
-		return false;
-	end
+	return Node[P].ID == iTYPE;
 end
 
 bool IsConstExpr(word P)
@@ -22,19 +18,11 @@ bool IsConstExpr(word P)
 end
 
 bool IsStaticExpr(word P)
-	if IsTypeExpr(P) | IsConstExpr(P) then
-		return true;
-	else
-		return false;
-	end
+	return IsTypeExpr(P) | IsConstExpr(P);
 end
 
 bool IsTangibleExpr(word P)
-	if Node[P].ID == iTYPE then
-		return false;
-	else
-		return true;
-	end
+	return Node[P].ID != iTYPE;
 end
 
 /*****************************************************************************/
@@ -194,19 +182,8 @@ void CTE(word P)
 			NodeAssignBool(P, T_Equal(Node[pLeft].Value, Node[pRight].Value));
 			return;
 		case iNE:
-			bool Value;
-			if T_Equal(Node[pLeft].Value, Node[pRight].Value) then
-				Value = false;
-			else
-				Value = true;
-			end
-			NodeAssignBool(P, Value);
-			return;
-		/* FIXME: ошибка в генераторе кода
-		case iNE:
 			NodeAssignBool(P, !T_Equal(Node[pLeft].Value, Node[pRight].Value));
 			return;
-		*/
 		end
 	end
 
@@ -278,16 +255,7 @@ void CTE(word P)
 	case iEQ:
 		NodeAssignBool(P, NodeEqual(pLeft, pRight));
 	case iNE:
-		bool Value;
-		if NodeEqual(pLeft, pRight) then
-			Value = false;
-		else
-			Value = true;
-		end
-		NodeAssignBool(P, Value);
-	/* FIXME: ошибка в генераторе кода
-	case iNE:
-		NodeAssignBool(P, !NodeEqual(pLeft, pRight));*/
+		NodeAssignBool(P, !NodeEqual(pLeft, pRight));
 	end:switch
 end
 

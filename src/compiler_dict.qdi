@@ -294,17 +294,13 @@ end
 bool Dict_IsFunction(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[D].Class == cFUNC:
-		return true;
-	return false;
+	return Dict[D].Class == cFUNC;
 end
 
 bool Dict_IsType(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[D].Class == cTYPE:
-		return true;
-	return false;
+	return Dict[D].Class == cTYPE;
 end
 
 /*****************************************************************************/
@@ -341,55 +337,37 @@ end
 bool T_IsType(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_TYPE:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_TYPE;
 end
 
 bool T_IsChar(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_CHAR:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_CHAR;
 end
 
 bool T_IsBool(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_BOOL:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_BOOL;
 end
 
 bool T_IsUnsigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_UINT:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_UINT;
 end
 
 bool T_IsSigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_SINT:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_SINT;
 end
 
 bool T_IsInteger(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	when T_IsUnsigned(T) | T_IsSigned(T):
-		return true;
-	return false;
+	return T_IsUnsigned(T) | T_IsSigned(T);
 end
 
 /*****************************************************************************/
@@ -513,9 +491,7 @@ end
 bool T_IsArray(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sARRAY:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sARRAY;
 end
 
 word T_ArrayDeref(word T)
@@ -567,15 +543,11 @@ end
 bool T_IsPtr(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sPTR:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sPTR;
 end
 
 bool T_IsPtrTo(word T; word T2)
-	when T_IsPtr(T) & (Dict[T].pType == T2):
-		return true;
-	return false;
+	return T_IsPtr(T) & (Dict[T].pType == T2);
 end
 
 word T_DerefPtr(word T)
@@ -620,9 +592,7 @@ end
 bool T_IsFunc(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[T].Class == cTYPE & Dict[T].Sub == sFUNCTYPE:
-		return true;
-	return false;
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sFUNCTYPE;
 end
 
 word T_FuncGetRetType(word T)
