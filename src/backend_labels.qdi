@@ -16,7 +16,7 @@ end
 
 /*****************************************************************************/
 
-void LabelAllocate(word N; word Name)
+word LabelAllocate(word N; word Name)
 	when nLabel >= nLABEL:
 		StopMemory();
 	Label[nLabel].Name = Name;
@@ -24,6 +24,7 @@ void LabelAllocate(word N; word Name)
 	Label[nLabel].pNext = Node[N].pLabel;
 	Node[N].pLabel = nLabel;
 	inc nLabel;
+	return Node[N].pLabel;
 end
 
 word LabelGetValue(LABEL @L)
@@ -41,13 +42,14 @@ end
 LABEL @LabelResolve(word N; word Name)
 	word L = Node[N].pLabel;
 	forever do
-		when L == 0 | L >= nLabel:
-			StopInternal(__FILE__, __LINE__);
+		when L >= nLabel:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, N);
+		when L == 0:
+			return @Label[LabelAllocate(N, Name)];
 		when Label[L].Name == Name:
-			exit;
+			return @Label[L];
 		L = Label[L].pNext;
 	end:forever
-	return @Label[L];
 end
 
 /*****************************************************************************/

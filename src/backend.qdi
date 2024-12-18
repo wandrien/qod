@@ -1,6 +1,7 @@
 
 /*****************************************************************************/
 
+void CloseOutput();
 void EmitLine(LABEL @Label; char @Inst; char @Comment);
 char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
 bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
@@ -16,6 +17,7 @@ define Flag_Zero 1
 define Flag_Sign 2
 word MeaningfulFlags = 0;
 
+include "backend_msg.qdi";
 include "backend_pho.qdi";
 include "backend_pho_node_links.qdi";
 include "backend_lib.qdi";

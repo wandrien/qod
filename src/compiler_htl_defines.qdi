@@ -160,6 +160,9 @@ define lEXIT        3
 define lCASEBODY    4
 define lCASEBODYEND 5
 define lBRANCH      6
+define lTRUE        7
+define lFALSE       8
+define lEND         9
 
 /*****************************************************************************/
 

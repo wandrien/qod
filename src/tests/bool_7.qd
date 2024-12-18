@@ -1,0 +1,53 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 '
+
+include "../include/test_env.qdi";
+
+bool t()
+	return true;
+end
+
+bool f()
+	return false;
+end
+
+void foo()
+	bool t1 = t() == t();
+	bool t2 = f() == f();
+	bool f1 = t() == f();
+	bool f2 = !t1;
+	bool t3 = (f1 | (t() == t1)) & (!f1) & (f1 == f());
+
+	if t1 then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if t2 then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if !f1 then
+		puts("OK3 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if f2 then
+		puts("OOPS ");
+	else
+		puts("OK4 ");
+	end:if
+
+	if !t3 then
+		puts("OOPS ");
+	else
+		puts("OK5 ");
+	end:if
+end
+
+begin
+	foo();
+end

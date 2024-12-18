@@ -988,20 +988,35 @@ define operandMemRef   3
 word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	Buff[0] = #0;
 
-	word ID = Node[P].ID;
-
-	if iLT <= ID & ID <= iGT then
-		/* These operations don't return the result in any register,
-		instead a conditional jump is the result. So we can reset Reg_TARGET freely. */
-		Reg_TARGET=RegA;
-	end
-
 	forever do
 		word pType = TryCodeFastMult(@Buff,P);
 		when pType < nDICT:
 			return pType;
 		exit;
 	end:forever
+
+	word ID = Node[P].ID;
+
+	bool opIsComparison = false;
+	bool useSetCC = true;
+	word Reg_TARGET_SavedForConditional = RegNone;
+
+	if iLT <= ID & ID <= iGT then
+		opIsComparison = true;
+		if @F == NULL & @T == NULL & @M == NULL then
+			/* The caller doesn't expect us to emit jumps,
+			   the result should be in a register instead. */
+			useSetCC = true;
+			Reg_TARGET_SavedForConditional = Reg_TARGET;
+		else
+			/* The caller does expect us to emit jumps,
+			   the final register value is irrelevant. */
+			useSetCC = false;
+			/* Since these operations don't return the result in any register,
+			   we can reset Reg_TARGET freely. */
+			Reg_TARGET=RegA;
+		end:if
+	end
 
 	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
@@ -1146,7 +1161,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when pLeft2 < nNODE:
 			pLeft = pLeft2;
 
-		if iLT <= ID & ID <= iGT then
+		if opIsComparison & ! useSetCC then
 			when CodeRequiresSingleRegister(pLeft):
 				Reg_TARGET = ChooseEmptyReg();
 		end:if
@@ -1280,27 +1295,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word _MeaningfulFlags = 0;
 
 	select
-	case iLT<=ID & ID<=iGT:
+	case opIsComparison:
 
-		if @T == NULL then
-			switch ID of
-			case iLT: ID=iGE;
-			case iLE: ID=iGT;
-			case iEQ: ID=iNE;
-			case iNE: ID=iEQ;
-			case iGE: ID=iLT;
-			case iGT: ID=iLE;
-			default:
+		if !useSetCC then
+			/* Reorder for easier handling. */
+			if @T == NULL then
+				switch ID of
+				case iLT: ID=iGE;
+				case iLE: ID=iGT;
+				case iEQ: ID=iNE;
+				case iNE: ID=iEQ;
+				case iGE: ID=iLT;
+				case iGT: ID=iLE;
+				default:
+					StopInternalCodegen(__FILE__, __LINE__);
+				end:switch
+
+				@T = @F;
+				@F = NULL;
+			end:if
+
+			if @T == NULL | @F != NULL then
 				StopInternalCodegen(__FILE__, __LINE__);
-			end:switch
-
-			@T = @F;
-			@F = NULL;
+			end
 		end:if
-
-		if @T == NULL | @F != NULL then
-			StopInternalCodegen(__FILE__, __LINE__);
-		end
 
 		select
 		case rightOperand == operandImm:
@@ -1400,9 +1418,29 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:switch
 		end:select
-		EmitBranchToLabel(@BranchCondition, @T);
 
-		return nDICT;
+		if useSetCC then
+			Reg_TARGET = Reg_TARGET_SavedForConditional;
+			word pResultType = Node[P].pType;
+			word ResultSize = T_SizeOf(pResultType);
+			char Cmd[8];
+			strcpy2(@Cmd,"set",@BranchCondition);
+			Buff[0] = #0;
+			Emit(@CodeCmdReg(@Buff, @Cmd, Reg_TARGET, 1));
+			select
+			case ResultSize == 1:
+				pass;
+			case ResultSize <= 4:
+				Buff[0] = #0;
+				Emit(@CodeCmdRegReg(@Buff, "movsx", Reg_TARGET, 4, Reg_TARGET, 1));
+			default:
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+			end
+			return pResultType;
+		else
+			EmitBranchToLabel(@BranchCondition, @T);
+			return nDICT;
+		end:if
 
 	case ID==iBIT_OR:
 		_MeaningfulFlags = Flag_Zero;
@@ -1626,7 +1664,8 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 		when CodeRequiresSingleRegister(P):
 			Reg_TARGET = ChooseEmptyReg();
 		Code(P);
-		Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, 4, Reg_TARGET, 4));
+		word Size = T_SizeOf(Node[P].pType);
+		Emit(@CodeCmdRegReg(@Buff, "test", Reg_TARGET, Size, Reg_TARGET, Size));
 		select
 		case @F != NULL:
 			EmitBranchToLabel("z", @F);
@@ -1636,6 +1675,43 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 		return st_bool;
 
 	end:switch
+end
+
+/*****************************************************************************/
+
+word CodeBooleanExprNoJumpTargets(word P)
+/*
+		CodeBooleanExpr(P, NULL, L_TRUE, L_FALSE);
+	L_FALSE:
+		mov Reg, 0
+		jmp L_END
+	L_TRUE:
+		mov Reg, 1
+	L_END:
+*/
+
+	word pType = Node[P].pType;
+	word Size = T_SizeOf(pType);
+
+	LABEL @L_FALSE = @LabelResolve(P, lFALSE);
+	LABEL @L_TRUE = @LabelResolve(P, lTRUE);
+	LABEL @L_END = @LabelResolve(P, lEND);
+
+	word Saved_Reg_TARGET = Reg_TARGET;
+	CodeBooleanExpr(P, NULL, @L_TRUE, @L_FALSE);
+	Reg_TARGET = Saved_Reg_TARGET;
+
+	EmitLabelIfUsed(@L_FALSE);
+	Emit_Load_Constant(Reg_TARGET, Size, 0);
+
+	if LabelIsUsed(@L_TRUE) then
+		EmitJumpToLabel(@L_END);
+		EmitLabel(@L_TRUE);
+		Emit_Load_Constant(Reg_TARGET, Size, 1);
+		EmitLabel(@L_END);
+	end
+
+	return Node[P].pType;
 end
 
 /*****************************************************************************/
@@ -1804,6 +1880,9 @@ word Code(word P)
 
 	case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
 		return CodeBinOp(@Buff, P, NULL, NULL, NULL);
+
+	case iOR, iAND, iNOT:
+		return CodeBooleanExprNoJumpTargets(P);
 
 	case iDEF_LOCAL:
 		if nLocal>=nLOCAL then

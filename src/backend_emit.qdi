@@ -33,30 +33,6 @@ end
 
 /*****************************************************************************/
 
-void StopAtNodeInternalCodegen(char @File; word Line; word P)
-	CloseOutput();
-
-	char Buff[nBUFF];
-	strbuf buf;
-	strbuf_init(@buf, @Buff, nBUFF);
-	strbuf_append_cstr(@buf, @eINTERNAL_CODEGEN);
-	strbuf_append_cstr(@buf, @File);
-	strbuf_append_cstr(@buf, ":");
-	strbuf_append_cstr(@buf, @str(Line));
-
-	if P < nNODE then
-		StopAt(@Node[P].SourceLocation, @Buff);
-	else
-		StopAt(NULL, @Buff);
-	end
-end
-
-void StopInternalCodegen(char @File; word Line)
-	StopAtNodeInternalCodegen(@File, Line, nNODE);
-end
-
-/*****************************************************************************/
-
 word EmitDisabled = 0;
 
 void DisableEmit()
