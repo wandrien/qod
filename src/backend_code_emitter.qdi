@@ -1439,7 +1439,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			return pResultType;
 		else
 			EmitBranchToLabel(@BranchCondition, @T);
-			return nDICT;
+			return st_cond_branch;
 		end:if
 
 	case ID==iBIT_OR:
@@ -1640,7 +1640,7 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 		case Node[P].Value != 0 & @T != NULL:
 			EmitJumpToLabel(@T);
 		end:select
-		return st_bool;
+		return st_cond_branch;
 
 	case iLT, iLE, iEQ, iNE, iGE, iGT:
 		return CodeBinOp(@Buff, P, @F, @T, @M);
@@ -1648,17 +1648,15 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 	case iNOT:
 		return CodeBooleanExpr(Node[P].pLeft, @T, @F, @M);
 	case iOR:
-		Code_OR(P, @F, @T, @M, @Buff);
-		return st_bool;
+		return Code_OR(P, @F, @T, @M, @Buff);
 	case iXOR:
 		Code_XOR(P, @F, @T, @M, @Buff);
-		//return st_bool;
+		//return st_cond_branch;
 	case iEQV:
 		Code_EQV(P, @F, @T, @M, @Buff);
-		//return st_bool;
+		//return st_cond_branch;
 	case iAND:
-		Code_AND(P, @F, @T, @M, @Buff);
-		return st_bool;
+		return Code_AND(P, @F, @T, @M, @Buff);
 
 	default:
 		when CodeRequiresSingleRegister(P):
@@ -1672,7 +1670,7 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 		case @T != NULL:
 			EmitBranchToLabel("nz", @T);
 		end:select
-		return st_bool;
+		return st_cond_branch;
 
 	end:switch
 end
@@ -1698,7 +1696,8 @@ word CodeBooleanExprNoJumpTargets(word P)
 	LABEL @L_END = @LabelResolve(P, lEND);
 
 	word Saved_Reg_TARGET = Reg_TARGET;
-	CodeBooleanExpr(P, NULL, @L_TRUE, @L_FALSE);
+	when CodeBooleanExpr(P, NULL, @L_TRUE, @L_FALSE) != st_cond_branch:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	Reg_TARGET = Saved_Reg_TARGET;
 
 	EmitLabelIfUsed(@L_FALSE);

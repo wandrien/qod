@@ -51,7 +51,7 @@ word Code_OR(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 		EmitLabelIfUsed(@L);
 		CodeBooleanExpr(Node[P].pRight, NULL, @T, @M);
 	end
-	return Node[P].pType;
+	return st_cond_branch;
 end
 
 /*****************************************************************************/
@@ -79,7 +79,7 @@ word Code_AND(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
 		EmitLabelIfUsed(@L);
 		CodeBooleanExpr(Node[P].pRight, NULL, @T, @M);
 	end
-	return Node[P].pType;
+	return st_cond_branch;
 end
 
 /*****************************************************************************/
@@ -267,11 +267,14 @@ word Code_SELECT(word P; char @Buff)
 
 		if Node[COND].pLeft < nNODE then
 			@L_Jump = @CodeExtractJump(Node[BODY].pLeft);
+			word pCondType;
 			if @L_Jump == NULL then
-				CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
+				pCondType = CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
 			else
-				CodeBooleanExpr(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
+				pCondType = CodeBooleanExpr(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
 			end:if
+			when pCondType != st_cond_branch:
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			EmitLabelIfUsed(@LabelResolve(CASE, lCASEBODY));
 		else
 			DefaultBranchPresent = true;
@@ -505,12 +508,15 @@ word Code_WHILE(word P; char @Buff)
 
 	when Node[BODY].ID != iBODY
 	|    Node[COND].ID != iCOND:
-		StopInternalCodegen(__FILE__, __LINE__);
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 	EmitLabel(@LabelResolve(P, lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
-		CodeBooleanExpr(Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY));
+		when CodeBooleanExpr(
+			Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY)
+		) != st_cond_branch:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		EmitLabelIfUsed(@LabelResolve(P, lLOOPBODY));
 	end
 
@@ -551,7 +557,7 @@ word Code_REPEAT(word P; char @Buff)
 
 	when Node[BODY].ID != iBODY
 	|    Node[COND].ID != iCOND:
-		StopInternalCodegen(__FILE__, __LINE__);
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 	/* Check the case when loop can be replaced with simple code block */
 	if NodeIsTrue(Node[COND].pLeft) &
@@ -569,7 +575,10 @@ word Code_REPEAT(word P; char @Buff)
 	EmitLabelIfUsed(@LabelResolve(P, lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
-		CodeBooleanExpr(Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT));
+		when CodeBooleanExpr(
+			Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT)
+		) != st_cond_branch:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end
 
 	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
