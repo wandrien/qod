@@ -96,7 +96,7 @@ word Code_PUSH(word P; char @Buff)
 	char BuffOperand[nBUFF];
 	word pOperandType;
 	if CodeAsMemoryOperand(@BuffOperand, P1, @pOperandType) & (T_SizeOf(pOperandType) ==  4) then
-		Emit(@strcpy2(@Buff, "push    ", @BuffOperand));
+		EmitWithPhoMode(@strcpy2(@Buff, "push    ", @BuffOperand), PHO_Mode_Skip);
 		return nDICT;
 	end
 
@@ -111,7 +111,7 @@ word Code_PUSH(word P; char @Buff)
 		char @s = "dword @@ROLITERALS+";
 		when Ref.RO == 0:
 			@s = "dword @@RWLITERALS+";
-		Emit(@strcpy3(@Buff, "push    ",@s,@str(Ref.Offset)));
+		EmitPhoSkip(@strcpy3(@Buff, "push    ",@s,@str(Ref.Offset)));
 		return nDICT;
 	end:if
 
@@ -125,7 +125,7 @@ word Code_PUSH(word P; char @Buff)
 			/* FIXME: проверять только часть регистра при необходимости */
 			word Reg = PHO_FindRegWithConst(Value);
 			if Reg != PHO_REG_INVALID then
-				Emit(@strcpy2(@Buff, "push    ", @PHO_EncodeReg(Reg, 0xFFFF_FFFF)));
+				EmitPhoSkip(@strcpy2(@Buff, "push    ", @PHO_EncodeReg(Reg, 0xFFFF_FFFF)));
 				return nDICT;
 			end:if
 		end:if
@@ -135,7 +135,7 @@ word Code_PUSH(word P; char @Buff)
 			   который позволяет оптимизировать до xor.
 			*/
 			if Value != 0 then
-				Emit(@strcpy2(@Buff, "push    dword ", @str(Value)));
+				EmitPhoSkip(@strcpy2(@Buff, "push    dword ", @str(Value)));
 				return nDICT;
 			end:if
 		end:if
@@ -159,7 +159,7 @@ word Code_PUSH(word P; char @Buff)
 	select
 	case Size==1 | Size==2 | Size==4:
 		Buff[0] = #0;
-		Emit(@CodePushReg(@Buff, Reg_TARGET, 4));
+		EmitPhoSkip(@CodePushReg(@Buff, Reg_TARGET, 4));
 	default:
 		char @TX = @CodeReg(NULL, Reg_TARGET, 4);
 		Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(DefaultInStackAlign(Size))));

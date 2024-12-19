@@ -513,6 +513,13 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 	Emit(@Buff);
 end
 
+/*****************************************************************************/
+
+void Emit_TEST_Reg_Self(word Reg; word RegMode)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	EmitPhoSkip(@CodeCmdRegReg(@Buff, "test", Reg, RegMode, Reg, RegMode));
+end
 
 /*****************************************************************************/
 

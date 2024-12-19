@@ -116,8 +116,14 @@ end
 
 /*****************************************************************************/
 
+define PHO_Mode_Auto 0
+define PHO_Mode_Skip 1
+define PHO_Mode_Invalidate 2
+
+/*****************************************************************************/
+
 /* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
-void EmitLine(LABEL @Label; char @Inst; char @Comment)
+void EmitLine_(LABEL @Label; char @Inst; char @Comment; word PhoMode)
 	when EmitDisabled > 0:
 		return;
 
@@ -126,11 +132,16 @@ void EmitLine(LABEL @Label; char @Inst; char @Comment)
 	when @Comment == NULL:
 		@Comment = "";
 
-	if @Label != NULL then
+	select
+	case @Label != NULL | PhoMode == PHO_Mode_Invalidate:
 		PHO_InvalidateRegs();
-	else
+	case PhoMode == PHO_Mode_Auto:
 		@Inst = @PHO_Optimize(@Inst);
-	end:if
+	case PhoMode == PHO_Mode_Skip:
+		pass;
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:select
 
 	when @Label == NULL & Inst[0] == #0 & Comment[0] == #0:
 		return;
@@ -187,20 +198,51 @@ end
 
 /*****************************************************************************/
 
+void Emit(char @Inst)
+	EmitLine_(NULL, @Inst, NULL, PHO_Mode_Auto);
+end
+
+void EmitComment(char @Comment)
+	EmitLine_(NULL, NULL, @Comment, PHO_Mode_Skip);
+end
+
+void EmitWithPhoMode(char @Inst; word PhoMode)
+	EmitLine_(NULL, @Inst, NULL, PhoMode);
+end
+
+void EmitPhoInvalidate(char @Inst)
+	EmitLine_(NULL, @Inst, NULL, PHO_Mode_Invalidate);
+end
+
+void EmitPhoSkip(char @Inst)
+	EmitLine_(NULL, @Inst, NULL, PHO_Mode_Skip);
+end
+
+void EmitWithPhoModeAndComment(char @Inst; word PhoMode; char @Comment)
+	EmitLine_(NULL, @Inst, @Comment, PhoMode);
+end
+
+void EmitWithExprComment(char @Inst; char @Comment)
+	when !EmitDebugComments_Expr:
+		@Comment = NULL;
+	EmitLine_(NULL, @Inst, @Comment, PHO_Mode_Auto);
+end
+
+/*****************************************************************************/
+
 void EmitLabel(LABEL @Label)
 	when @Label == NULL: StopInternal(__FILE__, __LINE__);
-	EmitLine(@Label, "", NULL);
+	EmitLine_(@Label, "", NULL, PHO_Mode_Auto);
+end
+
+void EmitLabelWithComment(LABEL @Label; char @Comment)
+	when @Label == NULL: StopInternal(__FILE__, __LINE__);
+	EmitLine_(@Label, "", @Comment, PHO_Mode_Auto);
 end
 
 void EmitLabelIfUsed(LABEL @Label)
 	when LabelIsUsed(@Label):
 		EmitLabel(@Label);
-end
-
-/*****************************************************************************/
-
-void Emit(char @Inst)
-	EmitLine(NULL, @Inst, NULL);
 end
 
 /*****************************************************************************/
@@ -217,11 +259,11 @@ void EmitWithSourceNote(char @Inst; word P)
 			(int(SourceLocation.Line) != -1)
 		then
 			strcpy4(@Buff, "#line ", @SourceLocation.FileName, ":", @str(SourceLocation.Line));
-			EmitLine(NULL, NULL, @Buff);
+			EmitComment(@Buff);
 			PrevSourceLocation = SourceLocation;
 		end:if
 	end:if
-	EmitLine(NULL, @Inst, NULL);
+	Emit(@Inst);
 end
 
 /*****************************************************************************/
@@ -232,7 +274,7 @@ void EmitJumpToLabelWithComment(LABEL @Label; char @Comment)
 	when !EmitDebugComments_Jumps:
 		@Comment = NULL;
 	LabelMarkUsed(@Label);
-	EmitLine(NULL, @strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))), @Comment);
+	EmitLine_(NULL, @strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))), @Comment, PHO_Mode_Skip);
 end
 
 void EmitJumpToLabel(LABEL @Label)
@@ -243,15 +285,9 @@ void EmitBranchToLabel(char @Condition; LABEL @Label)
 	char @s = "";
 	when Condition[1] == #0: @s = " ";
 	LabelMarkUsed(@Label);
-	Emit(@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(LabelGetValue(@Label))));
-end
-
-/*****************************************************************************/
-
-void EmitWithExprComment(char @Inst; char @Comment)
-	when !EmitDebugComments_Expr:
-		@Comment = NULL;
-	EmitLine(NULL, @Inst, @Comment);
+	EmitPhoSkip(
+		@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(LabelGetValue(@Label)))
+	);
 end
 
 /*****************************************************************************/

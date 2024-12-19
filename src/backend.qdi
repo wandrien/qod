@@ -2,7 +2,8 @@
 /*****************************************************************************/
 
 void CloseOutput();
-void EmitLine(LABEL @Label; char @Inst; char @Comment);
+void EmitComment(char @Comment);
+void EmitPhoSkip(char @Inst);
 char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
 bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(word P);

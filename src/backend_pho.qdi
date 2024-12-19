@@ -45,7 +45,7 @@ void PHO_InvalidateReg(word R)
 		char Buff[nBUFF]; Buff[0] = #0;
 		when EmitDebugComments_PHO:
 			strcpy2(@Buff, "PHO: Invalidate: ", @PHO_RegName(R));
-		EmitLine(NULL, "", @Buff);
+		EmitComment(@Buff);
 
 		PHO_ValidRegConst[R] = 0;
 	end:if
@@ -122,7 +122,7 @@ void PHO_RegLoadConst(word R; word Data)
 		char Buff[nBUFF]; Buff[0] = #0;
 		when EmitDebugComments_PHO:
 			strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data));
-		EmitLine(NULL, "", @Buff);
+		EmitComment(@Buff);
 	end:if
 
 	PHO_ValidRegConst[R] = 1;
@@ -319,7 +319,62 @@ define opIMUL        5
 define opAND         6
 define opOR          7
 define opXOR         8
-define opINVALIDATE_REG  9
+define opINVALIDATE_REG 9
+define opNOP        10
+
+bool PHO_MatchBranchSuffix(char @Suffix)
+	return
+		  str_has_prefix(@Suffix, "l ")
+		| str_has_prefix(@Suffix, "le")
+		| str_has_prefix(@Suffix, "e ")
+		| str_has_prefix(@Suffix, "ne")
+		| str_has_prefix(@Suffix, "ge")
+		| str_has_prefix(@Suffix, "g ")
+		| str_has_prefix(@Suffix, "s ")
+		| str_has_prefix(@Suffix, "ns")
+		| str_has_prefix(@Suffix, "b ")
+		| str_has_prefix(@Suffix, "be")
+		| str_has_prefix(@Suffix, "ae")
+		| str_has_prefix(@Suffix, "a ")
+		| str_has_prefix(@Suffix, "z ")
+		| str_has_prefix(@Suffix, "nz")
+	;
+end
+
+word PHO_ClassifyInst(char @Inst)
+	select
+	case str_has_prefix(@Inst, "mov "): return opMOV;
+	case str_has_prefix(@Inst, "imul "): return opIMUL;
+	case str_has_prefix(@Inst, "mul "): return opMUL;
+	case str_has_prefix(@Inst, "sub "): return opSUB;
+	case str_has_prefix(@Inst, "add "): return opADD;
+	case str_has_prefix(@Inst, "and "): return opAND;
+	case str_has_prefix(@Inst, "or "): return opOR;
+	case str_has_prefix(@Inst, "xor "): return opXOR;
+	case str_has_prefix(@Inst, "pop "): return opINVALIDATE_REG;
+	case str_has_prefix(@Inst, "lea "): return opINVALIDATE_REG;
+	case str_has_prefix(@Inst, "set"):
+		if PHO_MatchBranchSuffix(@Inst[4]) then
+				return opINVALIDATE_REG;
+		end:if
+	case
+	  str_has_prefix(@Inst, "movzx")
+	| str_has_prefix(@Inst, "movsx"):
+		return opINVALIDATE_REG;
+	case
+	  str_has_prefix(@Inst, "push")
+	| str_has_prefix(@Inst, "cmp" )
+	| str_has_prefix(@Inst, "test"):
+		return opNOP;
+	case Inst[0] == 'j':
+		if PHO_MatchBranchSuffix(@Inst[1]) then
+				return opNOP;
+		end:if
+	end:select
+
+	return opINVALIDATE;
+end
+
 
 char PHO_Buff[256];
 
@@ -332,43 +387,15 @@ char@ PHO_Optimize_(char @Inst)
 		return @Inst;
 	end:if
 
-	/* Инструкции, не изменяющие содержимое регистров. */
-	if str_has_prefix(@Inst, "push")
-	 | str_has_prefix(@Inst, "cmp" )
-	 | str_has_prefix(@Inst, "test")
-	 | str_has_prefix(@Inst, "jl"  )
-	 /*| str_has_prefix(@Inst, "jle" )*/
-	 | str_has_prefix(@Inst, "je"  )
-	 | str_has_prefix(@Inst, "jne" )
-	 | str_has_prefix(@Inst, "jnz" )
-	 /*| str_has_prefix(@Inst, "jge" )*/
-	 | str_has_prefix(@Inst, "jg"  )
-	 | str_has_prefix(@Inst, "jb"  )
-	 /*| str_has_prefix(@Inst, "jbe" )*/
-	 /*| str_has_prefix(@Inst, "jae" )*/
-	 | str_has_prefix(@Inst, "ja"  )
-	 | str_has_prefix(@Inst, "jz"  ) then
-		return @Inst;
-	end:if
-
 	/* FIXME: Add support of shl and shr */
-	word operation;
-	select
-	case str_has_prefix(@Inst, "mov "): operation = opMOV;
-	case str_has_prefix(@Inst, "imul "): operation = opIMUL;
-	case str_has_prefix(@Inst, "mul "): operation = opMUL;
-	case str_has_prefix(@Inst, "sub "): operation = opSUB;
-	case str_has_prefix(@Inst, "add "): operation = opADD;
-	case str_has_prefix(@Inst, "and "): operation = opAND;
-	case str_has_prefix(@Inst, "or "): operation = opOR;
-	case str_has_prefix(@Inst, "xor "): operation = opXOR;
-	case str_has_prefix(@Inst, "pop "): operation = opINVALIDATE_REG;
-	case str_has_prefix(@Inst, "lea "): operation = opINVALIDATE_REG;
-	default:
-		/* Если инструкция, значение которой мы не знаем, удаляем запомненные значения всех регистров. */
+	word operation = PHO_ClassifyInst(@Inst);
+	switch operation of
+	case opNOP:
+		return @Inst;
+	case opINVALIDATE:
 		PHO_InvalidateRegs();
 		return @Inst;
-	end:select
+	end:switch
 
 	char@ s = @Inst;
 	
@@ -520,7 +547,7 @@ char@ PHO_Optimize(char @Inst)
 		char Buff[nBUFF]; Buff[0] = #0;
 		when EmitDebugComments_PHO:
 			strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")");
-		EmitLine(NULL, "", @Buff);
+		EmitComment(@Buff);
 	end:if
 	return @NewInst;
 end
@@ -564,10 +591,7 @@ bool PHO_Try_Emit_Load_Constant(word Reg; word RegMode; word Value)
 		CodeLoadConstant(@Buff, Reg, RegMode, Value);
 	end:if
 
-	word PHOptimization_Saved = PHOptimization;
-	PHOptimization = 0;
-	EmitLine(NULL, @Buff, NULL);
-	PHOptimization = PHOptimization_Saved;
+	EmitPhoSkip(@Buff);
 	PHO_RegLoadConst(Reg, Value);
 	return true;
 end
