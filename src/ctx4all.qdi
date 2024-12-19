@@ -212,22 +212,22 @@ void SetupOptimization(char@ Mode)
 	select
 	case str_eq(@Mode, "size"):
 		RODataMergeMode = RODataMergeModeAgressive;
-		PHOptimization  = 1;
-		EmitEnterInstruction = 1;
-		EmitLeaveInstruction = 1;
-		EmitShortCode = 1;
+		PHOptimization  = true;
+		EmitEnterInstruction = true;
+		EmitLeaveInstruction = true;
+		EmitShortCode = true;
 	case str_eq(@Mode, "speed"):
 		RODataMergeMode = RODataMergeModeNormal;
-		PHOptimization  = 1;
-		EmitEnterInstruction = 0;
-		EmitLeaveInstruction = 1;
-		EmitShortCode = 0;
+		PHOptimization  = true;
+		EmitEnterInstruction = false;
+		EmitLeaveInstruction = true;
+		EmitShortCode = false;
 	default:
 		RODataMergeMode = RODataMergeModeNone;
-		PHOptimization  = 0;
-		EmitEnterInstruction = 0;
-		EmitLeaveInstruction = 1;
-		EmitShortCode = 0;
+		PHOptimization  = false;
+		EmitEnterInstruction = false;
+		EmitLeaveInstruction = true;
+		EmitShortCode = false;
 	end:select
 end
 

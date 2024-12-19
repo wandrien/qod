@@ -111,7 +111,7 @@ end
 /*****************************************************************************/
 
 void PHO_RegLoadConst(word R; word Data)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return;
 
 	if R >= PHO_FIRST_REG + PHO_REGS then
@@ -296,7 +296,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	end:if
 
 	/* <PUSH imm> + <POP reg> takes 3 bytes for short imms. */
-	if EmitShortCode != 0 & Mask1 == 0xFFFF_FFFF then
+	if EmitShortCode & Mask1 == 0xFFFF_FFFF then
 		if (Const2 <= 127) & (int(Const2) >= -128) then
 			strcpy(@Buff, "push    ");
 			strcat(@Buff, @str(Const2));
@@ -379,7 +379,7 @@ end
 char PHO_Buff[256];
 
 char@ PHO_Optimize_(char @Inst)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return @Inst;
 
 	/* Для пустой строки ничего не делаем. */
@@ -555,7 +555,7 @@ end
 /*****************************************************************************/
 
 word PHO_EncodeRegContainingConst(char @Buff; word Const; word RegMode)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return 0;
 
 	when RegMode != 4: /* FIXME: not implemented */
@@ -572,7 +572,7 @@ end
 /*****************************************************************************/
 
 bool PHO_Try_Emit_Load_Constant(word Reg; word RegMode; word Value)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return false;
 
 	word Mask;

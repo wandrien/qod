@@ -26,7 +26,7 @@ bool PHO_IsNodeLinkable(word P)
 end
 
 void PHO_LinkNode(word Reg; word P)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return;
 
 	if PHO_IsNodeLinkable(P) then
@@ -39,7 +39,7 @@ void PHO_LinkNode(word Reg; word P)
 end
 
 void PHO_LinkNode_Store(word Reg; word P)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return;
 
 	if PHO_IsNodeLinkable(P) then
@@ -79,7 +79,7 @@ bool PHO_CheckRegForNode(word Reg; word P1)
 end
 
 word PHO_LookupRegForNode(word P1)
-	when PHOptimization == 0:
+	when !PHOptimization:
 		return PHO_REG_INVALID;
 
 	word i = PHO_FIRST_REG;

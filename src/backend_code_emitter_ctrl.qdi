@@ -204,7 +204,7 @@ word Code_RETURN(word P; char @Buff)
 			StopInternalCodegen(__FILE__, __LINE__);
 		end:select
 	else
-		if EmitLeaveInstruction != 0 then
+		if EmitLeaveInstruction then
 			Emit("leave");
 		else
 			Emit("mov     ESP,  EBP");

@@ -1548,13 +1548,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			case Size==1:
 				Emit("mov     AL,   AH");
 			case Size==2:
-				if EmitShortCode != 0 then
+				if EmitShortCode then
 					Emit("xchg    AX,   DX");
 				else
 					Emit("mov     AX,   DX");
 				end:if
 			case Size==4:
-				if EmitShortCode != 0 then
+				if EmitShortCode then
 					Emit("xchg    EAX,  EDX");
 				else
 					Emit("mov     EAX,  EDX");
@@ -1969,7 +1969,7 @@ void EmitFunction(char @Buff; word I)
 
 	PHO_InvalidateRegs();
 
-	if EmitEnterInstruction != 0 & Dict[I].StackSize > 0 then
+	if EmitEnterInstruction & Dict[I].StackSize > 0 then
 		Emit(@strcpy3(@Buff,"enter   ",@str(Dict[I].StackSize), ", 0"));
 	else
 		Emit("push    EBP");

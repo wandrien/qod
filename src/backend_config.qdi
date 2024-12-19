@@ -34,25 +34,23 @@ define RODataMergeModeNormal    1 /* литералы объединяются *
 define RODataMergeModeAgressive 2 /* литералы сортируются по убыванию длины и затем объединяются */
 word RODataMergeMode = RODataMergeModeNormal;
 
-
-
-/* Проводить ли pipehole оптимизацию. */
-word PHOptimization = 1;
+/* Проводить ли peephole оптимизацию. */
+bool PHOptimization = true;
 
 /*
-	0 - генерировать стандартный пролог для всех функций.
-	1 - уменьшать длину пролога функции при помощи инструкции enter, где это возможно.
+	false - генерировать стандартный пролог для всех функций.
+	true  - уменьшать длину пролога функции при помощи инструкции enter, где это возможно.
 */
-word EmitEnterInstruction = 0;
+bool EmitEnterInstruction = false;
 
 /*
-	0 - генерировать стандартный эпилог для всех функций.
-	1 - уменьшать длину эпилога функции при помощи инструкции leave.
+	false - генерировать стандартный эпилог для всех функций.
+	true  - уменьшать длину эпилога функции при помощи инструкции leave.
 */
-word EmitLeaveInstruction = 0;
+bool EmitLeaveInstruction = false;
 
-word EmitShortCode = 0;
-word SlowIncDec = 0;
+bool EmitShortCode = false;
+bool SlowIncDec = false;
 
 /*****************************************************************************/
 
