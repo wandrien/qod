@@ -331,7 +331,6 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 		EmitWithExprComment("push    EAX", "saved in CodePrimary (iCALL)");
 	end:if
 	Reg_TARGET = RegA;
-	//Reg_ALT_TARGET = RegA;
 
 	switch Node[pPrimary].ID of
 	case iCALL:

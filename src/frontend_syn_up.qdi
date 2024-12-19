@@ -613,12 +613,7 @@ bool DeclNamespace(char @Buff)
 
 	pEnteredNamespace = pPrevNamespace;
 
-	/* FIXME: "return SkipFinalScan == 0" не реализовано. Заменить этот код после поддержки в кодогенераторе. */
-	if SkipFinalScan == 0 then
-		return true;
-	else
-		return false;
-	end:if
+	return SkipFinalScan == 0;
 end
 
 /*****************************************************************************/

@@ -325,11 +325,11 @@ bool T_Equal(word T1, T2)
 		return true;
 
 	if Dict[T1].Sub == Dict[T2].Sub then
-		select
-		case Dict[T1].Sub == sBASE_UINT | Dict[T1].Sub == sBASE_SINT:
+		switch Dict[T1].Sub of
+		case sBASE_UINT, sBASE_SINT, sBASE_CHAR, sBASE_BOOL, sBASE_FLOAT:
 			when Dict[T1].TypeSize == Dict[T2].TypeSize:
 				return true;
-		end:select
+		end:switch
 	end:if
 
 	return false;

@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-namespace XXX of
+namespace NNN of
 	synonym u16 uint16
 	synonym u32 uint32
 	synonym i16 int16
@@ -11,15 +11,15 @@ namespace XXX of
 end:namespace
 
 struct AAA of
-	XXX.u32 aaa;
+	NNN.u32 aaa;
 end:struct
 
 struct B1 {
-	XXX.ch b1;
+	NNN.ch b1;
 };
 
 struct B2 {
-	XXX.ch b2;
+	NNN.ch b2;
 };
 
 int x1;
@@ -29,8 +29,8 @@ int foo()
 end
 
 namespace BBB of
-	synonym u16 XXX.u16
-	synonym u32 XXX.u32
+	synonym u16 NNN.u16
+	synonym u32 NNN.u32
 	synonym i16 int16
 	synonym i32 int32
 
@@ -75,7 +75,7 @@ namespace BBB of
 		synonym u16 uint16
 	};
 
-	XXX.u32 v_u32;
+	NNN.u32 v_u32;
 	AAA.u16 v_u16;
 end:BBB
 

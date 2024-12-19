@@ -6,7 +6,7 @@ begin
 	char charBuff[10];
 	strbuf Buff;
 
-	strbuf_init(@Buff, @charBuff, 10 /* FIXME: use countof */);
+	strbuf_init(@Buff, @charBuff, countof(charBuff));
 	strbuf_append_cstr(@Buff, "0123456789abcd");
 
 	puts(@str(strbuf_get_virtual_len(@Buff))); puts(" ");
@@ -18,7 +18,7 @@ begin
 	puts(@str(strbuf_get_virtual_len(@Buff))); puts(" ");
 	puts(@str(strbuf_get_actual_len(@Buff))); puts(" ");
 
-	strbuf_init(@Buff, @charBuff, 10 /* FIXME: use countof */);
+	strbuf_init(@Buff, @charBuff, countof(charBuff));
 	strbuf_append_cstr(@Buff, "abc");
 	strbuf_append_cstr(@Buff, ".");
 	strbuf_append_cstr(@Buff, "def");
