@@ -1,0 +1,12 @@
+// TEST: compilation_should_fail 'Несоответствие типов'
+
+int i1;
+
+void foo()
+	i1 = false;
+end
+
+begin
+	foo();
+end
+

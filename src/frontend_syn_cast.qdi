@@ -58,7 +58,7 @@ bool IsLiteralAutoCastPossible(word pTypeTo; word P)
 		return false;
 
 	word pTypeFrom = Node[P].pType;
-	when !T_IsInteger(pTypeFrom):
+	when !T_IsInteger(pTypeFrom) | !T_IsInteger(pTypeTo):
 		return false;
 
 	word Min = 0;
