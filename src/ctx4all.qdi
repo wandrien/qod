@@ -216,18 +216,21 @@ void SetupOptimization(char@ Mode)
 		EmitEnterInstruction = true;
 		EmitLeaveInstruction = true;
 		EmitShortCode = true;
+		ReorderOperands = true;
 	case str_eq(@Mode, "speed"):
 		RODataMergeMode = RODataMergeModeNormal;
 		PHOptimization  = true;
 		EmitEnterInstruction = false;
 		EmitLeaveInstruction = true;
 		EmitShortCode = false;
+		ReorderOperands = true;
 	default:
 		RODataMergeMode = RODataMergeModeNone;
 		PHOptimization  = false;
 		EmitEnterInstruction = false;
 		EmitLeaveInstruction = true;
 		EmitShortCode = false;
+		ReorderOperands = true;
 	end:select
 end
 

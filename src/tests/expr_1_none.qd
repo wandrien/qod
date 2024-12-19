@@ -1,4 +1,4 @@
 // TEST: should_print '9950 100 5 25 15 99 50 12 70 112 '
-// COMPILER_FLAGS: --optimize size
+// COMPILER_FLAGS: --optimize none
 
 include "expr_1.qdi";

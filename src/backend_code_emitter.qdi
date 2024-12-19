@@ -90,6 +90,18 @@ word ChooseEmptyReg2()
 	return ChooseEmptyReg2_IgnoreConsts();
 end
 
+word ChooseEmptyReg3()
+	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
+		return RegB;
+	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
+		return RegC;
+	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0:
+		return RegB;
+	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0:
+		return RegC;
+	return RegNone;
+end
+
 /*****************************************************************************/
 
 word LookupRegForNode(word P)
@@ -319,7 +331,7 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 		EmitWithExprComment("push    EAX", "saved in CodePrimary (iCALL)");
 	end:if
 	Reg_TARGET = RegA;
-	Reg_ALT_TARGET = RegA;
+	//Reg_ALT_TARGET = RegA;
 
 	switch Node[pPrimary].ID of
 	case iCALL:
@@ -892,6 +904,9 @@ end
     if the operand evaluation should be reordered.
 */
 char @CheckOperandReordering(word pLeft; word pRight)
+	when !ReorderOperands:
+		return NULL;
+
 	when NodeCanBeEncodedAsImm(pRight):
 		return NULL;
 
@@ -1018,9 +1033,10 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	switch ID of
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
-		if Reg_TARGET!=RegA then
-			EmitWithExprComment("push    EAX", "saved in CodeBinOp");
-			Reg_TARGET=RegA;
+		if Reg_TARGET != RegA then
+			when Reg_ALT_TARGET == RegA:
+				EmitWithExprComment("push    EAX", "saved in CodeBinOp");
+			Reg_TARGET = RegA;
 		end
 	end:switch
 
@@ -1032,6 +1048,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word rightOperand = operandNotReady;
 
 	forever do
+		when !ReorderOperands:
+			exit;
+
 		/*
 			The usual calculation scheme is:
 				Reg1  <- LeftOperand
@@ -1210,21 +1229,44 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			end:if
 		end:if
 
+		/*
+			Если мы оказались здесь, значит нам нужны 2 регистра,
+			и значение одного из них потребуется не потерять при вычислении
+			правого операнда.
+
+			Назначаем Reg_ALT_TARGET, если вызывающий код этого не сделал,
+			сохраняем регистр, если вызывающий код уже использует Reg_ALT_TARGET.
+		*/
+		word Saved_Reg_ALT_TARGET = Reg_ALT_TARGET;
 		if Reg_TARGET != RegA then
-			EmitWithExprComment("push    EAX", "saved in CodeBinOp");
+			when Reg_ALT_TARGET == RegA:
+				EmitWithExprComment("push    EAX", "saved in CodeBinOp");
 			Reg_TARGET = RegA;
 		end
+		when Reg_ALT_TARGET != RegA:
+			Reg_ALT_TARGET = RegA;
+
 		pType = Code(pLeft);
+		if Reg_TARGET != Reg_ALT_TARGET then
+			/* Операнд был возвращён в другом регистре. */
+			Emit_MOV_or_XCHG(Reg_ALT_TARGET, Reg_TARGET, 4);
+		end
+
+		when Reg_ALT_TARGET != RegA:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+
 		Reg_TARGET = rightReg;
 		Code(pRight);
-		when Reg_TARGET != rightReg & fSwap != 0:
-			StopInternalCodegen(__FILE__, __LINE__);
 
-		if Reg_TARGET==RegA then
-			EmitWithExprComment("pop     EBX", "restored in CodeBinOp");
+		if Reg_TARGET == Reg_ALT_TARGET then
+			EmitWithExprComment(@CodeCmdReg(@Buff, "pop", rightReg, 4), "restored in CodeBinOp");
+			Buff[0] = #0;
 			inc fSwap;
 		end
-		Reg_TARGET = RegA;
+		Reg_TARGET = Reg_ALT_TARGET;
+
+		Reg_ALT_TARGET = Saved_Reg_ALT_TARGET;
+
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
@@ -1243,11 +1285,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			switch ID of
 			case iSUB, iDIV, iMOD:
 				Emit(@CodeCmdRegReg(@Buff, "xchg", Reg_TARGET, 4, rightReg, 4));
+				Buff[0] = #0;
 				exit;
 			end:switch
 
 			/* In other cases, swapped operands shouldn't happen. */
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:forever
 	end:if
 
@@ -1306,7 +1349,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				case iGE: ID=iLT;
 				case iGT: ID=iLE;
 				default:
-					StopInternalCodegen(__FILE__, __LINE__);
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 				end:switch
 
 				@T = @F;
@@ -1314,7 +1357,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			end:if
 
 			if @T == NULL | @F != NULL then
-				StopInternalCodegen(__FILE__, __LINE__);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end
 		end:if
 
@@ -1393,7 +1436,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				PHO_LinkNode(rightReg, pRight);
 			end:if
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end
 
 		char@ BranchCondition = "";
@@ -1475,24 +1518,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		case T_IsUnsigned(pType):
 			strcpy(@Buff,"mul     ");
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
+
+		when Reg_TARGET != RegA:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 		switch rightOperand of
 		case operandImm:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		case operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case operandReg:
 			CodeReg(@Buff, rightReg, Size);
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:switch
 
 		Emit(@Buff);
 		return pType;
 
 	case ID==iDIV | ID==iMOD:
+		when Reg_TARGET != RegA:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+
 		select
 		case Size==1:
 			if T_IsSigned(pType) then
@@ -1503,6 +1552,14 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				strcpy(@Buff,"div     ");
 			end:if
 		case Size==2:
+			if rightOperand == operandReg & rightReg == RegD then
+				word newRightReg = ChooseEmptyReg3();
+				when newRightReg == RegNone:
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+				Emit_MOV_or_XCHG(newRightReg, rightReg, Size);
+				rightReg = newRightReg;
+			end:if
+
 			if T_IsSigned(pType) then
 				Emit("cwq");
 				strcpy(@Buff,"idiv    ");
@@ -1511,6 +1568,14 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				strcpy(@Buff,"div     ");
 			end:if
 		case Size==4:
+			if rightOperand == operandReg & rightReg == RegD then
+				word newRightReg = ChooseEmptyReg3();
+				when newRightReg == RegNone:
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+				Emit_MOV_or_XCHG(newRightReg, rightReg, Size);
+				rightReg = newRightReg;
+			end:if
+
 			if T_IsSigned(pType) then
 				Emit("cdq");
 				strcpy(@Buff,"idiv    ");
@@ -1519,55 +1584,47 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				strcpy(@Buff,"div     ");
 			end:if
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
 
 		select
 		case rightOperand == operandImm:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		case rightOperand == operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case rightOperand == operandReg:
 			CodeReg(@Buff, rightReg, Size);
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
 
 		Emit(@Buff);
 
 		if ID==iMOD then
-			/*
-				XCHG is encoded as a single byte for native-length registers:
-				0x92 - xchg AX, DX (16-bit mode), xchg EAX, EDX (32-bit mode)
-				MOV takes 2 bytes.
-				So we prefer XCHG when optimizing for size.
-				See also notes on XCHG performance:
-				https://stackoverflow.com/questions/45766444/why-is-xchg-reg-reg-a-3-micro-op-instruction-on-modern-intel-architectures
-			*/
 			select
 			case Size==1:
 				Emit("mov     AL,   AH");
 			case Size==2:
-				if EmitShortCode then
-					Emit("xchg    AX,   DX");
+				if Reg_ALT_TARGET == RegNone then
+					Reg_TARGET = RegD;
 				else
-					Emit("mov     AX,   DX");
+					Emit_MOV_or_XCHG(RegA, RegD, Size);
 				end:if
 			case Size==4:
-				if EmitShortCode then
-					Emit("xchg    EAX,  EDX");
+				if Reg_ALT_TARGET == RegNone then
+					Reg_TARGET = RegD;
 				else
-					Emit("mov     EAX,  EDX");
+					Emit_MOV_or_XCHG(RegA, RegD, Size);
 				end:if
 			default:
-				StopInternalCodegen(__FILE__, __LINE__);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:select
 		end:if
 
 		return pType;
 
 	default:
-		StopInternalCodegen(__FILE__, __LINE__);
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end:select
 
 	select
@@ -1589,11 +1646,11 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		case rightOperand == operandReg:
 			CodeRegReg(@Buff, Reg_TARGET, Size, rightReg, Size);
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
 		Emit(@Buff);
 	default:
-		StopInternalCodegen(__FILE__, __LINE__);
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end:select
 
 	MeaningfulFlags = _MeaningfulFlags;
@@ -1804,7 +1861,7 @@ word Code_ASSIGN(word P)
 	end
 
 	Reg_TARGET = RegA;
-	Reg_ALT_TARGET = RegA;
+	Reg_ALT_TARGET = RegNone;
 	return Node[P].pType;
 end
 

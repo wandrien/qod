@@ -179,14 +179,9 @@ word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
 		Reg_TARGET = RegA;
-		word pType=Code(Node[P].pLeft);
-		word  Size=4;
-		if pType<nDICT then
-			Size=SizeOfType(pType);
-		end:if
-
-		if Size!=1 & Size!=4 then
-			StopInternalCodegen(__FILE__, __LINE__);
+		word pType = Code(Node[P].pLeft);
+		if Reg_TARGET != RegA then
+			Emit_MOV_or_XCHG(RegA, Reg_TARGET, 4);
 		end:if
 	end:if
 

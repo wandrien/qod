@@ -1,0 +1,46 @@
+include "../include/test_env.qdi";
+
+int f1(int a; int b; int c; int d)
+	return 10000 - (a * b) - (c * d);
+end
+
+int f2(int a; int b; int c; int d)
+	return 10000 / ((a * b) - (c * d));
+end
+
+void f3(int @a1; int @a2; int @a3; int b)
+	a1 = 5;
+	a2 = b + 5;
+	a3 = b - 5;
+end
+
+int f4(int a; int b; int c; int d)
+	return (a % b) % (c % d);
+end
+
+int f5(int a; int b)
+	return a % b;
+end
+
+begin
+	put_word(f1(4, 10, 2, 5)); puts(" ");
+	put_word(f2(11, 10, 2, 5)); puts(" ");
+
+	int v9950 = f1(4, 10, 2, 5);
+	int v100 = f2(11, 10, 2, 5);
+	int v12 = f4(2112, 1000, (256 + 20), 32);
+	int v112 = f5(2112, 1000);
+
+	int a1 = 0;
+	int a2 = 0;
+	int a3 = 0;
+	f3(@a1, @a2, @a3, 20);
+	put_word(a1); puts(" ");
+	put_word(a2); puts(" ");
+	put_word(a3); puts(" ");
+	put_word(v9950 / v100); puts(" ");
+	put_word(v9950 % v100); puts(" ");
+	put_word(v12); puts(" ");
+	put_word(v12 * 10 - v9950 % v100); puts(" ");
+	put_word(v112); puts(" ");
+end
