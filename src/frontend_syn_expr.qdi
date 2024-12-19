@@ -1057,15 +1057,9 @@ void Cast2(word P_OP; word O)
 
 		CTE(P_OP);
 
-	case iADD<=ID & ID<=iDIV:
+	case iADD<=ID & ID<=iMOD:
 		/* Арифметические операции только с целыми. */
 		if !T_IsInteger(pTypeOp) then
-			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
-		end
-		CTE(P_OP);
-
-	case ID == iMOD:
-		if pTypeOp!=st_byte & pTypeOp!=st_word then
 			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
 		end
 		CTE(P_OP);
