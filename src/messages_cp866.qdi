@@ -58,6 +58,7 @@ define @eTYPE_IMPLICIT_CAST "Неявное приведение типов невозможно"      // No imp
 define @wTYPE_SIGNED_UNSIGNED "Неявное приведение unsigned к signed"   // Implicit cast of unsigned into signed
 
 define @eALIAS_WRONGRVALUE "Недопустимое выражение в объявлении псевдонима"
+define @eTYPE_WRONGRVALUE "Недопустимое выражение в объявлении типа"
 
 define @eSWTYPE          "Требуется результат целого/символьного типа" // word/integer/char result required
 define @eCONSTEXP        "Требуется целая/символьная константа"        // word/integer/char constant required

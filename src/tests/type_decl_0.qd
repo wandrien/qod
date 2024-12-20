@@ -1,0 +1,53 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 '
+
+include "../include/test_env.qdi";
+
+uint32 arr[10];
+uint32 arr2[10];
+
+type ch = char;
+type
+	u16 = uint16,
+	u32 = uint32,
+	i16 = int16,
+	i32 = int32,
+	arr_t = typeof(arr);
+
+
+begin
+	if ch == char then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end
+	
+	if u16 == uint16 then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end
+	
+	if u32 == uint32 then
+		puts("OK3 ");
+	else
+		puts("OOPS ");
+	end
+	
+	if i16 == int16 then
+		puts("OK4 ");
+	else
+		puts("OOPS ");
+	end
+	
+	if i32 == int32 then
+		puts("OK5 ");
+	else
+		puts("OOPS ");
+	end
+
+	if arr_t == typeof(arr2) then
+		puts("OK6 ");
+	else
+		puts("OOPS ");
+	end
+end

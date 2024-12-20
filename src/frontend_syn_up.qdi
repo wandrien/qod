@@ -352,6 +352,53 @@ end
 
 /*****************************************************************************/
 
+void DeclType(char @Buff; word pType)
+	forever do
+		CheckDuplicate(@Buff);
+
+		word D = DictAlloc();
+		DictSetName(D, @Buff);
+
+		SOURCELOCATION Location = CurrentFileInfo;
+
+		if str_eq(@Scan(@Buff),"=") then
+			Scan(@Buff);
+		else
+			if str_eq(@Buff,".") then
+				StopWithSubject(@eASSIGNEXP2, @DictGetName(D));
+			else
+				ErrorWithSubject(@eASSIGNEXP2, @DictGetName(D));
+			end
+		end:if
+
+		word pExpr = Expr(PRIO_ZERO, @Buff);
+		select
+		case IsTypeExpr(pExpr):
+			Dict[D].Class = cNAME;
+			Dict[D].pType = Node[pExpr].Value;
+		default:
+			Dict[D].Class = cNAME;
+			Dict[D].pType = st_void; /* FIXME: better approach? */
+			ErrorWithSubjectAt(@Location, @eTYPE_WRONGRVALUE, @DictGetName(D));
+			ErrorWithSubjectAt(@Location, @eWRONGTYPE_2NDLINE, @T_GetName(Node[pExpr].pType));
+		end:select
+
+		DictAddToNamespace(D, pEnteredNamespace);
+
+		when str_eq(@Buff,";"):
+			exit;
+
+		if str_ne(@Buff,",") then
+			Error(@eSEMICOLONEXP);
+			exit;
+		end:if
+
+		Scan(@Buff);
+	end:forever
+end
+
+/*****************************************************************************/
+
 void DeclVarFunc(char @Buff)
 	word pPrefixExpr = Expr(PRIO_LVALUE, @Buff);
 	if Node[pPrefixExpr].ID != iTYPE then
@@ -362,6 +409,11 @@ void DeclVarFunc(char @Buff)
 	//pPrefixType = ResolveAlias(pPrefixType);
 	if pPrefixType == nDICT | Dict[pPrefixType].Class != cTYPE then
 		Stop(@eTYPEEXP);
+	end
+
+	if pPrefixType == st_type then
+		DeclType(@Buff, pPrefixType);
+		return;
 	end
 
 	/* Функтор-тип. */

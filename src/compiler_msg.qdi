@@ -72,6 +72,12 @@ void ErrorWithSubject(char @Msg; char @Subject)
 	Error(@Buff);
 end
 
+void ErrorWithSubjectAt(SOURCELOCATION @SourceLocation; char @Msg; char @Subject)
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
+	ErrorAt(@SourceLocation, @Buff);
+end
+
 void DeprecatedAt(SOURCELOCATION @SourceLocation; char @Msg)
 	char Buff[nMSGBUFF];
 	ComposeMsg(@Buff, nMSGBUFF, @wDEPRECATED, @Msg);

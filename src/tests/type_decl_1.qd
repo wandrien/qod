@@ -1,0 +1,15 @@
+// TEST: compilation_should_fail 'Недопустимое выражение в объявлении типа: err'
+
+include "../include/test_env.qdi";
+
+uint32 arr[10];
+uint32 arr2[10];
+
+type
+	u32 = uint32,
+	arr_t = typeof(arr),
+	err = sizeof(arr);
+
+begin
+	pass;
+end
