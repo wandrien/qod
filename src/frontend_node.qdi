@@ -260,3 +260,25 @@ end
 void StopAtNode(word P; char @Msg)
 	StopAt(@Node[P].SourceLocation, @Msg);
 end
+
+/*****************************************************************************/
+
+void WarnAtNodeWithSubject(word P; char @Msg; char @Subject)
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
+	WarnAt(@Node[P].SourceLocation, @Buff);
+end
+
+void ErrorAtNodeWithSubject(word P; char @Msg; char @Subject)
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
+	ErrorAt(@Node[P].SourceLocation, @Buff);
+end
+
+void StopAtNodeWithSubject(word P; char @Msg; char @Subject)
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
+	StopAt(@Node[P].SourceLocation, @Buff);
+end
+
+/*****************************************************************************/

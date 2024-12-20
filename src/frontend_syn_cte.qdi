@@ -528,7 +528,7 @@ void CTE_Function(word dFunc)
 		(!fLastReturn & !fLastNoReturn & !fLastInlineAssembly) &
 		(Dict[dFunc].pType != st_void & Dict[dFunc].pType != st_noreturn)
 	then
-		ErrorAtNode(pBody, @eMISSINGRET);
+		ErrorAtNodeWithSubject(pBody, @eMISSINGRET, @DictGetName(dFunc));
 	end:if
 
 end
