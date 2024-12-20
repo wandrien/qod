@@ -41,6 +41,8 @@ void CTE(word P);
 /*****************************************************************************/
 
 word pGlobalNamespace;
+word pInternalNamespace;
+word pKeywordsNamespace;
 word pEnteredNamespace;
 word pCurrentFunc;
 word pMainFunc;
@@ -48,6 +50,7 @@ word pLoop;
 
 /*****************************************************************************/
 
+include "frontend_dict.qdi";
 include "frontend_local.qdi";
 include "frontend_syn_brackets.qdi";
 include "frontend_syn_operators.qdi";
@@ -76,8 +79,12 @@ void InitFrontEnd()
 	pLoop = nNODE;
 	pCurrentFunc = nDICT;
 	pMainFunc = nDICT;
-	pGlobalNamespace = nDICT; /* FIXME: should be an actual namespace */
-	pEnteredNamespace = pGlobalNamespace;
+
+	pInternalNamespace = DictMakeNamespace("<INTERNAL>");
+	pKeywordsNamespace = DictMakeNamespace("");
+
+	pGlobalNamespace = DictMakeNamespace("");
+	DictAddToNamespace(pGlobalNamespace, pGlobalNamespace);
 
 	RegisterDigraph("!=");
 	RegisterDigraph("<=");
@@ -138,6 +145,12 @@ void InitFrontEnd()
 	Word("when");
 	Word("while");
 
+	pEnteredNamespace = pInternalNamespace;
+
+	st_cond_branch = BaseType("cond_branch", sINTERNAL_COND_BRANCH, 0);
+
+	pEnteredNamespace = pGlobalNamespace;
+
 	st_type    = BaseType("type", sBASE_TYPE, 0);
 	st_noreturn = BaseType("noreturn", sBASE_NORET, 0);
 	st_void    = BaseType("void", sBASE_VOID, 0);
@@ -173,7 +186,6 @@ void InitFrontEnd()
 	st_double  = BaseType("double", sBASE_FLOAT, target_size_of_double);
 	st_long_double = BaseType("long_double", sBASE_FLOAT, target_size_of_long_double);
 
-	st_cond_branch = BaseType("", sINTERNAL_COND_BRANCH, 0);
 
 	RegisterBrackets();
 	RegisterOperators();

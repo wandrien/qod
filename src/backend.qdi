@@ -18,6 +18,8 @@ define Flag_Zero 1
 define Flag_Sign 2
 word MeaningfulFlags = 0;
 
+word pExitProcess = nDICT;
+
 include "backend_msg.qdi";
 include "backend_pho.qdi";
 include "backend_pho_node_links.qdi";

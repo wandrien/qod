@@ -1,0 +1,126 @@
+
+/*****************************************************************************/
+
+void Word(char @Name)
+	word p = DictMakeWord(@Name);
+	DictAddToNamespace(p, pKeywordsNamespace);
+end
+
+word BaseType(char @Name; byte TypeDomain; word Size)
+	word p = DictMakeBaseType(@Name, TypeDomain, Size);
+	DictAddToNamespace(p, pEnteredNamespace);
+	return p;
+end
+
+/*****************************************************************************/
+
+word ResolveInNamespace(char @Buff; word pNamespace)
+	return FindInNamespace(@Buff, pNamespace);
+end
+
+word ResolveGlobal(char @Buff; word @_pNamespace)
+	/* Пробуем разрешить имя относительно текущего пространства имён */
+	word pNamespace = pEnteredNamespace;
+	word pName = ResolveInNamespace(@Buff, pNamespace);
+
+	if pName == nDICT & pNamespace != pGlobalNamespace then
+		/* Пробуем разрешить имя относительно глобального пространства имён */
+		pNamespace = pGlobalNamespace;
+		pName = ResolveInNamespace(@Buff, pNamespace);
+	end
+
+	if pName == nDICT then
+		when @_pNamespace != NULL:
+			_pNamespace = pEnteredNamespace;
+		return pName;
+	end
+
+	while true do
+		Scan(@Buff);
+		if !Dict_IsType(pName) | str_ne(@Buff,".") then
+			when @_pNamespace != NULL:
+				_pNamespace = pNamespace;
+			return pName;
+		end
+
+		Scan(@Buff);
+		pNamespace = pName;
+		pName = ResolveInNamespace(@Buff, pNamespace);
+		if pName == nDICT then
+			when @_pNamespace != NULL:
+				_pNamespace = pNamespace;
+			return pName;
+		end
+	end:while
+end
+
+void CheckDuplicate(char @Buff)
+	word pDuplicateName = ResolveInNamespace(@Buff, pEnteredNamespace);
+	if pDuplicateName != nDICT then
+		StopWithSubject(@eDUPLICATE, @Buff);
+	end
+end
+
+/*****************************************************************************/
+
+word DefineInteger(char @Name; word Type; word Value)
+	CheckDuplicate(@Name);
+
+	when !T_IsInteger(Type):
+		StopInternal(__FILE__, __LINE__);
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	DICT @d = @Dict[D];
+	d.Class = cLITERAL;
+	d.RO = 1;
+	d.pType = Type;
+	d.LiteralValue = Value;
+
+	DictAddToNamespace(D, pEnteredNamespace);
+
+	return D;
+end
+
+/*****************************************************************************/
+
+word DefineBool(char @Name; bool Value)
+	CheckDuplicate(@Name);
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	DICT @d = @Dict[D];
+	d.Class = cLITERAL;
+	d.RO = 1;
+	d.pType = st_bool;
+	if Value then
+		d.LiteralValue = 1;
+	else
+		d.LiteralValue = 0;
+	end:if
+
+	DictAddToNamespace(D, pEnteredNamespace);
+
+	return D;
+end
+
+/*****************************************************************************/
+
+word DefineString(char @Name; char @Value)
+	CheckDuplicate(@Name);
+
+	word i = strlen(@Value) + 1;
+
+	word D = DictAlloc();
+	DictSetName(D, @Name);
+	DICT @d = @Dict[D];
+	d.Class = cLITERAL;
+	d.RO = 1;
+	d.pType = T_PtrTo(st_char);
+	d.LiteralValue = SaveString(@Value, i);
+	d.nLiteralSize = i;
+
+	DictAddToNamespace(D, pEnteredNamespace);
+
+	return D;
+end

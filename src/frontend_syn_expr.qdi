@@ -243,59 +243,6 @@ end
 
 /*****************************************************************************/
 
-word ResolveInNamespace(char @Buff; word pNamespace)
-	if pNamespace == pGlobalNamespace then
-		return Find(@Buff);
-	else
-		return FindInNamespace(@Buff, pNamespace);
-	end
-end
-
-word ResolveGlobal(char @Buff; word @_pNamespace)
-	/* Пробуем разрешить имя относительно текущего пространства имён */
-	word pNamespace = pEnteredNamespace;
-	word pName = ResolveInNamespace(@Buff, pNamespace);
-
-	if pName == nDICT & pNamespace != pGlobalNamespace then
-		/* Пробуем разрешить имя относительно глобального пространства имён */
-		pNamespace = pGlobalNamespace;
-		pName = ResolveInNamespace(@Buff, pNamespace);
-	end
-
-	if pName == nDICT then
-		when @_pNamespace != NULL:
-			_pNamespace = pEnteredNamespace;
-		return pName;
-	end
-
-	while true do
-		Scan(@Buff);
-		if !Dict_IsType(pName) | str_ne(@Buff,".") then
-			when @_pNamespace != NULL:
-				_pNamespace = pNamespace;
-			return pName;
-		end
-
-		Scan(@Buff);
-		pNamespace = pName;
-		pName = ResolveInNamespace(@Buff, pNamespace);
-		if pName == nDICT then
-			when @_pNamespace != NULL:
-				_pNamespace = pNamespace;
-			return pName;
-		end
-	end:while
-end
-
-void CheckDuplicate(char @Buff)
-	word pDuplicateName = ResolveInNamespace(@Buff, pEnteredNamespace);
-	if pDuplicateName != nDICT then
-		StopWithSubject(@eDUPLICATE, @Buff);
-	end
-end
-
-/*****************************************************************************/
-
 /* Парсит последовательность операций разыменования указателя, возвращает количество операций. */
 
 word ReadPtrs(char @Buff)
@@ -319,7 +266,7 @@ void FuncArgs(char @Buff; word pFunc)
 	while strcmp(@Buff,")")!=0 do
 		word pType = ResolveGlobal(@Buff, NULL);
 		when pType >= nDICT | Dict[pType].Class != cTYPE:
-			Stop(@eTYPEEXP);
+			StopWithSubject(@eTYPEEXP, @Buff);
 
 		forever do
 			word  nPtr=ReadPtrs(@Buff);

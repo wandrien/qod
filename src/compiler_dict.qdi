@@ -75,10 +75,10 @@ end
 /*****************************************************************************/
 
 void Dict_MakeFullyQualifiedName(strbuf @Buff; word D)
-	if D == nDICT then
+	when D == nDICT:
 		return;
-	end
-	Dict_MakeFullyQualifiedName(@Buff, Dict[D].pNamespace);
+	when Dict[D].pNamespace != D:
+		Dict_MakeFullyQualifiedName(@Buff, Dict[D].pNamespace);
 	when strbuf_get_virtual_len(@Buff) > 0:
 		strbuf_append_cstr(@Buff, ".");
 	strbuf_append_cstr(@Buff, @DictGetName(D));
@@ -220,6 +220,15 @@ end
 
 /*****************************************************************************/
 
+word DictMakeNamespace(char @Name)
+	word pNamespace = DictAlloc();
+	when @Name != NULL:
+		DictSetName(pNamespace, @Name);
+	Dict[pNamespace].Class = cTYPE;
+	Dict[pNamespace].Sub = sNAMESPACE;
+	return pNamespace;
+end
+
 void DictAddToNamespace(word P; word pNamespace)
 	when P >= nDict:
 		StopInternal(__FILE__, __LINE__);
@@ -231,9 +240,6 @@ void DictAddToNamespace(word P; word pNamespace)
 		StopInternal(__FILE__, __LINE__);
 	when Dict[pNamespace].pFirst == nDICT & Dict[pNamespace].pLast != nDICT:
 		StopInternal(__FILE__, __LINE__);
-	/* FIXME: когда глобальное пространство имён будет реализовано отдельным объектом namespace, убрать этот return */
-	when pNamespace == nDICT:
-		return;
 	when pNamespace >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
@@ -250,16 +256,17 @@ end
 /*****************************************************************************/
 
 /* Регистрирует ключевое слово. */
-void Word(char @Name)
+word DictMakeWord(char @Name)
 	word p = DictAlloc();
 	DictSetName(p, @Name);
 	Dict[p].Class = cWORD;
+	return p;
 end
 
 /*****************************************************************************/
 
 /* Регистрирует базовый тип. */
-word BaseType(char @Name; byte TypeDomain; word Size)
+word DictMakeBaseType(char @Name; byte TypeDomain; word Size)
 	word p = DictAlloc();
 	DictSetName(p, @Name);
 	Dict[p].Class    = cTYPE;
@@ -421,13 +428,13 @@ word T_GetIntegerPair_(word T)
 		word Size = T_SizeOf(T);
 		char Buff[nBUFF];
 		strcpy3(@Buff, "unsigned(", @str(Size),")");
-		return BaseType(@Buff, sBASE_UINT, Size);
+		return DictMakeBaseType(@Buff, sBASE_UINT, Size);
 
 	case T_IsUnsigned(T):
 		word Size = T_SizeOf(T);
 		char Buff[nBUFF];
 		strcpy3(@Buff, "signed(", @str(Size),")");
-		return BaseType(@Buff, sBASE_SINT, Size);
+		return DictMakeBaseType(@Buff, sBASE_SINT, Size);
 
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -741,70 +748,6 @@ char @T_GetName(word T)
 
 	word Index = SaveString0(@Buff);
 	return @Char[Index];
-end
-
-/*****************************************************************************/
-
-word DefineInteger(char @Name; word Type; word Value)
-	if Find(@Name) < nDict then
-		StopInternal(__FILE__, __LINE__);
-	end
-
-	when !T_IsInteger(Type):
-		StopInternal(__FILE__, __LINE__);
-
-	word D = DictAlloc();
-	DictSetName(D, @Name);
-	DICT @d = @Dict[D];
-	d.Class = cLITERAL;
-	d.RO = 1;
-	d.pType = Type;
-	d.LiteralValue = Value;
-
-	return D;
-end
-
-/*****************************************************************************/
-
-word DefineBool(char @Name; bool Value)
-	if Find(@Name) < nDict then
-		StopInternal(__FILE__, __LINE__);
-	end
-
-	word D = DictAlloc();
-	DictSetName(D, @Name);
-	DICT @d = @Dict[D];
-	d.Class = cLITERAL;
-	d.RO = 1;
-	d.pType = st_bool;
-	if Value then
-		d.LiteralValue = 1;
-	else
-		d.LiteralValue = 0;
-	end:if
-
-	return D;
-end
-
-/*****************************************************************************/
-
-word DefineString(char @Name; char @Value)
-	if Find(@Name) < nDict then
-		StopInternal(__FILE__, __LINE__);
-	end
-
-	word i = strlen(@Value) + 1;
-
-	word D = DictAlloc();
-	DictSetName(D, @Name);
-	DICT @d = @Dict[D];
-	d.Class = cLITERAL;
-	d.RO = 1;
-	d.pType = T_PtrTo(st_char);
-	d.LiteralValue = SaveString(@Value, i);
-	d.nLiteralSize = i;
-
-	return D;
 end
 
 /*****************************************************************************/

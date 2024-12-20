@@ -215,14 +215,12 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 			/* Читаем имя библиотеки. Добавляем библиотеку в словарь, если она туда еще не занесена. */
 			word pLib = Find(@Scan(@Buff));
 			if   pLib >= nDict then
-
 				pLib = DictAlloc();
-
 				DictSetName(pLib, @Buff);
 				Dict[pLib].Class = cLIB;
-
 			end:if
-
+			when Dict[pLib].Class != cLIB:
+				StopInternal(__FILE__, __LINE__);
 
 			/*
 				Если для функции в библиотеке указано имя, отличное от объявленного имени функции,
@@ -239,6 +237,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 				DictSetName(pAlias, @DictGetName(pCurrentFunc));
 				Dict[pAlias].Class = cNAME;
 				Dict[pAlias].pType = pCurrentFunc;
+				DictAddToNamespace(pAlias, pEnteredNamespace);
 
 				DictSetName(pCurrentFunc, @Buff);
 				Scan(@Buff);
@@ -282,6 +281,7 @@ void DeclVarFuncType(char @Buff; word pType)
 	DictSetName(D, @Buff);
 	Dict[D].Class = cTYPE;
 	Dict[D].Sub   = sFUNCTYPE;
+	DictAddToNamespace(D, pEnteredNamespace);
 
 	if str_ne(@Scan(@Buff),"(") then
 		Stop(@eBRACKETEXP);
@@ -532,10 +532,7 @@ bool DeclNamespace(char @Buff)
 	word SkipFinalScan;
 	CheckDuplicate(@Scan(@Buff));
 
-	word pNamespace = DictAlloc();
-	DictSetName(pNamespace, @Buff);
-	Dict[pNamespace].Class = cTYPE;
-	Dict[pNamespace].Sub = sNAMESPACE;
+	word pNamespace = DictMakeNamespace(@Buff);
 	DictAddToNamespace(pNamespace, pEnteredNamespace);
 
 	char @TypeName = @DictGetName(pNamespace);

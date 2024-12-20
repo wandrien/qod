@@ -188,15 +188,17 @@ word Code_RETURN(word P; char @Buff)
 	if Dict[pCurrentFunc].Sub == sMAIN then
 		select
 		case TargetFileFormat == tPE:
+			when pExitProcess == nDICT:
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			Emit("xor     EAX,  EAX");
 			Emit("push    EAX");
-			Emit(@strcpy3(@Buff,"call   [@",@str(Dict[Find("ExitProcess")].Label),"]"));
+			Emit(@strcpy3(@Buff,"call   [@",@str(Dict[pExitProcess].Label),"]"));
 		case TargetFileFormat == tELF:
 			Emit("mov     EAX,  1");
 			Emit("xor     EBX,  EBX");
 			Emit("int     80H");
 		default:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
 	else
 		if EmitLeaveInstruction then

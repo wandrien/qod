@@ -80,7 +80,9 @@ void Translate()
 	DictMarkUsed(pMainFunc);
 	select
 		case TargetFileFormat == tPE:
-			Dict[Find("ExitProcess")].Used = 1;
+			pExitProcess = ResolveInNamespace("ExitProcess", pGlobalNamespace);
+			when pExitProcess != nDICT:
+				Dict[pExitProcess].Used = 1;
 	end:select
 
 	/* Назначаем метки и смещения. */
