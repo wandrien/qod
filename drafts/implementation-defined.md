@@ -31,14 +31,14 @@
 Размер следующих типов данных определяется реализацией:
 
 ```
-intptr
-uintptr
-short
-ushort
 int
-uint
 long
+intsz
+intptr
+uint
 ulong
+uintsz
+uintptr
 word
 ```
 
