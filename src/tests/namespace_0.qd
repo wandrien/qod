@@ -3,10 +3,11 @@
 include "../include/test_env.qdi";
 
 namespace NNN of
-	alias u16 = uint16;
-	alias u32 = uint32;
-	alias i16 = int16;
-	alias i32 = int32;
+	alias
+		u16 = uint16,
+		u32 = uint32,
+		i16 = int16,
+		i32 = int32;
 	alias ch = char;
 end:namespace
 

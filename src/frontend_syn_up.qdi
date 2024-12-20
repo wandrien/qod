@@ -182,53 +182,56 @@ end
 /*****************************************************************************/
 
 bool DeclAlias(char @Buff)
-	CheckDuplicate(@Scan(@Buff));
+	forever do
+		CheckDuplicate(@Scan(@Buff));
 
-	word D = DictAlloc();
-	DictSetName(D, @Buff);
+		word D = DictAlloc();
+		DictSetName(D, @Buff);
 
-	SOURCELOCATION Location = CurrentFileInfo;
+		SOURCELOCATION Location = CurrentFileInfo;
 
-	if str_eq(@Scan(@Buff),"=") then
-		Scan(@Buff);
-	else
-		if str_eq(@Buff,".") then
-			StopWithSubject(@eASSIGNEXP2, @DictGetName(D));
+		if str_eq(@Scan(@Buff),"=") then
+			Scan(@Buff);
 		else
-			ErrorWithSubject(@eASSIGNEXP2, @DictGetName(D));
-		end
-	end:if
+			if str_eq(@Buff,".") then
+				StopWithSubject(@eASSIGNEXP2, @DictGetName(D));
+			else
+				ErrorWithSubject(@eASSIGNEXP2, @DictGetName(D));
+			end
+		end:if
 
-	word pExpr = Expr(PRIO_ZERO, @Buff);
-	select
-	case IsTypeExpr(pExpr):
-		Dict[D].Class = cNAME;
-		Dict[D].pType = Node[pExpr].Value;
-	case IsConstExpr(pExpr):
-		Dict[D].Class = cLITERAL;
-		Dict[D].RO = 1;
-		Dict[D].pType = Node[pExpr].pType;
-		Dict[D].LiteralValue = Node[pExpr].Value;
-	case Node[pExpr].ID == iFUNC:
-		Dict[D].Class = cNAME;
-		Dict[D].pType = Node[pExpr].Value;
-	case Node[pExpr].ID == iDATA:
-		Dict[D].Class = cNAME;
-		Dict[D].pType = Node[pExpr].Value;
-	default:
-		Dict[D].Class = cNAME;
-		Dict[D].pType = st_void; /* FIXME: better approach? */
-		ErrorAt(@Location, @eALIAS_WRONGRVALUE);
-	end:select
+		word pExpr = Expr(PRIO_ZERO, @Buff);
+		select
+		case IsTypeExpr(pExpr):
+			Dict[D].Class = cNAME;
+			Dict[D].pType = Node[pExpr].Value;
+		case IsConstExpr(pExpr):
+			Dict[D].Class = cLITERAL;
+			Dict[D].RO = 1;
+			Dict[D].pType = Node[pExpr].pType;
+			Dict[D].LiteralValue = Node[pExpr].Value;
+		case Node[pExpr].ID == iFUNC:
+			Dict[D].Class = cNAME;
+			Dict[D].pType = Node[pExpr].Value;
+		case Node[pExpr].ID == iDATA:
+			Dict[D].Class = cNAME;
+			Dict[D].pType = Node[pExpr].Value;
+		default:
+			Dict[D].Class = cNAME;
+			Dict[D].pType = st_void; /* FIXME: better approach? */
+			ErrorWithSubjectAt(@Location, @eALIAS_WRONGRVALUE, @DictGetName(D));
+		end:select
 
-	DictAddToNamespace(D, pEnteredNamespace);
+		DictAddToNamespace(D, pEnteredNamespace);
 
-	if str_eq(@Buff,";") then
-		return true;
-	else
-		Error(@eSEMICOLONEXP);
-		return false;
-	end:if
+		when str_eq(@Buff,";"):
+			return true;
+
+		if str_ne(@Buff,",") then
+			Error(@eSEMICOLONEXP);
+			return false;
+		end:if
+	end:forever
 end
 
 /*****************************************************************************/
