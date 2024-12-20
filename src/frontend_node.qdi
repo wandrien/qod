@@ -97,7 +97,7 @@ bool NodeHasImmediateValue(word P)
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
-	case iLITERAL:
+	case iLITERAL, iNULL:
 		return true;
 	end
 
@@ -154,6 +154,10 @@ bool NodeIsLiteralString(word P)
 	when Node[P].ID == iSTRING:
 		return true;
 	return false;
+end
+
+bool NodeIsNull(word P)
+	return Node[P].ID == iNULL | T_IsNulltype(Node[P].pType);
 end
 
 /*****************************************************************************/

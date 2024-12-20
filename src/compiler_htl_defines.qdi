@@ -34,27 +34,28 @@ define  sBASE_TYPE   1 // type
 define  sBASE_VOID   2 // void
 define  sBASE_BOOL   3 // bool
 define  sBASE_NORET  4 // noreturn
-define  sBASE_CHAR   5 // Символьный тип
-define  sBASE_SINT   6 // Целое со знаком
-define  sBASE_UINT   7 // Целое без знака
-define  sBASE_FLOAT  8 // Число с плавающей точкой:
-define  sBASE_MAX    8 //
+define  sBASE_NULL   5 // nulltype
+define  sBASE_CHAR   6 // Символьный тип
+define  sBASE_SINT   7 // Целое со знаком
+define  sBASE_UINT   8 // Целое без знака
+define  sBASE_FLOAT  9 // Число с плавающей точкой:
+define  sBASE_MAX    9 //
                        // Производные типы
-define  sSTRUCT      9 // Стpуктуpа
-define  sFUNCTYPE   10 // Функциональный тип
-define  sPTR        11 // Указатель
-define  sARRAY      12 // Массив
-define  sNAMESPACE  13
-//define  sCONST      14 // Константный подтип типа
-define  sINTERNAL_COND_BRANCH 15 // bool, который реализуется переходом по метке,
+define  sSTRUCT     10 // Стpуктуpа
+define  sFUNCTYPE   11 // Функциональный тип
+define  sPTR        12 // Указатель
+define  sARRAY      13 // Массив
+define  sNAMESPACE  14
+//define  sCONST      15 // Константный подтип типа
+define  sINTERNAL_COND_BRANCH 16 // bool, который реализуется переходом по метке,
                                  // а не значением в регистре.
                                  // Используется в генераторе кода.
 
 /*****************************************************************************/
 
-define  sSYS        16 // Функция ОС
-define  sFUNC       17 // Функция пpогpаммы
-define  sMAIN       18 // Главная функция
+define  sSYS        17 // Функция ОС
+define  sFUNC       18 // Функция пpогpаммы
+define  sMAIN       19 // Главная функция
 
 /*****************************************************************************/
 

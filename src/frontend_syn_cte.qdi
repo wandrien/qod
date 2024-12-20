@@ -157,6 +157,12 @@ void CTE(word P)
 	word pLeft = Node[P].pLeft;
 	word pRight = Node[P].pRight;
 
+	if Node[P].pType != nDICT & T_IsNulltype(Node[P].pType) then
+		Node[P].ID = iNULL;
+		Node[P].Value = 0;
+		return;
+	end
+
 	switch ID of
 	case iOR:
 		select
@@ -183,6 +189,14 @@ void CTE(word P)
 			return;
 		case iNE:
 			NodeAssignBool(P, !T_Equal(Node[pLeft].Value, Node[pRight].Value));
+			return;
+		end
+	end
+
+	switch ID of
+	case iEQ, iNE:
+		if NodeIsNull(pLeft) & NodeIsNull(pRight) then
+			NodeAssignBool(P, ID == iEQ);
 			return;
 		end
 	end

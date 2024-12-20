@@ -1,0 +1,24 @@
+// TEST: should_print 'OK1 OK2 '
+
+include "../include/test_env.qdi";
+
+nulltype x, y;
+static_assert(is_const_expr(x));
+static_assert(is_const_expr(x == null));
+static_assert(null == null);
+static_assert(x == null);
+static_assert(x == y);
+
+begin
+	if x == null then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end
+
+	if x == y then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end
+end

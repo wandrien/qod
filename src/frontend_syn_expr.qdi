@@ -914,16 +914,24 @@ void Cast2(word P_OP; word O)
 	case T_IsPtr(pType1) & T_IsPtr(pType2):
 		pass;
 
+	/* Указатель и null */
+	case T_IsPtr(pType1) & T_IsNulltype(pType2):
+		pass;
+	case T_IsPtr(pType2) & T_IsNulltype(pType1):
+		pass;
+
 	/* С обеих сторон - один и тот же тип... */
 	case T_Equal(pType1, pType2):
 		select
-		case T_IsInteger(pType1): /* ...целочисленный */
+		case T_IsInteger(pType1):
 			pass;
-		case T_IsChar(pType1): /* ...символьный */
+		case T_IsChar(pType1):
 			pass;
-		case T_IsBool(pType1): /* ...булевый */
+		case T_IsBool(pType1):
 			pass;
-		case T_IsType(pType1): /* ...булевый */
+		case T_IsType(pType1):
+			pass;
+		case T_IsNulltype(pType1):
 			pass;
 		default:
 			StopAtNode(P_OP, @eTYPE);
@@ -988,7 +996,9 @@ void Cast2(word P_OP; word O)
 				!T_IsChar(pTypeOp) &
 				!T_IsBool(pTypeOp) &
 				!T_IsPtr(pTypeOp) &
-				!T_IsType(pTypeOp) then
+				!T_IsNulltype(pTypeOp) &
+				!T_IsType(pTypeOp)
+			then
 				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
 			end
 		else
@@ -996,7 +1006,8 @@ void Cast2(word P_OP; word O)
 			/* ...возможно только между целыми, символами. */
 			if
 				!T_IsInteger(pTypeOp) &
-				!T_IsChar(pTypeOp) then
+				!T_IsChar(pTypeOp)
+			then
 				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
 			end
 		end:if
@@ -1029,6 +1040,7 @@ word Expr(word Prio; char @Buff)
 	O = FindOperator(@Buff, Prio, OPERATOR_UPRE);
 	if O == OPERATOR_INVALID then
 		P1 = Primary(Prio, @Buff);
+		CTE(P1);
 	else
 		P1 = Operator[O].Handler(nNODE, O, @Buff);
 	end:if
@@ -1249,7 +1261,7 @@ end
 word ExprLitNULL(word P_; word O; char @Buff)
 	word P1=Peek();
 	Node[P1].ID = iNULL;
-	Node[P1].pType = T_PtrTo(st_void);
+	Node[P1].pType = st_nulltype;
 	Node[P1].Value = 0;
 	Scan(@Buff);
 	return P1;

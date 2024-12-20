@@ -83,6 +83,14 @@ end
 
 /*****************************************************************************/
 
+bool SkipImplicitCast(word pTypeFrom; word pTypeTo)
+	when T_IsNulltype(pTypeFrom) & (T_IsPtr(pTypeTo) | T_IsNulltype(pTypeTo)):
+		return true;
+	return false;
+end
+
+/*****************************************************************************/
+
 bool IsImplicitCastPossible(word pTypeFrom; word pTypeTo)
 
 	select
@@ -115,10 +123,13 @@ end
 /*****************************************************************************/
 
 void ImplicitCast(word pTypeTo; word @P)
-	if
+	select
+	case SkipImplicitCast(Node[P].pType, pTypeTo):
+		pass;
+	case
 		!IsImplicitCastPossible(Node[P].pType, pTypeTo) &
 		!IsLiteralAutoCastPossible(pTypeTo, P)
-	then
+	:
 		char Buff[nBUFF];
 		strcpy4(@Buff,
 			@msgIMPLICITCAST_1,
@@ -128,9 +139,9 @@ void ImplicitCast(word pTypeTo; word @P)
 		);
 		ErrorWithSubject(@eTYPE, @Buff);
 		AddFakeCast(pTypeTo, @P);
-	else
+	default:
 		AddImplicitCast(pTypeTo, @P);
-	end:if
+	end:select
 end
 
 /*****************************************************************************/

@@ -165,8 +165,9 @@ void InitFrontEnd()
 	pEnteredNamespace = pGlobalNamespace;
 
 	st_type    = BaseType("type", sBASE_TYPE, 0);
-	st_noreturn = BaseType("noreturn", sBASE_NORET, 0);
 	st_void    = BaseType("void", sBASE_VOID, 0);
+	st_noreturn = BaseType("noreturn", sBASE_NORET, 0);
+	st_nulltype = BaseType("nulltype", sBASE_NULL, target_size_of_pointer);
 
 	st_bool8   = BaseType("bool8", sBASE_BOOL, 1);
 	st_bool16  = BaseType("bool16", sBASE_BOOL, 2);
