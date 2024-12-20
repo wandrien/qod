@@ -73,16 +73,15 @@ type uint128 = unsigned(128); /* если поддерживается реал�
 
 
 /* Для следующих типов размер определяется реализацией */
-word         = signed(...);
-int          = signed(...);
-long         = signed(...);
-intsz        = signed(...);
-intptr       = signed(...);
-uint         = unsigned(...);
-ulong        = unsigned(...);
-uintsz       = unsigned(...);
-uintptr      = unsigned(...);
-
+type word    = signed(...);
+type int     = signed(...);
+type long    = signed(...);
+type intsz   = signed(...);
+type intptr  = signed(...);
+type uint    = unsigned(...);
+type ulong   = unsigned(...);
+type uintsz  = unsigned(...);
+type uintptr = unsigned(...);
 ```
 
 # Целочисленные типы с NaN
