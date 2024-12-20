@@ -3,8 +3,8 @@
 include "../include/test_env.qdi";
 
 namespace NNN of
-	synonym u16 uint16
-	synonym u32 uint32
+	alias u16 = uint16;
+	alias u32 = uint32;
 end
 
 NNN.u32 foo1(NNN.u32 x; NNN.u16 y)

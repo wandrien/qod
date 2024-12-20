@@ -57,6 +57,8 @@ define @eTYPE_FUNC_FWD   "Тип функции не соответствует типу предварительного объ
 define @eTYPE_IMPLICIT_CAST "Неявное приведение типов невозможно"      // No implicit cast possible
 define @wTYPE_SIGNED_UNSIGNED "Неявное приведение unsigned к signed"   // Implicit cast of unsigned into signed
 
+define @eALIAS_WRONGRVALUE "Недопустимое выражение в объявлении псевдонима"
+
 define @eSWTYPE          "Требуется результат целого/символьного типа" // word/integer/char result required
 define @eCONSTEXP        "Требуется целая/символьная константа"        // word/integer/char constant required
 define @eBITSIZEOVERFLOW "Переполнение в выражении bitsizeof()"
@@ -70,6 +72,7 @@ define @eNOVAL           "Требуется ссылка"                            // Refere
 define @eNODATA          "Структура не определена"                     // Undefined structure
 define @eNOFUNCTION      "Объявление функции недопустимо"              // Illegal function definition
 define @eASSIGNEXP       "Пропущено ="                                 // = expected
+define @eASSIGNEXP2      "Пропущено = после имени"                     // = expected after name
 define @eSEMICOLONEXP    "Пропущена точка с запятой"                   // Semicolon expected
 define @eCOMMAEXP        "Пропущена запятая"                           // Comma expected
 define @eCALCERR         "Ошибка в константном выражении"              // Error in constant expression

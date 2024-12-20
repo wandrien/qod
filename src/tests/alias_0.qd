@@ -1,0 +1,41 @@
+// TEST: should_print '10 100 100 200 OK1 OK2 '
+
+include "../include/test_env.qdi";
+
+int x1;
+
+int foo()
+	return 100;
+end
+
+namespace AAA of
+	alias y1 = x1; /* refers to x1 in the root namespace */
+	int x1;
+
+	alias bar = foo;  /* refers to foo in the root namespace */
+	int foo()
+		return 200;
+	end
+end:namespace
+
+begin
+	x1 = 10;
+	AAA.x1 = 20;
+	put_int(AAA.y1); puts(" ");
+
+	put_int(foo()); puts(" ");
+	put_int(AAA.bar()); puts(" ");
+	put_int(AAA.foo()); puts(" ");
+
+	if @x1 == @AAA.y1 then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end
+
+	if foo == AAA.bar then
+		puts("OK2 ");
+	else
+		puts("OOPS ");
+	end
+end

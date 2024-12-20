@@ -159,7 +159,9 @@ end
 
 /*****************************************************************************/
 
-bool DeclSynonym(char @Buff)
+bool DeclSynonym(char @Buff) /* FIXME: REMOVE-NEXT */
+	Deprecated("'synonym' is deprecaed; use 'alias' instead");
+
 	CheckDuplicate(@Scan(@Buff));
 
 	word D = DictAlloc();
@@ -175,6 +177,58 @@ bool DeclSynonym(char @Buff)
 	Dict[D].pType = pType;
 
 	return false;
+end
+
+/*****************************************************************************/
+
+bool DeclAlias(char @Buff)
+	CheckDuplicate(@Scan(@Buff));
+
+	word D = DictAlloc();
+	DictSetName(D, @Buff);
+
+	SOURCELOCATION Location = CurrentFileInfo;
+
+	if str_eq(@Scan(@Buff),"=") then
+		Scan(@Buff);
+	else
+		if str_eq(@Buff,".") then
+			StopWithSubject(@eASSIGNEXP2, @DictGetName(D));
+		else
+			ErrorWithSubject(@eASSIGNEXP2, @DictGetName(D));
+		end
+	end:if
+
+	word pExpr = Expr(PRIO_ZERO, @Buff);
+	select
+	case IsTypeExpr(pExpr):
+		Dict[D].Class = cNAME;
+		Dict[D].pType = Node[pExpr].Value;
+	case IsConstExpr(pExpr):
+		Dict[D].Class = cLITERAL;
+		Dict[D].RO = 1;
+		Dict[D].pType = Node[pExpr].pType;
+		Dict[D].LiteralValue = Node[pExpr].Value;
+	case Node[pExpr].ID == iFUNC:
+		Dict[D].Class = cNAME;
+		Dict[D].pType = Node[pExpr].Value;
+	case Node[pExpr].ID == iDATA:
+		Dict[D].Class = cNAME;
+		Dict[D].pType = Node[pExpr].Value;
+	default:
+		Dict[D].Class = cNAME;
+		Dict[D].pType = st_void; /* FIXME: better approach? */
+		ErrorAt(@Location, @eALIAS_WRONGRVALUE);
+	end:select
+
+	DictAddToNamespace(D, pEnteredNamespace);
+
+	if str_eq(@Buff,";") then
+		return true;
+	else
+		Error(@eSEMICOLONEXP);
+		return false;
+	end:if
 end
 
 /*****************************************************************************/
@@ -576,6 +630,8 @@ bool DeclNamespace(char @Buff)
 			DoScan = DeclStruct(@Buff);
 		case str_eq(@Buff,"namespace"):
 			DoScan = DeclNamespace(@Buff);
+		case str_eq(@Buff,"alias"):
+			DoScan = DeclAlias(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
 		case str_eq(@Buff,"end"):
@@ -634,6 +690,8 @@ void Parse()
 			DoScan = DeclStruct(@Buff);
 		case str_eq(@Buff,"namespace"):
 			DoScan = DeclNamespace(@Buff);
+		case str_eq(@Buff,"alias"):
+			DoScan = DeclAlias(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
 		case str_eq(@Buff,"begin"):

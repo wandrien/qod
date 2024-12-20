@@ -3,11 +3,11 @@
 include "../include/test_env.qdi";
 
 namespace NNN of
-	synonym u16 uint16
-	synonym u32 uint32
-	synonym i16 int16
-	synonym i32 int32
-	synonym ch char
+	alias u16 = uint16;
+	alias u32 = uint32;
+	alias i16 = int16;
+	alias i32 = int32;
+	alias ch = char;
 end:namespace
 
 struct AAA of
@@ -29,10 +29,10 @@ int foo()
 end
 
 namespace BBB of
-	synonym u16 NNN.u16
-	synonym u32 NNN.u32
-	synonym i16 int16
-	synonym i32 int32
+	alias u16 = NNN.u16;
+	alias u32 = NNN.u32;
+	alias i16 = int16;
+	alias i32 = int32;
 
 	int x1;
 
@@ -72,7 +72,7 @@ namespace BBB of
 			char b3[42];
 		end
 
-		synonym u16 uint16
+		alias u16 = uint16;
 	};
 
 	NNN.u32 v_u32;
