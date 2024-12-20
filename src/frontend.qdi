@@ -43,6 +43,12 @@ void CTE(word P);
 word pGlobalNamespace;
 word pInternalNamespace;
 word pKeywordsNamespace;
+
+word pNamespace_qod;
+word pNamespace_qod_impl;
+word pNamespace_qod_env;
+word pNamespace_qod_optional;
+
 word pEnteredNamespace;
 word pCurrentFunc;
 word pMainFunc;
@@ -85,6 +91,11 @@ void InitFrontEnd()
 
 	pGlobalNamespace = DictMakeNamespace("");
 	DictAddToNamespace(pGlobalNamespace, pGlobalNamespace);
+
+	pNamespace_qod = DefineNamespace("qod", pGlobalNamespace);
+	pNamespace_qod_impl = DefineNamespace("impl", pNamespace_qod);
+	pNamespace_qod_env = DefineNamespace("env", pNamespace_qod);
+	pNamespace_qod_optional = DefineNamespace("optional", pNamespace_qod);
 
 	RegisterDigraph("!=");
 	RegisterDigraph("<=");
@@ -154,6 +165,10 @@ void InitFrontEnd()
 	st_type    = BaseType("type", sBASE_TYPE, 0);
 	st_noreturn = BaseType("noreturn", sBASE_NORET, 0);
 	st_void    = BaseType("void", sBASE_VOID, 0);
+
+	st_bool8   = BaseType("bool8", sBASE_BOOL, 1);
+	st_bool16  = BaseType("bool16", sBASE_BOOL, 2);
+	st_bool32  = BaseType("bool32", sBASE_BOOL, 4);
 	st_bool    = BaseType("bool", sBASE_BOOL, target_size_of_bool);
 
 	st_char    = BaseType("char", sBASE_CHAR, 1);
@@ -186,14 +201,27 @@ void InitFrontEnd()
 	st_double  = BaseType("double", sBASE_FLOAT, target_size_of_double);
 	st_long_double = BaseType("long_double", sBASE_FLOAT, target_size_of_long_double);
 
-
 	RegisterBrackets();
 	RegisterOperators();
 
 	strcpy(@Text,"");
 
-	DefineInteger("__QOD_VERSION_MAJOR__", st_word, 0);
-	DefineInteger("__QOD_VERSION_MINOR__", st_word, 1);
+	DefineBoolInNamespace("hosted", false, pNamespace_qod_optional);
+	DefineBoolInNamespace("float", false, pNamespace_qod_optional);
+	DefineBoolInNamespace("int_with_nan", false, pNamespace_qod_optional);
+	DefineIntegerInNamespace("int_max_size", st_uint, 4, pNamespace_qod_optional);
+	DefineIntegerInNamespace("boolean_max_size", st_uint, 4, pNamespace_qod_optional);
+
+	DefineStringInNamespace("impl_name", @msgPRODUCT, pNamespace_qod_impl);
+	DefineStringInNamespace("impl_version_string", @msgVERSION, pNamespace_qod_impl);
+	DefineStringInNamespace("build_host", @__TRANSLATOR_TARGET__, pNamespace_qod_impl);
+
+	DefineIntegerInNamespace("qod_version_major", st_uint, 0, pNamespace_qod);
+	DefineIntegerInNamespace("qod_version_minor", st_uint, 1, pNamespace_qod);
+	DefineStringInNamespace("qod_version_string", "0.1", pNamespace_qod);
+
+	DefineInteger("__QOD_VERSION_MAJOR__", st_uint, 0);
+	DefineInteger("__QOD_VERSION_MINOR__", st_uint, 1);
 	DefineString("__QOD_VERSION_STR__", "0.1");
 	DefineString("__TRANSLATOR__", @msgPRODUCT);
 	DefineString("__TRANSLATOR_VERSION__", @msgVERSION);
@@ -201,11 +229,19 @@ void InitFrontEnd()
 
 	select
 	case TargetFileFormat == tPE:
+		DefineStringInNamespace("target", "i386-win32-pe", pNamespace_qod_impl);
+		DefineBoolInNamespace("__LINUX__", false, pNamespace_qod_env);
+		DefineBoolInNamespace("__WIN32__", true, pNamespace_qod_env);
+
 		DefineString("__TRANSLATOR_TARGET__", "i386-win32-pe");
 		DefineBool("__LINUX__", false);
 		DefineBool("__WIN32__", true);
 		strcat(@Text,"noreturn ExitProcess(word uExitCode) external KERNEL32;");
 	case TargetFileFormat == tELF:
+		DefineStringInNamespace("__TRANSLATOR_TARGET__", "i386-linux-elf", pNamespace_qod_impl);
+		DefineBoolInNamespace("__LINUX__", true, pNamespace_qod_env);
+		DefineBoolInNamespace("__WIN32__", false, pNamespace_qod_env);
+
 		DefineString("__TRANSLATOR_TARGET__", "i386-linux-elf");
 		DefineBool("__LINUX__", true);
 		DefineBool("__WIN32__", false);

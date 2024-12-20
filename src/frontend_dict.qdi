@@ -54,17 +54,21 @@ word ResolveGlobal(char @Buff; word @_pNamespace)
 	end:while
 end
 
-void CheckDuplicate(char @Buff)
-	word pDuplicateName = ResolveInNamespace(@Buff, pEnteredNamespace);
+void CheckDuplicateInNamespace(char @Buff; word pNamespace)
+	word pDuplicateName = ResolveInNamespace(@Buff, pNamespace);
 	if pDuplicateName != nDICT then
 		StopWithSubject(@eDUPLICATE, @Buff);
 	end
 end
 
+void CheckDuplicate(char @Buff)
+	CheckDuplicateInNamespace(@Buff, pEnteredNamespace);
+end
+
 /*****************************************************************************/
 
-word DefineInteger(char @Name; word Type; word Value)
-	CheckDuplicate(@Name);
+word DefineIntegerInNamespace(char @Name; word Type; word Value; word pNamespace)
+	CheckDuplicateInNamespace(@Name, pNamespace);
 
 	when !T_IsInteger(Type):
 		StopInternal(__FILE__, __LINE__);
@@ -77,15 +81,19 @@ word DefineInteger(char @Name; word Type; word Value)
 	d.pType = Type;
 	d.LiteralValue = Value;
 
-	DictAddToNamespace(D, pEnteredNamespace);
+	DictAddToNamespace(D, pNamespace);
 
 	return D;
 end
 
+word DefineInteger(char @Name; word Type; word Value)
+	return DefineIntegerInNamespace(@Name, Type, Value, pEnteredNamespace);
+end
+
 /*****************************************************************************/
 
-word DefineBool(char @Name; bool Value)
-	CheckDuplicate(@Name);
+word DefineBoolInNamespace(char @Name; bool Value; word pNamespace)
+	CheckDuplicateInNamespace(@Name, pNamespace);
 
 	word D = DictAlloc();
 	DictSetName(D, @Name);
@@ -99,15 +107,19 @@ word DefineBool(char @Name; bool Value)
 		d.LiteralValue = 0;
 	end:if
 
-	DictAddToNamespace(D, pEnteredNamespace);
+	DictAddToNamespace(D, pNamespace);
 
 	return D;
 end
 
+word DefineBool(char @Name; bool Value)
+	return DefineBoolInNamespace(@Name, Value, pEnteredNamespace);
+end
+
 /*****************************************************************************/
 
-word DefineString(char @Name; char @Value)
-	CheckDuplicate(@Name);
+word DefineStringInNamespace(char @Name; char @Value; word pNamespace)
+	CheckDuplicateInNamespace(@Name, pNamespace);
 
 	word i = strlen(@Value) + 1;
 
@@ -120,7 +132,19 @@ word DefineString(char @Name; char @Value)
 	d.LiteralValue = SaveString(@Value, i);
 	d.nLiteralSize = i;
 
-	DictAddToNamespace(D, pEnteredNamespace);
+	DictAddToNamespace(D, pNamespace);
 
 	return D;
+end
+
+word DefineString(char @Name; char @Value)
+	return DefineStringInNamespace(@Name, @Value, pEnteredNamespace);
+end
+
+/*****************************************************************************/
+
+word DefineNamespace(char @Name; word pParentNamespace)
+	word pNamespace = DictMakeNamespace(@Name);
+	DictAddToNamespace(pNamespace, pParentNamespace);
+	return pNamespace;
 end
