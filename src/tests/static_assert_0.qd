@@ -1,0 +1,15 @@
+// TEST: should_print 'OK1 '
+
+include "../include/test_env.qdi";
+
+int8 a;
+int16 b;
+int32 c;
+
+static_assert(sizeof(a) * 2 + sizeof(b) == sizeof(c));
+static_assert(!(sizeof(a) * 2 + sizeof(b) != sizeof(c)));
+static_assert(sizeof(a) * 2 + sizeof(b) != sizeof(c) + 1);
+
+begin
+	puts("OK1 ");
+end

@@ -1,0 +1,11 @@
+// TEST: compilation_should_fail 'static_assert: условие не выполнено'
+
+include "../include/test_env.qdi";
+
+int a, b;
+
+static_assert(sizeof(a) != sizeof(a));
+
+begin
+	puts("OK1 ");
+end

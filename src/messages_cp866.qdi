@@ -88,6 +88,9 @@ define @eCMDLINEQUOTE    "Пропущена кавычка"                           // Quote 
 define @eCMDLINEPARAM    "Пропущен параметр командной строки"          // Param expected
 define @eINVALIDBASE     "Недопустимое основание системы счисления"    //
 define @eMALFORMEDINT    "Неверный формат константы"                   //
+define @eSTATIC_ASSERT_FALSE "static_assert: условие не выполнено"
+define @eSTATIC_ASSERT_NON_CONST "static_assert: выражение невычислимо во время компиляции"
+define @eSTATIC_ASSERT_NON_BOOL "static_assert: тип выражения не является булевым"
 
 define @eNOTATYPEEXPR    "Значение выражения не является типом"
 define @eNOTACONSTEXPR   "Значение выражения не может быть вычислено на этапе компиляции"

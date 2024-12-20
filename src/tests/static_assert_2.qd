@@ -1,0 +1,11 @@
+// TEST: compilation_should_fail 'static_assert: выражение невычислимо во время компиляции'
+
+include "../include/test_env.qdi";
+
+int a, b;
+
+static_assert(sizeof(a) == b);
+
+begin
+	puts("OK1 ");
+end

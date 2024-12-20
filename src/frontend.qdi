@@ -147,6 +147,7 @@ void InitFrontEnd()
 	Word("repeat");
 	Word("return");
 	Word("select");
+	Word("static_assert");
 	Word("sizeof");
 	Word("struct");
 	Word("switch");

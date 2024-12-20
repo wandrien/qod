@@ -1,0 +1,10 @@
+// TEST: compilation_should_fail 'static_assert: тип выражения не является булевым'
+
+include "../include/test_env.qdi";
+
+int x;
+static_assert(x + 1);
+
+begin
+	puts("OK1 ");
+end

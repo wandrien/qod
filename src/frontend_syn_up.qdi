@@ -5,6 +5,40 @@
 
 /*****************************************************************************/
 
+bool StaticAssert(char@ Buff)
+	SOURCELOCATION Location = CurrentFileInfo;
+	word pExpr = ExprInParentheses(@Scan(@Buff), "static_assert");
+	select
+	case NodeIsTrue(pExpr):
+		pass;
+	case NodeIsFalse(pExpr):
+		ErrorAt(@Location, @eSTATIC_ASSERT_FALSE);
+	default:
+		bool caught = false;
+		word pType = Node[pExpr].pType;
+		if !T_IsBool(pType) then
+			ErrorAt(@Location, @eSTATIC_ASSERT_NON_BOOL);
+			ErrorWithSubjectAt(@Location, @eWRONGTYPE_2NDLINE, @T_GetName(pType));
+			caught = true;
+		end
+		if !IsStaticExpr(pExpr) then
+			ErrorAt(@Location, @eSTATIC_ASSERT_NON_CONST);
+			caught = true;
+		end:if
+		when !caught:
+			StopInternal(__FILE__, __LINE__);
+	end:select
+
+	if str_eq(@Buff,";") then
+		Scan(@Buff);
+	else
+		Error(@eSEMICOLONEXP);
+	end:if
+	return false;
+end
+
+/*****************************************************************************/
+
 void DeclMainFunc(char@ Buff)
 
 	word p = DictAlloc();
@@ -689,6 +723,8 @@ bool DeclNamespace(char @Buff)
 			DoScan = DeclAlias(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
+		case str_eq(@Buff,"static_assert"):
+			DoScan = StaticAssert(@Buff);
 		case str_eq(@Buff,"end"):
 			when !CurlyBraces:
 				exit;
@@ -749,6 +785,8 @@ void Parse()
 			DoScan = DeclAlias(@Buff);
 		case str_eq(@Buff,"synonym"):
 			DoScan = DeclSynonym(@Buff);
+		case str_eq(@Buff,"static_assert"):
+			DoScan = StaticAssert(@Buff);
 		case str_eq(@Buff,"begin"):
 			DeclMainFunc(@Buff);
 			exit;
