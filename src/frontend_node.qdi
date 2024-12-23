@@ -70,7 +70,7 @@ word NodeGetDict(word P)
 
 	switch Node[P].ID of
 	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
-		return Node[P].Value;
+		return DictResolveAlias(Node[P].Value);
 	end
 
 	StopInternal(__FILE__, __LINE__);

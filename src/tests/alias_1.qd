@@ -1,0 +1,22 @@
+// TEST: should_print '1234 1235 '
+
+include "../include/test_env.qdi";
+
+int foo(int x, y);
+
+int bar(int x, y)
+	return foo(x, y) + 1;
+end
+
+namespace AAA of
+	int foo(int x, y)
+		return x + y;
+	end
+end:namespace
+
+alias foo = AAA.foo;
+
+begin
+	put_int(foo(1000, 234)); puts(" ");
+	put_int(bar(1000, 234)); puts(" ");
+end

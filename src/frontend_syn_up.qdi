@@ -196,9 +196,30 @@ end
 
 /*****************************************************************************/
 
+void DeclAlias_Forward(word D; word pForward; word pExpr)
+	if Node[pExpr].ID != iFUNC then
+		ErrorWithSubject(@eDUPLICATE, @DictGetName(D));
+	end:if
+
+	word pFunc = Node[pExpr].Value;
+	if !T_IsFuctTypesIdentical(pFunc, pForward) then
+		ErrorWithSubject(@eDUPLICATE, @DictGetName(D));
+	end:if
+
+	Dict[pForward].Class = cNAME;
+	Dict[pForward].Sub   = sNONE;
+	Dict[pForward].pType = pFunc;
+end
+
 bool DeclAlias(char @Buff)
 	forever do
-		CheckDuplicate(@Scan(@Buff));
+		word pForward = ResolveInNamespace(@Scan(@Buff), pEnteredNamespace);
+		if pForward < nDICT then
+			when !Dict_IsFunction(pForward):
+				StopWithSubject(@eDUPLICATE, @Buff);
+			when Dict[pForward].Forward == 0:
+				StopWithSubject(@eDUPLICATE, @Buff);
+		end
 
 		word D = DictAlloc();
 		DictSetName(D, @Buff);
@@ -216,7 +237,10 @@ bool DeclAlias(char @Buff)
 		end:if
 
 		word pExpr = Expr(PRIO_ZERO, @Buff);
+
 		select
+		case pForward != nDICT:
+			DeclAlias_Forward(D, pForward, pExpr);
 		case IsTypeExpr(pExpr):
 			Dict[D].Class = cNAME;
 			Dict[D].pType = Node[pExpr].Value;
@@ -237,7 +261,8 @@ bool DeclAlias(char @Buff)
 			ErrorWithSubjectAt(@Location, @eALIAS_WRONGRVALUE, @DictGetName(D));
 		end:select
 
-		DictAddToNamespace(D, pEnteredNamespace);
+		when pForward == nDICT:
+			DictAddToNamespace(D, pEnteredNamespace);
 
 		when str_eq(@Buff,";"):
 			return true;

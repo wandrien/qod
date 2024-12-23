@@ -336,7 +336,7 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 	case iCALL:
 		when Node[pPrimary].pLeft != nNODE:
 			Code(Node[pPrimary].pLeft);
-		word pFunc = Node[pPrimary].Value;
+		word pFunc = NodeGetDict(pPrimary);
 		if Dict[pFunc].Sub==sSYS then
 			EmitWithPhoMode(
 				@strcpy3(@Buff,"call   [@",@str(Dict[pFunc].Label),"]"),
