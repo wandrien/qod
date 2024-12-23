@@ -133,6 +133,15 @@ end
 
 /*****************************************************************************/
 
+void EnsureValidIdentifier(char @Buff)
+	word I = 0;
+	if isalpha(Buff[0]) == 0 then
+		StopWithSubject(@eNAMEEXPECTED, @Buff);
+	end:if
+end
+
+/*****************************************************************************/
+
 word Tabl(char @Buff)
 	word nIndx = 0;
 	if strcmp(@Buff,"[") == 0 then
@@ -256,6 +265,38 @@ end
 
 /*****************************************************************************/
 
+void FuncArgs_ReadDecl(char @Buff; word pARGS)
+	word pPrefixType = ResolveGlobal(@Buff, NULL);
+	when pPrefixType >= nDICT | Dict[pPrefixType].Class != cTYPE:
+		StopWithSubject(@eTYPEEXP, @Buff);
+
+	forever do
+		word nPtr = ReadPtrs(@Buff);
+
+		EnsureValidIdentifier(@Buff);
+		word pARG = FindInNamespace(@Buff, pARGS);
+		when pARG < nDICT:
+			ErrorWithSubject(@eDUPLICATE, @Buff);
+
+		pARG = DictAlloc();
+		DictSetName(pARG, @Buff);
+		Dict[pARG].Class = cARG;
+		word pType = ReadTypeSuffix(@Buff, T_nPtrTo(nPtr, pPrefixType));
+		Dict[pARG].pType = pType;
+		DictAddToNamespace(pARG, pARGS);
+
+		when pType == st_void:
+			Error(@eNOVOID);
+		when T_IsFunc(pType):
+			Error(@eNOVAL);
+
+		when strcmp(@Scan(@Buff),",")!=0:
+			exit;
+
+		Scan(@Buff);
+	end:forever
+end
+
 void FuncArgs(char @Buff; word pFunc)
 	word pARGS = DictAlloc();
 	DictSetName(pARGS, "args");
@@ -263,44 +304,48 @@ void FuncArgs(char @Buff; word pFunc)
 	DictAddToNamespace(pARGS, pFunc);
 
 	Scan(@Buff);
-	while strcmp(@Buff,")")!=0 do
-		word pType = ResolveGlobal(@Buff, NULL);
-		when pType >= nDICT | Dict[pType].Class != cTYPE:
-			StopWithSubject(@eTYPEEXP, @Buff);
+	when str_eq(@Buff, ")"):
+		return;
 
-		forever do
-			word  nPtr=ReadPtrs(@Buff);
-
-			when pType == st_void & nPtr<1:
-				Stop(@eNOVOID);
-			when Dict[pType].Sub == sFUNCTYPE & nPtr<1:
-				Stop(@eNOVAL);
-
-			word pARG = FindInNamespace(@Buff, pARGS);
-			when pARG < nDICT:
-				StopWithSubject(@eDUPLICATE, @Buff);
-
-			pARG = DictAlloc();
-			DictSetName(pARG, @Buff);
-			Dict[pARG].Class = cARG;
-			Dict[pARG].pType = T_nPtrTo(nPtr, pType);
-			DictAddToNamespace(pARG, pARGS);
-
-			when strcmp(@Scan(@Buff),",")!=0:
-				exit;
-
+	bool FirstIteration = true;
+	forever do
+		FuncArgs_ReadDecl(@Buff, pARGS);
+		select
+		case str_eq(@Buff, ")"):
+			exit;
+		case str_eq(@Buff, ";"):
 			Scan(@Buff);
-		end:forever
-
-		if strcmp(@Buff,")")!=0 then
-			when strcmp(@Buff,";") != 0:
-				Stop(@eSEMICOLONEXP);
-			when strcmp(@Scan(@Buff),")") == 0:
-				Stop(@eTYPEEXP);
+			when str_eq(@Buff, ")"):
+				exit;
+		default:
+			Stop(@eSEMICOLONEXP);
 		end
+	end:forever
+end
 
-	end:while
+/*****************************************************************************/
 
+word ReadTypeSuffix(char @Buff; word pPrefixType)
+	word pType = pPrefixType;
+	forever do
+		select
+		case str_eq(@Buff, "@"):
+			pType = ReadTypeSuffix(@Scan(@Buff), pType);
+			return T_nPtrTo(1, pType);
+		case str_eq(@Buff, "["):
+			pType = Tabl_(@Buff, pType);
+		case str_eq(@Buff, "("):
+			word D = DictAlloc();
+			DictSetName(D, "");
+			Dict[D].Class = cTYPE;
+			Dict[D].Sub   = sFUNCTYPE;
+			FuncArgs(@Buff, D);
+			Dict[D].pType = ReadTypeSuffix(@Buff, pType);
+			return D;
+		default:
+			return pType;
+		end:select
+	end:forever
 end
 
 /*****************************************************************************/
@@ -348,7 +393,7 @@ end
 /*****************************************************************************/
 
 void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
-	word pARGS = FindInNamespace("args", pFunc);
+	word pARGS = T_FuncGetArgs(pFunc);
 	when pARGS >= nDICT:
 		StopInternal(__FILE__, __LINE__);
 	word pARG = Dict[pARGS].pFirst;
@@ -527,12 +572,12 @@ word Primary(word Prty; char @Buff)
 			if b != BRACKET_INVALID then
 				Node[P1].ID = iCALL;
 				Node[P1].Value = I;
-				pType = Dict[I].pType;
+				pType = Func_GetRetType(I);
 				Call = 1;
 
 				Scan(@Buff);
 
-				ParseCallArgs(I, @Node[P1].pLeft, @Buff, b);
+				ParseCallArgs(Func_GetType(I), @Node[P1].pLeft, @Buff, b);
 			else
 				if nPtr != 1 then
 					when Prty == PRIO_INC:
@@ -686,12 +731,12 @@ word Primary(word Prty; char @Buff)
 
 			P1 = Peek3(iLPTR, P1);
 			Node[P1].pType = T_nPtrTo(1, pType);
-			word P_CALL2 = Peek5(iCALL2, nNODE, P1, Dict[pType].pType);
+			word P_CALL2 = Peek5(iCALL2, nNODE, P1, T_FuncGetRetType(pType));
 
 			Scan(@Buff);
 			ParseCallArgs(pType, @Node[P_CALL2].pLeft, @Buff, b);
 
-			pType = Dict[pType].pType;
+			pType = T_FuncGetRetType(pType);
 			Call = 1;
 			P1 = P_CALL2;
 

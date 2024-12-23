@@ -47,6 +47,11 @@ word st_cond_branch;
 
 /*****************************************************************************/
 
+void function DumpDictEntryCallback(char @S)
+void DumpDictEntry(word I; DumpDictEntryCallback@ cb);
+
+/*****************************************************************************/
+
 /*
 	Проверяет достаточность памяти таблице Dict для выделения одного элемента.
 	TODO: при нехватке памяти, перераспределять динамически.
@@ -621,11 +626,23 @@ word T_FuncGetRetType(word T)
 	return Dict[T].pType;
 end
 
+word T_FuncGetArgs(word T)
+	when !T_IsFunc(T):
+		StopInternal(__FILE__, __LINE__);
+	return FindInNamespace("args", T);
+end
+
 /*
 	Функция проверяет идентичность функциональных типов.
 	Аргументами могут выступать функциональные типы, либо функции.
 */
 bool T_IsFuctTypesIdentical(word T1; word T2)
+	when Dict_IsFunction(T1):
+		T1 = Dict[T1].pType;
+
+	when Dict_IsFunction(T2):
+		T2 = Dict[T2].pType;
+
 	when T1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
@@ -635,17 +652,17 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 	when T1 == T2:
 		return true;
 
-	when !((Dict[T1].Class == cTYPE & Dict[T1].Sub == sFUNCTYPE) | (Dict[T1].Class == cFUNC)):
+	when !(Dict[T1].Class == cTYPE & Dict[T1].Sub == sFUNCTYPE):
 		return false;
 
-	when !((Dict[T2].Class == cTYPE & Dict[T2].Sub == sFUNCTYPE) | (Dict[T2].Class == cFUNC)):
+	when !(Dict[T2].Class == cTYPE & Dict[T2].Sub == sFUNCTYPE):
 		return false;
 
-	when Dict[T1].pType != Dict[T2].pType:
+	when !T_Equal(T_FuncGetRetType(T1), T_FuncGetRetType(T2)):
 		return false;
 
-	word pARGS1 = FindInNamespace("args", T1);
-	word pARGS2 = FindInNamespace("args", T2);
+	word pARGS1 = T_FuncGetArgs(T1);
+	word pARGS2 = T_FuncGetArgs(T2);
 	when pARGS1 >= nDICT | pARGS2 >= nDICT:
 		StopInternal(__FILE__, __LINE__);
 
@@ -762,7 +779,19 @@ end
 
 /*****************************************************************************/
 
-void function DumpDictEntryCallback(char @S)
+word Func_GetType(word pFunc)
+	return Dict[pFunc].pType;
+end
+
+word Func_GetRetType(word pFunc)
+	return T_FuncGetRetType(Func_GetType(pFunc));
+end
+
+word Func_GetArgs(word pFunc)
+	return T_FuncGetArgs(Func_GetType(pFunc));
+end
+
+/*****************************************************************************/
 
 void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 

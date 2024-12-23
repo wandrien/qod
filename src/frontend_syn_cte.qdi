@@ -529,18 +529,21 @@ void CTE_Function(word dFunc)
 		fReturn = CTE_CodeHasReturns(pBody);
 	end:if
 
-	if fReturn & (Dict[dFunc].pType == st_noreturn) then
+	word pTypeReturn = Func_GetRetType(dFunc);
+
+	if fReturn & (pTypeReturn == st_noreturn) then
 		ErrorAtNode(pBody, @eRETINNORET2);
 		return;
 	end:if
 
 	if !fReturn then
-		Dict[dFunc].pType = st_noreturn;
+		word pFuncType = Func_GetType(dFunc);
+		Dict[pFuncType].pType = st_noreturn;
 	end:if
 
 	if
 		(!fLastReturn & !fLastNoReturn & !fLastInlineAssembly) &
-		(Dict[dFunc].pType != st_void & Dict[dFunc].pType != st_noreturn)
+		(pTypeReturn != st_void & pTypeReturn != st_noreturn)
 	then
 		ErrorAtNodeWithSubject(pBody, @eMISSINGRET, @DictGetName(dFunc));
 	end:if

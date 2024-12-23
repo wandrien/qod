@@ -33,6 +33,7 @@ end
 
 /*****************************************************************************/
 
+word ReadTypeSuffix(char @Buff; word pPrefixType);
 word Statements(char @Buff; char @End1; char @End2; char @End3);
 word Ctrl(char @Buff);
 word Expr(word Prio; char @Buff);

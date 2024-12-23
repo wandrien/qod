@@ -40,28 +40,33 @@ end
 /*****************************************************************************/
 
 void DeclMainFunc(char@ Buff)
+	word pFunction = DictAlloc();
+	word pFuncType = DictAlloc();
 
-	word p = DictAlloc();
+	DictSetName(pFunction, "");
+	DictSetName(pFuncType, "");
 
-	pCurrentFunc = p;
-	pMainFunc = p;
-	word Saved_nLocal = nLocal;
+	Dict[pFunction].Class = cFUNC;
+	Dict[pFunction].Sub   = sMAIN;
+	Dict[pFunction].pType = pFuncType;
 
-	DictSetName(p, "");
-	Dict[p].Class = cFUNC;
-	Dict[p].Sub   = sMAIN;
-	Dict[p].pType = st_void;
+	Dict[pFuncType].Class = cTYPE;
+	Dict[pFuncType].Sub   = sFUNCTYPE;
+	Dict[pFuncType].pType = st_void;
 
 	word pARGS = DictAlloc();
 	DictSetName(pARGS, "args");
 	Dict[pARGS].Class = cARGS;
-	DictAddToNamespace(pARGS, p);
+	DictAddToNamespace(pARGS, pFuncType);
+
+	pCurrentFunc = pFunction;
+	pMainFunc = pFunction;
+	word Saved_nLocal = nLocal;
 
 	Scan(@Buff);
 	Dict[pCurrentFunc].pNode = Statements(@Buff, "end", NULL, NULL);
 
 	nLocal = Saved_nLocal;
-
 	pCurrentFunc = nDICT;
 end
 
@@ -194,7 +199,7 @@ end
 /*****************************************************************************/
 
 bool DeclSynonym(char @Buff) /* FIXME: REMOVE-NEXT */
-	Deprecated("'synonym' is deprecaed; use 'alias' instead");
+	Deprecated("'synonym' is deprecated; use 'alias' instead");
 
 	CheckDuplicate(@Scan(@Buff));
 
@@ -271,23 +276,35 @@ end
 /*****************************************************************************/
 
 void DeclFunc1(char @Buff; word _pFunc; word pForward)
+	word pFuncType = Dict[_pFunc].pType;
 
-	pCurrentFunc=_pFunc;
+	when !T_IsFunc(pFuncType):
+		StopInternal(__FILE__, __LINE__);
 
-	Dict[pCurrentFunc].Class = cFUNC;
-	Dict[pCurrentFunc].Sub   = sFUNC;
-	FuncArgs(@Buff, pCurrentFunc);
+	bool prototypeMismatch = false;
+	if pForward != nDICT & !T_IsFuctTypesIdentical(pFuncType, pForward) then
+		Error(@eTYPE_FUNC_FWD);
+		prototypeMismatch = true;
+		pForward = nDICT;
+	end
 
-	if pForward != nDICT then
-		word T1 = T_FuncTypeForFunction(pCurrentFunc);
-		word T2 = T_FuncTypeForFunction(pForward);
-		if !T_IsFuctTypesIdentical(T1, T2) then
-			Error(@eTYPE_FUNC_FWD);
-		else
-			DictFree(@pCurrentFunc);
-			pCurrentFunc = pForward;
-		end
+	word pFunc;
+	if pForward == nDICT then
+		pFunc = _pFunc;
+		Dict[pFunc].Class = cFUNC;
+		Dict[pFunc].Sub   = sFUNC;
+		when !prototypeMismatch:
+			DictAddToNamespace(pFunc, pEnteredNamespace);
+	else
+		DictFree(@_pFunc);
+		DictFree(@Dict[pForward].pType);
+		Dict[pForward].pType = pFuncType;
+		Dict[pForward].Forward = 0;
+		pFunc = pForward;
 	end:if
+
+	word pCurrentFunc_Saved = pCurrentFunc;
+	pCurrentFunc = pFunc;
 
 	Scan(@Buff);
 
@@ -357,6 +374,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 	end:select
 
+	pCurrentFunc = pCurrentFunc_Saved;
 end
 
 /*****************************************************************************/
@@ -443,7 +461,6 @@ void DeclVarFunc(char @Buff)
 	end
 
 	word pPrefixType = Node[pPrefixExpr].Value;
-	//pPrefixType = ResolveAlias(pPrefixType);
 	if pPrefixType == nDICT | Dict[pPrefixType].Class != cTYPE then
 		Stop(@eTYPEEXP);
 	end
@@ -460,7 +477,7 @@ void DeclVarFunc(char @Buff)
 	end
 
 
-	word FirstName = 1;
+	bool FirstName = true;
 
 	forever do
 		word nPtr = ReadPtrs(@Buff);
@@ -477,24 +494,19 @@ void DeclVarFunc(char @Buff)
 
 		DictSetName(D, @Buff);
 		Dict[D].pType = T_nPtrTo(nPtr, pPrefixType);
-		DictAddToNamespace(D, pEnteredNamespace);
+		Dict[D].pType = ReadTypeSuffix(@Scan(@Buff), Dict[D].pType);
 
-		Scan(@Buff);
-
-		/* Функция. */
-		if str_eq(@Buff,"(") then
-			if FirstName == 0 then
+		if T_IsFunc(Dict[D].pType) then
+			when !FirstName:
 				Stop(@eNOFUNCTION);
-			end
 			DeclFunc1(@Buff, D, pForward);
-			pCurrentFunc = nDICT;
 			return;
 		end
 
+		FirstName = false;
+
 		when pForward < nDict:
 			StopWithSubject(@eDUPLICATE, @DictGetName(D));
-
-		FirstName = 0;
 
 		if Dict[D].pType == st_void then
 			Stop(@eNOVOID);
@@ -504,9 +516,9 @@ void DeclVarFunc(char @Buff)
 			Stop(@eNOVAL);
 		end
 
+		DictAddToNamespace(D, pEnteredNamespace);
+
 		Dict[D]. Class=cDATA;
-		//Dict[D].nIndx = Tabl(@Buff);
-		Dict[D].pType = Tabl_(@Buff, Dict[D].pType);
 		Dict[D].pNode =nNODE;
 
 		if str_eq(@Buff,"=") then

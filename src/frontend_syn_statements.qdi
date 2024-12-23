@@ -426,16 +426,18 @@ end
 
 void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 
-	Node[P1].ID   =iRETURN;
+	Node[P1].ID = iRETURN;
 	Scan(@Buff);
 
-	if Dict[pCurrentFunc].pType == st_noreturn then
+	word pTypeReturn = Func_GetRetType(pCurrentFunc);
+
+	if pTypeReturn == st_noreturn then
 		Stop(@eRETINNORET);
 	end:if
 
-	if Dict[pCurrentFunc].pType != st_void then
+	if pTypeReturn != st_void then
 		Node[P1].pLeft=Expr(PRIO_ZERO, @Buff);
-		ImplicitCast(Dict[pCurrentFunc].pType, @Node[P1].pLeft);
+		ImplicitCast(pTypeReturn, @Node[P1].pLeft);
 	end:if
 
 	if str_ne(@Buff,";") then
@@ -471,42 +473,40 @@ end
 
 /*****************************************************************************/
 
-void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pType)
-	if pType>=nDict | Dict[pType].Class!=cTYPE then
-		StopInternal(__FILE__, __LINE__);
-	end:if
+void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefixType)
 
 	word P1 = _P1;
 
 	while true do
-
 		word nPtr=ReadPtrs(@Buff);
-		if pType==st_void & nPtr<1 then
-			Stop(@eNOVOID);
-		end:if
-
-		if Dict[pType].Sub==sFUNCTYPE & nPtr<1 then
-			Stop(@eNOVAL);
-		end:if
 
 		word I = ResolveLocal(@Buff);
 		when I < nLOCAL:
-			StopWithSubject(@eDUPLICATE, @Buff);
+			ErrorWithSubject(@eDUPLICATE, @Buff);
 
 		I = ResolveParm(@Buff);
 		when I < nDICT:
-			StopWithSubject(@eDUPLICATE, @Buff);
+			ErrorWithSubject(@eDUPLICATE, @Buff);
 
-		if nLocal>=nLOCAL then
-			StopMemory();
+		EnsureValidIdentifier(@Buff);
+
+		word Name2 = SaveString0(@Buff);
+		word pType = ReadTypeSuffix(@Scan(@Buff), T_nPtrTo(nPtr, pPrefixType));
+
+		if pType == st_void then
+			Stop(@eNOVOID);
 		end:if
 
-		Local[nLocal].Name2=SaveString0(@Buff);
-		Local[nLocal].pType=T_nPtrTo(nPtr, pType);
-		Local[nLocal].pType=Tabl_(@Scan(@Buff), Local[nLocal].pType);
-		//Local[nLocal].nIndx= Tabl(@Scan(@Buff));
+		if T_IsFunc(pType) then
+			Stop(@eNOVAL);
+		end:if
 
-		word  N=1;
+		when nLocal>=nLOCAL:
+			StopMemory();
+		Local[nLocal].Name2 = Name2;
+		Local[nLocal].pType = pType;
+
+		word N = 1;
 		if T_IsArray(Local[nLocal].pType) then
 			N = T_ArrayGetLen(Local[nLocal].pType);
 		end
@@ -539,7 +539,7 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pType)
 			Node[P6].Value =nLocal;
 			Node[P6].pType =Local[nLocal].pType;
 
-			ImplicitCast(T_nPtrTo(nPtr, pType), @Node[P5].pRight);
+			ImplicitCast(pType, @Node[P5].pRight);
 		end:if
 
 		inc nLocal;
@@ -556,14 +556,6 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pType)
 end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
-
-	/*
-		TODO: complete scheme to be implemented:
-		expr = expr2
-		expr [@] name [suffix] [ = expr2 ]
-		expr [@] name [suffix] [ of codeblock ]
-		expr name [ = expr2 ] {, name [ = expr2 ]}
-	*/
 
 	word pLValue = Expr(PRIO_LVALUE, @Buff);
 

@@ -21,7 +21,7 @@ end
 word ResolveParm(char @Name)
 	when pCurrentFunc == nDICT:
 		return nDICT;
-	word pARGS = FindInNamespace("args", pCurrentFunc);
+	word pARGS = Func_GetArgs(pCurrentFunc);
 	when pARGS >= nDICT:
 		StopInternal(__FILE__, __LINE__);
 	return FindInNamespace(@Name, pARGS);
