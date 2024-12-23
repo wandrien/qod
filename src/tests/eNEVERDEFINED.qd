@@ -1,0 +1,13 @@
+// TEST: compilation_should_fail '5:17: ошибка: Функция используется, но нигде не определена: foo'
+
+include "../include/test_env.qdi";
+
+int foo(int x);
+
+int bar(int x)
+	return foo(x) + 1;
+end
+
+begin
+	put_int(bar(0));
+end

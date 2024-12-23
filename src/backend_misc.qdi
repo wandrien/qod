@@ -130,6 +130,8 @@ void InitializeIDDesc()
 	InitIDDesc2(iCASE   , "iCASE"  , vcNone, 1);
 	InitIDDesc2(iVALUE  , "iVALUE" , vcNone, 1);
 	InitIDDesc2(iDEFAULT, "iDEFAULT", vcNone, 1);
+
+	InitIDDesc1(iINVALID, "iINVALID");
 end
 
 

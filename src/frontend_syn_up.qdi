@@ -286,6 +286,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 	select
 		case str_eq(@Buff,";"): /* Прототип. */
+			Dict[pCurrentFunc].pNode = Peek2(iINVALID);
 			Dict[pCurrentFunc].Forward = 1;
 
 		case str_eq(@Buff,"external"): /* Внешняя функция. */

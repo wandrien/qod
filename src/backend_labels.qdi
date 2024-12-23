@@ -261,18 +261,19 @@ end
 
 
 void AssignLabels_Func()
-
-  word I=0;
-  while I<nDict do
-    select
-      case Dict[I].Class==cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0:
-        Dict [I].Label = NewLabel();
-        Dict [I].StackSize=Enum(Dict[I].pNode,1);
-    end
-
-    inc I;
-  end
-
+	word I=0;
+	while I<nDict do
+		if Dict[I].Class==cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0 then
+			Dict[I].Label = NewLabel();
+			Dict[I].StackSize = Enum(Dict[I].pNode,1);
+			when Dict[I].Forward != 0:
+				ErrorAtNodeWithSubject(
+					Dict[I].pNode,
+					@eNEVERDEFINED, @DictGetFullyQualifiedName(I)
+				);
+		end
+		inc I;
+	end
 end
 
 

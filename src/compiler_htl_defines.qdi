@@ -137,7 +137,9 @@ define  iVIRTUAL_JUMP 62 // used in the backend for jump optimization
 define  iBRANCH_SF  63 // used in the backend for branch optimization
 define  iBRANCH_NSF 64 // used in the backend for branch optimization
 
-define  iID_COUNT   65
+define  iINVALID    65 // when something must not be accepted by backend
+
+define  iID_COUNT   66
 
 /*****************************************************************************/
 
