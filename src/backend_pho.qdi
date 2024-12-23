@@ -477,7 +477,7 @@ char@ PHO_Optimize_(char @Inst)
 		/* FIXME: не использовать здесь is_digit и val, поскольку они предназначены для распознавания символов и чисел входного языка транслятора, а не языка ассемблера. */
 
 		/* Если не число, инвалидируем значение изменямого регистра. */
-		if isdigit(s[0]) == 0 then
+		if !isdigit(s[0]) then
 			PHO_InvalidateReg(Reg1);
 			return @Inst;
 		end:if

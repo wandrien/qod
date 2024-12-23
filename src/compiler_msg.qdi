@@ -10,7 +10,7 @@ word pCurrentFileLiteral = nDICT;
 
 define  nMSGBUFF 512
 
-word HasErrors = 0;
+bool HasErrors = false;
 
 /*****************************************************************************/
 
@@ -59,7 +59,7 @@ void ErrorAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
 	PutMessage(@SourceLocation, @msgERROR, @Msg);
-	HasErrors = 1;
+	HasErrors = true;
 end
 
 void Error(char @Msg)

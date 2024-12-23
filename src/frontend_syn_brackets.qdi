@@ -16,14 +16,7 @@ end
 define nBRACKET 8
 define BRACKET_INVALID 8
 BRACKET Bracket[nBRACKET];
-
-word nBracket;
-
-/*****************************************************************************/
-
-void InitBracket()
-	nBracket = 0;
-end
+word nBracket = 0;
 
 /*****************************************************************************/
 

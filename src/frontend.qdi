@@ -70,10 +70,8 @@ include "frontend_syn_up.qdi";
 void InitFrontEnd()
 
 	init_charid();
-	InitLex();
 	InitCharData();
-	InitBracket();
-	InitOperator();
+	InitOperators();
 
 	nDict = 0;
 	nLocal = 0;

@@ -164,3 +164,253 @@ bool IsExplicitCastPossible(word From; word To)
 
 	return false;
 end
+
+/*****************************************************************************/
+
+word IntegerPromotion(word pType)
+	when T_SizeOf(pType) < T_SizeOf(st_int):
+			return st_int;
+	return pType;
+end
+
+void ApplyCommonType(word P_OP; word pType)
+	AddImplicitCast(pType, @Node[P_OP].pLeft);
+	AddImplicitCast(pType, @Node[P_OP].pRight);
+	Node[P_OP].pType = pType;
+end
+
+void ApplyUACCastsForIntegers(word P_OP; word O)
+
+	/* Usual arithmetic conversions */
+
+	word P1 = Node[P_OP].pLeft;
+	word P2 = Node[P_OP].pRight;
+
+	word pType1 = Node[P1].pType;
+	word pType2 = Node[P2].pType;
+
+	/* Skip for non-integers. */
+	when T_IsInteger(pType1) == false | T_IsInteger(pType2) == false:
+		return;
+
+	bool do_integer_promotion = false; /* TODO: disabled now; should be configurable with a pragma */
+	bool allow_implicit_cast_uint_to_int = true; /* TODO: should be configurable with a pragma */
+
+	if do_integer_promotion then
+		pType1 = IntegerPromotion(pType1);
+		pType2 = IntegerPromotion(pType2);
+		AddImplicitCast(pType1, @Node[P_OP].pLeft);
+		AddImplicitCast(pType2, @Node[P_OP].pRight);
+		P1 = Node[P_OP].pLeft;
+		P2 = Node[P_OP].pRight;
+	end:if
+
+	/* Эквивалентные типы. */
+	if T_Equal(pType1, pType2) then
+		ApplyCommonType(P_OP, pType1);
+		return;
+	end:if
+
+	bool P1_IsLiteralAutocastPossible = IsLiteralAutoCastPossible(pType2, P1);
+	bool P2_IsLiteralAutocastPossible = IsLiteralAutoCastPossible(pType1, P2);
+	if P1_IsLiteralAutocastPossible & !P2_IsLiteralAutocastPossible then
+		AddImplicitCast(pType2, @Node[P_OP].pLeft);
+		return;
+	end
+	if P2_IsLiteralAutocastPossible & !P1_IsLiteralAutocastPossible then
+		AddImplicitCast(pType1, @Node[P_OP].pRight);
+		return;
+	end
+
+	/* signed + signed OR unsigned + unsigned */
+	if T_IsSigned(pType1) == T_IsSigned(pType2) then
+		word rank1 = T_SizeOf(pType1);
+		word rank2 = T_SizeOf(pType2);
+		word pTargetType;
+		if rank1 > rank2 then
+			pTargetType = pType1;
+		else
+			pTargetType = pType2;
+		end
+		ApplyCommonType(P_OP, pTargetType);
+		return;
+	end:if
+
+	/* signed + unsigned */
+
+	word pTypeSigned;
+	word pTypeUnsigned;
+
+	select
+	case T_IsSigned(pType1) & T_IsUnsigned(pType2):
+		pTypeSigned = pType1;
+		pTypeUnsigned = pType2;
+	case T_IsSigned(pType2) & T_IsUnsigned(pType1):
+		pTypeSigned = pType2;
+		pTypeUnsigned = pType1;
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+
+	word rankSigned = T_SizeOf(pTypeSigned);
+	word rankUnsigned = T_SizeOf(pTypeUnsigned);
+
+	if rankSigned > rankUnsigned then
+		word pTargetType = pTypeSigned;
+		ApplyCommonType(P_OP, pTypeSigned);
+		return;
+	end:if
+
+	if rankSigned == rankUnsigned then
+		if allow_implicit_cast_uint_to_int then
+			Warn(@wTYPE_SIGNED_UNSIGNED);
+		else
+			Error(@wTYPE_SIGNED_UNSIGNED);
+		end:if
+		word pTargetType = pTypeSigned;
+		ApplyCommonType(P_OP, pTypeSigned);
+		return;
+	end:if
+
+end
+
+void Cast2(word P_OP; word O)
+
+	ApplyUACCastsForIntegers(P_OP, O);
+
+	word ID = Node[P_OP].ID;
+
+	word P1 = Node[P_OP].pLeft;
+	word P2 = Node[P_OP].pRight;
+
+	word pType1 = Node[P1].pType;
+	word pType2 = Node[P2].pType;
+
+	word pTypeOp = pType1;
+
+	/**************************************************************************/
+
+	/* Допустимые сочетания операндов: */
+	select
+
+	/* Оба типа - указатели. */
+	case T_IsPtr(pType1) & T_IsPtr(pType2):
+		pass;
+
+	/* Указатель и null */
+	case T_IsPtr(pType1) & T_IsNulltype(pType2):
+		pass;
+	case T_IsPtr(pType2) & T_IsNulltype(pType1):
+		pass;
+
+	/* С обеих сторон - один и тот же тип... */
+	case T_Equal(pType1, pType2):
+		select
+		case T_IsInteger(pType1):
+			pass;
+		case T_IsChar(pType1):
+			pass;
+		case T_IsBool(pType1):
+			pass;
+		case T_IsType(pType1):
+			pass;
+		case T_IsNulltype(pType1):
+			pass;
+		default:
+			StopAtNode(P_OP, @eTYPE);
+		end:select
+
+	default:
+		AddFakeCast(pType1, @Node[P_OP].pRight);
+		ErrorAtNode(P_OP, @eTYPE);
+	end:select
+
+	/**************************************************************************/
+
+	select
+	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
+		select
+		case T_IsUnsigned(pTypeOp):
+			Node[P_OP].ID=iBIT_OR;
+		case pTypeOp == st_bool:
+			pass;
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+		end
+
+		CTE(P_OP);
+
+	case ID == iXOR: /* Аналогично предыдущему. */
+		select
+		case T_IsUnsigned(pTypeOp):
+			Node[P_OP].ID=iBIT_XOR;
+		case pTypeOp == st_bool:
+			Stop(@eXORNOTIMPL);
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+		end
+
+		CTE(P_OP);
+
+	case ID == iAND: /* Аналогично предыдущему. */
+		select
+		case T_IsUnsigned(pTypeOp):
+			Node[P_OP].ID=iBIT_AND;
+		case pTypeOp == st_bool:
+			pass;
+		case T_IsSigned(pTypeOp):
+			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+		default:
+			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+		end
+
+		CTE(P_OP);
+
+	case iLT<=ID & ID<=iGT:
+		if ID == iEQ | ID == iNE then
+			/* Сравнение равенство/неравенство... */
+			/* ...возможно только между целыми, булевыми, символами, указателями, типами. */
+			if
+				!T_IsInteger(pTypeOp) &
+				!T_IsChar(pTypeOp) &
+				!T_IsBool(pTypeOp) &
+				!T_IsPtr(pTypeOp) &
+				!T_IsNulltype(pTypeOp) &
+				!T_IsType(pTypeOp)
+			then
+				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+			end
+		else
+			/* Сравнение больше/меньше */
+			/* ...возможно только между целыми, символами. */
+			if
+				!T_IsInteger(pTypeOp) &
+				!T_IsChar(pTypeOp)
+			then
+				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+			end
+		end:if
+		pTypeOp = st_bool;
+
+		CTE(P_OP);
+
+	case iADD<=ID & ID<=iMOD:
+		/* Арифметические операции только с целыми. */
+		if !T_IsInteger(pTypeOp) then
+			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
+		end
+		CTE(P_OP);
+
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+
+	Node[P_OP].pType = pTypeOp;
+
+end
+
+/*****************************************************************************/

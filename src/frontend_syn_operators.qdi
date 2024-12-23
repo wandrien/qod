@@ -32,16 +32,14 @@ end
 define nOPERATOR 64
 OPERATOR Operator[nOPERATOR];
 
-word nOperator;
-word NeedToSortOperators;
+word nOperator = 0;
+bool NeedToSortOperators = true;
 
 define OPERATOR_INVALID nOPERATOR
 
 /*****************************************************************************/
 
-void InitOperator()
-	nOperator = 0;
-
+void InitOperators()
 	word i = 0;
 	while i < nOPERATOR do
 		Operator[i].Name[0] = #0;
@@ -49,17 +47,15 @@ void InitOperator()
 		Operator[i].Prio = 0;
 		inc i;
 	end
-	NeedToSortOperators = 1;
+	NeedToSortOperators = true;
 end
 
 /*****************************************************************************/
 
 /* Сортировка операций по приоритету для алгоритма поиска. */
 void SortOperators()
-
-	if NeedToSortOperators == 0 then
+	when !NeedToSortOperators:
 		return;
-	end:if
 
 	word i = 0;
 	while i < nOperator do
@@ -75,7 +71,7 @@ void SortOperators()
 		inc i;
 	end:while
 
-	NeedToSortOperators = 0;
+	NeedToSortOperators = false;
 end
 
 /*****************************************************************************/
@@ -100,7 +96,7 @@ word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Han
 	Operator[i].Mode = Mode;
 	Operator[i].ID   = ID;
 	@Operator[i].Handler = @Handler;
-	NeedToSortOperators = 1;
+	NeedToSortOperators = true;
 
 	return i;
 end

@@ -1,7 +1,5 @@
 
-/*
-	Анализатоp упpавляющих констpукций.
-*/
+//namespace StatementParser of
 
 /*****************************************************************************/
 
@@ -686,3 +684,7 @@ end
 
 /*****************************************************************************/
 
+//end:StatementParser;
+
+//alias MatchSemicolon = StatementParser.MatchSemicolon;
+//alias EndOf = StatementParser.EndOf; /* FIXME: Внутренняя ошибка в генераторе кода: backend_asmcode.qdi:400 */

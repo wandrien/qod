@@ -10,7 +10,7 @@ struct Digraph of
 end
 
 Digraph Digraphs[nDIGRAPH];
-word nDigraph;
+word nDigraph = 0;
 
 /*****************************************************************************/
 
@@ -24,9 +24,9 @@ struct Comment of
 end
 
 Comment Comments[nCOMMENT];
-word nComment;
+word nComment = 0;
 
-char@ HereCommentPrefix;
+char@ HereCommentPrefix = NULL;
 word HereCommentPrefixLen = 0;
 
 /*****************************************************************************/
@@ -35,7 +35,7 @@ word HereCommentPrefixLen = 0;
 	Пропуск пробельных символов.
 */
 void SkipWhitespaces()
-	while iswhitespace(Read()) != 0 do
+	while iswhitespace(Read()) do
 		Next();
 	end
 end
@@ -121,7 +121,7 @@ void ScanAlphaNum(char@ Buff; word @Len)
 	word P = 0;
 	forever do
 		char Ch = Read();
-		when isalpha(Ch) == 0 & isdigit(Ch) == 0:
+		when !isalpha(Ch) & !isdigit(Ch):
 			exit;
 
 		Buff[P] = Ch;
@@ -269,14 +269,6 @@ void RegisterComment(char@ Prefix; char@ Suffix)
 	strcpy(@Comments[nComment].Suffix, @Suffix);
 
 	inc nComment;
-end
-
-/*****************************************************************************/
-
-void InitLex()
-	nDigraph = 0;
-	nComment = 0;
-	@HereCommentPrefix = NULL;
 end
 
 /*****************************************************************************/

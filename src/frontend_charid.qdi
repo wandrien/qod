@@ -4,30 +4,21 @@ define CHARID_ALPHA   1
 define CHARID_DIGIT   2
 define CHARID_WSPACE  3
 
-word charid_table[256];
+byte charid_table[256];
 
-word is_charid(char c; word id)
-	if charid_table[word(c)] == id then
-		return 1;
-	end:if
-	return 0;
+bool isalpha(char c)
+	return charid_table[word(c)] == CHARID_ALPHA;
 end
 
-word isalpha(char c)
-	return is_charid(c, CHARID_ALPHA);
+bool isdigit(char c)
+	return charid_table[word(c)] == CHARID_DIGIT;
 end
 
-
-word  isdigit(char c)
-	return is_charid(c, CHARID_DIGIT);
+bool iswhitespace(char c)
+	return charid_table[word(c)] == CHARID_WSPACE;
 end
 
-word  iswhitespace(char c)
-	return is_charid(c, CHARID_WSPACE);
-end
-
-
-void init_charid_interval(word id; char from; char to)
+void init_charid_interval(byte id; char from; char to)
 	word i = word(from);
 	while i <= word(to) do
 		charid_table[i] = id;
@@ -35,7 +26,7 @@ void init_charid_interval(word id; char from; char to)
 	end:while
 end
 
-void init_charid_with_string(word id; char@ chars)
+void init_charid_with_string(byte id; char@ chars)
 	word i = 0;
 	while chars[i] != #0 do
 		charid_table[word(chars[i])] = id;
