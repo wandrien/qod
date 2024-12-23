@@ -110,7 +110,7 @@ end
 
 /*****************************************************************************/
 
-void PHO_RegLoadConst(word R; word Data)
+void PHO_RegConnectConst(word R; word Data)
 	when !PHOptimization:
 		return;
 
@@ -127,6 +127,10 @@ void PHO_RegLoadConst(word R; word Data)
 
 	PHO_ValidRegConst[R] = 1;
 	PHO_RegConst[R] = Data;
+end
+
+void PHO_RegLoadConst(word R; word Data)
+	PHO_RegConnectConst(R, Data);
 	PHO_InvalidateRegNodeLink(R);
 end
 

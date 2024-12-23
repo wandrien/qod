@@ -130,11 +130,11 @@ word Code_PUSH(word P; char @Buff)
 			end:if
 		end:if
 
-		if Size == 4 then
-			/* Прямая загрузка числа. Кроме значения 0. Для 0 используем общий алгоритм,
-			   который позволяет оптимизировать до xor.
-			*/
-			if Value != 0 then
+		/* Прямая загрузка числа. Кроме значения 0.
+		   Для 0 используем общий алгоритм, который позволяет оптимизировать до xor.
+		*/
+		if Value != 0 then
+			if Size == 4 | Size == 2 | Size == 1 then
 				EmitPhoSkip(@strcpy2(@Buff, "push    dword ", @str(Value)));
 				return nDICT;
 			end:if

@@ -488,7 +488,7 @@ void Code_STORE(ValueRef @Ref; word pLinkStore, pLinkLoad)
 		Emit("cld");
 		Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
 		Emit("rep     movsb");
-		PHO_RegLoadConst(RegC, 0);
+		PHO_RegConnectConst(RegC, 0);
 	end:select
 end
 
@@ -1418,7 +1418,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				end:if
 			end:if
 			when (Size == 4) & (ID == iNE):
-				PHO_RegLoadConst(Reg_TARGET, PHO_Load_Value);
+				PHO_RegConnectConst(Reg_TARGET, PHO_Load_Value);
 		case rightOperand == operandMemRef:
 			EmitPhoSkip(
 				@CodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
@@ -1731,6 +1731,8 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 			EmitBranchToLabel("z", @F);
 		case @T != NULL:
 			EmitBranchToLabel("nz", @T);
+			when Size == 4:
+				PHO_RegConnectConst(Reg_TARGET, 0);
 		end:select
 		return st_cond_branch;
 
