@@ -1,20 +1,20 @@
-synonym  TCHAR                        char
-synonym  BYTE                         byte
-synonym  UINT                         word
-synonym  DWORD                        word
-synonym  HANDLE                       word
-synonym  HINSTANCE                    word
-synonym  HICON                        word
-synonym  HCURSOR                      word
-synonym  HBRUSH                       word
-synonym  HFONT                        word
-synonym  HGDIOBJ                      word
-synonym  HMENU                        word
-synonym  HWND                         word
-synonym  HDC                          word
-synonym  WPARAM                       word
-synonym  LPARAM                       word
-synonym  LONG                         word
-synonym  ATOM                         word
-synonym  BOOL                         word
-synonym  LRESULT                      word
+type TCHAR     = char;
+type BYTE      = byte;
+type UINT      = word;
+type DWORD     = word;
+type HANDLE    = word;
+type HINSTANCE = word;
+type HICON     = word;
+type HCURSOR   = word;
+type HBRUSH    = word;
+type HFONT     = word;
+type HGDIOBJ   = word;
+type HMENU     = word;
+type HWND      = word;
+type HDC       = word;
+type WPARAM    = word;
+type LPARAM    = word;
+type LONG      = word;
+type ATOM      = word;
+type BOOL      = word;
+type LRESULT   = word;

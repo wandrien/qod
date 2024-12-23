@@ -198,28 +198,6 @@ end
 
 /*****************************************************************************/
 
-bool DeclSynonym(char @Buff) /* FIXME: REMOVE-NEXT */
-	Deprecated("'synonym' is deprecated; use 'alias' instead");
-
-	CheckDuplicate(@Scan(@Buff));
-
-	word D = DictAlloc();
-	DictSetName(D, @Buff);
-	Dict[D].Class = cNAME;
-
-	word pType = ResolveGlobal(@Scan(@Buff), NULL);
-	if pType >= nDict then
-		Stop(@eUNDECLARED);
-	end
-
-	DictAddToNamespace(D, pEnteredNamespace);
-	Dict[D].pType = pType;
-
-	return false;
-end
-
-/*****************************************************************************/
-
 bool DeclAlias(char @Buff)
 	forever do
 		CheckDuplicate(@Scan(@Buff));
@@ -733,8 +711,6 @@ bool DeclNamespace(char @Buff)
 			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"alias"):
 			DoScan = DeclAlias(@Buff);
-		case str_eq(@Buff,"synonym"):
-			DoScan = DeclSynonym(@Buff);
 		case str_eq(@Buff,"static_assert"):
 			DoScan = StaticAssert(@Buff);
 		case str_eq(@Buff,"end"):
@@ -795,8 +771,6 @@ void Parse()
 			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"alias"):
 			DoScan = DeclAlias(@Buff);
-		case str_eq(@Buff,"synonym"):
-			DoScan = DeclSynonym(@Buff);
 		case str_eq(@Buff,"static_assert"):
 			DoScan = StaticAssert(@Buff);
 		case str_eq(@Buff,"begin"):

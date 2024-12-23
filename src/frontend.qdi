@@ -152,7 +152,6 @@ void InitFrontEnd()
 	Word("sizeof");
 	Word("struct");
 	Word("switch");
-	Word("synonym"); /* FIXME: REMOVE-NEXT */
 	Word("then");
 	Word("true");
 	Word("until");
@@ -218,18 +217,11 @@ void InitFrontEnd()
 
 	DefineStringInNamespace("impl_name", @msgPRODUCT, pNamespace_qod_impl);
 	DefineStringInNamespace("impl_version_string", @msgVERSION, pNamespace_qod_impl);
-	DefineStringInNamespace("build_host", @__TRANSLATOR_TARGET__, pNamespace_qod_impl);
+	DefineStringInNamespace("build_host", @qod.impl.target, pNamespace_qod_impl);
 
 	DefineIntegerInNamespace("qod_version_major", st_uint, 0, pNamespace_qod);
 	DefineIntegerInNamespace("qod_version_minor", st_uint, 1, pNamespace_qod);
 	DefineStringInNamespace("qod_version_string", "0.1", pNamespace_qod);
-
-	DefineInteger("__QOD_VERSION_MAJOR__", st_uint, 0); /* FIXME: REMOVE-NEXT */
-	DefineInteger("__QOD_VERSION_MINOR__", st_uint, 1); /* FIXME: REMOVE-NEXT */
-	DefineString("__QOD_VERSION_STR__", "0.1"); /* FIXME: REMOVE-NEXT */
-	DefineString("__TRANSLATOR__", @msgPRODUCT); /* FIXME: REMOVE-NEXT */
-	DefineString("__TRANSLATOR_VERSION__", @msgVERSION); /* FIXME: REMOVE-NEXT */
-	DefineString("__TRANSLATOR_HOST__", @__TRANSLATOR_TARGET__); /* FIXME: REMOVE-NEXT */
 
 	select
 	case TargetFileFormat == tPE:
@@ -237,18 +229,11 @@ void InitFrontEnd()
 		DefineBoolInNamespace("__LINUX__", false, pNamespace_qod_env);
 		DefineBoolInNamespace("__WIN32__", true, pNamespace_qod_env);
 
-		DefineString("__TRANSLATOR_TARGET__", "i386-win32-pe"); /* FIXME: REMOVE-NEXT */
-		DefineBool("__LINUX__", false); /* FIXME: REMOVE-NEXT */
-		DefineBool("__WIN32__", true); /* FIXME: REMOVE-NEXT */
 		strcat(@Text,"noreturn ExitProcess(word uExitCode) external KERNEL32;");
 	case TargetFileFormat == tELF:
 		DefineStringInNamespace("target", "i386-linux-elf", pNamespace_qod_impl);
 		DefineBoolInNamespace("__LINUX__", true, pNamespace_qod_env);
 		DefineBoolInNamespace("__WIN32__", false, pNamespace_qod_env);
-
-		DefineString("__TRANSLATOR_TARGET__", "i386-linux-elf"); /* FIXME: REMOVE-NEXT */
-		DefineBool("__LINUX__", true); /* FIXME: REMOVE-NEXT */
-		DefineBool("__WIN32__", false); /* FIXME: REMOVE-NEXT */
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
