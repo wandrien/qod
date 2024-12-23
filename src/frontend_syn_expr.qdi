@@ -1,10 +1,8 @@
 
-/* Expression parser */
-
-/*****************************************************************************/
-
 include "frontend_syn_cast.qdi";
 include "frontend_syn_cte.qdi";
+
+namespace ExpressionParser of
 
 /*****************************************************************************/
 
@@ -1196,3 +1194,18 @@ void RegisterBrackets()
 	RegisterBracket(BracketType_Parentheses, "(*", "*)");
 	RegisterBracket(BracketType_Parentheses, "(%", "%)");
 end
+
+/*****************************************************************************/
+
+end:ExpressionParser;
+
+alias val = ExpressionParser.val;
+alias ReadPtrs = ExpressionParser.ReadPtrs;
+alias EnsureValidIdentifier = ExpressionParser.EnsureValidIdentifier;
+alias ExprInParentheses = ExpressionParser.ExprInParentheses;
+alias Tabl_ = ExpressionParser.Tabl_;
+alias FuncArgs = ExpressionParser.FuncArgs;
+alias RegisterBrackets = ExpressionParser.RegisterBrackets;
+alias RegisterOperators = ExpressionParser.RegisterOperators;
+alias ReadTypeSuffix = ExpressionParser.ReadTypeSuffix;
+alias Expr = ExpressionParser.Expr;

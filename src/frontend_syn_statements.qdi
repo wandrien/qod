@@ -1,5 +1,5 @@
 
-//namespace StatementParser of
+namespace StatementParser of
 
 /*****************************************************************************/
 
@@ -7,12 +7,6 @@ void MatchSemicolon(char @Buff)
 	Scan(@Buff);
 	if str_ne(@Buff,";") then
 		Stop(@eSEMICOLONEXP);
-	end
-end
-
-void MatchOptionalSemicolon(char @Buff)
-	if str_eq(@Buff,";") then
-		Scan(@Buff);
 	end
 end
 
@@ -684,7 +678,9 @@ end
 
 /*****************************************************************************/
 
-//end:StatementParser;
+end:StatementParser;
 
-//alias MatchSemicolon = StatementParser.MatchSemicolon;
-//alias EndOf = StatementParser.EndOf; /* FIXME: Внутренняя ошибка в генераторе кода: backend_asmcode.qdi:400 */
+alias MatchSemicolon = StatementParser.MatchSemicolon;
+alias EndOf = StatementParser.EndOf;
+alias Statements = StatementParser.Statements;
+alias Ctrl = StatementParser.Ctrl;

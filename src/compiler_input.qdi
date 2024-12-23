@@ -33,7 +33,6 @@ word    hText;         // Дескриптор открытого файла.
 
 word AlreadyOnNext = 0;
 word BeforeFirstFile;
-word EOFMode = 0;
 
 /*****************************************************************************/
 

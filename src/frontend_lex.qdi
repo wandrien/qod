@@ -1,5 +1,5 @@
 
-/* Лексический сканеp. */
+namespace Lexer of
 
 /*****************************************************************************/
 
@@ -272,3 +272,12 @@ void RegisterComment(char@ Prefix; char@ Suffix)
 end
 
 /*****************************************************************************/
+
+end:Lexer;
+
+alias Scan = Lexer.Scan;
+alias ScanString = Lexer.ScanString;
+alias ScanChar = Lexer.ScanChar;
+alias RegisterDigraph = Lexer.RegisterDigraph;
+alias RegisterComment = Lexer.RegisterComment;
+alias RegisterHereCommentPrefix = Lexer.RegisterHereCommentPrefix;
