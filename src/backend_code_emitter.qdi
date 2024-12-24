@@ -8,6 +8,8 @@
 word ParmFrameSize; /* Размер фрейма стека, освобождаемого при выходе из функции. */
 word AllocatedFrameSize; /* Текущий размер фрейма стека, задействованный под локальные переменные. */
 
+bool CodeRequiresSingleRegister(word P);
+
 /*
 Active register.
 
@@ -102,6 +104,27 @@ word ChooseEmptyReg3()
 	return RegNone;
 end
 
+word ChooseOptimalRegForNode(word P; word RegDefault)
+	select
+	case NodeCanBeEncodedAsImm(P):
+		word Value = Node[P].Value;
+		if Value == 0 then
+			return ChooseEmptyReg2();
+		else
+			return RegDefault;
+		end:if
+	case CodeRequiresSingleRegister(P):
+		word Reg = ChooseEmptyReg2();
+		if Reg != RegNone then
+			return Reg;
+		else
+			return RegDefault;
+		end:if
+	default:
+		return RegDefault;
+	end:select
+end
+
 /*****************************************************************************/
 
 word LookupRegForNode(word P)
@@ -124,7 +147,6 @@ end
 
 word Code(word P);
 word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M);
-bool CodeRequiresSingleRegister(word P);
 
 /*****************************************************************************/
 
@@ -1141,10 +1163,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		exit;
 	end:forever
 
+	/*
+		TODO: проверять не только Reg_TARGET, но и среди других регистров искать.
+	*/
 	word rightReg = RegNone;
 	word fSwap=0;
 	word pType;
-
 	word regReuse = 0;
 	select
 	case (rightOperand == operandImm) &
@@ -1843,7 +1867,11 @@ word Code_ASSIGN(word P)
 		default:
 			Reg_ALT_TARGET = PHO_LookupRegForNode(Node[P1].pRight);
 			if Reg_ALT_TARGET == RegNone then
-				Reg_TARGET = RegA;
+				if CodeRequiresSingleRegister(Node[P1].pLeft) then
+					Reg_TARGET = ChooseOptimalRegForNode(Node[P1].pRight, RegA);
+				else
+					Reg_TARGET = RegA;
+				end:if
 				Code(Node[P1].pRight);
 				Reg_ALT_TARGET = Reg_TARGET;
 			else
