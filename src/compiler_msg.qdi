@@ -55,6 +55,12 @@ void Warn(char @Msg)
 	WarnAt(@CurrentFileInfo, @Msg);
 end
 
+void WarnWithSubject(char @Msg; char @Subject)
+	char Buff[nMSGBUFF];
+	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
+	Warn(@Buff);
+end
+
 void ErrorAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;

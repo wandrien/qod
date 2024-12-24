@@ -94,14 +94,14 @@ begin
 	BBB.B1 bbb_b1;
 	BBB.B2 bbb_b2;
 
-	x1 = 10;
+	x1 = (NNN.i16)(10);
 	BBB.x1 = x1 + 10;
-	BBB.AAA.x1 = BBB.x1 + 10;
-	BBB.AAA.x2 = BBB.AAA.x1 + 5;
-	BBB.AAA.x2 = BBB.AAA.x2 + BBB.Const4;
+	(BBB).AAA.x1 = BBB.x1 + 10;
+	(BBB.AAA).x2 = BBB.AAA.x1 + 5;
+	BBB.AAA.x2 = BBB.AAA.x2 + (BBB).Const4;
 
 	@BBB.pF = @BBB.AAA.foo2;
-	int foo_results = BBB.pF(BBB.AAA.foo2(foo() + BBB.foo() + BBB.AAA.foo()));
+	int foo_results = BBB.pF((BBB.AAA).foo2(foo() + BBB.foo() + BBB.AAA.foo()));
 	BBB.u32 foo2_results = foo2(BBB.u32(x1), BBB.u16(5));
 
 	puts(@str(sizeof(AAA))); puts(" ");

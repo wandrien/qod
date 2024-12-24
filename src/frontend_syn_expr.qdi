@@ -416,6 +416,7 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
 
 	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
 		Stop(@eBRACKETEXP);
+	Scan(@Buff);
 end
 
 /*****************************************************************************/
@@ -444,6 +445,237 @@ end
 
 /*****************************************************************************/
 
+word ReadFuncCall(char @Buff; word pPreallocated; word pFunc; word pBracket)
+	word pFuncType = Func_GetType(pFunc);
+	word pRetType = T_FuncGetRetType(pFuncType);
+	Node[pPreallocated].ID = iCALL;
+	Node[pPreallocated].Value = pFunc;
+	Node[pPreallocated].pType = pRetType;
+
+	Scan(@Buff);
+	ParseCallArgs(pFuncType, @Node[pPreallocated].pLeft, @Buff, pBracket);
+	return pPreallocated;
+end
+
+word ReadIndirecFuncCall(char @Buff; word pPtrExpr; word pBracket)
+	word pFuncType = Node[pPtrExpr].pType;
+	word pRetType = T_FuncGetRetType(pFuncType);
+	pPtrExpr = Peek3(iLPTR, pPtrExpr);
+	Node[pPtrExpr].pType = T_nPtrTo(1, pFuncType);
+
+	word P_CALL2 = Peek5(iCALL2, nNODE, pPtrExpr, pRetType);
+
+	Scan(@Buff);
+	ParseCallArgs(pFuncType, @Node[P_CALL2].pLeft, @Buff, pBracket);
+
+	return P_CALL2;
+end
+
+word ReadCast(char @Buff; word pTargetType; word pBracket)
+	word pCastee = Expr(PRIO_ZERO, @Scan(@Buff));
+
+	if IsExplicitCastPossible(Node[pCastee].pType, pTargetType) then
+		AddCast(pTargetType, @pCastee);
+	else
+		AddFakeCast(pTargetType, @pCastee);
+		char Buff2[nBUFF];
+		strcpy4(@Buff2,
+			@msgNOWAYTOCAST_1,
+			@T_GetName(Node[pCastee].pType),
+			@msgNOWAYTOCAST_2,
+			@T_GetName(pTargetType)
+		);
+		ErrorWithSubject(@eTYPE, @Buff2);
+	end:if
+
+	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
+		Stop(@eBRACKETEXP);
+	Scan(@Buff);
+	
+	return pCastee;
+end
+
+word MakeNodeForDict(word I)
+	switch Dict[I].Class of
+	case cDATA:
+		word P = Peek();
+		Node[P].ID = iDATA;
+		Node[P].Value = I;
+		Node[P].pType = Dict[I].pType;
+		return P;
+
+	case cLITERAL:
+		word P = Peek();
+		word pTypeI = Dict[I].pType;
+		select
+		case
+			(pTypeI == st_word) |
+			(pTypeI == st_int)  |
+			(pTypeI == st_char) |
+			(pTypeI == st_bool) :
+			NodeAssignLiteral(P, pTypeI, Dict[I].LiteralValue);
+
+		case pTypeI == T_PtrTo(st_char):
+			P = Peek();
+			Node[P].ID = iSTRING;
+			Node[P].pType = pTypeI;
+			if ROStrings != 0 then
+				Node[P].Value = I;
+			else
+				word NewLiteral = DictDupLiteral(I);
+				Dict[NewLiteral].RO = 0;
+				Node[P].Value = NewLiteral;
+			end
+
+		default:
+			StopInternal(__FILE__, __LINE__);
+		end:select
+
+		return P;
+
+	case cFUNC:
+		word P = Peek();
+		Node[P].ID    = iFUNC;
+		Node[P].pType = T_PtrTo(T_FuncTypeForFunction(I));
+		Node[P].Value = I;
+		return P;
+
+	case cTYPE:
+		word P = Peek();
+		Node[P].ID    = iTYPE;
+		Node[P].pType = st_type;
+		Node[P].Value = I;
+		return P;
+
+	case cWORD:
+		StopWithSubject(@eKEYWORDUNEXP, @DictGetName(I));
+	default:
+		StopWithSubject(@eUNDECLARED, @DictGetName(I));
+	end:switch
+end
+
+word ReadPostfixOperators(char @Buff; word pPrefixExpr)
+	word pType = Node[pPrefixExpr].pType;
+	forever do
+		while str_eq(@Buff,"[") & T_IsArray(pType) do /* Индексация массива. */
+			word P3 = Peek();
+			Node[P3].ID = iINDEX;
+			Node[P3].Value = T_ArrayGetLen(pType);
+			Node[P3].pLeft = pPrefixExpr;
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			pType = T_ArrayDeref(pType);
+			Node[P3].pType = pType;
+
+			when str_ne(@Buff,"]"):
+				Stop(@eBRACKETEXP);
+
+			ImplicitCast(st_word, @Node[P3].pRight);
+
+			pPrefixExpr = P3;
+
+			Scan(@Buff);
+		end:while
+
+		while str_eq(@Buff,"[") do /* Индексация указателя. */
+			when !T_IsPtr(pType):
+				Stop(@eNOADDR);
+			word P3 = Peek();
+			Node[P3].ID = iADDR;
+			Node[P3].pLeft = pPrefixExpr;
+			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			pType = T_DerefPtr(pType);
+			Node[P3].pType = pType;
+
+			when str_ne(@Buff,"]"):
+				Stop(@eBRACKETEXP);
+
+			ImplicitCast(st_word, @Node[P3].pRight);
+
+			pPrefixExpr = P3;
+
+			Scan(@Buff);
+		end:while
+
+		word b = LookupBracket(BracketType_Parentheses, @Buff);
+		select
+		case b != BRACKET_INVALID: /* Вызов функции или приведение типа. */
+
+			while T_IsPtr(pType) do
+				word P3=Peek();
+				Node[P3].ID = iADDR;
+				Node[P3].pLeft = pPrefixExpr;
+				pType = T_DerefPtr(pType);
+				Node[P3].pType = pType;
+				pPrefixExpr = P3;
+			end:while
+
+			select
+			case Node[pPrefixExpr].ID == iFUNC:
+				pPrefixExpr = ReadFuncCall(@Buff,
+					pPrefixExpr /* overwrite node*/,
+					Node[pPrefixExpr].Value, b);
+				pType = Node[pPrefixExpr].pType;
+			case T_IsFunc(pType):
+				pPrefixExpr = ReadIndirecFuncCall(@Buff, pPrefixExpr, b);
+				pType = Node[pPrefixExpr].pType;
+			case Node[pPrefixExpr].ID == iTYPE:
+				pPrefixExpr = ReadCast(@Buff, Node[pPrefixExpr].Value, b);
+				pType = Node[pPrefixExpr].pType;
+			default:
+				Stop(@eHEADEREXP);
+			end:select
+
+		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры/пространства имён. */
+
+			while T_IsPtr(pType) do
+				word P3=Peek();
+				Node[P3].ID = iADDR;
+				Node[P3].pLeft = pPrefixExpr;
+				pType = T_DerefPtr(pType);
+				Node[P3].pType = pType;
+				pPrefixExpr = P3;
+			end:while
+
+			Scan(@Buff);
+
+			select
+			case pType == st_type:
+				word pMember = ResolveInNamespace(@Buff, Node[pPrefixExpr].Value);
+				when pMember >= nDICT:
+					StopWithSubject(@eUNDECLARED_WITHIN_NAMESPACE, @Buff);
+				pPrefixExpr = MakeNodeForDict(pMember);
+				pType = Node[pPrefixExpr].pType;
+				Scan(@Buff);
+
+			case Dict[pType].Sub == sSTRUCT:
+				word F = FindInNamespace(@Buff, pType);
+				when F >= nDICT:
+					StopWithSubject(@eUNDECLARED_WITHIN_STRUCT, @Buff);
+				when Dict[F].Class != cFIELD:
+					StopInternal(__FILE__, __LINE__);
+
+				word P3=Peek();
+				Node[P3].ID = iFIELD;
+				Node[P3].pLeft = pPrefixExpr;
+				Node[P3].Value = F;
+				pType = Dict[F].pType;
+				Node[P3].pType = pType;
+				pPrefixExpr = P3;
+
+				Scan(@Buff);
+			default:
+				StopWithSubject(@eSTRUCTEXP, @Buff);
+			end:select
+		default:
+			exit;
+		end:select
+	end:forever
+
+	return pPrefixExpr;
+end
+
+/*****************************************************************************/
+
 word Primary(word Prty; char @Buff)
 	if isdigit(Buff[0]) then /* Число. */
 		word P1 = Peek();
@@ -463,7 +695,6 @@ word Primary(word Prty; char @Buff)
 	word nPtr;
 
 	word Flag=0;
-	word Call=0;
 	word P1;
 
 	bool SkipScan = false;
@@ -562,28 +793,13 @@ word Primary(word Prty; char @Buff)
 			SkipScan = true;
 
 		case cFUNC:
-			P1 = Peek();
-
 			word b = LookupBracket(BracketType_Parentheses, @Buff);
 			if b != BRACKET_INVALID then
-				Node[P1].ID = iCALL;
-				Node[P1].Value = I;
-				pType = Func_GetRetType(I);
-				Call = 1;
-
-				Scan(@Buff);
-
-				ParseCallArgs(Func_GetType(I), @Node[P1].pLeft, @Buff, b);
+				P1 = ReadFuncCall(@Buff, Peek(), I, b);
+				pType = Node[P1].pType;
+				SkipScan = true;
 			else
-				if nPtr != 1 then
-					when Prty == PRIO_INC:
-						Stop(@eLVALUE_IN_INC);
-					when Prty == PRIO_LVALUE:
-						Stop(@eLVALUE_IN_ASSIGNMENT);
-					when Prty >= PRIO_INC:
-						Stop(@eNOADDR);
-				end
-
+				P1 = Peek();
 				Node[P1].ID = iFUNC;
 				Node[P1].Value = I;
 				Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
@@ -592,30 +808,9 @@ word Primary(word Prty; char @Buff)
 			end:if
 
 		case cTYPE:
-			if Prty < PRIO_LVALUE & str_eq(@Buff,"(") then
-
-				P1 = Expr(PRIO_ZERO, @Scan(@Buff));
-
-				if str_ne(@Buff,")") then
-					Stop(@eBRACKETEXP);
-				end:if
-
-				if IsExplicitCastPossible(Node[P1].pType, I) then
-					AddCast(I, @P1);
-				else
-					AddFakeCast(I, @P1);
-					char Buff2[nBUFF];
-					strcpy4(@Buff2,
-						@msgNOWAYTOCAST_1,
-						@T_GetName(Node[P1].pType),
-						@msgNOWAYTOCAST_2,
-						@T_GetName(I)
-					);
-					ErrorWithSubject(@eTYPE, @Buff2);
-				end:if
-
-				pType = Node[P1].pType;
-
+			word b = LookupBracket(BracketType_Parentheses, @Buff);
+			if b != BRACKET_INVALID then
+				P1 = ReadCast(@Buff, I, b);
 				/*
 					TODO:
 						Старый код построения Primary портил дерево для iCAST,
@@ -625,7 +820,6 @@ word Primary(word Prty; char @Buff)
 						функции не имеют смысла.
 						Поэтому принудительный выход пока оставлен как есть.
 				*/
-				Scan(@Buff);
 				return P1;
 			else
 				if nPtr>0 then
@@ -656,133 +850,15 @@ word Primary(word Prty; char @Buff)
 
 	Node[P1].pType = pType;
 
-	forever do
-		if SkipScan then
-			SkipScan = false;
-		else
-			Scan(@Buff);
-		end
-		while strcmp(@Buff,"[")==0 & T_IsArray(pType) do /* Индексация массива. */
-			word P3 = Peek();
-			Node[P3].ID = iINDEX;
-			Node[P3].Value = T_ArrayGetLen(pType);
-			Node[P3].pLeft = P1;
-			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
-			pType = T_ArrayDeref(pType);
-			Node[P3].pType = pType;
-
-			if strcmp(@Buff,"]")!=0 then
-				Stop(@eBRACKETEXP);
-			end:if
-
-			ImplicitCast(st_word, @Node[P3].pRight);
-
-			P1 = P3;
-			//P2 = P3;
-			//@P2 = @Node[P3].pRight;
-
-			Scan(@Buff);
-		end:while
-
-		while strcmp(@Buff,"[") == 0 do /* Индексация указателя. */
-			if !T_IsPtr(pType) then
-				Stop(@eNOADDR);
-			end:if
-			word P3 = Peek();
-			Node[P3].ID = iADDR;
-			Node[P3].pLeft = P1;
-			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
-
-			if strcmp(@Buff,"]")!=0 then
-				Stop(@eBRACKETEXP);
-			end:if
-
-			ImplicitCast(st_word, @Node[P3].pRight);
-
-			pType = T_DerefPtr(pType);
-			Node[P3].pType = pType;
-			Call = 0;
-			P1 = P3;
-
-			Scan(@Buff);
-		end:while
-
-		word b = LookupBracket(BracketType_Parentheses, @Buff);
-		select
-		case b != BRACKET_INVALID: /* Вызов функтора. */
-
-			while T_IsPtr(pType) do
-				word P3=Peek();
-				Node[P3].ID = iADDR;
-				Node[P3].pLeft = P1;
-				pType = T_DerefPtr(pType);
-				Node[P3].pType = pType;
-				Call = 0;
-				P1 = P3;
-			end:while
-
-			if Dict[pType].Sub!=sFUNCTYPE then
-				Stop(@eHEADEREXP);
-			end
-
-			P1 = Peek3(iLPTR, P1);
-			Node[P1].pType = T_nPtrTo(1, pType);
-			word P_CALL2 = Peek5(iCALL2, nNODE, P1, T_FuncGetRetType(pType));
-
-			Scan(@Buff);
-			ParseCallArgs(pType, @Node[P_CALL2].pLeft, @Buff, b);
-
-			pType = T_FuncGetRetType(pType);
-			Call = 1;
-			P1 = P_CALL2;
-
-		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры. */
-
-			while T_IsPtr(pType) do
-				word P3=Peek();
-				Node[P3].ID = iADDR;
-				Node[P3].pLeft = P1;
-				pType = T_DerefPtr(pType);
-				Node[P3].pType = pType;
-				Call = 0;
-				P1 = P3;
-			end:while
-
-			if Dict[pType].Sub!=sSTRUCT then
-				Stop(@eSTRUCTEXP);
-			end:if
-
-			if Call!=0 then
-				Stop(@eNOTAVAIL);
-			end:if
-
-			Scan(@Buff);
-
-			word F = FindInNamespace(@Buff, pType);
-			when F >= nDICT:
-				StopWithSubject(@eUNDECLARED_FIELD, @Buff);
-			when Dict[F].Class != cFIELD:
-				StopInternal(__FILE__, __LINE__);
-
-			word P3=Peek();
-			Node[P3].ID = iFIELD;
-			Node[P3].pLeft = P1;
-			Node[P3].Value = F;
-			pType = Dict[F].pType;
-			Node[P3].pType = pType;
-			P1 = P3;
-			Call = 0;
-
-		default:
-			exit;
-		end:select
-	end:forever
+	if SkipScan then
+		SkipScan = false;
+	else
+		Scan(@Buff);
+	end
+	P1 = ReadPostfixOperators(@Buff, P1);
+	pType = Node[P1].pType;
 
 	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) then
-		if Call == 0 | nPtr > 0 then
-			Stop(@eASSIGNEXP);
-		end:if
-
 		while T_IsPtr(pType) do
 			pType = T_DerefPtr(pType);
 		end:while
@@ -836,6 +912,8 @@ word Expr(word Prio; char @Buff)
 		CTE(P1);
 	else
 		P1 = Operator[O].Handler(nNODE, O, @Buff);
+		when Prio <= PRIO_EXPR:
+			P1 = ReadPostfixOperators(@Buff, P1);
 	end:if
 
 	forever do
@@ -845,6 +923,8 @@ word Expr(word Prio; char @Buff)
 		end
 
 		P1 = Operator[O].Handler(P1, O, @Buff);
+		when Prio <= PRIO_EXPR:
+			P1 = ReadPostfixOperators(@Buff, P1);
 	end:forever
 
 	return P1;
@@ -881,6 +961,7 @@ word ExprParentheses(word P1; word O; char @Buff)
 		Stop(@eBRACKETEXP);
 	end
 	Scan(@Buff);
+
 	return P2;
 end
 

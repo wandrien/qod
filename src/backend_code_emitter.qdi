@@ -446,7 +446,12 @@ word CodePrimary(word pPrimary; ValueRef @Ref)
 		ValueRef_Apply_FIELD(@Ref, pPrimary);
 
 	default:
-		StopInternal(__FILE__, __LINE__);
+		word pType = Code(pPrimary);
+		Ref.ID = iREG;
+		Ref.RO = 0;
+		Ref.pType = pType;
+		Ref.Offset = 0;
+		Ref.IX = Reg_TARGET;
 	end
 
 	return Ref.pType;
