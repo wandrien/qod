@@ -1,10 +1,12 @@
-// TEST: should_print '100 101 102 '
-// EXPECTED-TO-FAIL: FIXME: Not implemented
+// TEST: should_print '100 101 102 100 101 102 '
 
 include "../include/test_env.qdi";
 
-word v5 = 6;
+word v5 = 5;
 word v6 = 6;
+word v27 = 27;
+
+word y[10][20];
 
 begin
 	word x[10][20];
@@ -13,5 +15,13 @@ begin
 	x[v6][v5 + 1] = 102;
 	put_word(x[v5][v6]); puts(" ");
 	put_word(x[v6][5]); puts(" ");
-	put_word(x[5][v6]); puts(" ");
+	put_word(x[6][v6]); puts(" ");
+
+	y[v6 % v5][6] = 99;
+	y[v6][v5]     = 101;
+	y[v6][v5 + 1] = 102;
+	inc y[v6 % v5][6];
+	put_word(y[1][v27 % v5 + 4]); puts(" ");
+	put_word(y[v6][5]); puts(" ");
+	put_word(y[6][v6]); puts(" ");
 end

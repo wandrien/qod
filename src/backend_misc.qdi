@@ -162,7 +162,12 @@ void EmitNodeValue(word P)
 	char @N;
 	select
 		case IDDesc[Node[P].ID].ValueClass == vcDict:
-			@N = @DictGetFullyQualifiedName(Node[P].Value);
+			word D = Node[P].Value;
+			if Dict_IsType(D) then
+				@N = @T_GetName(D);
+			else
+				@N = @DictGetFullyQualifiedName(D);
+			end:if
 		case IDDesc[Node[P].ID].ValueClass == vcChar:
 			@N = @Char[Node[P].Value];
 		default:
@@ -182,7 +187,7 @@ void EmitType_(word T)
 		EmitString("FUNC ");
 		EmitType_(T_FuncGetRetType(T));
 	default:
-		EmitString(@DictGetName(T));
+		EmitString(@T_GetName(T));
 	end:select
 end
 

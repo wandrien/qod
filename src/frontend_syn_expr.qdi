@@ -328,25 +328,25 @@ end
 
 word ReadTypeSuffix(char @Buff; word pPrefixType)
 	word pType = pPrefixType;
-	forever do
-		select
-		case str_eq(@Buff, "@"):
-			pType = ReadTypeSuffix(@Scan(@Buff), pType);
-			return T_nPtrTo(1, pType);
-		case str_eq(@Buff, "["):
-			pType = Tabl_(@Buff, pType);
-		case str_eq(@Buff, "("):
-			word D = DictAlloc();
-			DictSetName(D, "");
-			Dict[D].Class = cTYPE;
-			Dict[D].Sub   = sFUNCTYPE;
-			FuncArgs(@Buff, D);
-			Dict[D].pType = ReadTypeSuffix(@Buff, pType);
-			return D;
-		default:
-			return pType;
-		end:select
-	end:forever
+	select
+	case str_eq(@Buff, "@"):
+		pType = ReadTypeSuffix(@Scan(@Buff), pType);
+		return T_nPtrTo(1, pType);
+	case str_eq(@Buff, "["):
+		word Count = Tabl(@Buff);
+		pType = ReadTypeSuffix(@Buff, pType);
+		return T_Array(pType, Count);
+	case str_eq(@Buff, "("):
+		word D = DictAlloc();
+		DictSetName(D, "");
+		Dict[D].Class = cTYPE;
+		Dict[D].Sub   = sFUNCTYPE;
+		FuncArgs(@Buff, D);
+		Dict[D].pType = ReadTypeSuffix(@Buff, pType);
+		return D;
+	default:
+		return pType;
+	end:select
 end
 
 /*****************************************************************************/
@@ -662,7 +662,7 @@ word Primary(word Prty; char @Buff)
 		else
 			Scan(@Buff);
 		end
-		if strcmp(@Buff,"[")==0 & T_IsArray(pType) then /* Индексация массива. */
+		while strcmp(@Buff,"[")==0 & T_IsArray(pType) do /* Индексация массива. */
 			word P3 = Peek();
 			Node[P3].ID = iINDEX;
 			Node[P3].Value = T_ArrayGetLen(pType);
@@ -682,7 +682,7 @@ word Primary(word Prty; char @Buff)
 			//@P2 = @Node[P3].pRight;
 
 			Scan(@Buff);
-		end:if
+		end:while
 
 		while strcmp(@Buff,"[") == 0 do /* Индексация указателя. */
 			if !T_IsPtr(pType) then

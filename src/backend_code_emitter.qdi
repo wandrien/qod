@@ -192,7 +192,7 @@ include "backend_code_emitter_ctrl.qdi";
 /*****************************************************************************/
 
 void Code_ADDR(word P1; ValueRef @Ref)
-	char Buff [nBUFF];
+	char Buff[nBUFF];
 	Buff[0] = #0;
 
 	if !T_IsPtr(Ref.pType) then
@@ -289,6 +289,43 @@ void Code_ADDR(word P1; ValueRef @Ref)
 	Ref.pType = pTypeDeref;
 	Ref.ID = iREF;
 	Ref.Offset = 0;
+end
+
+/*****************************************************************************/
+
+void Code_INDEX(word P1; ValueRef @Ref)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+
+	Ref.pType = T_ArrayDeref(Ref.pType);
+	word Size = T_SizeOf(Ref.pType);
+	select
+	case NodeIsLiteralWord(P1):
+		word IndexingOffset = Size * Node[P1].Value;
+		Ref.Offset = Ref.Offset + int(IndexingOffset);
+	case Ref.IX == RegNone:
+		Code(P1);
+		Ref.IX = Reg_TARGET;
+		Emit_IMUL_Reg_Const(Ref.IX, 4, Size);
+		when Reg_ALT_TARGET == RegNone:
+			Reg_ALT_TARGET = Ref.IX;
+	default:
+		when Reg_ALT_TARGET != RegNone & Reg_ALT_TARGET != Ref.IX:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		Reg_TARGET = ChooseEmptyReg();
+		when Reg_TARGET == Reg_ALT_TARGET | Reg_TARGET == RegNone:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		Code(P1);
+		Emit_IMUL_Reg_Const(Reg_TARGET, 4, Size);
+		if Reg_TARGET == Reg_ALT_TARGET then
+			when Reg_TARGET != Ref.IX:
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+			Reg_TARGET = ChooseEmptyReg();
+			EmitWithExprComment(@CodePopReg(@Buff, Reg_TARGET, 4), "restored in Code_INDEX");
+		end:if
+		Emit_CmdRegReg("add", Ref.IX, 4, Reg_TARGET, 4);
+		Reg_TARGET = Ref.IX;
+	end:select
 end
 
 /*****************************************************************************/
@@ -400,21 +437,7 @@ word CodePrimary(word pPrimary; ValueRef @Ref)
 
 	case iINDEX:
 		CodePrimary(Node[pPrimary].pLeft, @Ref);
-		word P1 = Node[pPrimary].pRight;
-
-		Ref.pType = T_ArrayDeref(Ref.pType);
-		word Size = T_SizeOf(Ref.pType);
-
-		if NodeIsLiteralWord(P1) then
-			word IndexingOffset = Size * Node[P1].Value;
-			Ref.Offset = Ref.Offset + int(IndexingOffset);
-		else
-			Code(P1);
-			Ref.IX = Reg_TARGET;
-			Emit_IMUL_Reg_Const(Ref.IX, 4, Size);
-			when Reg_ALT_TARGET == RegNone:
-				Reg_ALT_TARGET = Ref.IX;
-		end:if
+		Code_INDEX(Node[pPrimary].pRight, @Ref);
 
 	case iLPTR:
 		CodePrimary(Node[pPrimary].pLeft, @Ref);
@@ -1809,10 +1832,6 @@ word Code_INCDEC(word pPrimary)
 
 	ValueRef Ref;
 	CodePrimary(Node[pPrimary].pLeft, @Ref);
-
-	if Ref.IX > RegA then
-		StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
-	end:if
 
 	if Node[pPrimary].ID==iINC then
 		strcpy(@Buff,"inc     ");
