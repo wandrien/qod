@@ -1,0 +1,3 @@
+// TEST: compilation_should_fail '3:22: ошибка: Идентификатор не описан: rrrrrrrrrrrrr'
+
+int x; rrrrrrrrrrrrr y;
