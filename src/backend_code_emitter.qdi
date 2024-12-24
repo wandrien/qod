@@ -10,24 +10,8 @@ word AllocatedFrameSize; /* Текущий размер фрейма стека,
 
 bool CodeRequiresSingleRegister(word P);
 
-/*
-Active register.
-
-When entering a function for generating code for an operation:
-
- * If Reg_TARGET == RegA, the caller expects the result to be places in RegA.
-   The code may use both RegA and RegB and should return the result in RegA.
-
- * If Reg_TARGET == RegB, the caller expects the result to be placed in RegB.
-   RegA is used by the caller to store a value.
-   The code either returns the result in RegB and keeps the value of RegA untouched.
-   Or stores RegA on the stack, sets Reg_TARGET = RegA and return the result in RegA.
-   In the latter case, the caller normally pops the value from the stack to RegB,
-   and does the calculation with the swapped arguments.
-*/
-
 word Reg_TARGET;
-word Reg_ALT_TARGET = RegA;
+word Reg_ALT_TARGET;
 word RegAllocation[5];
 
 void RegAllocate(word Reg)
@@ -191,6 +175,20 @@ include "backend_code_emitter_ctrl.qdi";
 
 /*****************************************************************************/
 
+void Emit_SaveReg(word Reg; char @Comment)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	EmitWithExprComment(@CodePushReg(@Buff, Reg, 4), @Comment);
+end
+
+void Emit_RestoreReg(word Reg; char @Comment)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	EmitWithExprComment(@CodePopReg(@Buff, Reg, 4), @Comment);
+end
+
+/*****************************************************************************/
+
 void Code_ADDR(word P1; ValueRef @Ref)
 	char Buff[nBUFF];
 	Buff[0] = #0;
@@ -218,8 +216,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		case Reg_ALT_TARGET != RegNone:
 			if Reg_TARGET != Reg_ALT_TARGET then
-				EmitWithExprComment(@CodePushReg(@Buff, Reg_ALT_TARGET, 4),
-					"saved in Code_ADDR");
+				Emit_SaveReg(Reg_ALT_TARGET, "saved in Code_ADDR");
 			end:if
 			Buff[0] = #0;
 			Emit(@CodeXchgRegReg(@Buff, Ref.IX, Reg_ALT_TARGET, 4));
@@ -238,7 +235,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		if Reg_TARGET == Reg_ALT_TARGET then
 			if Ref.IX != RegNone then
 				Ref.IX = RegB;
-				EmitWithExprComment(@CodePopReg(@Buff, Ref.IX, 4), "restored in Code_ADDR");
+				Emit_RestoreReg(Ref.IX, "restored in Code_ADDR");
 			end:if
 		end:if
 	end:if
@@ -294,9 +291,6 @@ end
 /*****************************************************************************/
 
 void Code_INDEX(word P1; ValueRef @Ref)
-	char Buff[nBUFF];
-	Buff[0] = #0;
-
 	Ref.pType = T_ArrayDeref(Ref.pType);
 	word Size = T_SizeOf(Ref.pType);
 	select
@@ -321,7 +315,7 @@ void Code_INDEX(word P1; ValueRef @Ref)
 			when Reg_TARGET != Ref.IX:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 			Reg_TARGET = ChooseEmptyReg();
-			EmitWithExprComment(@CodePopReg(@Buff, Reg_TARGET, 4), "restored in Code_INDEX");
+			Emit_RestoreReg(Reg_TARGET, "restored in Code_INDEX");
 		end:if
 		Emit_CmdRegReg("add", Ref.IX, 4, Reg_TARGET, 4);
 		Reg_TARGET = Ref.IX;
@@ -383,11 +377,11 @@ end
 /*****************************************************************************/
 
 void Code_CALL(word pPrimary; ValueRef @Ref)
-	char Buff [nBUFF];
+	char Buff[nBUFF];
 	Buff[0] = #0;
 
 	if Reg_ALT_TARGET == RegA & Reg_TARGET != RegA then
-		EmitWithExprComment("push    EAX", "saved in CodePrimary (iCALL)");
+		Emit_SaveReg(RegA, "saved in Code_CALL");
 	end:if
 	Reg_TARGET = RegA;
 
@@ -509,12 +503,12 @@ void Code_STORE(ValueRef @Ref; word pLinkStore, pLinkLoad)
 			PHO_LinkNode(Reg_ALT_TARGET, pLinkLoad);
 			PHO_LinkNode_Store(Reg_ALT_TARGET, pLinkStore);
 		case Ref.IX==RegA:
-			EmitWithExprComment("pop     EBX", "restored in Code_STORE");
+			Emit_RestoreReg(RegB, "restored in Code_STORE");
 			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
 			PHO_LinkNode(RegB, pLinkLoad);
 			PHO_LinkNode_Store(RegB, pLinkStore);
 		case Ref.IX==RegB:
-			EmitWithExprComment("pop     EAX", "restored in Code_STORE");
+			Emit_RestoreReg(RegA, "restored in Code_STORE");
 			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
 			PHO_LinkNode(RegA, pLinkLoad);
 			PHO_LinkNode_Store(RegA, pLinkStore);
@@ -1079,7 +1073,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
 		if Reg_TARGET != RegA then
 			when Reg_ALT_TARGET == RegA:
-				EmitWithExprComment("push    EAX", "saved in CodeBinOp");
+				Emit_SaveReg(RegA, "saved in CodeBinOp");
 			Reg_TARGET = RegA;
 		end
 	end:switch
@@ -1286,7 +1280,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		word Saved_Reg_ALT_TARGET = Reg_ALT_TARGET;
 		if Reg_TARGET != RegA then
 			when Reg_ALT_TARGET == RegA:
-				EmitWithExprComment("push    EAX", "saved in CodeBinOp");
+				Emit_SaveReg(RegA, "saved in CodeBinOp");
 			Reg_TARGET = RegA;
 		end
 		when Reg_ALT_TARGET != RegA:
@@ -1305,7 +1299,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		Code(pRight);
 
 		if Reg_TARGET == Reg_ALT_TARGET then
-			EmitWithExprComment(@CodeCmdReg(@Buff, "pop", rightReg, 4), "restored in CodeBinOp");
+			Emit_RestoreReg(rightReg, "restored in CodeBinOp");
 			Buff[0] = #0;
 			inc fSwap;
 		end
@@ -1702,15 +1696,6 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	MeaningfulFlags = _MeaningfulFlags;
 	return pType;
 end
-
-/*word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
-	when PHO_CheckRegForNode(Reg_TARGET, P):
-		return Node[P].pType;
-	word pType = CodeBinOp_(@Buff, P, @F, @T, @M);
-	when pType != nNODE:
-		PHO_LinkNode(Reg_TARGET, P);
-	return pType;
-end*/
 
 /*****************************************************************************/
 
