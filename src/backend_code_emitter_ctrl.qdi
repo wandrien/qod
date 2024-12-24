@@ -371,11 +371,15 @@ word Code_SWITCH(word P; char @Buff)
 
 	Reg_TARGET = RegA;
 	word pType = Code(Node[COND].pLeft);
+	word Size = SizeOfType(pType);
+	word Reg = Reg_TARGET;
 	if pType == st_byte then
 		Emit("and     EAX,  0FFH");
 	end:if
 
 	LABEL @L_Default = @L_Exit;
+	word DEFAULT_CASE_I = nNODE;
+
 	word offset = 0;
 
 	word  CASE_I = Node[COND].pRight;
@@ -394,8 +398,6 @@ word Code_SWITCH(word P; char @Buff)
 			case iVALUE:
 				word value = Node[Node[VALUE_I].pLeft].Value - offset;
 
-				word Reg = RegA;
-				word Size = SizeOfType(pType);
 				switch Size of
 				case 1:
 					value = value & 0xFF;
@@ -409,6 +411,8 @@ word Code_SWITCH(word P; char @Buff)
 
 				Buff[0] = #0;
 				select
+				case value == 0:
+					Emit_TEST_Reg_Self(Reg, Size);
 				case value == 1 & PreferIncDec(Reg, Size) > 0:
 					Emit(@CodeCmdReg(@Buff, "dec", Reg, Size));
 				case value == 2 & PreferIncDec(Reg, Size) > 1:
@@ -429,6 +433,7 @@ word Code_SWITCH(word P; char @Buff)
 			case iDEFAULT:
 				@L_Default = @LabelResolve(CASE_I, lCASEBODY);
 				DefaultBranchPresent = true;
+				DEFAULT_CASE_I = CASE_I;
 			case iBODY:
 				pass;
 			default:
@@ -456,6 +461,9 @@ word Code_SWITCH(word P; char @Buff)
 
 		if @L_Jump == NULL then
 			EmitLabel(@LabelResolve(CASE_I, lCASEBODY));
+			if CASE_I != DEFAULT_CASE_I & Size == 4 then
+				PHO_RegLoadConst(Reg, 0);
+			end:if
 			pTypeBody = Code_Block(Node[BODY_I].pLeft);
 		else
 			pTypeBody = st_noreturn;
