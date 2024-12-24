@@ -30,11 +30,11 @@ void PHO_LinkNode(word Reg; word P)
 		return;
 
 	if PHO_IsNodeLinkable(P) then
-		PHO_RegNodeLink1[Reg] = nNODE;
-		PHO_RegNodeLink2[Reg] = P;
+		PhoState.PHO_RegNodeLink1[Reg] = nNODE;
+		PhoState.PHO_RegNodeLink2[Reg] = P;
 	else
-		PHO_RegNodeLink1[Reg] = nNODE;
-		PHO_RegNodeLink2[Reg] = nNODE;
+		PhoState.PHO_RegNodeLink1[Reg] = nNODE;
+		PhoState.PHO_RegNodeLink2[Reg] = nNODE;
 	end
 end
 
@@ -43,10 +43,10 @@ void PHO_LinkNode_Store(word Reg; word P)
 		return;
 
 	if PHO_IsNodeLinkable(P) then
-		if PHO_RegNodeLink1[Reg] == nNODE then
-			PHO_RegNodeLink1[Reg] = P;
+		if PhoState.PHO_RegNodeLink1[Reg] == nNODE then
+			PhoState.PHO_RegNodeLink1[Reg] = P;
 		else
-			PHO_RegNodeLink2[Reg] = P;
+			PhoState.PHO_RegNodeLink2[Reg] = P;
 		end
 	end
 end
@@ -71,9 +71,9 @@ bool PHO_MatchNodes(word P1, P2)
 end
 
 bool PHO_CheckRegForNode(word Reg; word P1)
-	when PHO_MatchNodes(PHO_RegNodeLink1[Reg], P1):
+	when PHO_MatchNodes(PhoState.PHO_RegNodeLink1[Reg], P1):
 		return true;
-	when PHO_MatchNodes(PHO_RegNodeLink2[Reg], P1):
+	when PHO_MatchNodes(PhoState.PHO_RegNodeLink2[Reg], P1):
 		return true;
 	return false;
 end
@@ -84,9 +84,9 @@ word PHO_LookupRegForNode(word P1)
 
 	word i = PHO_FIRST_REG;
 	while i < PHO_FIRST_REG + PHO_REGS do
-		when PHO_MatchNodes(PHO_RegNodeLink1[i], P1):
+		when PHO_MatchNodes(PhoState.PHO_RegNodeLink1[i], P1):
 			return i;
-		when PHO_MatchNodes(PHO_RegNodeLink2[i], P1):
+		when PHO_MatchNodes(PhoState.PHO_RegNodeLink2[i], P1):
 			return i;
 		inc i;
 	end:while
@@ -96,9 +96,9 @@ end
 bool PHO_RegInvalidated(word Reg)
 	when PHO_RegContainsAConst(Reg):
 		return false;
-	when PHO_RegNodeLink1[Reg] != nNODE:
+	when PhoState.PHO_RegNodeLink1[Reg] != nNODE:
 		return false;
-	when PHO_RegNodeLink2[Reg] != nNODE:
+	when PhoState.PHO_RegNodeLink2[Reg] != nNODE:
 		return false;
 	return true;
 end

@@ -5,10 +5,29 @@
 define PHO_REG_INVALID 0
 define PHO_REGS 4
 define PHO_FIRST_REG 1
-word PHO_ValidRegConst[PHO_REGS + 1];
-word PHO_RegConst[PHO_REGS + 1];
-word PHO_RegNodeLink1[PHO_REGS + 1];
-word PHO_RegNodeLink2[PHO_REGS + 1];
+
+struct PHO_STATE of
+	word PHO_ValidRegConst[PHO_REGS + 1];
+	word PHO_RegConst[PHO_REGS + 1];
+	word PHO_RegNodeLink1[PHO_REGS + 1];
+	word PHO_RegNodeLink2[PHO_REGS + 1];
+end:struct
+
+PHO_STATE PhoState;
+
+/*****************************************************************************/
+
+void PHO_SaveState(PHO_STATE @State)
+	when !PHOptimization:
+		return;
+	State = PhoState;
+end
+
+void PHO_RestoreState(PHO_STATE @State)
+	when !PHOptimization:
+		return;
+	PhoState = State;
+end
 
 /*****************************************************************************/
 
@@ -30,8 +49,8 @@ end
 /*****************************************************************************/
 
 void PHO_InvalidateRegNodeLink(word R)
-	PHO_RegNodeLink1[R] = nNODE;
-	PHO_RegNodeLink2[R] = nNODE;
+	PhoState.PHO_RegNodeLink1[R] = nNODE;
+	PhoState.PHO_RegNodeLink2[R] = nNODE;
 end
 
 void PHO_InvalidateReg(word R)
@@ -41,13 +60,13 @@ void PHO_InvalidateReg(word R)
 
 	PHO_InvalidateRegNodeLink(R);
 
-	if PHO_ValidRegConst[R] != 0 then
+	if PhoState.PHO_ValidRegConst[R] != 0 then
 		char Buff[nBUFF]; Buff[0] = #0;
 		when EmitDebugComments_PHO:
 			strcpy2(@Buff, "PHO: Invalidate: ", @PHO_RegName(R));
 		EmitComment(@Buff);
 
-		PHO_ValidRegConst[R] = 0;
+		PhoState.PHO_ValidRegConst[R] = 0;
 	end:if
 end
 
@@ -77,7 +96,7 @@ bool PHO_RegContainsAConst(word R)
 	if R >= PHO_FIRST_REG + PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
-	if PHO_ValidRegConst[R] != 0 then
+	if PhoState.PHO_ValidRegConst[R] != 0 then
 		return true;
 	end:if
 	return false;
@@ -89,7 +108,7 @@ bool PHO_RegContainsConst(word R; word Data)
 	if R >= PHO_FIRST_REG + PHO_REGS then
 		StopInternal(__FILE__, __LINE__);
 	end:if
-	if PHO_ValidRegConst[R] != 0 & PHO_RegConst[R] == Data then
+	if PhoState.PHO_ValidRegConst[R] != 0 & PhoState.PHO_RegConst[R] == Data then
 		return true;
 	end:if
 	return false;
@@ -118,15 +137,15 @@ void PHO_RegConnectConst(word R; word Data)
 		StopInternal(__FILE__, __LINE__);
 	end:if
 
-	if (PHO_ValidRegConst[R] == 0) | (PHO_RegConst[R] != Data) then
+	if (PhoState.PHO_ValidRegConst[R] == 0) | (PhoState.PHO_RegConst[R] != Data) then
 		char Buff[nBUFF]; Buff[0] = #0;
 		when EmitDebugComments_PHO:
 			strcpy4(@Buff, "PHO: Constant: ", @PHO_RegName(R), " = ", @str(Data));
 		EmitComment(@Buff);
 	end:if
 
-	PHO_ValidRegConst[R] = 1;
-	PHO_RegConst[R] = Data;
+	PhoState.PHO_ValidRegConst[R] = 1;
+	PhoState.PHO_RegConst[R] = Data;
 end
 
 void PHO_RegLoadConst(word R; word Data)
@@ -215,7 +234,7 @@ end
 /* Returns 1 if replacement found and placed into Buff. */
 word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2)
 	bool Reg1HasConst = PHO_RegContainsAConst(Reg1);
-	word Reg1Const = PHO_RegConst[Reg1];
+	word Reg1Const = PhoState.PHO_RegConst[Reg1];
 
 	/* Shortest options first. */
 	if Reg1HasConst then
@@ -474,7 +493,7 @@ char@ PHO_Optimize_(char @Inst)
 			return @Inst;
 		end:if
 
-		Const2 = PHO_RegConst[Reg2];
+		Const2 = PhoState.PHO_RegConst[Reg2];
 	else
 		/* Если второй операнд не регистр, пробуем его распознать как число. */
 
@@ -508,7 +527,7 @@ char@ PHO_Optimize_(char @Inst)
 
 	/* Вычисляем новое значение в регистре. */
 
-	word Const1 = PHO_RegConst[Reg1];
+	word Const1 = PhoState.PHO_RegConst[Reg1];
 	Const2 = Const2 & Mask1;
 	word Result;
 

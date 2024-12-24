@@ -92,6 +92,17 @@ word Code_PUSH(word P; char @Buff)
 
 	word P1 = Node[P].pLeft;
 
+	word Size = SizeOfType(Node[P1].pType);
+	select
+	case Size==1 | Size==2 | Size==4:
+		word Reg = LookupRegForNode(P1);
+		if Reg != RegNone then
+			Buff[0] = #0;
+			EmitPhoSkip(@CodePushReg(@Buff, Reg, 4));
+			return nDICT;
+		end:if
+	end:select
+
 	/* Оптимизация прямой загрузки значения из переменной. */
 	char BuffOperand[nBUFF];
 	word pOperandType;
@@ -118,7 +129,6 @@ word Code_PUSH(word P; char @Buff)
 	/* Оптимизация прямой загрузки числа. */
 	if NodeCanBeEncodedAsImm(P1) then
 		word Value = Node[P1].Value;
-		word Size = T_SizeOf(Node[P1].pType);
 
 		if Size == 4 | Size == 2 | Size == 1 then
 			/* Если какой-либо регистр уже содержит нужную константу... */
@@ -143,18 +153,10 @@ word Code_PUSH(word P; char @Buff)
 
 	/* Все остальные варианты... */
 
-	/* Вариант с выбором регистра компилирует успешно, но особого толку нет. */
-	/*if !NodeCanBeEncodedAsImm(P1) & CodeRequiresSingleRegister(P1) then
-		Reg_TARGET = ChooseEmptyReg();
-	else*/
-		Reg_TARGET = RegA;
-	/*end:if*/
+	Reg_TARGET = RegA;
 	word pType = Code(P1);
-
-	word Size = target_size_of_pointer;
-	if pType<nDICT then
-		Size=SizeOfType(pType);
-	end
+	when pType != Node[P1].pType:
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 	select
 	case Size==1 | Size==2 | Size==4:
@@ -369,7 +371,11 @@ word Code_SWITCH(word P; char @Buff)
 	when Node[COND].ID != iCOND:
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	Reg_TARGET = RegA;
+	if CodeRequiresSingleRegister(Node[COND].pLeft) then
+		Reg_TARGET = ChooseEmptyReg2();
+	else
+		Reg_TARGET = RegA;
+	end:if
 	word pType = Code(Node[COND].pLeft);
 	word Size = SizeOfType(pType);
 	word Reg = Reg_TARGET;
@@ -381,6 +387,9 @@ word Code_SWITCH(word P; char @Buff)
 	word DEFAULT_CASE_I = nNODE;
 
 	word offset = 0;
+
+	PHO_STATE State;
+	PHO_SaveState(@State);
 
 	word  CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
@@ -461,8 +470,11 @@ word Code_SWITCH(word P; char @Buff)
 
 		if @L_Jump == NULL then
 			EmitLabel(@LabelResolve(CASE_I, lCASEBODY));
+			PHO_RestoreState(@State);
 			if CASE_I != DEFAULT_CASE_I & Size == 4 then
 				PHO_RegLoadConst(Reg, 0);
+			else
+				PHO_InvalidateReg(Reg);
 			end:if
 			pTypeBody = Code_Block(Node[BODY_I].pLeft);
 		else
