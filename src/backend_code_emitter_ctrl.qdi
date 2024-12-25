@@ -98,7 +98,7 @@ word Code_PUSH(word P; char @Buff)
 		word Reg = LookupRegForNode(P1);
 		if Reg != RegNone then
 			Buff[0] = #0;
-			EmitPhoSkip(@CodePushReg(@Buff, Reg, 4));
+			Emit_PUSH_Reg(Reg, 4);
 			return nDICT;
 		end:if
 	end:select
@@ -160,10 +160,9 @@ word Code_PUSH(word P; char @Buff)
 
 	select
 	case Size==1 | Size==2 | Size==4:
-		Buff[0] = #0;
-		EmitPhoSkip(@CodePushReg(@Buff, Reg_TARGET, 4));
+		Emit_PUSH_Reg(Reg_TARGET, 4);
 	default:
-		char @TX = @CodeReg(NULL, Reg_TARGET, 4);
+		char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
 		Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(DefaultInStackAlign(Size))));
 		Emit(@strcpy2(@Buff,"mov     ESI,  ",@TX));
 		Emit("mov     EDI,  ESP");
@@ -423,17 +422,17 @@ word Code_SWITCH(word P; char @Buff)
 				case value == 0:
 					Emit_TEST_Reg_Self(Reg, Size);
 				case value == 1 & PreferIncDec(Reg, Size) > 0:
-					Emit(@CodeCmdReg(@Buff, "dec", Reg, Size));
+					Emit_DEC_Reg(Reg, Size);
 				case value == 2 & PreferIncDec(Reg, Size) > 1:
-					Emit(@CodeCmdReg(@Buff, "dec", Reg, Size));
-					Emit(@Buff);
+					Emit_DEC_Reg(Reg, Size);
+					Emit_DEC_Reg(Reg, Size);
 				case value == word(-1) & PreferIncDec(Reg, Size) > 0:
-					Emit(@CodeCmdReg(@Buff, "inc", Reg, Size));
+					Emit_INC_Reg(Reg, Size);
 				case value == word(-2) & PreferIncDec(Reg, Size) > 1:
-					Emit(@CodeCmdReg(@Buff, "inc", Reg, Size));
-					Emit(@Buff);
+					Emit_INC_Reg(Reg, Size);
+					Emit_INC_Reg(Reg, Size);
 				default:
-					Emit(@CodeCmdRegFmt(@Buff, "sub", Reg, Size, @str(value)));
+					Emit(@EncodeCmdRegFmt(@Buff, "sub", Reg, Size, @str(value)));
 				end:select
 
 				offset = offset + value;

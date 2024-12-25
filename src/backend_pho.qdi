@@ -611,7 +611,7 @@ bool PHO_Try_Emit_Load_Constant(word Reg; word RegMode; word Value)
 	char Buff[nBUFF];
 	Buff[0] = #0;
 	if PHO_Optimize_FindReplacement(@Buff, Reg, Mask, Value) == 0 then
-		CodeLoadConstant(@Buff, Reg, RegMode, Value);
+		EncodeLoadConstant(@Buff, Reg, RegMode, Value);
 	end:if
 
 	EmitPhoSkip(@Buff);

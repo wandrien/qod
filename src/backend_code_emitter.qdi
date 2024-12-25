@@ -178,13 +178,13 @@ include "backend_code_emitter_ctrl.qdi";
 void Emit_SaveReg(word Reg; char @Comment)
 	char Buff[nBUFF];
 	Buff[0] = #0;
-	EmitWithExprComment(@CodePushReg(@Buff, Reg, 4), @Comment);
+	EmitWithExprComment(@EncodePushReg(@Buff, Reg, Mach.AllowedRegSize), @Comment);
 end
 
 void Emit_RestoreReg(word Reg; char @Comment)
 	char Buff[nBUFF];
 	Buff[0] = #0;
-	EmitWithExprComment(@CodePopReg(@Buff, Reg, 4), @Comment);
+	EmitWithExprComment(@EncodePopReg(@Buff, Reg, Mach.AllowedRegSize), @Comment);
 end
 
 /*****************************************************************************/
@@ -219,7 +219,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 				Emit_SaveReg(Reg_ALT_TARGET, "saved in Code_ADDR");
 			end:if
 			Buff[0] = #0;
-			Emit(@CodeXchgRegReg(@Buff, Ref.IX, Reg_ALT_TARGET, 4));
+			Emit_XCHG_Reg_Reg(Ref.IX, Reg_ALT_TARGET, Mach.AllowedRegSize);
 			Reg_TARGET = Ref.IX;
 			Ref.IX = Reg_ALT_TARGET;
 		default:
@@ -240,7 +240,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		end:if
 	end:if
 
-	char @TX = @CodeReg(NULL, Reg_TARGET, 4);
+	char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
 
 	switch Ref.ID of
 	case iDATA, iPARM, iLOCAL, iREF:
@@ -249,11 +249,11 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		else
 			strcpy3(@Buff,"mov     ",@TX,",  ");
 		end:if
-		Emit(@ValueRef_Code(@Buff, @Ref));
+		Emit(@ValueRef_Encode(@Buff, @Ref));
 	case iREG:
 		if Ref.IX != RegNone then
 			if Reg_TARGET != Ref.IX then
-				char @RX = @CodeReg(NULL, Ref.IX, 4);
+				char @RX = @EncodeReg(NULL, Ref.IX, 4);
 				if Ref.Offset != 0 then
 					strcpy3(@Buff,"lea     ",@TX,",  dword ");
 					strcat7(@Buff,"[",@TX,"+",@RX,"+",@istr(Ref.Offset),"]");
@@ -291,7 +291,7 @@ end
 /*****************************************************************************/
 
 void Code_INDEX(word P1; ValueRef @Ref)
-	Ref.pType = T_ArrayDeref(Ref.pType);
+	Ref.pType = T_DerefArray(Ref.pType);
 	word Size = T_SizeOf(Ref.pType);
 	select
 	case NodeIsLiteralWord(P1):
@@ -328,23 +328,23 @@ void Code_LPTR(word P1; ValueRef @Ref)
 	char Buff [nBUFF];
 	Buff[0] = #0;
 
-	char @TX = @CodeReg(NULL, Reg_TARGET, 4);
+	char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
 
 	if Ref.IX != RegNone then
 		switch Ref.ID of
 		case iDATA, iSTRING:
 			strcpy3(@Buff,"add     ",@TX,",  ");
-			Emit(@ValueRef_Code_StaticOffset(@Buff, @Ref));
+			Emit(@ValueRef_Encode_StaticOffset(@Buff, @Ref));
 		case iPARM, iLOCAL:
 			strcpy3(@Buff,"lea     ",@TX,",  ");
-			EmitPhoInvalidate(@ValueRef_Code_ForLEA(@Buff, @Ref));
+			EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
 		case iREF:
 			if Reg_TARGET != Ref.IX then
 				if Ref.Offset != 0 then
 					strcpy3(@Buff,"lea     ",@TX,",  ");
-					EmitPhoInvalidate(@ValueRef_Code_ForLEA(@Buff, @Ref));
+					EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
 				else
-					Emit(@CodeCmdRegReg(@Buff, "mov", Reg_TARGET, 4, Ref.IX, 4));
+					Emit_MOV_Reg_Reg(Reg_TARGET, Ref.IX, Mach.PointerSize);
 				end
 			else
 				when Ref.Offset != 0:
@@ -357,10 +357,10 @@ void Code_LPTR(word P1; ValueRef @Ref)
 		switch Ref.ID of
 		case iDATA, iSTRING:
 			strcpy3(@Buff,"mov     ",@TX,",  ");
-			Emit(@ValueRef_Code_StaticOffset(@Buff, @Ref));
+			Emit(@ValueRef_Encode_StaticOffset(@Buff, @Ref));
 		case iPARM, iLOCAL:
 			strcpy3(@Buff,"lea     ",@TX,",  ");
-			EmitPhoInvalidate(@ValueRef_Code_ForLEA(@Buff, @Ref));
+			EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
 		case iREF:
 			pass;
 		default:
@@ -473,11 +473,11 @@ word Code_LOAD(word pPrimary; ValueRef @Ref)
 
 	select
 	case IsNativeOperandSize(Size):
-		strcpy3(@Buff, "mov     ", @CodeReg(NULL, Reg_TARGET, Size), ",  ");
-		ValueRef_Code(@Buff, @Ref);
+		strcpy3(@Buff, "mov     ", @EncodeReg(NULL, Reg_TARGET, Size), ",  ");
+		ValueRef_Encode(@Buff, @Ref);
 	default:
-		strcpy3(@Buff, "lea     ", @CodeReg(NULL, Reg_TARGET, 4), ",  ");
-		ValueRef_Code_ForLEA(@Buff, @Ref);
+		strcpy3(@Buff, "lea     ", @EncodeReg(NULL, Reg_TARGET, Mach.PointerSize), ",  ");
+		ValueRef_Encode_ForLEA(@Buff, @Ref);
 	end:select
 
 	Emit(@Buff);
@@ -497,34 +497,34 @@ void Code_STORE(ValueRef @Ref; word pLinkStore, pLinkLoad)
 	select
 	case IsNativeOperandSize(Size):
 		strcpy(@Buff,"mov     ");
-		ValueRef_Code(@Buff, @Ref);
+		ValueRef_Encode(@Buff, @Ref);
 
 		/*when Ref.IX != Reg_TARGET & Ref.IX != RegNone:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);*/
 
 		select
 		case Reg_TARGET != Reg_ALT_TARGET:
-			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, Reg_ALT_TARGET, Size)));
+			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, Reg_ALT_TARGET, Size)));
 			PHO_LinkNode(Reg_ALT_TARGET, pLinkLoad);
 			PHO_LinkNode_Store(Reg_ALT_TARGET, pLinkStore);
 		case Ref.IX==RegA:
 			Emit_RestoreReg(RegB, "restored in Code_STORE");
-			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegB, Size)));
+			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, RegB, Size)));
 			PHO_LinkNode(RegB, pLinkLoad);
 			PHO_LinkNode_Store(RegB, pLinkStore);
 		case Ref.IX==RegB:
 			Emit_RestoreReg(RegA, "restored in Code_STORE");
-			Emit(@strcat2(@Buff,", ",@CodeReg(NULL, RegA, Size)));
+			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, RegA, Size)));
 			PHO_LinkNode(RegA, pLinkLoad);
 			PHO_LinkNode_Store(RegA, pLinkStore);
 		end:select
 	default:
 		strcpy(@Buff,"lea     EDI,  ");
-		ValueRef_Code_ForLEA(@Buff, @Ref);
+		ValueRef_Encode_ForLEA(@Buff, @Ref);
 		Emit(@Buff);
 
 		if Reg_TARGET != Reg_ALT_TARGET then
-			Emit(@strcpy2(@Buff,"mov     ESI,  ",@CodeReg(NULL, Reg_ALT_TARGET, 4)));
+			Emit(@strcpy2(@Buff,"mov     ESI,  ",@EncodeReg(NULL, Reg_ALT_TARGET, Mach.PointerSize)));
 		else
 			EmitWithExprComment("pop     ESI", "restored in Code_STORE");
 		end:if
@@ -564,12 +564,12 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 			if T_IsSigned(pTypeFrom) then
 				Complexity = 1;
 				if @Buff != NULL then
-					Emit(@CodeCmdRegReg(@Buff, "movsx", Reg, SizeTo, Reg, SizeFrom));
+					Emit_MOVSX_Reg_Reg(Reg, SizeTo, Reg, SizeFrom);
 				end:if
 			else
 				Complexity = 1;
 				if @Buff != NULL then
-					Emit(@CodeCmdRegReg(@Buff, "movzx", Reg, SizeTo, Reg, SizeFrom));
+					Emit_MOVZX_Reg_Reg(Reg, SizeTo, Reg, SizeFrom);
 				end:if
 			end:if
 		end:if
@@ -646,7 +646,7 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 		when !RecursiveResult:
 			return RecursiveResult;
 
-		Ref.pType = T_ArrayDeref(Ref.pType);
+		Ref.pType = T_DerefArray(Ref.pType);
 		word Size = SizeOfType(Ref.pType);
 		word pIndex = Node[pPrimary].pRight;
 
@@ -723,7 +723,7 @@ bool QueryOperandStatus(char @Buff; word pPrimary; word @pTypeFinal; word Query)
 			case IsNativeOperandSize(Size):
 				if @Buff !=  NULL then
 					Buff[0] = #0;
-					ValueRef_Code(@Buff, @Ref);
+					ValueRef_Encode(@Buff, @Ref);
 				end
 				when @pTypeFinal != NULL:
 					pTypeFinal = Ref.pType;
@@ -1329,8 +1329,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/* We can handle it by swapping operands back. */
 			switch ID of
 			case iSUB, iDIV, iMOD:
-				Emit(@CodeCmdRegReg(@Buff, "xchg", Reg_TARGET, 4, rightReg, 4));
-				Buff[0] = #0;
+				Emit_XCHG_Reg_Reg(Reg_TARGET, rightReg, Mach.AllowedRegSize);
 				exit;
 			end:switch
 
@@ -1348,30 +1347,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when ID == iSUB:
 			Value = as_unsigned(-Value);
 
-		switch Value of
+		switch as_signed(Value) of
 		case 1:
 			if PreferIncDec(Reg_TARGET, Size) > 0 then
-				Emit(@CodeCmdReg(@Buff, "inc", Reg_TARGET, Size));
+				Emit_INC_Reg(Reg_TARGET, Size);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
-		case word(-1):
+		case -1:
 			if PreferIncDec(Reg_TARGET, Size) > 0 then
-				Emit(@CodeCmdReg(@Buff, "dec", Reg_TARGET, Size));
+				Emit_DEC_Reg(Reg_TARGET, Size);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
 		case 2:
 			if PreferIncDec(Reg_TARGET, Size) > 1 then
-				Emit(@CodeCmdReg(@Buff, "inc", Reg_TARGET, Size));
-				Emit(@Buff);
+				Emit_INC_Reg(Reg_TARGET, Size);
+				Emit_INC_Reg(Reg_TARGET, Size);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
-		case word(-2):
+		case -2:
 			if PreferIncDec(Reg_TARGET, Size) > 1 then
-				Emit(@CodeCmdReg(@Buff, "dec", Reg_TARGET, Size));
-				Emit(@Buff);
+				Emit_DEC_Reg(Reg_TARGET, Size);
+				Emit_DEC_Reg(Reg_TARGET, Size);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
 				return pType;
 			end:if
@@ -1437,13 +1436,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				end:select
 			case 1:
 				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, Size) != 0 then
-					Emit(@CodeCmdReg(@Buff, "dec", Reg_TARGET, Size));
+					Emit_DEC_Reg(Reg_TARGET, Size);
 					dec PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			case word(-1):
 				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, Size) != 0 then
-					Emit(@CodeCmdReg(@Buff, "inc", Reg_TARGET, Size));
+					Emit_INC_Reg(Reg_TARGET, Size);
 					inc PHO_Load_Value;
 					SkipCmp = true;
 				end:if
@@ -1452,11 +1451,11 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				BuffRightOperand[0] = #0;
 				if PHO_EncodeRegContainingConst(@BuffRightOperand, Value, Size) != 0 then
 					EmitPhoSkip(
-						@CodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
+						@EncodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
 					);
 				else
 					EmitPhoSkip(
-						@CodeCmdRegConst(@Buff, "cmp", Reg_TARGET, Size, Value)
+						@EncodeCmdRegConst(@Buff, "cmp", Reg_TARGET, Size, Value)
 					);
 				end:if
 				if fSwap==0 then
@@ -1467,14 +1466,14 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				PHO_RegConnectConst(Reg_TARGET, PHO_Load_Value);
 		case rightOperand == operandMemRef:
 			EmitPhoSkip(
-				@CodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
+				@EncodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
 			);
 			if fSwap==0 then
 				PHO_LinkNode(Reg_TARGET, pLeft);
 			end:if
 		case rightOperand == operandReg:
 			EmitPhoSkip(
-				@CodeCmdRegReg(@Buff, "cmp", Reg_TARGET, Size, rightReg, Size)
+				@EncodeCmdRegReg(@Buff, "cmp", Reg_TARGET, Size, rightReg, Size)
 			);
 			if fSwap==0 then
 				PHO_LinkNode(Reg_TARGET, pLeft);
@@ -1520,13 +1519,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			char Cmd[8];
 			strcpy2(@Cmd,"set",@BranchCondition);
 			Buff[0] = #0;
-			Emit(@CodeCmdReg(@Buff, @Cmd, Reg_TARGET, 1));
+			Emit(@EncodeCmdReg(@Buff, @Cmd, Reg_TARGET, 1));
 			select
 			case ResultSize == 1:
 				pass;
-			case ResultSize <= 4:
-				Buff[0] = #0;
-				Emit(@CodeCmdRegReg(@Buff, "movzx", Reg_TARGET, 4, Reg_TARGET, 1));
+			case ResultSize <= Mach.AllowedRegSize:
+				Emit_MOVZX_Reg_Reg(Reg_TARGET, ResultSize, Reg_TARGET, 1);
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end
@@ -1575,7 +1573,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		case operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case operandReg:
-			CodeReg(@Buff, rightReg, Size);
+			EncodeReg(@Buff, rightReg, Size);
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:switch
@@ -1638,7 +1636,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		case rightOperand == operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case rightOperand == operandReg:
-			CodeReg(@Buff, rightReg, Size);
+			EncodeReg(@Buff, rightReg, Size);
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
@@ -1684,12 +1682,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/*if PHO_EncodeRegContainingConst(@BuffRightOperand, Node[pRight].Value, Size) != 0 then
 				CodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
 			else*/
-				CodeRegConst(@Buff, Reg_TARGET, Size, Node[pRight].Value);
+				EncodeRegConst(@Buff, Reg_TARGET, Size, Node[pRight].Value);
 			/*end:if*/
 		case rightOperand == operandMemRef:
-			CodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
+			EncodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
 		case rightOperand == operandReg:
-			CodeRegReg(@Buff, Reg_TARGET, Size, rightReg, Size);
+			EncodeRegReg(@Buff, Reg_TARGET, Size, rightReg, Size);
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
@@ -1837,7 +1835,7 @@ word Code_INCDEC(word pPrimary)
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
 	end:select
 
-	Emit(@ValueRef_Code(@Buff, @Ref));
+	Emit(@ValueRef_Encode(@Buff, @Ref));
 
 	return st_void;
 end
@@ -1942,8 +1940,7 @@ word Code(word P)
 		return Node[P].pType;
 
 	case iFUNC:
-		CodeLoadLabel(@Buff, Reg_TARGET, Node[P].Value);
-		Emit(@Buff);
+		Emit(@EncodeLoadLabel(@Buff, Reg_TARGET, Node[P].Value));
 		return Node[P].pType;
 
 	case iINC, iDEC:
@@ -1962,7 +1959,7 @@ word Code(word P)
 	case iBIT_NOT:
 		word pType = Code(Node[P].pLeft);
 		word  Size = SizeOfType(pType);
-		Emit(@CodeCmdReg(@Buff, "not", Reg_TARGET, Size));
+		Emit(@EncodeCmdReg(@Buff, "not", Reg_TARGET, Size));
 
 		return pType;
 
@@ -1974,7 +1971,7 @@ word Code(word P)
 
 		Code(Node[P].pLeft);
 
-		Emit(@CodeCmdReg(@Buff, "neg", Reg_TARGET, T_SizeOf(Node[P].pType)));
+		Emit(@EncodeCmdReg(@Buff, "neg", Reg_TARGET, T_SizeOf(Node[P].pType)));
 
 		return Node[P].pType;
 

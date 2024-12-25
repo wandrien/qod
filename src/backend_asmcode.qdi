@@ -13,11 +13,9 @@ define RegD    4
 
 /*****************************************************************************/
 
-word NativeRegSize = 4;
-
 bool IsNativeOperandSize(word Size)
-	word S = NativeRegSize;
-	when Size > NativeRegSize:
+	word S = Mach.NativeRegSize;
+	when Size > Mach.NativeRegSize:
 		return false;
 	forever do
 		when S == 0:
@@ -26,6 +24,25 @@ bool IsNativeOperandSize(word Size)
 			return true;
 		S = S / 2;
 	end:forever
+end
+
+/*****************************************************************************/
+
+char @Encode_OperandSize(word Size)
+	select
+	case Size == 0:
+		return "";
+	case Size == 1:
+		return "byte  ";
+	case Size == 2:
+		return "word  ";
+	case Size == 4 & Mach.AllowedRegSize >= 4:
+		return "dword ";
+	case Size == 8 & Mach.AllowedRegSize >= 8:
+		return "qword ";
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:select
 end
 
 /*****************************************************************************/
@@ -40,7 +57,7 @@ end
 	Если @Buff == NULL,
 		возвращает указатель на статическую строку с именем регистра.
 */
-char @CodeReg(char @Buff; word Reg; word RegMode)
+char @EncodeReg(char @Buff; word Reg; word RegMode)
 
 	char @R = NULL;
 
@@ -50,6 +67,7 @@ char @CodeReg(char @Buff; word Reg; word RegMode)
 			case 1: @R = " AL";
 			case 2: @R = " AX";
 			case 4: @R = "EAX";
+			case 8: @R = "RAX";
 			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	case RegB:
@@ -57,6 +75,7 @@ char @CodeReg(char @Buff; word Reg; word RegMode)
 			case 1: @R = " BL";
 			case 2: @R = " BX";
 			case 4: @R = "EBX";
+			case 8: @R = "RBX";
 			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	case RegC:
@@ -64,6 +83,7 @@ char @CodeReg(char @Buff; word Reg; word RegMode)
 			case 1: @R = " CL";
 			case 2: @R = " CX";
 			case 4: @R = "ECX";
+			case 8: @R = "RCX";
 			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	case RegD:
@@ -71,6 +91,7 @@ char @CodeReg(char @Buff; word Reg; word RegMode)
 			case 1: @R = " DL";
 			case 2: @R = " DX";
 			case 4: @R = "EDX";
+			case 8: @R = "RDX";
 			default: StopInternalCodegen(__FILE__, __LINE__);
 		end:switch
 	default: StopInternalCodegen(__FILE__, __LINE__);
@@ -88,7 +109,7 @@ end
 /*****************************************************************************/
 
 /* Помещает в Buff обозначение указанной метки. */
-char @CodeLabel(char @Buff; word Label)
+char @EncodeLabel(char @Buff; word Label)
 
 	strcat2(@Buff, " @", @str(Dict[Label].Label));
 	return @Buff;
@@ -97,9 +118,9 @@ end
 /*****************************************************************************/
 
 /* Помещает в Buff обозначения регистра и преформатированного операнда. */
-char @CodeRegFmt(char @Buff; word Reg1; word RegMode1; char @Fmt2)
+char @EncodeRegFmt(char @Buff; word Reg1; word RegMode1; char @Fmt2)
 
-	CodeReg(@Buff, Reg1, RegMode1);
+	EncodeReg(@Buff, Reg1, RegMode1);
 	strcat(@Buff, ",  ");
 	strcat(@Buff, @Fmt2);
 	return @Buff;
@@ -109,11 +130,11 @@ end
 /*****************************************************************************/
 
 /* Помещает в Buff обозначения 2-х регистров. */
-char @CodeRegReg(char @Buff; word Reg1; word RegMode1; word Reg2; word RegMode2)
+char @EncodeRegReg(char @Buff; word Reg1; word RegMode1; word Reg2; word RegMode2)
 
-	CodeReg(@Buff, Reg1, RegMode1);
+	EncodeReg(@Buff, Reg1, RegMode1);
 	strcat(@Buff, ",  ");
-	CodeReg(@Buff, Reg2, RegMode2);
+	EncodeReg(@Buff, Reg2, RegMode2);
 	return @Buff;
 
 end
@@ -121,9 +142,9 @@ end
 /*****************************************************************************/
 
 /* Помещает в Buff обозначения регистра и константного значения. */
-char @CodeRegConst(char @Buff; word Reg1; word RegMode1; word Value)
+char @EncodeRegConst(char @Buff; word Reg1; word RegMode1; word Value)
 
-	CodeReg(@Buff, Reg1, RegMode1);
+	EncodeReg(@Buff, Reg1, RegMode1);
 	strcat(@Buff, ",  ");
 	strcat(@Buff, @str(Value));
 	return @Buff;
@@ -132,7 +153,7 @@ end
 
 /*****************************************************************************/
 /* Помещает в Buff код для операции и добавляет отступ. */
-char @CodeCmd(char @Buff; char @Cmd)
+char @EncodeCmd(char @Buff; char @Cmd)
 
 	word prefix_len = strlen(@Buff);
 	word cmd_len = strlen(@Cmd);
@@ -152,62 +173,66 @@ end
 /*****************************************************************************/
 
 /* Помещает в Buff код для операции регистра и преворматированного правого операнда. */
-char @CodeCmdRegFmt(char @Buff; char @Cmd; word Reg1; word RegMode1; char @Fmt2)
-	CodeCmd(@Buff, @Cmd);
-	CodeRegFmt(@Buff, Reg1, RegMode1, @Fmt2);
+char @EncodeCmdRegFmt(char @Buff; char @Cmd; word Reg1; word RegMode1; char @Fmt2)
+	EncodeCmd(@Buff, @Cmd);
+	EncodeRegFmt(@Buff, Reg1, RegMode1, @Fmt2);
 	return @Buff;
 end
 
 /*****************************************************************************/
 
 /* Помещает в Buff код для операции регистра и и регистра. */
-char @CodeCmdRegReg(char @Buff; char @Cmd; word Reg1; word RegMode1; word Reg2; word RegMode2)
-	CodeCmd(@Buff, @Cmd);
-	CodeRegReg(@Buff, Reg1, RegMode1, Reg2, RegMode2);
+char @EncodeCmdRegReg(char @Buff; char @Cmd; word Reg1; word RegMode1; word Reg2; word RegMode2)
+	EncodeCmd(@Buff, @Cmd);
+	EncodeRegReg(@Buff, Reg1, RegMode1, Reg2, RegMode2);
 	return @Buff;
 end
 
 /*****************************************************************************/
 
 /* Помещает в Buff код для операции регистра и константы. */
-char @CodeCmdRegConst(char @Buff; char @Cmd; word Reg; word RegMode; word Value)
-	CodeCmd(@Buff, @Cmd);
-	CodeRegConst(@Buff, Reg, RegMode, Value);
+char @EncodeCmdRegConst(char @Buff; char @Cmd; word Reg; word RegMode; word Value)
+	EncodeCmd(@Buff, @Cmd);
+	EncodeRegConst(@Buff, Reg, RegMode, Value);
 	return @Buff;
 end
 
 /*****************************************************************************/
 
 /* Помещает в Buff код для операции с регистром. */
-char @CodeCmdReg(char @Buff; char @Cmd; word Reg; word RegMode)
-	CodeCmd(@Buff, @Cmd);
-	CodeReg(@Buff, Reg, RegMode);
+char @EncodeCmdReg(char @Buff; char @Cmd; word Reg; word RegMode)
+	EncodeCmd(@Buff, @Cmd);
+	EncodeReg(@Buff, Reg, RegMode);
 	return @Buff;
 end
 
 /*****************************************************************************/
 
-char @CodePushReg(char @Buff; word Reg; word RegMode)
-	return @CodeCmdReg(@Buff, "push", Reg, RegMode);
+char @EncodePushReg(char @Buff; word Reg; word RegMode)
+	return @EncodeCmdReg(@Buff, "push", Reg, RegMode);
 end
 
-char @CodePopReg(char @Buff; word Reg; word RegMode)
-	return @CodeCmdReg(@Buff, "pop", Reg, RegMode);
+char @EncodePopReg(char @Buff; word Reg; word RegMode)
+	return @EncodeCmdReg(@Buff, "pop", Reg, RegMode);
 end
 
-char @CodeXchgRegReg(char @Buff; word Reg1; word Reg2; word RegMode)
-	return @CodeCmdRegReg(@Buff, "xchg", Reg1, RegMode, Reg2, RegMode);
+char @EncodeMovRegReg(char @Buff; word Reg1; word Reg2; word RegMode)
+	return @EncodeCmdRegReg(@Buff, "mov", Reg1, RegMode, Reg2, RegMode);
+end
+
+char @EncodeXchgRegReg(char @Buff; word Reg1; word Reg2; word RegMode)
+	return @EncodeCmdRegReg(@Buff, "xchg", Reg1, RegMode, Reg2, RegMode);
 end
 
 /*****************************************************************************/
 
 /* Помещает в Buff код загрузки константы в регистр. */
-char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value)
+char @EncodeLoadConstant(char @Buff; word Reg; word RegMode; word Value)
 	select
 	case Value == 0:
-		CodeCmdRegReg(@Buff, "xor", Reg, RegMode, Reg, RegMode);
+		EncodeCmdRegReg(@Buff, "xor", Reg, RegMode, Reg, RegMode);
 	default:
-		CodeCmdRegConst(@Buff, "mov", Reg, RegMode, Value);
+		EncodeCmdRegConst(@Buff, "mov", Reg, RegMode, Value);
 	end
 	return @Buff;
 end
@@ -215,29 +240,29 @@ end
 /*****************************************************************************/
 
 /* Помещает в Buff код загрузки метки в регистр. */
-char @CodeLoadLabel(char @Buff; word Reg; word Label)
+char @EncodeLoadLabel(char @Buff; word Reg; word Label)
 
 	strcat(@Buff, "mov     ");
-	CodeReg(@Buff, Reg, 4);
+	EncodeReg(@Buff, Reg, Mach.PointerSize);
 	strcat(@Buff, ",");
-	CodeLabel(@Buff, Label);
+	EncodeLabel(@Buff, Label);
 
 	return @Buff;
 end
 
 /*****************************************************************************/
 
-char CodeOffsetAddenum_Buff[nBUFF];
-char @CodeOffsetAddenum(int Offset)
+char EncodeOffsetAddenum_Buff[nBUFF];
+char @EncodeOffsetAddenum(int Offset)
 	select
 	case Offset > 0:
-		strcpy2(@CodeOffsetAddenum_Buff,"+",@istr(Offset));
+		strcpy2(@EncodeOffsetAddenum_Buff,"+",@istr(Offset));
 	case Offset < 0:
-		strcpy2(@CodeOffsetAddenum_Buff,"-",@istr(-Offset));
+		strcpy2(@EncodeOffsetAddenum_Buff,"-",@istr(-Offset));
 	default:
-		CodeOffsetAddenum_Buff[0] = #0;
+		EncodeOffsetAddenum_Buff[0] = #0;
 	end:select
-	return @CodeOffsetAddenum_Buff;
+	return @EncodeOffsetAddenum_Buff;
 end
 
 /*****************************************************************************/
@@ -360,30 +385,17 @@ iREF:     [         IX + offset]
 
 */
 
-char @ValueRef_Code_(char @Buff; word Size; word ID; word IX; int Offset)
+char @ValueRef_Encode_(char @Buff; word Size; word ID; word IX; int Offset)
 
-	char@ SizeMarker = "";
+	char@ SizeMarker = @Encode_OperandSize(Size);
 	char@ Prefix = "";
 
 	char@ Plus_RX = "";
 	char@ RX = "";
 
-	select
-	case Size == 0:
-		@SizeMarker = "";
-	case Size == 1:
-		@SizeMarker = "byte  ";
-	case Size == 2:
-		@SizeMarker = "word  ";
-	case Size == 4:
-		@SizeMarker = "dword ";
-	default:
-		StopInternalCodegen(__FILE__, __LINE__);
-	end:select
-
 	if IX != RegNone then
 		@Plus_RX = "+";
-		@RX = @CodeReg(NULL, IX, 4);
+		@RX = @EncodeReg(NULL, IX, Mach.PointerSize);
 	end
 
 	switch ID of
@@ -400,17 +412,17 @@ char @ValueRef_Code_(char @Buff; word Size; word ID; word IX; int Offset)
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
 
-	strcat6(@Buff, @SizeMarker, @Prefix, @Plus_RX, @RX, @CodeOffsetAddenum(Offset), "]");
+	strcat6(@Buff, @SizeMarker, @Prefix, @Plus_RX, @RX, @EncodeOffsetAddenum(Offset), "]");
 
 	return @Buff;
 end
 
-char @ValueRef_Code(char @Buff; ValueRef @Ref)
-	return @ValueRef_Code_(@Buff, T_SizeOf(Ref.pType), Ref.ID, Ref.IX, Ref.Offset);
+char @ValueRef_Encode(char @Buff; ValueRef @Ref)
+	return @ValueRef_Encode_(@Buff, T_SizeOf(Ref.pType), Ref.ID, Ref.IX, Ref.Offset);
 end
 
-char @ValueRef_Code_ForLEA(char @Buff; ValueRef @Ref)
-	return @ValueRef_Code_(@Buff, 0, Ref.ID, Ref.IX, Ref.Offset);
+char @ValueRef_Encode_ForLEA(char @Buff; ValueRef @Ref)
+	return @ValueRef_Encode_(@Buff, 0, Ref.ID, Ref.IX, Ref.Offset);
 end
 
 /*
@@ -419,7 +431,7 @@ iSTRING, RO=1: @@ROLITERALS + Offset
 iDATA:         @@DATA       + Offset
 */
 
-char @ValueRef_Code_StaticOffset(char @Buff; ValueRef @Ref)
+char @ValueRef_Encode_StaticOffset(char @Buff; ValueRef @Ref)
 	char @Prefix = "";
 	switch Ref.ID of
 	case iDATA:
@@ -434,37 +446,25 @@ char @ValueRef_Code_StaticOffset(char @Buff; ValueRef @Ref)
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
 
-	strcat2(@Buff, @Prefix, @CodeOffsetAddenum(Ref.Offset));
+	strcat2(@Buff, @Prefix, @EncodeOffsetAddenum(Ref.Offset));
 	return @Buff;
 end
 
 
 /*****************************************************************************/
 
-char @CodeMemRef_Reg_Mult_Reg_Offset(char @Buff; word Size; word Reg1; word Reg2; word RegMode; word Mult; int Offset)
+char @EncodeMemRef_Reg_Mult_Reg_Offset(char @Buff; word Size; word Reg1; word Reg2; word RegMode; word Mult; int Offset)
 
-	char@ SizeMarker = "";
-	select
-	case Size == 0:
-		@SizeMarker = "";
-	case Size == 1:
-		@SizeMarker = "byte  ";
-	case Size == 2:
-		@SizeMarker = "word  ";
-	case Size == 4:
-		@SizeMarker = "dword ";
-	default:
-		StopInternalCodegen(__FILE__, __LINE__);
-	end:select
+	char@ SizeMarker = @Encode_OperandSize(Size);
 
-	strcat3(@Buff, @SizeMarker, "[", @CodeReg(NULL, Reg1, RegMode));
+	strcat3(@Buff, @SizeMarker, "[", @EncodeReg(NULL, Reg1, RegMode));
 
 	if Mult > 1 then
 		strcat2(@Buff, "*", @str(Mult));
 	end:if
 
 	if Reg2 != RegNone then
-		strcat2(@Buff, "+", @CodeReg(NULL, Reg2, RegMode));
+		strcat2(@Buff, "+", @EncodeReg(NULL, Reg2, RegMode));
 	end:if
 
 	select
@@ -487,25 +487,25 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 
 	select
 	case Value==2:
-		CodeCmdRegReg(@Buff, "add", Reg, RegMode, Reg, RegMode);
+		EncodeCmdRegReg(@Buff, "add", Reg, RegMode, Reg, RegMode);
 	case Value==4:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 2);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 2);
 	case Value==8:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 3);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 3);
 	case Value==16:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 4);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 4);
 	case Value==32:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 5);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 5);
 	case Value==64:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 6);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 6);
 	case Value==128:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 7);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 7);
 	case Value==256:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 8);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 8);
 	case Value==512:
-		CodeCmdRegConst(@Buff, "shl", Reg, RegMode, 9);
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 9);
 	case Value>1:
-		CodeCmdRegConst(@Buff, "imul", Reg, RegMode, Value);
+		EncodeCmdRegConst(@Buff, "imul", Reg, RegMode, Value);
 	case Value<1:
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:select
@@ -513,10 +513,12 @@ void Emit_IMUL_Reg_Const(word Reg; word RegMode; word Value)
 	Emit(@Buff);
 end
 
+/*****************************************************************************/
+
 void Emit_CmdRegReg(char @Cmd; word Reg1; word RegMode1; word Reg2; word RegMode2)
 	char Buff[nBUFF];
 	Buff[0] = #0;
-	Emit(@CodeCmdRegReg(@Buff, @Cmd, Reg1, RegMode1, Reg2, RegMode2));
+	Emit(@EncodeCmdRegReg(@Buff, @Cmd, Reg1, RegMode1, Reg2, RegMode2));
 end
 
 /*****************************************************************************/
@@ -543,7 +545,47 @@ end
 void Emit_TEST_Reg_Self(word Reg; word RegMode)
 	char Buff[nBUFF];
 	Buff[0] = #0;
-	EmitPhoSkip(@CodeCmdRegReg(@Buff, "test", Reg, RegMode, Reg, RegMode));
+	EmitPhoSkip(@EncodeCmdRegReg(@Buff, "test", Reg, RegMode, Reg, RegMode));
+end
+
+void Emit_MOV_Reg_Reg(word Reg1; word Reg2; word RegMode)
+	Emit_CmdRegReg("mov", Reg1, RegMode, Reg2, RegMode);
+end
+
+void Emit_XCHG_Reg_Reg(word Reg1; word Reg2; word RegMode)
+	Emit_CmdRegReg("xchg", Reg1, RegMode, Reg2, RegMode);
+end
+
+void Emit_MOVSX_Reg_Reg(word Reg1; word RegMode1; word Reg2; word RegMode2)
+	Emit_CmdRegReg("movsx", Reg1, RegMode1, Reg2, RegMode2);
+end
+
+void Emit_MOVZX_Reg_Reg(word Reg1; word RegMode1; word Reg2; word RegMode2)
+	Emit_CmdRegReg("movzx", Reg1, RegMode1, Reg2, RegMode2);
+end
+
+void Emit_PUSH_Reg(word Reg; word RegMode)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	EmitPhoSkip(@EncodePushReg(@Buff, Reg, RegMode));
+end
+
+void Emit_POP_Reg(word Reg; word RegMode)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	EmitPhoInvalidate(@EncodePopReg(@Buff, Reg, RegMode));
+end
+
+void Emit_INC_Reg(word Reg; word RegMode)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	Emit(@EncodeCmdReg(@Buff, "inc", Reg, RegMode));
+end
+
+void Emit_DEC_Reg(word Reg; word RegMode)
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	Emit(@EncodeCmdReg(@Buff, "dec", Reg, RegMode));
 end
 
 /*****************************************************************************/
@@ -554,7 +596,7 @@ void Emit_Load_Constant(word Reg; word RegMode; word Value)
 
 	char Buff[nBUFF];
 	Buff[0] = #0;
-	Emit(@CodeLoadConstant(@Buff, Reg, RegMode, Value));
+	Emit(@EncodeLoadConstant(@Buff, Reg, RegMode, Value));
 end
 
 /*****************************************************************************/
@@ -569,8 +611,7 @@ word PreferIncDec(word Reg; word RegMode)
 		return 0;
 
 	if EmitShortCode then /* We don't care about the speed */
-		word x86CodeMode = 4; /* FIXME: 4 for 32-bit code and 2 for 16-bit code */
-		when RegMode == x86CodeMode:
+		when RegMode == Mach.Mode:
 			/* <ADD EAX, 1> takes 3 bytes and <INC EAX> takes just 1. So 2 INCs are okay, */
 			return 2;
 		return 1;

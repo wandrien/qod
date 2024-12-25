@@ -4,7 +4,7 @@
 void CloseOutput();
 void EmitComment(char @Comment);
 void EmitPhoSkip(char @Inst);
-char @CodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
+char @EncodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
 bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(word P);
 void NodeMarkUsed(word P);
@@ -19,6 +19,13 @@ define Flag_Sign 2
 word MeaningfulFlags = 0;
 
 word pExitProcess = nDICT;
+
+namespace Mach of
+	word AllowedRegSize = 4;
+	word NativeRegSize = 4;
+	word PointerSize = 4;
+	word Mode = 4;
+end:namespace
 
 include "backend_msg.qdi";
 include "backend_pho.qdi";
