@@ -519,7 +519,7 @@ bool T_IsArray(word T)
 	return Dict[T].Class == cTYPE & Dict[T].Sub == sARRAY;
 end
 
-word T_ArrayDeref(word T)
+word T_DerefArray(word T)
 	when !T_IsArray(T):
 		StopInternal(__FILE__, __LINE__);
 	return Dict[T].pType;
@@ -588,7 +588,7 @@ word T_PtrTo(word T)
 		StopInternal(__FILE__, __LINE__);
 
 	if T_IsArray(T) then
-		T = T_ArrayDeref(T);
+		T = T_DerefArray(T);
 	end
 
 	if Dict[T].tCachedPtrToMe >= nDICT then

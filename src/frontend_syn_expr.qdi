@@ -445,6 +445,19 @@ end
 
 /*****************************************************************************/
 
+word AutoDerefPtr(word pExpr)
+	forever do
+		word pType = Node[pExpr].pType;
+		when !T_IsPtr(pType): exit;
+		word P = Peek5(iADDR, pExpr, nNODE, T_DerefPtr(pType));
+		Node[P].SourceLocation = Node[pExpr].SourceLocation;
+		pExpr = P;
+	end:forever
+	return pExpr;
+end
+
+/*****************************************************************************/
+
 word ReadFuncCall(char @Buff; word pPreallocated; word pFunc; word pBracket)
 	word pFuncType = Func_GetType(pFunc);
 	word pRetType = T_FuncGetRetType(pFuncType);
@@ -563,51 +576,38 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			Node[P3].Value = T_ArrayGetLen(pType);
 			Node[P3].pLeft = pPrefixExpr;
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
-			pType = T_ArrayDeref(pType);
+			pType = T_DerefArray(pType);
 			Node[P3].pType = pType;
+			ImplicitCast(st_word, @Node[P3].pRight);
 
 			when str_ne(@Buff,"]"):
 				Stop(@eBRACKETEXP);
-
-			ImplicitCast(st_word, @Node[P3].pRight);
+			Scan(@Buff);
 
 			pPrefixExpr = P3;
-
-			Scan(@Buff);
 		end:while
 
 		while str_eq(@Buff,"[") do /* Индексация указателя. */
 			when !T_IsPtr(pType):
 				Stop(@eNOADDR);
-			word P3 = Peek();
-			Node[P3].ID = iADDR;
-			Node[P3].pLeft = pPrefixExpr;
+			word P3 = Peek5(iADDR, pPrefixExpr, nNODE, T_DerefPtr(pType));
+
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
-			pType = T_DerefPtr(pType);
-			Node[P3].pType = pType;
+			ImplicitCast(st_word, @Node[P3].pRight);
 
 			when str_ne(@Buff,"]"):
 				Stop(@eBRACKETEXP);
-
-			ImplicitCast(st_word, @Node[P3].pRight);
+			Scan(@Buff);
 
 			pPrefixExpr = P3;
-
-			Scan(@Buff);
+			pType = Node[pPrefixExpr].pType;
 		end:while
 
 		word b = LookupBracket(BracketType_Parentheses, @Buff);
 		select
 		case b != BRACKET_INVALID: /* Вызов функции или приведение типа. */
-
-			while T_IsPtr(pType) do
-				word P3=Peek();
-				Node[P3].ID = iADDR;
-				Node[P3].pLeft = pPrefixExpr;
-				pType = T_DerefPtr(pType);
-				Node[P3].pType = pType;
-				pPrefixExpr = P3;
-			end:while
+			pPrefixExpr = AutoDerefPtr(pPrefixExpr);
+			pType = Node[pPrefixExpr].pType;
 
 			select
 			case Node[pPrefixExpr].ID == iFUNC:
@@ -626,15 +626,8 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			end:select
 
 		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры/пространства имён. */
-
-			while T_IsPtr(pType) do
-				word P3=Peek();
-				Node[P3].ID = iADDR;
-				Node[P3].pLeft = pPrefixExpr;
-				pType = T_DerefPtr(pType);
-				Node[P3].pType = pType;
-				pPrefixExpr = P3;
-			end:while
+			pPrefixExpr = AutoDerefPtr(pPrefixExpr);
+			pType = Node[pPrefixExpr].pType;
 
 			Scan(@Buff);
 
@@ -850,9 +843,7 @@ word Primary(word Prty; char @Buff)
 
 	Node[P1].pType = pType;
 
-	if SkipScan then
-		SkipScan = false;
-	else
+	if !SkipScan then
 		Scan(@Buff);
 	end
 	P1 = ReadPostfixOperators(@Buff, P1);
