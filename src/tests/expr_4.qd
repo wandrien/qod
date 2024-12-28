@@ -1,0 +1,22 @@
+// TEST: should_print '170'
+
+include "../include/test_env.qdi";
+
+int f1()
+	return 50;
+end
+
+int f2()
+	return 70;
+end
+
+begin
+	int x = f1();
+	int y = f2();
+	if x >= 10 & y >= 10 & x <= y then
+		x = x * 2 + y;
+		put_int(x);
+	else
+		puts("Wrong value");
+	end:if
+end

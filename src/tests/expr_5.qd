@@ -1,0 +1,46 @@
+// TEST: should_print '100 100 5 5 '
+
+include "../include/test_env.qdi";
+
+void f1()
+	int a = 5;
+	int b = 20;
+	int c = 4;
+
+	int d = (a + b) * c;
+	put_int(d); puts(" ");
+end
+
+void f2()
+	uint a = 5;
+	uint b = 20;
+	uint c = 4;
+
+	uint d = (a + b) * c;
+	put_uint(d); puts(" ");
+end
+
+void f3()
+	int a = 300;
+	int b = 200;
+	int c = 100;
+
+	int d = (a + b) / c;
+	put_int(d); puts(" ");
+end
+
+void f4()
+	uint a = 300;
+	uint b = 200;
+	uint c = 100;
+
+	uint d = (a + b) / c;
+	put_uint(d); puts(" ");
+end
+
+begin
+	f1();
+	f2();
+	f3();
+	f4();
+end

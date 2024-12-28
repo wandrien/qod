@@ -138,6 +138,10 @@ bool NodeIsLiteralInt(word P)
 	return false;
 end
 
+bool NodeIsLiteralZero(word P)
+	return Node[P].ID == iLITERAL & Node[P].Value == 0;
+end
+
 bool NodeIsFalse(word P)
 	when Node[P].ID == iLITERAL & Node[P].pType == st_bool & Node[P].Value == 0:
 		return true;

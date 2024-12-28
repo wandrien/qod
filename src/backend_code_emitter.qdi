@@ -28,62 +28,87 @@ end
 
 /*****************************************************************************/
 
+word RegChoiceOrder[4];
+
+bool IsRegSelectable(word Reg)
+	return Reg_ALT_TARGET != Reg & RegAllocation[Reg] == 0;
+end
+
+word ChooseEmptyRegRated()
+	int BestRate = 100; /* the lower the better */
+	word BestReg = RegNone;
+
+	word I = 0;
+	while I < countof(RegChoiceOrder) do
+		word Reg = RegChoiceOrder[I];
+		int Rate = PHO_GetRegRate(Reg);
+		when Rate == 0:
+			return Reg;
+		if Rate < BestRate then
+			BestRate = Rate;
+			BestReg = Reg;
+		end:if
+		inc I;
+	end:while
+	return BestReg;
+end
+
 word ChooseEmptyReg_IgnoreConsts()
-	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0:
+	when IsRegSelectable(RegA):
 		return RegA;
-	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0:
+	when IsRegSelectable(RegD):
 		return RegD;
-	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0:
+	when IsRegSelectable(RegC):
 		return RegC;
-	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0:
+	when IsRegSelectable(RegB):
 		return RegB;
 	return RegNone;
 end
 
 word ChooseEmptyReg()
-	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0 & !PHO_RegContainsAConst(RegA):
+	when IsRegSelectable(RegA) & !PHO_RegContainsAConst(RegA):
 		return RegA;
-	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0 & !PHO_RegContainsAConst(RegD):
+	when IsRegSelectable(RegD) & !PHO_RegContainsAConst(RegD):
 		return RegD;
-	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
+	when IsRegSelectable(RegC) & !PHO_RegContainsAConst(RegC):
 		return RegC;
-	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
+	when IsRegSelectable(RegB) & !PHO_RegContainsAConst(RegB):
 		return RegB;
 	return ChooseEmptyReg_IgnoreConsts();
 end
 
 word ChooseEmptyReg2_IgnoreConsts()
-	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0:
+	when IsRegSelectable(RegA):
 		return RegA;
-	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0:
+	when IsRegSelectable(RegB):
 		return RegB;
-	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0:
+	when IsRegSelectable(RegD):
 		return RegD;
-	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0:
+	when IsRegSelectable(RegC):
 		return RegC;
 	return RegNone;
 end
 
 word ChooseEmptyReg2()
-	when Reg_ALT_TARGET != RegA & RegAllocation[RegA] == 0 & !PHO_RegContainsAConst(RegA):
+	when IsRegSelectable(RegA) & !PHO_RegContainsAConst(RegA):
 		return RegA;
-	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
+	when IsRegSelectable(RegB) & !PHO_RegContainsAConst(RegB):
 		return RegB;
-	when Reg_ALT_TARGET != RegD & RegAllocation[RegD] == 0 & !PHO_RegContainsAConst(RegD):
+	when IsRegSelectable(RegD) & !PHO_RegContainsAConst(RegD):
 		return RegD;
-	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
+	when IsRegSelectable(RegC) & !PHO_RegContainsAConst(RegC):
 		return RegC;
 	return ChooseEmptyReg2_IgnoreConsts();
 end
 
 word ChooseEmptyReg3()
-	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0 & !PHO_RegContainsAConst(RegB):
+	when IsRegSelectable(RegB) & !PHO_RegContainsAConst(RegB):
 		return RegB;
-	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0 & !PHO_RegContainsAConst(RegC):
+	when IsRegSelectable(RegC) & !PHO_RegContainsAConst(RegC):
 		return RegC;
-	when Reg_ALT_TARGET != RegB & RegAllocation[RegB] == 0:
+	when IsRegSelectable(RegB):
 		return RegB;
-	when Reg_ALT_TARGET != RegC & RegAllocation[RegC] == 0:
+	when IsRegSelectable(RegC):
 		return RegC;
 	return RegNone;
 end
@@ -541,6 +566,9 @@ end
 word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word @Complexity)
 	Complexity = 0;
 
+	when Node[P].ID == iNOOP_CAST:
+		return pTypeTo;
+
 	select
 	case pTypeFrom == nDICT:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
@@ -580,6 +608,9 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end
+
+	when Complexity == 0:
+		Node[P].ID = iNOOP_CAST;
 
 	return pTypeTo;
 end
@@ -697,7 +728,7 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 			return RecursiveResult;
 		ValueRef_Apply_FIELD(@Ref, pPrimary);
 
-	case iCAST, iREINTERPRET_CAST:
+	case iCAST, iREINTERPRET_CAST, iNOOP_CAST:
 		return QueryOperandStatus_CAST(pPrimary, @_Q);
 	default:
 		return false;
@@ -822,6 +853,8 @@ bool CodeRequiresSingleRegister_(word P)
 		end:if
 		return false;
 	case iBIT_NOT, iNEG:
+		return CodeRequiresSingleRegister_(Node[P].pLeft);
+	case iNOOP_CAST:
 		return CodeRequiresSingleRegister_(Node[P].pLeft);
 	case iCAST, iREINTERPRET_CAST:
 		word pTypeFrom = Node[Node[P].pLeft].pType;
@@ -967,31 +1000,24 @@ end
 
 /*****************************************************************************/
 
-word TryDropCastBeforeCmp(word P)
-
-	word ID = Node[P].ID;
-	word pLeft = Node[P].pLeft;
-	word pRight = Node[P].pRight;
-
-	when ID < iLT | iGT < ID:
-		return nNODE;
-
-	when Node[pRight].Value > 255: /* TODO: this case should be optimized out on the semantic analysis phase */
-		return nNODE;
-
-	when Node[pLeft].ID != iCAST & Node[pLeft].ID != iREINTERPRET_CAST:
-		return nNODE;
-
-	word pTypeFrom = Node[Node[pLeft].pLeft].pType;
-	word pTypeTo = Node[pLeft].pType;
-
-	when pTypeFrom != st_char & pTypeFrom != st_byte:
-		return nNODE;
-
-	when pTypeTo != st_word:
-		return nNODE;
-
-	return Node[pLeft].pLeft;
+word DropNoOpCast(word P)
+	switch Node[P].ID of
+	case iNOOP_CAST:
+		return Node[P].pLeft;
+	case iCAST, iREINTERPRET_CAST:
+		word pLeft = Node[P].pLeft;
+		word pTypeFrom = Node[pLeft].pType;
+		word pTypeTo = Node[P].pType;
+		word Complexity = 0;
+		Code_CAST(NULL, P, pTypeTo, pTypeFrom, RegNone, @Complexity);
+		if Node[P].ID != iNOOP_CAST then
+			return P;
+		else
+			return pLeft;
+		end
+	default:
+		return P;
+	end:switch
 end
 
 /*****************************************************************************/
@@ -1023,7 +1049,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when nMulTrick >= nMUL_TRICKS:
 		return nDICT;
 
-	word pType2=Code(pLeft);
+	word pType2 = Code(pLeft);
 
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -1032,6 +1058,20 @@ word TryCodeFastMult(char @Buff; word P)
 	when done == 0:
 		StopInternalCodegen(__FILE__, __LINE__);
 	return pType;
+end
+
+/*****************************************************************************/
+
+word GetCommonOperandType(word pLeft; word pRight)
+	word pTypeLeft = Node[pLeft].pType;
+	word pTypeRight = Node[pRight].pType;
+	when T_IsNulltype(pTypeRight):
+		return pTypeLeft;
+	when T_IsNulltype(pTypeLeft):
+		return pTypeRight;
+	when T_Equal(pTypeLeft, pTypeRight):
+		return pTypeLeft;
+	StopAtNodeInternalCodegen(__FILE__, __LINE__, pLeft);
 end
 
 /*****************************************************************************/
@@ -1052,13 +1092,29 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	end:forever
 
 	word ID = Node[P].ID;
+	word pLeft = Node[P].pLeft;
+	word pRight = Node[P].pRight;
+	word pResultType = Node[P].pType;
+	word ResultSize = SizeOfType(pResultType);
+	bool opSwappable = (CheckOperationSwappable(ID) != 0);
 
+	/* Variables related to comparison OPs */
 	bool opIsComparison = false;
 	bool useSetCC = true;
+	bool allowEasyTargetSwitch = false;
 	word Reg_TARGET_SavedForConditional = RegNone;
+	word pCmpOperandType = nDICT;
+	word CmpOperandSize = 0;
 
 	if iLT <= ID & ID <= iGT then
 		opIsComparison = true;
+
+		/* The operand type may be lost during dropping redundant operand casts
+		   below in the function. So save it here.
+		*/
+		pCmpOperandType = GetCommonOperandType(pLeft, pRight);
+		CmpOperandSize = SizeOfType(pCmpOperandType);
+
 		if @F == NULL & @T == NULL & @M == NULL then
 			/* The caller doesn't expect us to emit jumps,
 			   the result should be in a register instead. */
@@ -1068,9 +1124,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/* The caller does expect us to emit jumps,
 			   the final register value is irrelevant. */
 			useSetCC = false;
-			/* Since these operations don't return the result in any register,
-			   we can reset Reg_TARGET freely. */
-			Reg_TARGET=RegA;
+			/* Since these operations don't return a result in any register,
+			   we may reset Reg_TARGET freely. */
+			allowEasyTargetSwitch = true;
 		end:if
 	end
 
@@ -1083,8 +1139,8 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end
 	end:switch
 
-	word pLeft = Node[P].pLeft;
-	word pRight = Node[P].pRight;
+	pLeft = DropNoOpCast(pLeft);
+	pRight = DropNoOpCast(pRight);
 
 	char BuffRightOperand[nBUFF];
 	word leftOperand  = operandNotReady;
@@ -1132,10 +1188,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					Reg2  <- RightOperand
 					Op    Reg1,  Reg2
 			*/
-			word swappedID = CheckOperationSwappable(ID);
-			if swappedID != 0 & NodeCanBeEncodedAsImm(pLeft) then
+			if opSwappable & NodeCanBeEncodedAsImm(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
-				ID = swappedID;
+				ID = CheckOperationSwappable(ID);
 				rightOperand = operandImm;
 				exit;
 			end:if
@@ -1171,11 +1226,10 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					Reg2  <- RightOperand
 					Op    Reg1,  Reg2
 			*/
-			word swappedID = CheckOperationSwappable(ID);
-			if (swappedID != 0) & NodeCanBeEncodedAsMemoryOperand(pLeft) then
+			if opSwappable & NodeCanBeEncodedAsMemoryOperand(pLeft) then
 				word tmp = pLeft; pLeft = pRight; pRight = tmp;
 				CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL);
-				ID = swappedID;
+				ID = CheckOperationSwappable(ID);
 				rightOperand = operandMemRef;
 				exit;
 			end:if
@@ -1185,63 +1239,148 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		exit;
 	end:forever
 
-	/*
-		TODO: проверять не только Reg_TARGET, но и среди других регистров искать.
-	*/
 	word rightReg = RegNone;
 	word fSwap=0;
-	word pType;
-	word regReuse = 0;
-	select
-	case (rightOperand == operandImm) &
-	     (T_SizeOf(Node[pRight].pType) == 4) &
-	     (PHO_RegContainsConst(Reg_TARGET, Node[pRight].Value)):
-		 regReuse = 1;
-	case PHO_CheckRegForNode(Reg_TARGET, pRight):
-		 regReuse = 2;
-	end:select
 
-	if regReuse != 0 then
-		word swappedID = CheckOperationSwappable(ID);
-		if (swappedID != 0) & CodeAsMemoryOperand(@BuffRightOperand, pLeft, NULL) then
-			word tmp = pLeft; pLeft = pRight; pRight = tmp;
-			ID = swappedID;
+	forever do
+
+		word leftRegPreloaded = LookupRegForNode(pLeft);
+		word rightRegPreloaded = RegNone;
+
+		switch ID of
+		case iEQ, iNE:
+			when leftRegPreloaded == RegNone | !(NodeIsLiteralZero(pRight) | NodeIsNull(pRight)):
+				rightRegPreloaded = LookupRegForNode(pRight);
+		default:
+			rightRegPreloaded = LookupRegForNode(pRight);
+		end:switch
+
+		when leftRegPreloaded == RegNone & rightRegPreloaded == RegNone:
+			exit;
+
+		bool leftAsRight =
+		  (leftRegPreloaded != RegNone)
+		& DoesOperationAllowRightReg(ID, leftRegPreloaded);
+		bool rightAsRight =
+		  (rightRegPreloaded != RegNone)
+		& DoesOperationAllowRightReg(ID, rightRegPreloaded);
+
+		bool leftAsLeft =
+		  (leftRegPreloaded == Reg_TARGET)
+		| (allowEasyTargetSwitch & leftRegPreloaded != RegNone);
+
+		bool rightAsLeft =
+		  (rightRegPreloaded == Reg_TARGET)
+		| (allowEasyTargetSwitch & rightRegPreloaded != RegNone);
+
+		if leftAsLeft & rightAsRight then
 			leftOperand = operandReg;
-			rightOperand = operandMemRef;
-			pType = Node[pLeft].pType;
-			if regReuse == 1 then
-				EmitWithExprComment("", "Const reuse in CodeBinOp");
-			else
-				EmitWithExprComment("", "Node link reuse in CodeBinOp");
-			end
+			rightOperand = operandReg;
+			Reg_TARGET = leftRegPreloaded;
+			rightReg = rightRegPreloaded;
+			exit;
+		end
+
+		if opSwappable & rightAsLeft & leftAsRight then
+			word tmp = pLeft; pLeft = pRight; pRight = tmp;
+			ID = CheckOperationSwappable(ID);
+			leftOperand = operandReg;
+			rightOperand = operandReg;
+			Reg_TARGET = rightRegPreloaded;
+			rightReg = leftRegPreloaded;
+			exit;
 		end:if
+
+		if DoesOperationAllowRightMemRef(ID) then
+			if leftAsLeft & NodeCanBeEncodedAsMemoryOperand(pRight) then
+				leftOperand = operandReg;
+				rightOperand = operandMemRef;
+				Reg_TARGET = leftRegPreloaded;
+				CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL);
+				exit;
+			end:if
+
+			if opSwappable & rightAsLeft & NodeCanBeEncodedAsMemoryOperand(pLeft) then
+				word tmp = pLeft; pLeft = pRight; pRight = tmp;
+				ID = CheckOperationSwappable(ID);
+				leftOperand = operandReg;
+				rightOperand = operandMemRef;
+				Reg_TARGET = rightRegPreloaded;
+				CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL);
+				exit;
+			end:if
+		end:if
+
+		if DoesOperationAllowRightImm(ID) then
+			if leftAsLeft
+			&  NodeCanBeEncodedAsImm(pRight)
+			then
+				leftOperand = operandReg;
+				rightOperand = operandImm;
+				Reg_TARGET = leftRegPreloaded;
+				exit;
+			end:if
+
+			if opSwappable
+			&  rightAsLeft
+			&  NodeCanBeEncodedAsImm(pLeft)
+			then
+				word tmp = pLeft; pLeft = pRight; pRight = tmp;
+				ID = CheckOperationSwappable(ID);
+				leftOperand = operandReg;
+				rightOperand = operandImm;
+				Reg_TARGET = rightRegPreloaded;
+				exit;
+			end:if
+		end:if
+
+		if rightRegPreloaded != Reg_TARGET
+		&  rightAsRight
+		&  CodeRequiresSingleRegister(pLeft)
+		then
+			rightOperand = operandReg;
+			rightReg = rightRegPreloaded;
+			exit;
+		end:if
+
+		if opSwappable
+		&  leftRegPreloaded != Reg_TARGET
+		&  leftRegPreloaded != RegNone
+		&  CodeRequiresSingleRegister(pRight)
+		then
+			word tmp = pLeft; pLeft = pRight; pRight = tmp;
+			ID = CheckOperationSwappable(ID);
+			rightOperand = operandReg;
+			rightReg = leftRegPreloaded;
+			exit;
+		end:if
+
+		exit;
+	end:forever
+
+	if allowEasyTargetSwitch & (leftOperand == operandNotReady) then
+		word Reg;
+		if NodeCanBeEncodedAsMemoryOperand(pLeft) then
+			Reg = ChooseEmptyRegRated();
+		else
+			Reg = ChooseEmptyReg();
+		end:if
+		when Reg != RegNone:
+			Reg_TARGET = Reg;
 	end:if
+
 
 	switch rightOperand of
 	case operandImm:
-		word pLeft2 = TryDropCastBeforeCmp(P);
-		when pLeft2 < nNODE:
-			pLeft = pLeft2;
-
-		if opIsComparison & ! useSetCC then
-			when CodeRequiresSingleRegister(pLeft):
-				Reg_TARGET = ChooseEmptyReg();
+		if leftOperand == operandNotReady then
+			Code(pLeft);
+			leftOperand = operandReg;
 		end:if
-
-		pType=Code(pLeft);
 
 	case operandMemRef:
 		if leftOperand == operandNotReady then
-			if PHO_CheckRegForNode(Reg_TARGET, pLeft) then
-				pType = Node[pLeft].pType;
-			else
-				if iLT <= ID & ID <= iGT then
-					when CodeRequiresSingleRegister(pLeft):
-						Reg_TARGET = ChooseEmptyReg();
-				end:if
-
-				pType=Code(pLeft);
-			end:if
+			Code(pLeft);
+			leftOperand = operandReg;
 		end:if
 
 		word RegLinked = LookupRegForNode(pRight);
@@ -1252,8 +1391,15 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:if
 
 	case operandReg:
+		if leftOperand == operandNotReady then
+			when Reg_TARGET == rightReg | !CodeRequiresSingleRegister(pLeft):
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
+			Code(pLeft);
+			leftOperand = operandReg;
+		end:if
+
 		when leftOperand != operandReg:
-			StopInternalCodegen(__FILE__, __LINE__);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 	case operandNotReady:
 		char @reorderingReason = @CheckOperandReordering(pLeft, pRight);
@@ -1291,7 +1437,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when Reg_ALT_TARGET != RegA:
 			Reg_ALT_TARGET = RegA;
 
-		pType = Code(pLeft);
+		Code(pLeft);
 		if Reg_TARGET != Reg_ALT_TARGET then
 			/* Операнд был возвращён в другом регистре. */
 			Emit_MOV_or_XCHG(Reg_ALT_TARGET, Reg_TARGET, 4);
@@ -1313,16 +1459,15 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		Reg_ALT_TARGET = Saved_Reg_ALT_TARGET;
 
 	default:
-		StopInternalCodegen(__FILE__, __LINE__);
+		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end:switch
 
 	/* Check the cases for the operands arrived in swapped order: */
 	if fSwap==1 then
 		forever do
 			/* We can handle it by changing the operation ID */
-			word swappedID = CheckOperationSwappable(ID);
-			if swappedID != 0 then
-				ID = swappedID;
+			if opSwappable then
+				ID = CheckOperationSwappable(ID);
 				exit;
 			end:if
 
@@ -1338,7 +1483,6 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:forever
 	end:if
 
-	word Size=SizeOfType(pType);
 
 	/* Check if we can replace add/sub with inc/dec */
 	if rightOperand == operandImm & (ID == iADD | ID == iSUB) then
@@ -1349,30 +1493,30 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		switch as_signed(Value) of
 		case 1:
-			if PreferIncDec(Reg_TARGET, Size) > 0 then
-				Emit_INC_Reg(Reg_TARGET, Size);
+			if PreferIncDec(Reg_TARGET, ResultSize) > 0 then
+				Emit_INC_Reg(Reg_TARGET, ResultSize);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
-				return pType;
+				return pResultType;
 			end:if
 		case -1:
-			if PreferIncDec(Reg_TARGET, Size) > 0 then
-				Emit_DEC_Reg(Reg_TARGET, Size);
+			if PreferIncDec(Reg_TARGET, ResultSize) > 0 then
+				Emit_DEC_Reg(Reg_TARGET, ResultSize);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
-				return pType;
+				return pResultType;
 			end:if
 		case 2:
-			if PreferIncDec(Reg_TARGET, Size) > 1 then
-				Emit_INC_Reg(Reg_TARGET, Size);
-				Emit_INC_Reg(Reg_TARGET, Size);
+			if PreferIncDec(Reg_TARGET, ResultSize) > 1 then
+				Emit_INC_Reg(Reg_TARGET, ResultSize);
+				Emit_INC_Reg(Reg_TARGET, ResultSize);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
-				return pType;
+				return pResultType;
 			end:if
 		case -2:
-			if PreferIncDec(Reg_TARGET, Size) > 1 then
-				Emit_DEC_Reg(Reg_TARGET, Size);
-				Emit_DEC_Reg(Reg_TARGET, Size);
+			if PreferIncDec(Reg_TARGET, ResultSize) > 1 then
+				Emit_DEC_Reg(Reg_TARGET, ResultSize);
+				Emit_DEC_Reg(Reg_TARGET, ResultSize);
 				MeaningfulFlags = (Flag_Zero | Flag_Sign);
-				return pType;
+				return pResultType;
 			end:if
 		end:switch
 	end:if
@@ -1418,7 +1562,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 						pass; /* ! */
 						SkipCmp = true;
 					else
-						Emit_TEST_Reg_Self(Reg_TARGET, Size);
+						Emit_TEST_Reg_Self(Reg_TARGET, CmpOperandSize);
 						SkipCmp = true;
 						if fSwap==0 then
 							PHO_LinkNode(Reg_TARGET, pLeft);
@@ -1426,54 +1570,54 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					end:if
 				case (MeaningfulFlags & (Flag_Zero | Flag_Sign)) == (Flag_Zero | Flag_Sign):
 					select
-					case (ID == iGE) & T_IsSigned(pType):
+					case (ID == iGE) & T_IsSigned(pCmpOperandType):
 						ID = iBRANCH_NSF;
 						SkipCmp = true;
-					case (ID == iLT) & T_IsSigned(pType):
+					case (ID == iLT) & T_IsSigned(pCmpOperandType):
 						ID = iBRANCH_SF;
 						SkipCmp = true;
 					end:select
 				end:select
 			case 1:
-				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, Size) != 0 then
-					Emit_DEC_Reg(Reg_TARGET, Size);
+				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, CmpOperandSize) != 0 then
+					Emit_DEC_Reg(Reg_TARGET, CmpOperandSize);
 					dec PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			case word(-1):
-				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, Size) != 0 then
-					Emit_INC_Reg(Reg_TARGET, Size);
+				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, CmpOperandSize) != 0 then
+					Emit_INC_Reg(Reg_TARGET, CmpOperandSize);
 					inc PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			end:switch
 			if !SkipCmp then
 				BuffRightOperand[0] = #0;
-				if PHO_EncodeRegContainingConst(@BuffRightOperand, Value, Size) != 0 then
+				if PHO_EncodeRegContainingConst(@BuffRightOperand, Value, CmpOperandSize) != 0 then
 					EmitPhoSkip(
-						@EncodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
+						@EncodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, CmpOperandSize, @BuffRightOperand)
 					);
 				else
 					EmitPhoSkip(
-						@EncodeCmdRegConst(@Buff, "cmp", Reg_TARGET, Size, Value)
+						@EncodeCmdRegConst(@Buff, "cmp", Reg_TARGET, CmpOperandSize, Value)
 					);
 				end:if
 				if fSwap==0 then
 					PHO_LinkNode(Reg_TARGET, pLeft);
 				end:if
 			end:if
-			when (Size == 4) & (ID == iNE):
+			when (CmpOperandSize == 4) & (ID == iNE):
 				PHO_RegConnectConst(Reg_TARGET, PHO_Load_Value);
 		case rightOperand == operandMemRef:
 			EmitPhoSkip(
-				@EncodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, Size, @BuffRightOperand)
+				@EncodeCmdRegFmt(@Buff, "cmp", Reg_TARGET, CmpOperandSize, @BuffRightOperand)
 			);
 			if fSwap==0 then
 				PHO_LinkNode(Reg_TARGET, pLeft);
 			end:if
 		case rightOperand == operandReg:
 			EmitPhoSkip(
-				@EncodeCmdRegReg(@Buff, "cmp", Reg_TARGET, Size, rightReg, Size)
+				@EncodeCmdRegReg(@Buff, "cmp", Reg_TARGET, CmpOperandSize, rightReg, CmpOperandSize)
 			);
 			if fSwap==0 then
 				PHO_LinkNode(Reg_TARGET, pLeft);
@@ -1485,7 +1629,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		char@ BranchCondition = "";
 		select
-		case T_IsSigned(pType):
+		case T_IsSigned(pCmpOperandType):
 			switch ID of
 			case iLT: @BranchCondition = "l ";
 			case iLE: @BranchCondition = "le";
@@ -1514,8 +1658,6 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		if useSetCC then
 			Reg_TARGET = Reg_TARGET_SavedForConditional;
-			word pResultType = Node[P].pType;
-			word ResultSize = T_SizeOf(pResultType);
 			char Cmd[8];
 			strcpy2(@Cmd,"set",@BranchCondition);
 			Buff[0] = #0;
@@ -1556,16 +1698,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 	case ID==iMUL:
 		select
-		case T_IsSigned(pType):
+		case T_IsSigned(pResultType):
 			strcpy(@Buff,"imul    ");
-		case T_IsUnsigned(pType):
+		case T_IsUnsigned(pResultType):
 			strcpy(@Buff,"mul     ");
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
-
-		when Reg_TARGET != RegA:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 		switch rightOperand of
 		case operandImm:
@@ -1573,53 +1712,54 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		case operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case operandReg:
-			EncodeReg(@Buff, rightReg, Size);
+			EncodeReg(@Buff, rightReg, ResultSize);
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:switch
 
-		Emit(@Buff);
-		return pType;
+		EmitPhoSkip(@Buff);
+
+		PHO_InvalidateReg(RegA);
+		PHO_InvalidateReg(RegD);
+
+		return pResultType;
 
 	case ID==iDIV | ID==iMOD:
-		when Reg_TARGET != RegA:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-
 		select
-		case Size==1:
-			if T_IsSigned(pType) then
+		case ResultSize==1:
+			if T_IsSigned(pResultType) then
 				Emit("movsx   AX,   AL");
 				strcpy(@Buff,"idiv    ");
 			else
 				Emit("xor     AH,   AH");
 				strcpy(@Buff,"div     ");
 			end:if
-		case Size==2:
+		case ResultSize==2:
 			if rightOperand == operandReg & rightReg == RegD then
 				word newRightReg = ChooseEmptyReg3();
 				when newRightReg == RegNone:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-				Emit_MOV_or_XCHG(newRightReg, rightReg, Size);
+				Emit_MOV_or_XCHG(newRightReg, rightReg, ResultSize);
 				rightReg = newRightReg;
 			end:if
 
-			if T_IsSigned(pType) then
+			if T_IsSigned(pResultType) then
 				Emit("cwq");
 				strcpy(@Buff,"idiv    ");
 			else
 				Emit("xor     DX,   DX");
 				strcpy(@Buff,"div     ");
 			end:if
-		case Size==4:
+		case ResultSize==4:
 			if rightOperand == operandReg & rightReg == RegD then
 				word newRightReg = ChooseEmptyReg3();
 				when newRightReg == RegNone:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-				Emit_MOV_or_XCHG(newRightReg, rightReg, Size);
+				Emit_MOV_or_XCHG(newRightReg, rightReg, ResultSize);
 				rightReg = newRightReg;
 			end:if
 
-			if T_IsSigned(pType) then
+			if T_IsSigned(pResultType) then
 				Emit("cdq");
 				strcpy(@Buff,"idiv    ");
 			else
@@ -1636,7 +1776,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		case rightOperand == operandMemRef:
 			strcat(@Buff,@BuffRightOperand);
 		case rightOperand == operandReg:
-			EncodeReg(@Buff, rightReg, Size);
+			EncodeReg(@Buff, rightReg, ResultSize);
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
@@ -1645,49 +1785,43 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		if ID==iMOD then
 			select
-			case Size==1:
+			case ResultSize==1:
 				Emit("mov     AL,   AH");
-			case Size==2:
+			case ResultSize==2:
 				if Reg_ALT_TARGET == RegNone then
 					Reg_TARGET = RegD;
 				else
-					Emit_MOV_or_XCHG(RegA, RegD, Size);
+					Emit_MOV_or_XCHG(RegA, RegD, ResultSize);
 				end:if
-			case Size==4:
+			case ResultSize==4:
 				if Reg_ALT_TARGET == RegNone then
 					Reg_TARGET = RegD;
 				else
-					Emit_MOV_or_XCHG(RegA, RegD, Size);
+					Emit_MOV_or_XCHG(RegA, RegD, ResultSize);
 				end:if
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:select
 		end:if
 
-		return pType;
+		PHO_InvalidateReg(RegA);
+		PHO_InvalidateReg(RegD);
+
+		return pResultType;
 
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end:select
 
 	select
-	case IsNativeOperandSize(Size):
+	case IsNativeOperandSize(ResultSize):
 		select
 		case rightOperand == operandImm:
-			/*
-				XXX: The commented out code is mostly useless in the current implementation
-				I can't find any expression when that condition actually triggers.
-				May be useful when a full-featured register allocation strategy will be implemented.
-			*/
-			/*if PHO_EncodeRegContainingConst(@BuffRightOperand, Node[pRight].Value, Size) != 0 then
-				CodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
-			else*/
-				EncodeRegConst(@Buff, Reg_TARGET, Size, Node[pRight].Value);
-			/*end:if*/
+			EncodeRegConst(@Buff, Reg_TARGET, ResultSize, Node[pRight].Value);
 		case rightOperand == operandMemRef:
-			EncodeRegFmt(@Buff, Reg_TARGET, Size, @BuffRightOperand);
+			EncodeRegFmt(@Buff, Reg_TARGET, ResultSize, @BuffRightOperand);
 		case rightOperand == operandReg:
-			EncodeRegReg(@Buff, Reg_TARGET, Size, rightReg, Size);
+			EncodeRegReg(@Buff, Reg_TARGET, ResultSize, rightReg, ResultSize);
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
@@ -1697,7 +1831,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	end:select
 
 	MeaningfulFlags = _MeaningfulFlags;
-	return pType;
+	return pResultType;
 end
 
 /*****************************************************************************/
@@ -1950,6 +2084,10 @@ word Code(word P)
 	     iCALL, iCALL2, iINDEX, iLPTR, iADDR, iFIELD:
 		return CodePrimaryWrapped(P);
 
+	case iNOOP_CAST:
+		Code(Node[P].pLeft);
+		return Node[P].pType;
+
 	case iCAST, iREINTERPRET_CAST:
 		word pTypeFrom = Code(Node[P].pLeft);
 		word pTypeTo = Node[P].pType;
@@ -2142,6 +2280,10 @@ end
 
 /* Формирует листинг секции кода. Возвращает индекс стартовой метки. */
 word EmitSection_Code(char @Buff)
+	RegChoiceOrder[0] = RegA;
+	RegChoiceOrder[1] = RegD;
+	RegChoiceOrder[2] = RegC;
+	RegChoiceOrder[3] = RegB;
 
 	EmitStringNL("");
 

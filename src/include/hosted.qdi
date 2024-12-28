@@ -7,6 +7,10 @@ void put_word(word i)
 	puts(@str(i));
 end
 
+void put_uint(uint i)
+	puts(@str(i));
+end
+
 void put_int(int i)
 	puts(@istr(i));
 end
