@@ -685,38 +685,17 @@ end
 
 /*****************************************************************************/
 
-bool DeclNamespace(char @Buff)
-	word SkipFinalScan;
-	CheckDuplicate(@Scan(@Buff));
+bool DeclNamespace(char @Buff);
 
-	word pNamespace = DictMakeNamespace(@Buff);
-	DictAddToNamespace(pNamespace, pEnteredNamespace);
-
-	char @TypeName = @DictGetName(pNamespace);
-
-	if str_eq(@Scan(@Buff),";") then
-		Stop(@eNOTAVAIL);
-	end
-
-	word pPrevNamespace = pEnteredNamespace;
-	pEnteredNamespace = pNamespace;
-
-	char @End;
+struct EndOfBlockDescriptor of
 	bool CurlyBraces;
-	select
-	case str_eq(@Buff, "of"):
-		CurlyBraces = false;
-		@End = "end";
-		Scan(@Buff);
-	case str_eq(@Buff, "{"):
-		CurlyBraces = true;
-		@End = "}";
-		Scan(@Buff);
-	default:
-		CurlyBraces = false;
-		@End = "end";
-		Deprecated(@dptMISSINGOF_NAMESPACE);
-	end
+	bool EndKeyword;
+	char @Name1;
+	char @Name2;
+end:struct
+
+bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
+	bool TopLevel = !Eob.CurlyBraces & !Eob.EndKeyword;
 
 	forever do
 		bool DoScan = true;
@@ -738,17 +717,18 @@ bool DeclNamespace(char @Buff)
 		case str_eq(@Buff,"static_assert"):
 			DoScan = StaticAssert(@Buff);
 		case str_eq(@Buff,"end"):
-			when !CurlyBraces:
+			when Eob.EndKeyword:
 				exit;
 			Stop(@eWRONGEND_NAMESPACE);
 		case str_eq(@Buff,"}"):
-			when CurlyBraces:
+			when Eob.CurlyBraces:
 				exit;
 			Stop(@eWRONGBRACE_NAMESPACE);
-		case str_eq(@Buff,@End):
-			exit;
 		case str_eq(@Buff, ";"):
 			Warn(@wDANGLING_SEMICOLON);
+		case TopLevel & str_eq(@Buff,"begin"):
+			DeclMainFunc(@Buff);
+			exit;
 		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select
@@ -758,18 +738,59 @@ bool DeclNamespace(char @Buff)
 		end
 	end:forever
 
-	if str_eq(@Buff,@End) then
-		if CurlyBraces then
-			MatchSemicolon(@Buff);
-			SkipFinalScan = 0;
-		else
-			SkipFinalScan = EndOf(@Buff, "namespace", @TypeName, true);
-		end
-	end:if
+	word SkipFinalScan = 1;
+	select
+	case Eob.EndKeyword:
+		SkipFinalScan = EndOf(@Buff, @Eob.Name1, @Eob.Name2, true);
+	case Eob.CurlyBraces:
+		MatchSemicolon(@Buff);
+		SkipFinalScan = 0;
+	end:select
+
+	return SkipFinalScan == 0;
+end
+
+/*****************************************************************************/
+
+bool DeclNamespace(char @Buff)
+	CheckDuplicate(@Scan(@Buff));
+
+	word pNamespace = DictMakeNamespace(@Buff);
+	DictAddToNamespace(pNamespace, pEnteredNamespace);
+
+	char @TypeName = @DictGetName(pNamespace);
+
+	if str_eq(@Scan(@Buff),";") then
+		Stop(@eNOTAVAIL);
+	end
+
+	word pPrevNamespace = pEnteredNamespace;
+	pEnteredNamespace = pNamespace;
+
+	EndOfBlockDescriptor Eob;
+	@Eob.Name1 = "namespace";
+	@Eob.Name2 = @TypeName;
+
+	select
+	case str_eq(@Buff, "of"):
+		Eob.CurlyBraces = false;
+		Eob.EndKeyword = true;
+		Scan(@Buff);
+	case str_eq(@Buff, "{"):
+		Eob.CurlyBraces = true;
+		Eob.EndKeyword = false;
+		Scan(@Buff);
+	default:
+		Eob.CurlyBraces = false;
+		Eob.EndKeyword = true;
+		Deprecated(@dptMISSINGOF_NAMESPACE);
+	end
+
+    bool DoScan = ParseDeclBlock(@Buff, @Eob);
 
 	pEnteredNamespace = pPrevNamespace;
 
-	return SkipFinalScan == 0;
+	return DoScan;
 end
 
 /*****************************************************************************/
@@ -778,38 +799,13 @@ void Parse()
 	char Buff[nBUFF];
 	Scan(@Buff);
 
-	forever do
-		bool DoScan = true;
-		select
-		case str_eq(@Buff,"include"):
-			DoScan = DeclInclude(@Buff);
-		case str_eq(@Buff,"include_when"):
-			DoScan = DeclIncludeWhen(@Buff);
-		case str_eq(@Buff,"include_once"):
-			DoScan = DeclIncludeOnce(@Buff);
-		case str_eq(@Buff,"define"):
-			DoScan = DeclDefine(@Buff);
-		case str_eq(@Buff,"struct"):
-			DoScan = DeclStruct(@Buff);
-		case str_eq(@Buff,"namespace"):
-			DoScan = DeclNamespace(@Buff);
-		case str_eq(@Buff,"alias"):
-			DoScan = DeclAlias(@Buff);
-		case str_eq(@Buff,"static_assert"):
-			DoScan = StaticAssert(@Buff);
-		case str_eq(@Buff,"begin"):
-			DeclMainFunc(@Buff);
-			exit;
-		case str_eq(@Buff, ";"):
-			Warn(@wDANGLING_SEMICOLON);
-		default: // Пеpеменная, функция, ...
-			DeclVarFunc(@Buff);
-		end:select
+	EndOfBlockDescriptor Eob;
+	Eob.CurlyBraces = false;
+	Eob.EndKeyword = false;
+	@Eob.Name1 = NULL;
+	@Eob.Name2 = NULL;
 
-		if DoScan then
-			Scan(@Buff);
-		end
-	end:forever
+    ParseDeclBlock(@Buff, @Eob);
 end
 
 /*****************************************************************************/
