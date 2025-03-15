@@ -586,6 +586,35 @@ end
 
 /*****************************************************************************/
 
+byte CtrlPrefix0[256];
+byte CtrlPrefix1[256];
+
+void RegisterCtrlPrefix(char @Str)
+	CtrlPrefix0[word(Str[0])] = 1;
+	CtrlPrefix1[word(Str[1])] = 1;
+end
+
+void InitCtrlPrefix()
+	RegisterCtrlPrefix("if");
+	RegisterCtrlPrefix("select");
+	RegisterCtrlPrefix("while");
+	RegisterCtrlPrefix("do");
+	RegisterCtrlPrefix("forever");
+	RegisterCtrlPrefix("when");
+	RegisterCtrlPrefix("switch");
+	RegisterCtrlPrefix("repeat");
+	RegisterCtrlPrefix("return");
+	RegisterCtrlPrefix("continue");
+	RegisterCtrlPrefix("exit");
+	RegisterCtrlPrefix("inc");
+	RegisterCtrlPrefix("dec");
+	RegisterCtrlPrefix("inline");
+	RegisterCtrlPrefix("pass");
+	RegisterCtrlPrefix("null");
+end
+
+/*****************************************************************************/
+
 word Ctrl(char @Buff)
 
 	word SkipFinalScan = 0;
@@ -593,6 +622,9 @@ word Ctrl(char @Buff)
 	word P1 = Peek();
 
 	select
+		case CtrlPrefix0[word(Buff[0])] == 0 | CtrlPrefix1[word(Buff[1])] == 0:
+			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
+
 		case str_eq(@Buff,"if") | str_eq(@Buff,"select"):
 			Statement_IF(@Buff, @P1, @SkipFinalScan);
 
@@ -608,6 +640,9 @@ word Ctrl(char @Buff)
 		case str_eq(@Buff,"repeat"):
 			Statement_REPEAT(@Buff, @P1, @SkipFinalScan);
 
+		case str_eq(@Buff,"return"):
+			Statement_RETURN(@Buff, @P1, @SkipFinalScan);
+
 		case str_eq(@Buff,"continue"):
 			Statement_CONTINUE(@Buff, @P1, @SkipFinalScan);
 
@@ -619,9 +654,6 @@ word Ctrl(char @Buff)
 
 		case str_eq(@Buff,"inline"):
 			Statement_INLINE(@Buff, @P1, @SkipFinalScan);
-
-		case str_eq(@Buff,"return"):
-			Statement_RETURN(@Buff, @P1, @SkipFinalScan);
 
 		case str_eq(@Buff,"pass"):
 			Node[P1].ID   =iEMPTY;
@@ -678,9 +710,16 @@ end
 
 /*****************************************************************************/
 
+void InitStatementParser()
+	InitCtrlPrefix();
+end
+
+/*****************************************************************************/
+
 end:StatementParser;
 
 alias MatchSemicolon = StatementParser.MatchSemicolon;
 alias EndOf = StatementParser.EndOf;
 alias Statements = StatementParser.Statements;
 alias Ctrl = StatementParser.Ctrl;
+alias InitStatementParser = StatementParser.InitStatementParser;

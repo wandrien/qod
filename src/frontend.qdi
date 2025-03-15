@@ -202,8 +202,8 @@ void InitFrontEnd()
 	st_double  = BaseType("double", sBASE_FLOAT, target_size_of_double);
 	st_long_double = BaseType("long_double", sBASE_FLOAT, target_size_of_long_double);
 
-	RegisterBrackets();
-	RegisterOperators();
+	InitExpressionParser();
+	InitStatementParser();
 
 	strcpy(@Text,"");
 

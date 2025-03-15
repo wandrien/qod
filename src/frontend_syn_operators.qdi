@@ -25,6 +25,7 @@ struct OPERATOR of
 	word        Mode;     // Режим операции.
 	word        ID;       // Идентификатор создаваемого узла.
 	__Operator@ Handler;  // Функция-обработчик.
+	word        NextInBucket;
 end
 
 /*****************************************************************************/
@@ -36,6 +37,24 @@ word nOperator = 0;
 bool NeedToSortOperators = true;
 
 define OPERATOR_INVALID nOPERATOR
+
+/*****************************************************************************/
+
+word OperatorBuckets[256];
+
+word OperatorNameGetBucketIndex(char @Name)
+	return (word(Name[0]) + word(Name[1])) & 0xFF;
+end
+
+/*****************************************************************************/
+
+byte OperatorPrefix0[256];
+byte OperatorPrefix1[256];
+
+void RegisterOperatorPrefix(char @Str)
+	OperatorPrefix0[word(Str[0])] = 1;
+	OperatorPrefix1[word(Str[1])] = 1;
+end
 
 /*****************************************************************************/
 
@@ -71,6 +90,22 @@ void SortOperators()
 		inc i;
 	end:while
 
+	word iBck = 0;
+	while iBck < 256 do
+		OperatorBuckets[iBck] = nOPERATOR;
+		inc iBck;
+	end:while
+
+	i = nOperator;
+	while true do
+		when i == 0:
+			exit;
+		dec i;
+		iBck = OperatorNameGetBucketIndex(@Operator[i].Name);
+		Operator[i].NextInBucket = OperatorBuckets[iBck];
+		OperatorBuckets[iBck] = i;
+	end:while
+
 	NeedToSortOperators = false;
 end
 
@@ -98,31 +133,36 @@ word RegisterOperator(char@ Name; word Prio; word Mode; word ID; __Operator@ Han
 	@Operator[i].Handler = @Handler;
 	NeedToSortOperators = true;
 
+	RegisterOperatorPrefix(@Name);
+
 	return i;
 end
 
 /*****************************************************************************/
 
 /*
-	Поиск операции с именем Name, приоритетом выше Prio и с режимом соотвествующем маске ModeMask.
+	Поиск операции с именем Name, приоритетом выше Prio и с режимом соотвествующим маске ModeMask.
 */
 word FindOperator(char@ Name; word Prio; word ModeMask)
+	when OperatorPrefix0[word(Name[0])] == 0 | OperatorPrefix1[word(Name[1])] == 0:
+		return OPERATOR_INVALID;
 
 	SortOperators();
 	word NameLen = strlen(@Name);
 
-	word i = 0;
+	word i = OperatorBuckets[OperatorNameGetBucketIndex(@Name)];
 	while i < nOperator do
-		if Operator[i].Prio > Prio then
+		OPERATOR @OP = @Operator[i];
+		if OP.Prio > Prio then
 			if
-				((Operator[i].Mode & ModeMask) != 0) &
-				(Operator[i].NameLen == NameLen) &
-				(strcmp(@Operator[i].Name, @Name) == 0)
+				((OP.Mode & ModeMask) != 0) &
+				(OP.NameLen == NameLen) &
+				(strcmp(@OP.Name, @Name) == 0)
 			then
 				return i;
 			end:if
 		end:if
-		inc i;
+		i = OP.NextInBucket;
 	end:while
 
 	return OPERATOR_INVALID;

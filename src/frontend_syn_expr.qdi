@@ -6,6 +6,29 @@ namespace ExpressionParser of
 
 /*****************************************************************************/
 
+word Char2Digit[256];
+
+void InitNumberParser()
+	word Ch = 0;
+	while Ch < 256 do
+		word Digit;
+		select
+		case Ch >= word('0') & Ch <= word('9'):
+			Digit = Ch - word('0');
+		case Ch >= word('A') & Ch <= word('Z'):
+			Digit = Ch - word('A') + 10;
+		case Ch >= word('a') & Ch <= word('z'):
+			Digit = Ch - word('a') + 10;
+		default:
+			Digit = 10000;
+		end:select
+		Char2Digit[Ch] = Digit;
+		inc Ch;
+	end:while
+end
+
+/*****************************************************************************/
+
 /* Парсинг строки в целое число по указанному основанию. */
 word val2(char @Str; int StrLen; word Base)
 	when StrLen < 1:
@@ -28,19 +51,8 @@ word val2(char @Str; int StrLen; word Base)
 			inc i;
 		end
 
-		word Digit;
 		word ch = word(Str[i]);
-
-		select
-		case ch >= word('0') & ch <= word('9'):
-			Digit = ch - word('0');
-		case ch >= word('A') & ch <= word('Z'):
-			Digit = ch - word('A') + 10;
-		case ch >= word('a') & ch <= word('z'):
-			Digit = ch - word('a') + 10;
-		default:
-			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
-		end:select
+		word Digit = Char2Digit[ch];
 
 		when Digit >= Base:
 			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
@@ -72,15 +84,23 @@ word val(char @Buff)
 		int StrLen = int(strlen(@Buff));
 		when StrLen < 0:
 			StopInternal(__FILE__, __LINE__);
-		if StrLen > 1 then
-			char LastChar = Buff[StrLen - 1];
-			if StrLen > 1 & LastChar == 'h' | LastChar == 'H' then
-				/* Суффикс h - шестнадцатиричное. */
-				Base = 16;
-				P    = 0;
-				Len  = StrLen - 1;
-				exit;
-			end:if
+
+		if StrLen == 1 then
+			/* Срезаем угол для частого варианта:
+			   число из одной цифры может быть только десяточное. */
+			Base = 10;
+			P    = 0;
+			Len  = StrLen;
+			exit;
+		end:if
+
+		char LastChar = Buff[StrLen - 1];
+		if LastChar == 'h' | LastChar == 'H' then
+			/* Суффикс h - шестнадцатиричное. */
+			Base = 16;
+			P    = 0;
+			Len  = StrLen - 1;
+			exit;
 		end:if
 
 		if Buff[0] == '0' then
@@ -1269,6 +1289,14 @@ end
 
 /*****************************************************************************/
 
+void InitExpressionParser()
+	InitNumberParser();
+	RegisterBrackets();
+	RegisterOperators();
+end
+
+/*****************************************************************************/
+
 end:ExpressionParser;
 
 alias val = ExpressionParser.val;
@@ -1277,7 +1305,6 @@ alias EnsureValidIdentifier = ExpressionParser.EnsureValidIdentifier;
 alias ExprInParentheses = ExpressionParser.ExprInParentheses;
 alias Tabl_ = ExpressionParser.Tabl_;
 alias FuncArgs = ExpressionParser.FuncArgs;
-alias RegisterBrackets = ExpressionParser.RegisterBrackets;
-alias RegisterOperators = ExpressionParser.RegisterOperators;
+alias InitExpressionParser = ExpressionParser.InitExpressionParser;
 alias ReadTypeSuffix = ExpressionParser.ReadTypeSuffix;
 alias Expr = ExpressionParser.Expr;
