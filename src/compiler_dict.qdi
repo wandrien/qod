@@ -47,7 +47,7 @@ word st_cond_branch;
 
 /*****************************************************************************/
 
-void function DumpDictEntryCallback(char @S)
+void function DumpDictEntryCallback(char @S);
 void DumpDictEntry(word I; DumpDictEntryCallback@ cb);
 
 /*****************************************************************************/

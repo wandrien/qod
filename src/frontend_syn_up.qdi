@@ -401,9 +401,9 @@ void DeclVarFuncType(char @Buff; word pType)
 	Dict[D].pType = T_nPtrTo(nPtr, pType);
 	FuncArgs(@Buff, D);
 
-	/*if (str_ne(@Scan(@Buff),";")) then
+	if (str_ne(@Scan(@Buff),";")) then
 		Stop(@eSEMICOLONEXP);
-	end*/
+	end
 
 end
 

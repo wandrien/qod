@@ -41,7 +41,7 @@ namespace BBB of
 		return 200;
 	end
 
-	int function F(int x)
+	int function F(int x);
 
 	F @pF;
 

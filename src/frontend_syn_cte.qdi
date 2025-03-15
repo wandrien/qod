@@ -7,7 +7,7 @@
 
 /*****************************************************************************/
 
-bool function ExprGuard(word P)
+bool function ExprGuard(word P);
 
 bool IsTypeExpr(word P)
 	return Node[P].ID == iTYPE;
