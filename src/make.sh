@@ -1,8 +1,13 @@
 #!/bin/bash
 
+################################################################################
+## CONFIGURATION
+################################################################################
+
 set -e
 #set -x
 
+# Autodetect presence of the optional tools
 DEFAULT_WINE=""
 if which wine > /dev/null 2> /dev/null ; then
 	DEFAULT_WINE="wine"
@@ -13,22 +18,35 @@ if which valgrind > /dev/null 2> /dev/null ; then
 	DEFAULT_VALGRIND="valgrind"
 fi
 
+# Bundled tools
 DEFAULT_BOOTSTRAP_COMPILER="../precompiled/`cat ../precompiled/latest`/qodc"
 DEFAULT_FASM="../3rd-party/fasm/fasm"
 
+# Default names for external tools
+DEFAULT_NASM="nasm"
+DEFAULT_LD="ld"
+
+# Set tool names, respecting any user-provided values
+export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER:-$DEFAULT_BOOTSTRAP_COMPILER}"
+export FASM="${FASM:-$DEFAULT_FASM}"
+export NASM="${NASM:-$DEFAULT_NASM}"
+export LD="${LD:-$DEFAULT_LD}"
 export WINE="${WINE-$DEFAULT_WINE}"
 export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 
-export BOOTSTRAP_COMPILER="${BOOTSTRAP_COMPILER:-$DEFAULT_BOOTSTRAP_COMPILER}"
-export FASM="${FASM:-$DEFAULT_FASM}"
-
+# Options
+export BOOTSTRAP_ASSEMBLER_MODE="${BOOTSTRAP_ASSEMBLER_MODE:-fasm}"
+export ASSEMBLER_MODE="${ASSEMBLER_MODE:-fasm}"
 export QOD_FLAGS="${QOD_FLAGS:-}"
 export TESTS_QOD_FLAGS="${TESTS_QOD_FLAGS:-}"
 
+# Paths
 BUILD_DIR="../build"
 COMPILER_BUILD_DIR="$BUILD_DIR/compiler"
 TESTS_BUILD_DIR="$BUILD_DIR/tests"
 SAMPLES_BUILD_DIR="$BUILD_DIR/samples"
+
+################################################################################
 
 compiler_name="qodc"
 compiler_a="$COMPILER_BUILD_DIR/${compiler_name}_a"
@@ -65,6 +83,21 @@ diff_plain()
 	diff -u "$1" "$2"
 }
 
+assemble_and_link()
+{
+	local mode="$1"
+	local asm="$2"
+	local dst="$3"
+	case "$mode" in
+	fasm)
+	    $FASM -m 200000 "$asm" "$dst" >/dev/null && chmod a+x "$dst"
+		;;
+	nasm)
+		$NASM --reproducible -f elf32 "$asm" -o "$dst.o"
+		$LD -static -o "$dst" "$dst.o"
+		;;
+	esac
+}
 
 mk()
 {
@@ -74,7 +107,7 @@ mk()
 	local dst="$1" ; shift
 	echo "    BUILD $dst"
 	mkdir -p "`dirname "$dst"`"
-    $compiler $src.qd\
+	$compiler $src.qd\
 		$platform \
 		--optimize speed \
 		--output "$dst".asm \
@@ -83,8 +116,12 @@ mk()
 		--emit-source-line-notes \
 		$QOD_FLAGS \
 		"$@" && \
-    $FASM -m 200000 "$dst.asm" "$dst" >/dev/null && \
-	chmod a+x "$dst"
+
+	if [ "$dst" = "$compiler_a" ] ; then
+		assemble_and_link "$BOOTSTRAP_ASSEMBLER_MODE" "$dst.asm" "$dst"
+	else
+		assemble_and_link "$ASSEMBLER_MODE" "$dst.asm" "$dst"
+	fi
 }
 
 stage_a()
