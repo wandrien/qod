@@ -6,6 +6,11 @@ define CHARID_WSPACE  3
 
 byte charid_table[256];
 
+bool isalnum(char c)
+	byte id = charid_table[word(c)];
+	return id == CHARID_ALPHA | id == CHARID_DIGIT;
+end
+
 bool isalpha(char c)
 	return charid_table[word(c)] == CHARID_ALPHA;
 end

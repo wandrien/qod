@@ -12,6 +12,8 @@ end
 Digraph Digraphs[nDIGRAPH];
 word nDigraph = 0;
 
+bool DigraphPrefix[256];
+
 /*****************************************************************************/
 
 define nCOMMENT 2
@@ -121,7 +123,7 @@ void ScanAlphaNum(char@ Buff; word @Len)
 	word P = 0;
 	forever do
 		char Ch = Read();
-		when !isalpha(Ch) & !isdigit(Ch):
+		when !isalnum(Ch):
 			exit;
 
 		Buff[P] = Ch;
@@ -149,20 +151,24 @@ void Scan1(char @Buff; word @Len)
 
 	word P = 0;
 
-	Buff[P] = Read();
+	char Ch0 = Read();
+	Buff[P] = Ch0;
 	inc P;
 	Next();
 
-	word i = 0;
-	while i < nDigraph do
-		if Buff[0] == Digraphs[i].Name[0] & Read() == Digraphs[i].Name[1] then
-			Next();
-			strcpy(@Buff, @Digraphs[i].Name);
-			Len = 2;
-			return;
-		end:if
-		inc i;
-	end:while
+	if DigraphPrefix[byte(Ch0)] then
+		char Ch1 = Read();
+		word i = 0;
+		while i < nDigraph do
+			if Ch0 == Digraphs[i].Name[0] & Ch1 == Digraphs[i].Name[1] then
+				Next();
+				strcpy(@Buff, @Digraphs[i].Name);
+				Len = 2;
+				return;
+			end:if
+			inc i;
+		end:while
+	end:if
 
 	Buff[P] = #0;
 	Len = P;
@@ -242,6 +248,8 @@ void RegisterDigraph(char@ Name)
 	strcpy(@Digraphs[nDigraph].Name, @Name);
 
 	inc nDigraph;
+
+	DigraphPrefix[byte(Name[0])] = true;
 end
 
 /*****************************************************************************/
