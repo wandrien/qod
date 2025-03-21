@@ -17,25 +17,21 @@ word EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
 		StopInternal(__FILE__, __LINE__);
 
 	Scan(@Buff);
-	if EatSemicolon & str_eq(@Buff, ";") then
-		return 0;
-	end
-
 	if str_eq(@Buff, ":") then
 		Scan(@Buff);
 		if str_eq(@Buff, @A1)
 		| (@A2 != NULL & str_eq(@Buff, @A2)) then
 			Scan(@Buff);
-			if EatSemicolon & str_eq(@Buff, ";") then
-				return 0;
-			else
-				return 1;
-			end
 		else
 			Stop(@eNOTALLOWED);
 		end:if
 	end:if
-	return 1;
+
+	if EatSemicolon & str_eq(@Buff, ";") then
+		return 0;
+	else
+		return 1;
+	end
 end
 
 /*****************************************************************************/
