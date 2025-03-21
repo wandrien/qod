@@ -129,7 +129,7 @@ void ScanAlphaNum(char@ Buff; word @Len)
 		Buff[P] = Ch;
 		inc  P;
 		if   P >= nBUFF then
-			Stop(@eLONGNAME);
+			Stop(@eLONGTERM);
 		end
 
 		Next();

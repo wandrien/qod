@@ -15,7 +15,7 @@ define @eEOF             "Конец файла"                                 // Unexpe
 define @eNOMEMORY        "Недостаточно памяти"                         // Not enough memory
 define @eWRONGCHARININT  "Недопустимый символ в целочисленном литерале"// Illegal character in integer literal
 define @eOVERFLOW        "Константа слишком велика"                    // Too big number
-define @eLONGNAME        "Слишком длинный идентификатор"               // Name length too long
+define @eLONGTERM        "Слишком длинная лексема"                     // Term too long
 define @eINTTOOBIG       "Слишком длинный целочисленный литерал"       // Integer literal too big
 define @eEXPECTED        "Пропущен идентификатор"                      // Identifier expected
 define @eNAMEEXPECTED    "Ожидался идентификатор вместо"               // Identifier expected
