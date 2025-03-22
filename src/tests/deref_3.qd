@@ -15,7 +15,7 @@ word foo(XX @xx; word I; char Value)
 	return I;
 end
 
-word foo2(XX @xx; word I; char Value)
+word foo2(XX @xx; word I; char Value) of
 	@xx.Buff[I] = char(Value);
 	return I;
 end

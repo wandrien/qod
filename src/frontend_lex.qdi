@@ -254,7 +254,7 @@ end
 
 /*****************************************************************************/
 
-void RegisterHereCommentPrefix(char@ Prefix)
+void RegisterHereCommentPrefix(char@ Prefix) of
 	@HereCommentPrefix = @Char[SaveString0(@Prefix)];
 	HereCommentPrefixLen = strlen(@Prefix);
 end

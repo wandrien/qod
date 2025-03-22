@@ -3,6 +3,21 @@ namespace TopLevelParser of
 
 /*****************************************************************************/
 
+word FieldNextOffset = 0;
+word FieldMaxAlign = 1;
+
+void AssignFieldOffset(word F; word @NextOffset; word @MaxAlign)
+	word pType = Dict[F].pType;
+	word Align = 1; // FIXME: T_AlignOf(pType);
+	when Align > MaxAlign:
+		MaxAlign = Align;
+	word Offset = NextOffset + (Align - NextOffset % Align - 1);
+	Dict[F].Label = Offset;
+	NextOffset = Offset + T_SizeOf(pType);
+end
+
+/*****************************************************************************/
+
 bool StaticAssert(char@ Buff)
 	SOURCELOCATION Location = CurrentFileInfo;
 	word pExpr = ExprInParentheses(@Scan(@Buff), "static_assert");
@@ -66,132 +81,6 @@ void DeclMainFunc(char@ Buff)
 
 	nLocal = Saved_nLocal;
 	pCurrentFunc = nDICT;
-end
-
-/*****************************************************************************/
-
-void AssignFieldOffset(word F; word @NextOffset; word @MaxAlign)
-	word pType = Dict[F].pType;
-	word Align = 1; // FIXME: T_AlignOf(pType);
-	when Align > MaxAlign:
-		MaxAlign = Align;
-	word Offset = NextOffset + (Align - NextOffset % Align - 1);
-	Dict[F].Label = Offset;
-	NextOffset = Offset + T_SizeOf(pType);
-end
-
-bool DeclStruct(char @Buff)
-	word SkipFinalScan;
-	CheckDuplicate(@Scan(@Buff));
-
-	word pStruct = DictAlloc();
-	DictSetName(pStruct, @Buff);
-	Dict[pStruct].Class = cTYPE;
-	Dict[pStruct].Sub = sSTRUCT;
-	DictAddToNamespace(pStruct, pEnteredNamespace);
-
-	char @TypeName = @DictGetName(pStruct);
-
-	if str_eq(@Scan(@Buff),";") then
-		Stop(@eNOTAVAIL);
-	end
-
-	char @End;
-	bool CurlyBraces;
-	select
-	case str_eq(@Buff, "of"):
-		CurlyBraces = false;
-		@End = "end";
-		Scan(@Buff);
-	case str_eq(@Buff, "{"):
-		CurlyBraces = true;
-		@End = "}";
-		Scan(@Buff);
-	default:
-		CurlyBraces = false;
-		@End = "end";
-		Deprecated(@dptMISSINGOF_STRUCT);
-	end
-
-	word NextOffset = 0;
-	word MaxAlign = 1;
-
-	forever do
-		word pType = ResolveGlobal(@Buff, NULL);
-		if pType == nDICT then
-			Stop(@eTYPEEXP);
-		else
-			if Dict[pType].Class!=cTYPE then
-				Stop(@eTYPEEXP);
-			end
-		end
-
-		forever do
-			word  nPtr = ReadPtrs(@Buff);
-
-			if pType==st_void & nPtr<1 then
-				Stop(@eNOVOID);
-			end
-
-			if pType==pStruct & nPtr<1 then
-				Stop(@eNODATA);
-			end
-
-			if Dict[pType].Sub==sFUNCTYPE & nPtr<1 then
-				Stop(@eNOVAL);
-			end
-
-			word F = FindInNamespace(@Buff, pStruct);
-			when F < nDICT:
-				StopWithSubject(@eDUPLICATE, @Buff);
-
-			F = DictAlloc();
-			DictSetName(F, @Buff);
-			Dict[F].Class = cFIELD;
-			Dict[F].pType = T_nPtrTo(nPtr, pType);
-			//Dict[F].nIndx = Tabl(@Scan(@Buff));
-			Dict[F].pType = Tabl_(@Scan(@Buff), Dict[F].pType);
-			DictAddToNamespace(F, pStruct);
-			AssignFieldOffset(F, @NextOffset, @MaxAlign);
-
-			if str_eq(@Buff,";") then
-				Scan(@Buff);
-				exit;
-			end
-
-			if str_eq(@Buff,"end") then
-				when !CurlyBraces:
-					exit;
-				Stop(@eWRONGEND_STRUCT);
-			end
-
-			if str_eq(@Buff,"}") then
-				when CurlyBraces:
-					exit;
-				Stop(@eWRONGBRACE_STRUCT);
-			end
-
-			if str_ne(@Buff,",") then
-				Stop(@eSEMICOLONEXP);
-			end
-
-			Scan(@Buff);
-		end:forever
-
-		if str_eq(@Buff,@End) then
-			if CurlyBraces then
-				MatchSemicolon(@Buff);
-				SkipFinalScan = 0;
-			else
-				SkipFinalScan = EndOf(@Buff, "struct", @TypeName, true);
-			end
-			exit;
-		end:if
-	end:forever
-
-	Dict[pStruct].TypeSize = NextOffset;
-
-	return SkipFinalScan == 0;
 end
 
 /*****************************************************************************/
@@ -279,6 +168,9 @@ end
 void DeclFunc1(char @Buff; word _pFunc; word pForward)
 	word pFuncType = Dict[_pFunc].pType;
 
+	when T_IsStruct(pEnteredNamespace):
+		Stop(@eNOTAVAIL);
+
 	when !T_IsFunc(pFuncType):
 		StopInternal(__FILE__, __LINE__);
 
@@ -307,7 +199,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 	word pCurrentFunc_Saved = pCurrentFunc;
 	pCurrentFunc = pFunc;
 
-	Scan(@Buff);
+//	Scan(@Buff);
 
 	select
 		case str_eq(@Buff,";"): /* Прототип. */
@@ -519,33 +411,38 @@ void DeclVarFunc(char @Buff)
 		end
 
 		DictAddToNamespace(D, pEnteredNamespace);
+		Dict[D].pNode = nNODE;
 
-		Dict[D]. Class=cDATA;
-		Dict[D].pNode =nNODE;
+		select
+		case T_IsStruct(pEnteredNamespace):
+			Dict[D].Class = cFIELD;
+			AssignFieldOffset(D, @FieldNextOffset, @FieldMaxAlign);
+		default:
+			Dict[D].Class = cDATA;
 
-		if str_eq(@Buff,"=") then
-			/*if Dict[D].nIndx > 0 then
-				Stop(@eNOTAVAIL);
-			end*/
+			if str_eq(@Buff,"=") then
+				/*if Dict[D].nIndx > 0 then
+					Stop(@eNOTAVAIL);
+				end*/
 
-			word P1=Peek();
-			word P2=Peek();
-			Node[P1].ID    =iASSIGN;
-			Node[P1].pLeft = P2;
+				word P1=Peek();
+				word P2=Peek();
+				Node[P1].ID    =iASSIGN;
+				Node[P1].pLeft = P2;
 
-			word P3=Peek();
-			Node[P2].ID    =iEMPTY;
-			Node[P2].pLeft = P3;
-			Node[P2].pRight= Expr(PRIO_ZERO, @Scan(@Buff));
+				word P3=Peek();
+				Node[P2].ID    =iEMPTY;
+				Node[P2].pLeft = P3;
+				Node[P2].pRight= Expr(PRIO_ZERO, @Scan(@Buff));
 
-			Node[P3].ID    =iDATA;
-			Node[P3].Value =D;
+				Node[P3].ID    =iDATA;
+				Node[P3].Value =D;
 
-			ImplicitCast(Dict[D].pType, @Node[P2].pRight);
+				ImplicitCast(Dict[D].pType, @Node[P2].pRight);
 
-			Dict[D].pNode=P1;
-
-		end
+				Dict[D].pNode=P1;
+			end
+		end:select
 
 		if str_eq(@Buff,";") then
 			exit;
@@ -686,6 +583,7 @@ end
 /*****************************************************************************/
 
 bool DeclNamespace(char @Buff);
+bool DeclStruct(char @Buff);
 
 struct EndOfBlockDescriptor of
 	bool CurlyBraces;
@@ -748,6 +646,61 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 	end:select
 
 	return SkipFinalScan == 0;
+end
+
+/*****************************************************************************/
+
+bool DeclStruct(char @Buff)
+	CheckDuplicate(@Scan(@Buff));
+
+	word pStruct = DictAlloc();
+	DictSetName(pStruct, @Buff);
+	Dict[pStruct].Class = cTYPE;
+	Dict[pStruct].Sub = sSTRUCT;
+	DictAddToNamespace(pStruct, pEnteredNamespace);
+
+	char @TypeName = @DictGetName(pStruct);
+
+	if str_eq(@Scan(@Buff),";") then
+		Stop(@eNOTAVAIL);
+	end
+
+	word pPrevNamespace = pEnteredNamespace;
+	pEnteredNamespace = pStruct;
+
+	word Old_FieldNextOffset = FieldNextOffset;
+	FieldNextOffset = 0;
+	word Old_FieldMaxAlign = FieldMaxAlign;
+	FieldMaxAlign = 1;
+
+	EndOfBlockDescriptor Eob;
+	@Eob.Name1 = "struct";
+	@Eob.Name2 = @TypeName;
+
+	select
+	case str_eq(@Buff, "of"):
+		Eob.CurlyBraces = false;
+		Eob.EndKeyword = true;
+		Scan(@Buff);
+	case str_eq(@Buff, "{"):
+		Eob.CurlyBraces = true;
+		Eob.EndKeyword = false;
+		Scan(@Buff);
+	default:
+		Eob.CurlyBraces = false;
+		Eob.EndKeyword = true;
+		Deprecated(@dptMISSINGOF_NAMESPACE);
+	end
+
+    bool DoScan = ParseDeclBlock(@Buff, @Eob);
+
+	Dict[pStruct].TypeSize = FieldNextOffset;
+	FieldNextOffset = Old_FieldNextOffset;
+	FieldMaxAlign = Old_FieldMaxAlign;
+
+	pEnteredNamespace = pPrevNamespace;
+
+	return DoScan;
 end
 
 /*****************************************************************************/

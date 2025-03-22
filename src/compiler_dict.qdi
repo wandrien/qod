@@ -510,6 +510,13 @@ word T_GetMinMaxOf(word T; word @_Min; word @_Max)
 		StopInternal(__FILE__, __LINE__);
 	end
 end
+/*****************************************************************************/
+
+bool T_IsStruct(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+	return Dict[T].Class == cTYPE & Dict[T].Sub == sSTRUCT;
+end
 
 /*****************************************************************************/
 

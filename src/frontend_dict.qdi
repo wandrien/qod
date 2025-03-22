@@ -18,7 +18,32 @@ word ResolveInNamespace(char @Buff; word pNamespace)
 	return FindInNamespace(@Buff, pNamespace);
 end
 
+word ResolveGlobalSingleItem(char @Buff; word @_pNamespace)
+	word pNamespace = pEnteredNamespace;
+	forever do
+		when pNamespace == nDICT:
+			exit;
+
+		word pName = ResolveInNamespace(@Buff, pNamespace);
+		if pName != nDICT then
+			when @_pNamespace != NULL:
+				_pNamespace = pEnteredNamespace;
+			return pName;
+		end:if
+
+		when pNamespace == pGlobalNamespace:
+			exit;
+
+		pNamespace = Dict[pNamespace].pNamespace;
+	end:forever
+
+	when @_pNamespace != NULL:
+		_pNamespace = pEnteredNamespace;
+	return nDICT;
+end
+
 word ResolveGlobal(char @Buff; word @_pNamespace)
+$comment XXX
 	/* Пробуем разрешить имя относительно текущего пространства имён */
 	word pNamespace = pEnteredNamespace;
 	word pName = ResolveInNamespace(@Buff, pNamespace);
@@ -32,6 +57,15 @@ word ResolveGlobal(char @Buff; word @_pNamespace)
 	if pName == nDICT then
 		when @_pNamespace != NULL:
 			_pNamespace = pEnteredNamespace;
+		return pName;
+	end
+XXX
+
+	word pNamespace;
+	word pName = ResolveGlobalSingleItem(@Buff, @pNamespace);
+	if pName == nDICT then
+		when @_pNamespace != NULL:
+			_pNamespace = pNamespace;
 		return pName;
 	end
 

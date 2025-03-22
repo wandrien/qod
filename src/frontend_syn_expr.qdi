@@ -362,6 +362,7 @@ word ReadTypeSuffix(char @Buff; word pPrefixType)
 		Dict[D].Class = cTYPE;
 		Dict[D].Sub   = sFUNCTYPE;
 		FuncArgs(@Buff, D);
+		Scan(@Buff);
 		Dict[D].pType = ReadTypeSuffix(@Buff, pType);
 		return D;
 	default:
