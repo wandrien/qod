@@ -20,6 +20,8 @@ word MeaningfulFlags = 0;
 
 word pExitProcess = nDICT;
 
+word EntryLabel = 0;
+
 namespace Mach of
 	word AllowedRegSize = 4;
 	word NativeRegSize = 4;
@@ -33,6 +35,9 @@ include "backend_pho_node_links.qdi";
 include "backend_lib.qdi";
 include "backend_labels.qdi";
 include "backend_emit.qdi";
+include "asm_driver.qdi";
+include "asm_driver_fasm.qdi";
+include "asm_driver_nasm.qdi";
 include "backend_asmcode.qdi";
 include "backend_asmcode_mul.qdi";
 include "backend_data_emitter.qdi";
@@ -41,3 +46,15 @@ include "backend_misc.qdi";
 
 /*****************************************************************************/
 
+void InitAsmDriver()
+	switch TargetAssembler of
+	case aFASM:
+		EnableFasmDriver();
+	case aNASM:
+		EnableNasmDriver();
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end:switch
+end
+
+/*****************************************************************************/

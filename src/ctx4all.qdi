@@ -132,27 +132,14 @@ void Translate()
 		EmitContentForTreeFile();
 	end:if
 
-	/* Заголовок. */
-
-	select
-	case TargetFileFormat == tPE & TargetMode == mCON:
-		EmitStringNL("format  PE  CONSOLE");
-	case TargetFileFormat == tPE & TargetMode == mGUI:
-		EmitStringNL("format  PE  GUI");
-	case TargetFileFormat == tELF:
-		EmitStringNL("format  ELF executable");
-	default:
-		StopInternal(__FILE__, __LINE__);
-	end:select
-
-	word T=0;
-	word I=0;
-
 	char Buff[nBUFF];
 
-	word S = EmitSection_Code(@Buff);
-
+	InitAsmDriver();
+	EmitFileHeader(@Buff);
+	EmitSection_ROData(@Buff);
+	EmitSection_Code(@Buff);
 	EmitSection_Data(@Buff, D);
+	EmitSection_Bss(@Buff, D);
 
 	select
 	case TargetFileFormat == tPE:
@@ -160,7 +147,7 @@ void Translate()
 	end:select
 
 	EmitNL();
-	Emit(@strcat(@strcpy(@Buff,"entry   @"),@str(S)));
+	EmitFileFooter(@Buff);
 
 	CloseOutput();
 
@@ -238,6 +225,19 @@ end
 
 /*****************************************************************************/
 
+void SetupAssembler(char@ Mode)
+	select
+	case str_eq(@Mode, "fasm"):
+		TargetAssembler = aFASM;
+	case str_eq(@Mode, "nasm"):
+		TargetAssembler = aNASM;
+	default:
+		Stop(@eWRONGOPTION);
+	end:select
+end
+
+/*****************************************************************************/
+
 void __main()
 
 	SetupTarget(@DefaultTarget);
@@ -263,6 +263,8 @@ void __main()
 			@OutputTreeFile = @GetArgNext(@i, @eFNAMEEXP);
 		case str_eq(@arg, "--output-include-list" ):
 			@OutputIncludeListFile = @GetArgNext(@i, @eFNAMEEXP);
+		case str_eq(@arg, "--asm" ):
+			SetupAssembler(@GetArgNext(@i, @eCMDLINEPARAM));
 		case str_eq(@arg, "--file" ):
 			@InputFile = @GetArgNext(@i, @eFNAMEEXP);
 		case str_eq(@arg, "--show-parse-progress" ):

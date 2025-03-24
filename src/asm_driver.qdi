@@ -1,0 +1,71 @@
+
+struct ASMDRIVER of
+	void EmitFileHeader@(char @Buff);
+	void EmitFileFooter@(char @Buff);
+	void EmitCodeSectionStart@(char @Buff);
+	void EmitCodeSectionEnd@(char @Buff);
+	void EmitRODataSectionStart@(char @Buff);
+	void EmitRODataSectionEnd@(char @Buff);
+	void EmitDataSectionStart@(char @Buff);
+	void EmitDataSectionEnd@(char @Buff);
+	void EmitBssSectionStart@(char @Buff);
+	void EmitBssSectionEnd@(char @Buff);
+	void EmitRes@(char @Buff; char @DataSuffix; word Size);
+	void EmitEntrySymbol@(char @Buff);
+
+	bool SeparateBss;
+end
+
+ASMDRIVER AsmDriver;
+
+void EmitFileHeader(char @Buff)
+	AsmDriver.EmitFileHeader(@Buff);
+end
+
+void EmitFileFooter(char @Buff)
+	AsmDriver.EmitFileFooter(@Buff);
+end
+
+void EmitCodeSectionStart(char @Buff)
+	AsmDriver.EmitCodeSectionStart(@Buff);
+end
+
+void EmitCodeSectionEnd(char @Buff)
+	AsmDriver.EmitCodeSectionEnd(@Buff);
+end
+
+void EmitRODataSectionStart(char @Buff)
+	AsmDriver.EmitRODataSectionStart(@Buff);
+end
+
+void EmitRODataSectionEnd(char @Buff)
+	AsmDriver.EmitRODataSectionEnd(@Buff);
+end
+
+void EmitDataSectionStart(char @Buff)
+	AsmDriver.EmitDataSectionStart(@Buff);
+end
+
+void EmitDataSectionEnd(char @Buff)
+	AsmDriver.EmitDataSectionEnd(@Buff);
+end
+
+void EmitBssSectionStart(char @Buff)
+	AsmDriver.EmitBssSectionStart(@Buff);
+end
+
+void EmitBssSectionEnd(char @Buff)
+	AsmDriver.EmitBssSectionEnd(@Buff);
+end
+
+void EmitRes(char @Buff; char @DataSuffix; word Size)
+	AsmDriver.EmitRes(@Buff, @DataSuffix, Size);
+end
+
+void EmitEntrySymbol(char @Buff)
+	AsmDriver.EmitEntrySymbol(@Buff);
+end
+
+bool IsBssEnabled()
+	return BssEnabled & AsmDriver.SeparateBss;
+end

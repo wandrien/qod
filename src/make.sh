@@ -35,8 +35,11 @@ export WINE="${WINE-$DEFAULT_WINE}"
 export VALGRIND="${VALGRIND-$DEFAULT_VALGRIND}"
 
 # Options
+export BUILD_EXE="${BUILD_EXE:-y}"
+export BUILD_SAMPLES="${BUILD_SAMPLES:-y}"
 export BOOTSTRAP_ASSEMBLER_MODE="${BOOTSTRAP_ASSEMBLER_MODE:-fasm}"
 export ASSEMBLER_MODE="${ASSEMBLER_MODE:-fasm}"
+export EXE_ASSEMBLER_MODE="${EXE_ASSEMBLER_MODE:-fasm}"
 export QOD_FLAGS="${QOD_FLAGS:-}"
 export TESTS_QOD_FLAGS="${TESTS_QOD_FLAGS:-}"
 
@@ -77,6 +80,20 @@ diff_pe()
 	cmp -l "$1" "$2"
 }
 
+diff_elf()
+{
+	echo "    DIFF  $1 $2"
+
+	strip -s -o "$1.stripped" "$1"
+	strip -s -o "$2.stripped" "$2"
+
+	if cmp "$1.stripped" "$2.stripped" >/dev/null 2>&1 ; then
+		return 0
+	fi
+	set -x
+	cmp -l "$1.stripped" "$2.stripped"
+}
+
 diff_plain()
 {
 	echo "    DIFF  $1 $2"
@@ -93,8 +110,8 @@ assemble_and_link()
 	    $FASM -m 200000 "$asm" "$dst" >/dev/null && chmod a+x "$dst"
 		;;
 	nasm)
-		$NASM --reproducible -f elf32 "$asm" -o "$dst.o"
-		$LD -static -o "$dst" "$dst.o"
+		$NASM --reproducible -Ox -g -f elf32 "$asm" -o "$dst.o"
+		$LD -m elf_i386 -static -o "$dst" "$dst.o"
 		;;
 	esac
 }
@@ -105,6 +122,21 @@ mk()
 	local src="$1" ; shift
 	local platform="$1" ; shift
 	local dst="$1" ; shift
+
+	local assembler_mode=""
+	if [ "$dst" = "$compiler_a" ] ; then
+		assembler_mode="$BOOTSTRAP_ASSEMBLER_MODE"
+	elif [ "$platform" = "--win32-c" ] ; then
+		assembler_mode="$EXE_ASSEMBLER_MODE"
+	else
+		assembler_mode="$ASSEMBLER_MODE"
+	fi
+
+	local asm_opt=""
+	if [ "$assembler_mode" != "fasm" ] ; then
+		asm_opt="--asm $assembler_mode"
+	fi
+
 	echo "    BUILD $dst"
 	mkdir -p "`dirname "$dst"`"
 	$compiler $src.qd\
@@ -114,14 +146,11 @@ mk()
 		--output-tree "$dst".tree \
 		--output-include-list "$dst".includes \
 		--emit-source-line-notes \
+		$asm_opt \
 		$QOD_FLAGS \
 		"$@" && \
 
-	if [ "$dst" = "$compiler_a" ] ; then
-		assemble_and_link "$BOOTSTRAP_ASSEMBLER_MODE" "$dst.asm" "$dst"
-	else
-		assemble_and_link "$ASSEMBLER_MODE" "$dst.asm" "$dst"
-	fi
+	assemble_and_link "$assembler_mode" "$dst.asm" "$dst"
 }
 
 stage_a()
@@ -136,9 +165,11 @@ stage_b()
 	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"
 	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"_debug --optimize none
 	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"_size  --optimize size
-	mk "$compiler_a" ctx4win --win32-c "$compiler_b".exe
-	mk "$compiler_a" ctx4win --win32-c "$compiler_b"_debug.exe --optimize none
-	mk "$compiler_a" ctx4win --win32-c "$compiler_b"_size.exe --optimize size
+	if [ "$BUILD_EXE" = y ] ; then
+		mk "$compiler_a" ctx4win --win32-c "$compiler_b".exe
+		mk "$compiler_a" ctx4win --win32-c "$compiler_b"_debug.exe --optimize none
+		mk "$compiler_a" ctx4win --win32-c "$compiler_b"_size.exe --optimize size
+	fi
 }
 
 stage_c()
@@ -147,30 +178,36 @@ stage_c()
 	mk "$compiler_b" ctx4lnx --linux   "$compiler_c" #--warn-unused-globals
 	mk "$compiler_b" ctx4lnx --linux   "$compiler_c"_debug --optimize none
 	mk "$compiler_b" ctx4lnx --linux   "$compiler_c"_size --optimize size
-	mk "$compiler_b" ctx4win --win32-c "$compiler_c".exe #--warn-unused-globals
-	mk "$compiler_b" ctx4win --win32-c "$compiler_c"_debug.exe --optimize none
-	mk "$compiler_b" ctx4win --win32-c "$compiler_c"_size.exe --optimize size
+	if [ "$BUILD_EXE" = y ] ; then
+		mk "$compiler_b" ctx4win --win32-c "$compiler_c".exe #--warn-unused-globals
+		mk "$compiler_b" ctx4win --win32-c "$compiler_c"_debug.exe --optimize none
+		mk "$compiler_b" ctx4win --win32-c "$compiler_c"_size.exe --optimize size
+	fi
 
 	# Generated assembler listings for B and C stages should be identical.
 	diff_plain "$compiler_b".asm           "$compiler_c".asm
 	diff_plain "$compiler_b"_debug.asm     "$compiler_c"_debug.asm
 	diff_plain "$compiler_b"_size.asm      "$compiler_c"_size.asm
-	diff_plain "$compiler_b".exe.asm       "$compiler_c".exe.asm
-	diff_plain "$compiler_b"_debug.exe.asm "$compiler_c"_debug.exe.asm
-	diff_plain "$compiler_b"_size.exe.asm  "$compiler_c"_size.exe.asm
+	if [ "$BUILD_EXE" = y ] ; then
+		diff_plain "$compiler_b".exe.asm       "$compiler_c".exe.asm
+		diff_plain "$compiler_b"_debug.exe.asm "$compiler_c"_debug.exe.asm
+		diff_plain "$compiler_b"_size.exe.asm  "$compiler_c"_size.exe.asm
+	fi
 
 	# The binaries should be identical too.
-	diff_plain "$compiler_b"           "$compiler_c"
-	diff_plain "$compiler_b"_debug     "$compiler_c"_debug
-	diff_plain "$compiler_b"_size      "$compiler_c"_size
-	diff_pe "$compiler_b".exe       "$compiler_c".exe
-	diff_pe "$compiler_b"_debug.exe "$compiler_c"_debug.exe
-	diff_pe "$compiler_b"_size.exe  "$compiler_c"_size.exe
+	diff_elf "$compiler_b"           "$compiler_c"
+	diff_elf "$compiler_b"_debug     "$compiler_c"_debug
+	diff_elf "$compiler_b"_size      "$compiler_c"_size
+	if [ "$BUILD_EXE" = y ] ; then
+		diff_pe "$compiler_b".exe       "$compiler_c".exe
+		diff_pe "$compiler_b"_debug.exe "$compiler_c"_debug.exe
+		diff_pe "$compiler_b"_size.exe  "$compiler_c"_size.exe
+	fi
 }
 
 stage_d()
 {
-	if [ -z "$WINE" ] ;  then
+	if [ -z "$WINE" -o "$BUILD_EXE" != y ] ;  then
 		printf "=> ${CODE_COLOR_YELLOW}Stage D: skipped${CODE_COLOR_NOCOLOR}\n"
 		return
 	fi
@@ -209,9 +246,9 @@ stage_d()
 	diff_plain "$compiler_b"_size.exe.asm.cleared  "$compiler_d"_size.exe.asm.cleared
 
 	# The binaries should be identical too.
-	diff_plain "$compiler_b"           "$compiler_d"
-	diff_plain "$compiler_b"_debug     "$compiler_d"_debug
-	diff_plain "$compiler_b"_size      "$compiler_d"_size
+	diff_elf "$compiler_b"           "$compiler_d"
+	diff_elf "$compiler_b"_debug     "$compiler_d"_debug
+	diff_elf "$compiler_b"_size      "$compiler_d"_size
 	diff_pe "$compiler_b".exe       "$compiler_d".exe
 	diff_pe "$compiler_b"_debug.exe "$compiler_d"_debug.exe
 	diff_pe "$compiler_b"_size.exe  "$compiler_d"_size.exe
@@ -219,6 +256,11 @@ stage_d()
 
 build_samples()
 {
+	if [ "$BUILD_SAMPLES" != y ] ;  then
+		printf "=> ${CODE_COLOR_YELLOW}Building samples skipped${CODE_COLOR_NOCOLOR}\n"
+		return
+	fi
+
 	printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
 
 	mk "$compiler_c" samples/z_t1  --win32-c "$SAMPLES_BUILD_DIR/z_t1.exe"

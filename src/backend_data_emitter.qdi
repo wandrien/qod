@@ -277,29 +277,33 @@ end
 
 /*****************************************************************************/
 
-/* Формирует листинг секции данных. */
-void EmitSection_Data(char @Buff; word D)
-
+void EmitSection_Bss_Content(char @Buff; word D)
 	EmitStringNL("");
+	EmitStringNL("@@DATA:");
+	EmitRes(@Buff, "b", D);
+end
 
-	select
-		case TargetFileFormat == tPE:
-			EmitStringNL("section ~".data~" data readable writeable");
+/*****************************************************************************/
 
-		case TargetFileFormat == tELF:
-			EmitStringNL("segment readable writeable");
-
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-	end
-
+void EmitSection_Data(char @Buff; word D)
+	EmitStringNL("");
+	EmitDataSectionStart(@Buff);
 	EmitSection_Data_Strings(@Buff);
+	if D != 0 & !IsBssEnabled() then
+		EmitSection_Bss_Content(@Buff, D);
+	end:if
+	EmitDataSectionEnd(@Buff);
+end
 
-	if D != 0 then
+/*****************************************************************************/
+
+void EmitSection_Bss(char @Buff; word D)
+	if D != 0 & IsBssEnabled() then
 		EmitStringNL("");
-		EmitStringNL(@strcpy2(@Buff,"@@DATA  rb      ",@str(D)));
-	end
-
+		EmitBssSectionStart(@Buff);
+		EmitSection_Bss_Content(@Buff, D);
+		EmitBssSectionEnd(@Buff);
+	end:if
 end
 
 /*****************************************************************************/

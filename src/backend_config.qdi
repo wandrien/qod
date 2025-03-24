@@ -17,8 +17,12 @@ word StaticDataIsZeroed = 1;
 
 /* Режимы и форматы выходных данных. */
 
+word TargetAssembler = aFASM;
 word TargetFileFormat;            /* Формат обьектного файла. */
 word TargetMode;                  /* Режим, специфичный для целевой платформы и/или формата файла. */
+
+bool RODataEnabled = true;
+bool BssEnabled = true;
 
 /*****************************************************************************/
 

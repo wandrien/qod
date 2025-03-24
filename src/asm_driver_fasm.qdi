@@ -1,0 +1,107 @@
+
+namespace FasmDriver of
+
+void Fasm_EmitFileHeader(char @Buff)
+	select
+	case TargetFileFormat == tPE & TargetMode == mCON:
+		EmitStringNL("format  PE  CONSOLE");
+	case TargetFileFormat == tPE & TargetMode == mGUI:
+		EmitStringNL("format  PE  GUI");
+	case TargetFileFormat == tELF:
+		EmitStringNL("format  ELF executable");
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+end
+
+void Fasm_EmitFileFooter(char @Buff)
+	Emit(@strcpy2(@Buff,"entry   @",@str(EntryLabel)));
+end
+
+void Fasm_EmitCodeSectionStart(char @Buff)
+	select
+	case TargetFileFormat == tPE:
+		EmitStringNL("section ~".code~" code readable executable");
+	case TargetFileFormat == tELF:
+		EmitStringNL("segment readable executable");
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end
+end
+
+void Fasm_EmitCodeSectionEnd(char @Buff)
+	pass;
+end
+
+void Fasm_EmitRODataSectionStart(char @Buff)
+	select
+	case TargetFileFormat == tPE:
+		EmitStringNL("section ~".rodata~" data readable");
+	case TargetFileFormat == tELF:
+		EmitStringNL("segment readable");
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end
+end
+
+void Fasm_EmitRODataSectionEnd(char @Buff)
+	pass;
+end
+
+void Fasm_EmitDataSectionStart(char @Buff)
+	select
+	case TargetFileFormat == tPE:
+		EmitStringNL("section ~".data~" data readable writeable");
+	case TargetFileFormat == tELF:
+		EmitStringNL("segment readable writeable");
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end
+end
+
+void Fasm_EmitDataSectionEnd(char @Buff)
+	pass;
+end
+
+void Fasm_EmitBssSectionStart(char @Buff)
+	select
+	case TargetFileFormat == tPE:
+		EmitStringNL("section ~".bss~" data readable writeable");
+	case TargetFileFormat == tELF:
+		EmitStringNL("segment readable writeable");
+	default:
+		StopInternalCodegen(__FILE__, __LINE__);
+	end
+end
+
+void Fasm_EmitBssSectionEnd(char @Buff)
+	pass;
+end
+
+void Fasm_EmitRes(char @Buff; char @DataSuffix; word Size)
+	Emit(@strcpy4(@Buff,"r",@DataSuffix,"      ",@str(Size)));
+end
+
+void Fasm_EmitEntrySymbol(char @Buff)
+	pass;
+end
+
+void EnableFasmDriver() of
+	@AsmDriver.EmitFileHeader = Fasm_EmitFileHeader;
+	@AsmDriver.EmitFileFooter = Fasm_EmitFileFooter;
+	@AsmDriver.EmitCodeSectionStart = Fasm_EmitCodeSectionStart;
+	@AsmDriver.EmitCodeSectionEnd = Fasm_EmitCodeSectionEnd;
+	@AsmDriver.EmitRODataSectionStart = Fasm_EmitRODataSectionStart;
+	@AsmDriver.EmitRODataSectionEnd = Fasm_EmitRODataSectionEnd;
+	@AsmDriver.EmitDataSectionStart = Fasm_EmitDataSectionStart;
+	@AsmDriver.EmitDataSectionEnd = Fasm_EmitDataSectionEnd;
+	@AsmDriver.EmitBssSectionStart = Fasm_EmitBssSectionStart;
+	@AsmDriver.EmitBssSectionEnd = Fasm_EmitBssSectionEnd;
+	@AsmDriver.EmitRes = Fasm_EmitRes;
+	@AsmDriver.EmitEntrySymbol = Fasm_EmitEntrySymbol;
+	AsmDriver.SeparateBss = false;
+end
+
+end:namespace
+
+alias EnableFasmDriver = FasmDriver.EnableFasmDriver;

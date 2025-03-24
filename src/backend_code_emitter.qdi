@@ -2256,55 +2256,50 @@ end
 
 /*****************************************************************************/
 
-word EmitFunctions(char @Buff)
-	word Start = 0;
-
+void EmitFunctions(char @Buff)
 	word I = 0;
 	while I < nDict do
 		select
 			case Dict[I].Class == cFUNC & Dict[I].Sub != sSYS & Dict[I].Used != 0:
-				when Dict[I].Sub == sMAIN:
-					Start = Dict[I].Label;
+				if Dict[I].Sub == sMAIN then
+					EntryLabel = Dict[I].Label;
+					EmitEntrySymbol(@Buff);
+				end:if
 				EmitFunction(@Buff, I);
 		end:select
 		inc I;
 	end:while
 
-	when Start == 0:
+	when EntryLabel == 0:
 		StopInternalCodegen(__FILE__, __LINE__);
-
-	return Start;
 end
 
 /*****************************************************************************/
 
-/* Формирует листинг секции кода. Возвращает индекс стартовой метки. */
-word EmitSection_Code(char @Buff)
+void EmitSection_Code(char @Buff)
 	RegChoiceOrder[0] = RegA;
 	RegChoiceOrder[1] = RegD;
 	RegChoiceOrder[2] = RegC;
 	RegChoiceOrder[3] = RegB;
 
 	EmitStringNL("");
-
-	select
-		case TargetFileFormat == tPE:
-			EmitStringNL("section ~".code~" code readable executable");
-
-		case TargetFileFormat == tELF:
-			EmitStringNL("segment readable executable");
-
-		default:
-			StopInternalCodegen(__FILE__, __LINE__);
-	end
-
-	EmitROData();
-
-	word Start = EmitFunctions(@Buff);
-
-	return Start;
-
+	EmitCodeSectionStart(@Buff);
+	if !RODataEnabled then
+		EmitROData();
+	end:if
+	EmitFunctions(@Buff);
+	EmitCodeSectionEnd(@Buff);
 end
 
 /*****************************************************************************/
 
+void EmitSection_ROData(char @Buff)
+	if RODataEnabled then
+		EmitStringNL("");
+		EmitRODataSectionStart(@Buff);
+		EmitROData();
+		EmitRODataSectionEnd(@Buff);
+	end:if
+end
+
+/*****************************************************************************/

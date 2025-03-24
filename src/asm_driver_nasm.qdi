@@ -1,0 +1,72 @@
+
+namespace NasmDriver of
+
+void Nasm_EmitFileHeader(char @Buff)
+	EmitStringNL("bits 32");
+end
+
+void Nasm_EmitFileFooter(char @Buff)
+	pass;
+end
+
+void Nasm_EmitCodeSectionStart(char @Buff)
+	EmitStringNL("section .text");
+end
+
+void Nasm_EmitCodeSectionEnd(char @Buff)
+	pass;
+end
+
+void Nasm_EmitRODataSectionStart(char @Buff)
+	EmitStringNL("section .rodata");
+end
+
+void Nasm_EmitRODataSectionEnd(char @Buff)
+	pass;
+end
+
+void Nasm_EmitDataSectionStart(char @Buff)
+	EmitStringNL("section .data");
+end
+
+void Nasm_EmitDataSectionEnd(char @Buff)
+	pass;
+end
+
+void Nasm_EmitBssSectionStart(char @Buff)
+	EmitStringNL("section .bss");
+end
+
+void Nasm_EmitBssSectionEnd(char @Buff)
+	pass;
+end
+
+void Nasm_EmitRes(char @Buff; char @DataSuffix; word Size)
+	Emit(@strcpy4(@Buff,"res",@DataSuffix,"    ",@str(Size)));
+end
+
+void Nasm_EmitEntrySymbol(char @Buff)
+	EmitStringNL("");
+	EmitStringNL("global _start");
+	EmitStringNL("_start:");
+end
+
+void EnableNasmDriver() of
+	@AsmDriver.EmitFileHeader = Nasm_EmitFileHeader;
+	@AsmDriver.EmitFileFooter = Nasm_EmitFileFooter;
+	@AsmDriver.EmitCodeSectionStart = Nasm_EmitCodeSectionStart;
+	@AsmDriver.EmitCodeSectionEnd = Nasm_EmitCodeSectionEnd;
+	@AsmDriver.EmitRODataSectionStart = Nasm_EmitRODataSectionStart;
+	@AsmDriver.EmitRODataSectionEnd = Nasm_EmitRODataSectionEnd;
+	@AsmDriver.EmitDataSectionStart = Nasm_EmitDataSectionStart;
+	@AsmDriver.EmitDataSectionEnd = Nasm_EmitDataSectionEnd;
+	@AsmDriver.EmitBssSectionStart = Nasm_EmitBssSectionStart;
+	@AsmDriver.EmitBssSectionEnd = Nasm_EmitBssSectionEnd;
+	@AsmDriver.EmitRes = Nasm_EmitRes;
+	@AsmDriver.EmitEntrySymbol = Nasm_EmitEntrySymbol;
+	AsmDriver.SeparateBss = true;
+end
+
+end:namespace
+
+alias EnableNasmDriver = NasmDriver.EnableNasmDriver;
