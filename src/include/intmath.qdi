@@ -11,3 +11,14 @@ int int_max(int a, b)
 	return b;
 end
 
+word word_min(word a, b)
+	when a < b:
+		return a;
+	return b;
+end
+
+int int_min(int a, b)
+	when a < b:
+		return a;
+	return b;
+end
