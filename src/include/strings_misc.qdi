@@ -42,10 +42,13 @@ end
 /*****************************************************************************/
 
 word str_hash(char @S)
-	word  hash = 71;
-	word  i = 0;
-	while S[i] != #0 do
-		hash = hash * 5 + word(S[i]);
+	word hash = 71;
+	word i = 0;
+	forever do
+		word Ch = word(S[i]);
+		when Ch == 0:
+			exit;
+		hash = hash * 5 + Ch;
 		inc i;
 	end
 
