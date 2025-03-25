@@ -84,14 +84,24 @@ diff_elf()
 {
 	echo "    DIFF  $1 $2"
 
-	strip -s -o "$1.stripped" "$1"
-	strip -s -o "$2.stripped" "$2"
+	test -f "$1.stripped" && rm "$1.stripped"
+	test -f "$2.stripped" && rm "$2.stripped"
 
-	if cmp "$1.stripped" "$2.stripped" >/dev/null 2>&1 ; then
+	strip -s -o "$1.stripped" "$1" 2>/dev/null | true
+	strip -s -o "$2.stripped" "$2" 2>/dev/null | true
+
+	local f1="$1"
+	local f2="$2"
+	if [ -e "$1.stripped" -a -e "$2.stripped" ] ; then
+		local f1="$1.stripped"
+		local f2="$2.stripped"
+	fi
+
+	if cmp "$f1" "$f2" >/dev/null 2>&1 ; then
 		return 0
 	fi
 	set -x
-	cmp -l "$1.stripped" "$2.stripped"
+	cmp -l "$f1" "$f2"
 }
 
 diff_plain()
@@ -432,6 +442,7 @@ run_valgrind()
 			--callgrind-out-file="$callgrind_out" \
 			--dump-instr=yes \
 			"$compiler_c" ctx4lnx.qd --optimize $optim --linux --output "$asm"
+		sed -i 's|build/compiler//../build/compiler/|build/compiler/|' "$callgrind_out"
 	done
 
 	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
