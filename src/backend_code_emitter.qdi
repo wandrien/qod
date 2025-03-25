@@ -1355,6 +1355,25 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			exit;
 		end:if
 
+		if opSwappable
+		&  rightAsLeft
+		&  CodeRequiresSingleRegister(pLeft)
+		&  !NodeCanBeEncodedAsImm(pRight) then
+			word tmp = pLeft; pLeft = pRight; pRight = tmp;
+			ID = CheckOperationSwappable(ID);
+			leftOperand = operandReg;
+			Reg_TARGET = rightRegPreloaded;
+			select
+			case DoesOperationAllowRightMemRef(ID) & NodeCanBeEncodedAsMemoryOperand(pRight):
+				rightOperand = operandMemRef;
+				CodeAsMemoryOperand(@BuffRightOperand, pRight, NULL);
+			default:
+				rightOperand = operandNotReady;
+				rightReg = RegNone;
+			end:select
+			exit;
+		end:if
+
 		exit;
 	end:forever
 
