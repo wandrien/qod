@@ -3,12 +3,16 @@
 	Основная часть кодогенератора.
 */
 
+namespace CodeEmitter of
+
 /*****************************************************************************/
+
+bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
+bool CodeRequiresSingleRegister_(word P);
+bool CodeRequiresSingleRegister(word P);
 
 word ParmFrameSize; /* Размер фрейма стека, освобождаемого при выходе из функции. */
 word AllocatedFrameSize; /* Текущий размер фрейма стека, задействованный под локальные переменные. */
-
-bool CodeRequiresSingleRegister(word P);
 
 word Reg_TARGET;
 word Reg_ALT_TARGET;
@@ -2322,3 +2326,8 @@ void EmitSection_ROData(char @Buff)
 end
 
 /*****************************************************************************/
+
+end:namespace
+
+alias EmitSection_ROData = CodeEmitter.EmitSection_ROData;
+alias EmitSection_Code = CodeEmitter.EmitSection_Code;

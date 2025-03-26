@@ -1,4 +1,6 @@
 
+namespace DataEmitter of
+
 /*****************************************************************************/
 
 word EmitByteState;
@@ -470,3 +472,11 @@ void EmitPEImport(char @Buff)
 end
 
 /*****************************************************************************/
+
+end:namespace
+
+alias EmitROData = DataEmitter.EmitROData;
+alias AssignStringOffsets = DataEmitter.AssignStringOffsets;
+alias EmitSection_Data = DataEmitter.EmitSection_Data;
+alias EmitSection_Bss = DataEmitter.EmitSection_Bss;
+alias EmitPEImport = DataEmitter.EmitPEImport;

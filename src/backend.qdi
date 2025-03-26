@@ -5,8 +5,6 @@ void CloseOutput();
 void EmitComment(char @Comment);
 void EmitPhoSkip(char @Inst);
 char @EncodeLoadConstant(char @Buff; word Reg; word RegMode; word Value);
-bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
-bool CodeRequiresSingleRegister_(word P);
 void NodeMarkUsed(word P);
 
 bool EmitDebugComments_PHO = false;
