@@ -192,40 +192,65 @@ end
 	Декодирует обозначение регистра в начале строки @S.
 	Распознаются регистры A, B, C и D в режимах E*X, *X и *L.
 	Если регистр успешно декодирован, в @Reg пишет номер регистра, в @Mask - маску значащих бит
-	и возвращает ненулевое значение.
-	Если регистр распознать не удалось, возвращает 0.
+	и возвращает true.
+	Если регистр распознать не удалось, возвращает false.
 	Для регистров в режиме *H выдаёт сообщение о внутренней ошибке и завершает работу программы,
 	поскольку с таким режимом работать мы (пока) не умеем.
 */
-word PHO_DecodeReg(char @S; word @Reg; word @Mask)
+bool PHO_DecodeReg(char @S; word @Reg; word @Mask)
 
 	word r, m;
 
-	select
-	case str_has_prefix(@S, "EAX"): r = 1; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "EBX"): r = 2; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "ECX"): r = 3; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "EDX"): r = 4; m = 0xFFFF_FFFF;
-	case str_has_prefix(@S, "AX" ): r = 1; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "BX" ): r = 2; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "CX" ): r = 3; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "DX" ): r = 4; m = 0x0000_FFFF;
-	case str_has_prefix(@S, "AL" ): r = 1; m = 0x0000_00FF;
-	case str_has_prefix(@S, "BL" ): r = 2; m = 0x0000_00FF;
-	case str_has_prefix(@S, "CL" ): r = 3; m = 0x0000_00FF;
-	case str_has_prefix(@S, "DL" ): r = 4; m = 0x0000_00FF;
-	case str_has_prefix(@S, "AH" ): r = 1; m = 0x0000_FF00;
-	case str_has_prefix(@S, "BH" ): r = 2; m = 0x0000_FF00;
-	case str_has_prefix(@S, "CH" ): r = 3; m = 0x0000_FF00;
-	case str_has_prefix(@S, "DH" ): r = 4; m = 0x0000_FF00;
+	switch S[0] of
+	case 'E':
+		select
+		case str_has_prefix(@S, "EAX"): r = 1; m = 0xFFFF_FFFF;
+		case str_has_prefix(@S, "EBX"): r = 2; m = 0xFFFF_FFFF;
+		case str_has_prefix(@S, "ECX"): r = 3; m = 0xFFFF_FFFF;
+		case str_has_prefix(@S, "EDX"): r = 4; m = 0xFFFF_FFFF;
+		default:
+			return false;
+		end:select
+	case 'A':
+		select
+		case str_has_prefix(@S, "AX" ): r = 1; m = 0x0000_FFFF;
+		case str_has_prefix(@S, "AL" ): r = 1; m = 0x0000_00FF;
+		case str_has_prefix(@S, "AH" ): r = 1; m = 0x0000_FF00;
+		default:
+			return false;
+		end:select
+	case 'B':
+		select
+		case str_has_prefix(@S, "BX" ): r = 2; m = 0x0000_FFFF;
+		case str_has_prefix(@S, "BL" ): r = 2; m = 0x0000_00FF;
+		case str_has_prefix(@S, "BH" ): r = 2; m = 0x0000_FF00;
+		default:
+			return false;
+		end:select
+	case 'C':
+		select
+		case str_has_prefix(@S, "CX" ): r = 3; m = 0x0000_FFFF;
+		case str_has_prefix(@S, "CL" ): r = 3; m = 0x0000_00FF;
+		case str_has_prefix(@S, "CH" ): r = 3; m = 0x0000_FF00;
+		default:
+			return false;
+		end:select
+	case 'D':
+		select
+		case str_has_prefix(@S, "DX" ): r = 4; m = 0x0000_FFFF;
+		case str_has_prefix(@S, "DL" ): r = 4; m = 0x0000_00FF;
+		case str_has_prefix(@S, "DH" ): r = 4; m = 0x0000_FF00;
+		default:
+			return false;
+		end:select
 	default:
-		return 0;
-	end:select
+		return false;
+	end:switch
 
 	Reg  = r;
 	Mask = m;
 
-	return 1;
+	return true;
 
 end
 
@@ -406,7 +431,7 @@ char@ PHO_Optimize_(char @Inst)
 		return @Inst;
 
 	/* Для пустой строки ничего не делаем. */
-	if strlen(@Inst[str_skip_chars(@Inst, " ~t")]) == 0 then
+	if Inst[str_skip_chars(@Inst, " ~t")] == #0 then
 		return @Inst;
 	end:if
 
@@ -428,7 +453,7 @@ char@ PHO_Optimize_(char @Inst)
 	/* Если регистр не распознан, ничего не делаем, т.к. значение отслеживаемых регистров не меняется. */
 	word Reg1;
 	word Mask1;
-	if PHO_DecodeReg(@s, @Reg1, @Mask1) == 0 then
+	if !PHO_DecodeReg(@s, @Reg1, @Mask1) then
 		return @Inst;
 	end:if
 
@@ -469,7 +494,7 @@ char@ PHO_Optimize_(char @Inst)
 	/* Декодируем второй регистр... */
 	word Reg2;
 	word Mask2;
-	if PHO_DecodeReg(@s, @Reg2, @Mask2) != 0 then
+	if PHO_DecodeReg(@s, @Reg2, @Mask2) then
 
 		if Mask2 == 0xFF00 then
 			/* FIXME: Add support of this case. */
@@ -566,10 +591,9 @@ end
 
 char@ PHO_Optimize(char @Inst)
 	char @NewInst = @PHO_Optimize_(@Inst);
-	if str_ne(@NewInst, @Inst) then
+	if EmitDebugComments_PHO & str_ne(@NewInst, @Inst) then
 		char Buff[nBUFF]; Buff[0] = #0;
-		when EmitDebugComments_PHO:
-			strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")");
+		strcpy5(@Buff, "PHO: Instruction: (", @Inst, ") -> (", @NewInst, ")");
 		EmitComment(@Buff);
 	end:if
 	return @NewInst;
