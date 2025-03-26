@@ -918,7 +918,7 @@ word Expr(word Prio; char @Buff)
 	word P1;
 	word O;
 
-	O = FindOperator(@Buff, Prio, OPERATOR_UPRE);
+	O = LookupOperator(@Buff, Prio, OPERATOR_UPRE);
 	if O == OPERATOR_INVALID then
 		P1 = Primary(Prio, @Buff);
 		CTE(P1);
@@ -929,7 +929,7 @@ word Expr(word Prio; char @Buff)
 	end:if
 
 	forever do
-		O = FindOperator(@Buff, Prio, OPERATOR_BLEFT);
+		O = LookupOperator(@Buff, Prio, OPERATOR_BLEFT);
 		if O == OPERATOR_INVALID then
 			exit;
 		end

@@ -5,6 +5,8 @@
 	Всё, что относится к парсингу операций, находится в модуле frontend_syn_expr.qdi.
 */
 
+namespace OperatorList of
+
 /*****************************************************************************/
 
 define OPERATOR_NAME_SIZE 32 /* Максимальный размер имени операции. */
@@ -143,7 +145,7 @@ end
 /*
 	Поиск операции с именем Name, приоритетом выше Prio и с режимом соотвествующим маске ModeMask.
 */
-word FindOperator(char@ Name; word Prio; word ModeMask)
+word LookupOperator(char@ Name; word Prio; word ModeMask)
 	when OperatorPrefix0[word(Name[0])] == 0 | OperatorPrefix1[word(Name[1])] == 0:
 		return OPERATOR_INVALID;
 
@@ -193,3 +195,16 @@ char @OperatorGetName(word O)
 end
 
 /*****************************************************************************/
+
+end:namespace
+
+alias Operator = OperatorList.Operator;
+alias InitOperators = OperatorList.InitOperators;
+alias RegisterOperator = OperatorList.RegisterOperator;
+alias OperatorGetName = OperatorList.OperatorGetName;
+alias LookupOperator = OperatorList.LookupOperator;
+alias OPERATOR_BLEFT = OperatorList.OPERATOR_BLEFT;
+alias OPERATOR_BRIGHT = OperatorList.OPERATOR_BRIGHT;
+alias OPERATOR_UPRE = OperatorList.OPERATOR_UPRE;
+alias OPERATOR_UPOST = OperatorList.OPERATOR_UPOST;
+alias OPERATOR_INVALID = OperatorList.OPERATOR_INVALID;

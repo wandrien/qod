@@ -1,4 +1,6 @@
 
+namespace BracketList of
+
 /*****************************************************************************/
 
 define BRACKET_LEX_SIZE 3 /* Максимальный размер лексемы. */
@@ -17,6 +19,16 @@ define nBRACKET 8
 define BRACKET_INVALID 8
 BRACKET Bracket[nBRACKET];
 word nBracket = 0;
+
+/*****************************************************************************/
+
+byte BracketPrefix0[256];
+byte BracketPrefix1[256];
+
+void RegisterBracketPrefix(char @Str)
+	BracketPrefix0[word(Str[0])] = 1;
+	BracketPrefix1[word(Str[1])] = 1;
+end
 
 /*****************************************************************************/
 
@@ -43,11 +55,16 @@ void RegisterBracket(word Type; char @LeftBracket; char @RightBracket)
 	strcpy(@Bracket[i].LeftBracket, @LeftBracket);
 	strcpy(@Bracket[i].RightBracket, @RightBracket);
 	Bracket[i].Type = Type;
+
+	RegisterBracketPrefix(@LeftBracket);
 end
 
 /*****************************************************************************/
 
 word LookupBracket(word Type; char @LeftBracket)
+	when BracketPrefix0[word(LeftBracket[0])] == 0 | BracketPrefix1[word(LeftBracket[1])] == 0:
+		return BRACKET_INVALID;
+
 	word i = 0;
 	while i < nBracket do
 		if
@@ -60,3 +77,13 @@ word LookupBracket(word Type; char @LeftBracket)
 	end:while
 	return BRACKET_INVALID;
 end
+
+/*****************************************************************************/
+
+end:namespace
+
+alias Bracket = BracketList.Bracket;
+alias RegisterBracket = BracketList.RegisterBracket;
+alias LookupBracket = BracketList.LookupBracket;
+alias BracketType_Parentheses = BracketList.BracketType_Parentheses;
+alias BRACKET_INVALID = BracketList.BRACKET_INVALID;
