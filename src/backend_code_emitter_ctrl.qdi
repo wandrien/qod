@@ -87,7 +87,7 @@ end
 word Code_PUSH(word P; char @Buff)
 
 	if Node[P].pRight<nNODE then
-		Code(Node[P].pRight);
+		Code_(Node[P].pRight, @Buff);
 	end
 
 	word P1 = Node[P].pLeft;
@@ -154,7 +154,7 @@ word Code_PUSH(word P; char @Buff)
 	/* Все остальные варианты... */
 
 	Reg_TARGET = RegA;
-	word pType = Code(P1);
+	word pType = Code_(P1, @Buff);
 	when pType != Node[P1].pType:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
@@ -180,7 +180,7 @@ word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
 		Reg_TARGET = RegA;
-		word pType = Code(Node[P].pLeft);
+		word pType = Code_(Node[P].pLeft, @Buff);
 		if Reg_TARGET != RegA then
 			Emit_MOV_or_XCHG(RegA, Reg_TARGET, 4);
 		end:if
@@ -375,7 +375,7 @@ word Code_SWITCH(word P; char @Buff)
 	else
 		Reg_TARGET = RegA;
 	end:if
-	word pType = Code(Node[COND].pLeft);
+	word pType = Code_(Node[COND].pLeft, @Buff);
 	word Size = SizeOfType(pType);
 	word Reg = Reg_TARGET;
 	if pType == st_byte then

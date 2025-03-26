@@ -7,6 +7,9 @@ namespace CodeEmitter of
 
 /*****************************************************************************/
 
+word Code(word P);
+word Code_(word P; char @Buff);
+word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M);
 bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(word P);
 bool CodeRequiresSingleRegister(word P);
@@ -158,11 +161,6 @@ end
 
 /*****************************************************************************/
 
-word Code(word P);
-word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M);
-
-/*****************************************************************************/
-
 struct CODEBLOCK of
 	word Saved_nLocal;
 	word Saved_AllocatedFrameSize;
@@ -258,7 +256,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:select
 
-		Code(pIndex);
+		Code_(pIndex, @Buff);
 		Emit_IMUL_Reg_Const(Reg_TARGET, 4, Size);
 
 		if Reg_TARGET == Reg_ALT_TARGET then
@@ -417,7 +415,7 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 	switch Node[pPrimary].ID of
 	case iCALL:
 		when Node[pPrimary].pLeft != nNODE:
-			Code(Node[pPrimary].pLeft);
+			Code_(Node[pPrimary].pLeft, @Buff);
 		word pFunc = NodeGetDict(pPrimary);
 		if Dict[pFunc].Sub==sSYS then
 			EmitWithPhoMode(
@@ -433,8 +431,8 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 		end:if
 	case iCALL2:
 		when Node[pPrimary].pLeft != nNODE:
-			Code(Node[pPrimary].pLeft);
-		Code(Node[pPrimary].pRight);
+			Code_(Node[pPrimary].pLeft, @Buff);
+		Code_(Node[pPrimary].pRight, @Buff);
 		EmitWithPhoMode("call    EAX", PHO_Mode_Invalidate);
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -1053,7 +1051,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when nMulTrick >= nMUL_TRICKS:
 		return nDICT;
 
-	word pType2 = Code(pLeft);
+	word pType2 = Code_(pLeft, @Buff);
 
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -1396,13 +1394,13 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	switch rightOperand of
 	case operandImm:
 		if leftOperand == operandNotReady then
-			Code(pLeft);
+			Code_(pLeft, @Buff); Buff[0] = #0;
 			leftOperand = operandReg;
 		end:if
 
 	case operandMemRef:
 		if leftOperand == operandNotReady then
-			Code(pLeft);
+			Code_(pLeft, @Buff); Buff[0] = #0;
 			leftOperand = operandReg;
 		end:if
 
@@ -1417,7 +1415,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		if leftOperand == operandNotReady then
 			when Reg_TARGET == rightReg | !CodeRequiresSingleRegister(pLeft):
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			Code(pLeft);
+			Code_(pLeft, @Buff); Buff[0] = #0;
 			leftOperand = operandReg;
 		end:if
 
@@ -1460,7 +1458,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		when Reg_ALT_TARGET != RegA:
 			Reg_ALT_TARGET = RegA;
 
-		Code(pLeft);
+		Code_(pLeft, @Buff); Buff[0] = #0;
 		if Reg_TARGET != Reg_ALT_TARGET then
 			/* Операнд был возвращён в другом регистре. */
 			Emit_MOV_or_XCHG(Reg_ALT_TARGET, Reg_TARGET, 4);
@@ -1470,11 +1468,10 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 		Reg_TARGET = rightReg;
-		Code(pRight);
+		Code_(pRight, @Buff); Buff[0] = #0;
 
 		if Reg_TARGET == Reg_ALT_TARGET then
 			Emit_RestoreReg(rightReg, "restored in CodeBinOp");
-			Buff[0] = #0;
 			inc fSwap;
 		end
 		Reg_TARGET = Reg_ALT_TARGET;
@@ -1915,7 +1912,7 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 	default:
 		when CodeRequiresSingleRegister(P):
 			Reg_TARGET = ChooseEmptyReg();
-		Code(P);
+		Code_(P, @Buff); Buff[0] = #0;
 		word Size = T_SizeOf(Node[P].pType);
 		Emit_TEST_Reg_Self(Reg_TARGET, Size);
 		select
@@ -1971,10 +1968,7 @@ end
 
 /*****************************************************************************/
 
-word Code_INCDEC(word pPrimary)
-	char Buff[nBUFF];
-	Buff[0] = #0;
-
+word Code_INCDEC(word pPrimary; char @Buff)
 	ValueRef Ref;
 	CodePrimary(Node[pPrimary].pLeft, @Ref);
 
@@ -1999,7 +1993,7 @@ end
 
 /*****************************************************************************/
 
-word Code_ASSIGN(word P)
+word Code_ASSIGN(word P; char @Buff)
 	word P1 = Node[P].pLeft;
 	if Node[P1].pRight < nNODE then
 		word RegRight = LookupRegForNode(Node[P1].pRight);
@@ -2023,7 +2017,7 @@ word Code_ASSIGN(word P)
 
 			Reg_ALT_TARGET = Ref.IX;
 			Reg_TARGET = ChooseEmptyReg2();
-			Code(Node[P1].pRight);
+			Code_(Node[P1].pRight, @Buff);
 
 			Reg_ALT_TARGET = Reg_TARGET;
 			Reg_TARGET = RegNone;
@@ -2036,7 +2030,7 @@ word Code_ASSIGN(word P)
 				else
 					Reg_TARGET = RegA;
 				end:if
-				Code(Node[P1].pRight);
+				Code_(Node[P1].pRight, @Buff);
 				Reg_ALT_TARGET = Reg_TARGET;
 			else
 				EmitWithExprComment("", "Node link reuse in Code_ASSIGN (2)");
@@ -2050,7 +2044,7 @@ word Code_ASSIGN(word P)
 	else
 		Reg_TARGET = RegA;
 		Reg_ALT_TARGET = RegNone;
-		Code(Node[P1].pLeft);
+		Code_(Node[P1].pLeft, @Buff);
 	end
 
 	Reg_TARGET = RegA;
@@ -2074,8 +2068,7 @@ end
 
 /*****************************************************************************/
 
-word Code(word P)
-	char Buff[nBUFF];
+word Code_(word P; char @Buff)
 	Buff[0] = #0;
 
 	when P == nNODE:
@@ -2088,6 +2081,10 @@ word Code(word P)
 	EmitWithSourceNote(NULL, P);
 
 	switch Node[P].ID of
+	case iDATA, iPARM, iLOCAL, iSTRING,
+	     iCALL, iCALL2, iINDEX, iLPTR, iADDR, iFIELD:
+		return CodePrimaryWrapped(P);
+
 	case iNULL:
 		Emit_Load_Constant(Reg_TARGET, 4, 0);
 		return Node[P].pType;
@@ -2101,24 +2098,20 @@ word Code(word P)
 		return Node[P].pType;
 
 	case iINC, iDEC:
-		return Code_INCDEC(P);
-
-	case iDATA, iPARM, iLOCAL, iSTRING,
-	     iCALL, iCALL2, iINDEX, iLPTR, iADDR, iFIELD:
-		return CodePrimaryWrapped(P);
+		return Code_INCDEC(P, @Buff);
 
 	case iNOOP_CAST:
-		Code(Node[P].pLeft);
+		Code_(Node[P].pLeft, @Buff);
 		return Node[P].pType;
 
 	case iCAST, iREINTERPRET_CAST:
-		word pTypeFrom = Code(Node[P].pLeft);
+		word pTypeFrom = Code_(Node[P].pLeft, @Buff);
 		word pTypeTo = Node[P].pType;
 		word Complexity = 0;
 		return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, Reg_TARGET, @Complexity);
 
 	case iBIT_NOT:
-		word pType = Code(Node[P].pLeft);
+		word pType = Code_(Node[P].pLeft, @Buff);
 		word  Size = SizeOfType(pType);
 		Emit(@EncodeCmdReg(@Buff, "not", Reg_TARGET, Size));
 
@@ -2130,7 +2123,7 @@ word Code(word P)
 			return Node[P].pType;
 		end
 
-		Code(Node[P].pLeft);
+		Code_(Node[P].pLeft, @Buff);
 
 		Emit(@EncodeCmdReg(@Buff, "neg", Reg_TARGET, T_SizeOf(Node[P].pType)));
 
@@ -2159,10 +2152,10 @@ word Code(word P)
 		when EmitDebugComments_LocalDefs:
 			EmitComment(@strcpy4(@Buff, "iDEF_LOCAL: ",@Char[Node[P].Value]," ",@str(Local[i].Value)));
 
-		Code(Node[P].pLeft);
+		Code_(Node[P].pLeft, @Buff);
 
 	case iASSIGN:
-		return Code_ASSIGN(P);
+		return Code_ASSIGN(P, @Buff);
 
 	case iINLINE:
 		Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16, #0)));
@@ -2190,6 +2183,11 @@ word Code(word P)
 	end:switch
 
 	return nDICT;
+end
+
+word Code(word P)
+	char Buff[nBUFF];
+	return Code_(P, @Buff);
 end
 
 /*****************************************************************************/
