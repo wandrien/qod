@@ -101,7 +101,7 @@ void Translate()
 	if OutputTreeFile_Done == 0
 	 & @OutputTreeFile != NULL
 	 & strlen(@OutputTreeFile) != 0
-	 & strcmp(@OutputFile, @OutputTreeFile) != 0 then
+	 & str_ne(@OutputFile, @OutputTreeFile) then
 		OutputTreeFile_Done = 1;
 		OpenOutput(@OutputTreeFile);
 		EmitContentForTreeFile();
@@ -127,7 +127,7 @@ void Translate()
 	if OutputTreeFile_Done == 0
 	 & @OutputTreeFile != NULL
 	 & strlen(@OutputTreeFile) != 0
-	 & strcmp(@OutputFile, @OutputTreeFile) == 0 then
+	 & str_eq(@OutputFile, @OutputTreeFile) then
 		OutputTreeFile_Done = 1;
 		EmitContentForTreeFile();
 	end:if

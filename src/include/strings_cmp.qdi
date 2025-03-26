@@ -15,13 +15,45 @@ bool str_has_suffix(char @S; char @Suffix);
 ***************************************************************** DOCUMENTATION
 
 bool str_eq(char @S1; char @S2)
+if false then
 	return strcmp(@S1, @S2) == 0;
+else
+	when @S1 == @S2:
+		return true;
+
+	word i = 0;
+	while S1[i] == S2[i] do
+		if S1[i] == #0 then
+			return true;
+		end
+
+		inc i;
+	end
+
+	return false;
+end:if
 end
 
 /*****************************************************************************/
 
 bool str_ne(char @S1; char @S2)
+if false then
 	return strcmp(@S1, @S2) != 0;
+else
+	when @S1 == @S2:
+		return false;
+
+	word i = 0;
+	while S1[i] == S2[i] do
+		if S1[i] == #0 then
+			return false;
+		end
+
+		inc i;
+	end
+
+	return true;
+end:if
 end
 
 /*****************************************************************************/

@@ -193,7 +193,7 @@ word FindInNamespace(char @Name; word pNamespace)
 		when Dict[P].pNamespace != pNamespace:
 			StopInternal(__FILE__, __LINE__);
 		if Dict[P].NameHash == hash
-		&  strcmp(@DictGetName(P), @Name) == 0
+		&  str_eq(@DictGetName(P), @Name)
 		&  Dict[P].Class != cFILE then
 			return DictResolveAlias(P);
 		end
@@ -215,7 +215,7 @@ word Find(char @Name)
 	while P < nDict do
 		DICT @d = @Dict[P];
 		if d.NameHash == hash
-		&  strcmp(@DictGetName(P), @Name) == 0
+		&  str_eq(@DictGetName(P), @Name)
 		&  d.Class != cFILE
 		&  d.pNamespace == nDICT then
 			return DictResolveAlias(P);
@@ -235,7 +235,7 @@ word Find_cFILE(char @Name)
 	word  P = 0;
 	while P < nDict do
 		if Dict[P].NameHash == hash
-		&  strcmp(@DictGetName(P), @Name) == 0
+		&  str_eq(@DictGetName(P), @Name)
 		&  Dict[P].Class == cFILE
 		&  Dict[P].pNamespace == nDICT then
 			return P;
@@ -725,7 +725,7 @@ word T_FuncTypeForFunction(word F)
 		if Dict[P].pNamespace == nDICT
 		 & Dict[P].Class == cTYPE
 		 & Dict[P].Sub == sFUNCTYPE
-		 & strcmp(@DictGetName(P), "") == 0
+		 & str_eq(@DictGetName(P), "")
 		 & T_IsFuctTypesIdentical(F, P) == true
 		 then
 			return P;

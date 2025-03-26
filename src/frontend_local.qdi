@@ -10,7 +10,7 @@ word ResolveLocal(char @Name)
 		return nLOCAL;
 	word  I=0;
 	while I<nLocal do
-		when strcmp(@LocalGetName(I),@Name) == 0:
+		when str_eq(@LocalGetName(I),@Name):
 			return I;
 		inc I;
 	end:while

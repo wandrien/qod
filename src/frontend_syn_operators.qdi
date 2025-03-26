@@ -159,7 +159,7 @@ word LookupOperator(char@ Name; word Prio; word ModeMask)
 			if
 				((OP.Mode & ModeMask) != 0) &
 				(OP.NameLen == NameLen) &
-				(strcmp(@OP.Name, @Name) == 0)
+				(str_eq(@OP.Name, @Name))
 			then
 				return i;
 			end:if

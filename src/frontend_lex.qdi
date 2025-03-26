@@ -189,7 +189,7 @@ char@ Scan(char@ Buff)
 		if
 			(HereCommentPrefixLen != 0) &
 			(HereCommentPrefixLen == LexLen) &
-			(strcmp(@Buff, @HereCommentPrefix) == 0)
+			(str_eq(@Buff, @HereCommentPrefix))
 		then
 			SkipWhitespaces();
 
@@ -205,7 +205,7 @@ char@ Scan(char@ Buff)
 			while i < nComment do
 				if
 					(LexLen == Comments[i].PrefixLen) &
-					(strcmp(@Buff, @Comments[i].Prefix) == 0)
+					(str_eq(@Buff, @Comments[i].Prefix))
 				then
 					@Suffix = @Comments[i].Suffix;
 					SuffixLen = Comments[i].SuffixLen;

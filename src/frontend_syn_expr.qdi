@@ -165,7 +165,7 @@ end
 
 word Tabl(char @Buff)
 	word nIndx = 0;
-	if strcmp(@Buff,"[") == 0 then
+	if str_eq(@Buff,"[") then
 		word P = Expr(PRIO_ZERO, @Scan(@Buff));
 
 		select
@@ -201,7 +201,7 @@ word Tabl(char @Buff)
 		end
 		*/
 
-		when strcmp(@Buff,"]")!=0:
+		when str_ne(@Buff,"]"):
 			Stop(@eBRACKETEXP);
 	    Scan(@Buff);
 	end:if
@@ -277,7 +277,7 @@ end
 
 word ReadPtrs(char @Buff)
 	word nPtr=0;
-	while strcmp(@Buff,"@") == 0 do
+	while str_eq(@Buff,"@") do
 		inc nPtr;
 		Scan(@Buff);
 	end
@@ -311,7 +311,7 @@ void FuncArgs_ReadDecl(char @Buff; word pARGS)
 		when T_IsFunc(pType):
 			Error(@eNOVAL);
 
-		when strcmp(@Scan(@Buff),",")!=0:
+		when str_ne(@Scan(@Buff), ","):
 			exit;
 
 		Scan(@Buff);
@@ -428,7 +428,7 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
 		pARG = Dict[pARG].pNext;
 
 		if  pARG < nDICT then
-			when strcmp(@Buff,",")!=0:
+			when str_ne(@Buff, ","):
 				Stop(@eCOMMAEXP);
 			Scan(@Buff);
 		end:if
@@ -646,7 +646,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 				Stop(@eHEADEREXP);
 			end:select
 
-		case strcmp(@Buff,".") == 0: /* Обращение к полю структуры/пространства имён. */
+		case str_eq(@Buff,"."): /* Обращение к полю структуры/пространства имён. */
 			pPrefixExpr = AutoDerefPtr(pPrefixExpr);
 			pType = Node[pPrefixExpr].pType;
 
@@ -729,7 +729,7 @@ word Primary(word Prty; char @Buff)
 	end:if
 
 	if Flag == 0 then /* Это строка? */
-		if strcmp(@Buff,"~"") == 0 then
+		if str_eq(@Buff,"~"") then
 			if nPtr>0 then
 				Stop(@eSTRING);
 			end
@@ -870,7 +870,7 @@ word Primary(word Prty; char @Buff)
 	P1 = ReadPostfixOperators(@Buff, P1);
 	pType = Node[P1].pType;
 
-	if (Prty >= PRIO_LVALUE) & (strcmp(@Buff,"=") != 0) then
+	if (Prty >= PRIO_LVALUE) & str_ne(@Buff,"=") then
 		while T_IsPtr(pType) do
 			pType = T_DerefPtr(pType);
 		end:while
@@ -1122,14 +1122,14 @@ word ExprLitChar(word P_; word O; char @Buff)
 	word P1=Peek();
 
 	select
-	case strcmp(@Buff,"#") == 0: /* Символ в #-виде. */
+	case str_eq(@Buff,"#"): /* Символ в #-виде. */
 		word N=val(@Scan(@Buff));
 		if   N>255 then
 			Stop(@eOVERFLOW);
 		end
 		NodeAssignChar(P1, N);
 
-	case strcmp(@Buff,"'") == 0: /* Символ. */
+	case str_eq(@Buff,"'"): /* Символ. */
 		NodeAssignChar(P1, word(ScanChar()));
 		if Read()!='~'' then
 			Stop(@eQUOTEXP);
