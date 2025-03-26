@@ -378,9 +378,6 @@ word Code_SWITCH(word P; char @Buff)
 	word pType = Code_(Node[COND].pLeft, @Buff);
 	word Size = SizeOfType(pType);
 	word Reg = Reg_TARGET;
-	if pType == st_byte then
-		Emit("and     EAX,  0FFH");
-	end:if
 
 	LABEL @L_Default = @L_Exit;
 	word DEFAULT_CASE_I = nNODE;
