@@ -74,6 +74,25 @@ end
 
 /*****************************************************************************/
 
+word DictSetName_None_Name2 = as_unsigned(-1);
+word DictSetName_None_NameHash = 0;
+
+void DictSetName_None(word D)
+	when D >= nDict:
+		StopInternal(__FILE__, __LINE__);
+
+	if DictSetName_None_Name2 == as_unsigned(-1) then
+		DictSetName(D, "<None>");
+		DictSetName_None_Name2    = Dict[D].Name2;
+		DictSetName_None_NameHash = Dict[D].NameHash;
+	else
+		Dict[D].Name2    = DictSetName_None_Name2;
+		Dict[D].NameHash = DictSetName_None_NameHash;
+	end:if
+end
+
+/*****************************************************************************/
+
 char @DictGetName(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
@@ -134,7 +153,7 @@ word DictAlloc()
 	d.pNext = nDICT;
 	d.pFirst = nDICT;
 	d.pLast = nDICT;
-	DictSetName(r, "<None>");
+	DictSetName_None(r);
 
 	return r;
 end
@@ -143,7 +162,7 @@ void DictFree(word @D)
 	Dict[D].Used = 0;
 	Dict[D].Class = cNONE;
 	Dict[D].Sub = sNONE;
-	DictSetName(D, "<None>");
+	DictSetName_None(D);
 	@D = NULL;
 end
 
