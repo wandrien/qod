@@ -1,5 +1,5 @@
 
-void StopAtNodeInternalCodegen(char @File; word Line; word P)
+noreturn StopAtNodeInternalCodegen(char @File; word Line; word P)
 	CloseOutput();
 
 	char Buff[nBUFF];
@@ -17,7 +17,7 @@ void StopAtNodeInternalCodegen(char @File; word Line; word P)
 	end
 end
 
-void StopInternalCodegen(char @File; word Line)
+noreturn StopInternalCodegen(char @File; word Line)
 	StopAtNodeInternalCodegen(@File, Line, nNODE);
 end
 
