@@ -698,7 +698,7 @@ word Primary(word Prty; char @Buff)
 		return P1;
 	end
 
-	if str_eq(@Buff,"__LINE__") then
+	if Buff[0] == '_' & str_eq(@Buff,"__LINE__") then
 		word P1 = Peek();
 		NodeAssignWord(P1, CurrentFileInfo.Line);
 		Scan(@Buff);
@@ -716,7 +716,7 @@ word Primary(word Prty; char @Buff)
 	nPtr = ReadPtrs(@Buff);
 
 	if Flag == 0 then /* Это имя текущего файла? */
-		if str_eq(@Buff,"__FILE__") then
+		if Buff[0] == '_' & str_eq(@Buff,"__FILE__") then
 			if nPtr>0 then
 				Stop(@eSTRING);
 			end
