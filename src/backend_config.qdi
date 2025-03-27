@@ -55,6 +55,7 @@ bool EmitLeaveInstruction = false;
 
 bool EmitShortCode = false;
 bool SlowIncDec = false;
+bool EmitFastMult = false;
 
 /*
 	Пытаться ли переупорядочивать вычисление операндов.

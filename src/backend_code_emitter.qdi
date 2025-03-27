@@ -257,7 +257,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		end:select
 
 		Code_(pIndex, @Buff);
-		Emit_IMUL_Reg_Const(Reg_TARGET, 4, Size);
+		Emit_MUL_Reg_Const(Reg_TARGET, 4, Size);
 
 		if Reg_TARGET == Reg_ALT_TARGET then
 			if Ref.IX != RegNone then
@@ -327,7 +327,7 @@ void Code_INDEX(word P1; ValueRef @Ref)
 	case Ref.IX == RegNone:
 		Code(P1);
 		Ref.IX = Reg_TARGET;
-		Emit_IMUL_Reg_Const(Ref.IX, 4, Size);
+		Emit_MUL_Reg_Const(Ref.IX, 4, Size);
 		when Reg_ALT_TARGET == RegNone:
 			Reg_ALT_TARGET = Ref.IX;
 	default:
@@ -337,7 +337,7 @@ void Code_INDEX(word P1; ValueRef @Ref)
 		when Reg_TARGET == Reg_ALT_TARGET | Reg_TARGET == RegNone:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		Code(P1);
-		Emit_IMUL_Reg_Const(Reg_TARGET, 4, Size);
+		Emit_MUL_Reg_Const(Reg_TARGET, 4, Size);
 		if Reg_TARGET == Reg_ALT_TARGET then
 			when Reg_TARGET != Ref.IX:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
@@ -1056,8 +1056,7 @@ word TryCodeFastMult(char @Buff; word P)
 	when pType != pType2:
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	word done = Emit_MUL_Reg_Const(Reg_TARGET, Size, RightValue);
-	when done == 0:
+	when !Emit_MUL_Reg_Const(Reg_TARGET, Size, RightValue):
 		StopInternalCodegen(__FILE__, __LINE__);
 	return pType;
 end

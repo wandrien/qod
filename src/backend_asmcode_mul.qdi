@@ -14,7 +14,7 @@ word      nMulTricks;
 
 /*****************************************************************************/
 
-word FindMulTrick(word Value)
+word FindMulTrick_(word Value)
 	word n = 0;
 	while n < nMulTricks do
 		when MulTricks[n].Value == Value:
@@ -22,6 +22,14 @@ word FindMulTrick(word Value)
 		inc n;
 	end:while
 	return nMUL_TRICKS;
+end
+
+word FindMulTrick(word Value)
+	if EmitFastMult then
+		return FindMulTrick_(Value);
+	else
+		return nMUL_TRICKS;
+	end:if
 end
 
 /*****************************************************************************/
@@ -55,7 +63,7 @@ void PrepareDoubleMulTrick(word Multiplier1, Multiplier2)
 
 	word Value = Multiplier1 * Multiplier2;
 
-	when FindMulTrick(Value) < nMUL_TRICKS:
+	when FindMulTrick_(Value) < nMUL_TRICKS:
 		return;
 
 	MulTricks[nMulTricks].Value = Value;
@@ -107,9 +115,10 @@ end
 
 /*****************************************************************************/
 
-void Emit_Trick_MUL_Reg_Const(word Reg; word RegMode; word Value)
-	char Buff[nBUFF];
+void Emit_Trick_MUL_Reg_Const(char @Buff; word Reg; word RegMode; word Value)
 	Buff[0] = #0;
+
+	word shl_op = 0;
 
 	switch Value of
 	case 3, 5, 9:
@@ -121,53 +130,63 @@ void Emit_Trick_MUL_Reg_Const(word Reg; word RegMode; word Value)
 	case 2:
 		EncodeCmdRegReg(@Buff, "add", Reg, RegMode, Reg, RegMode);
 	case 4:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 2);
+		shl_op = 2;
 	case 8:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 3);
+		shl_op = 3;
 	case 16:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 4);
+		shl_op = 4;
 	case 32:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 5);
+		shl_op = 5;
 	case 64:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 6);
+		shl_op = 6;
 	case 128:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 7);
+		shl_op = 7;
 	case 256:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 8);
+		shl_op = 8;
 	case 512:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 9);
+		shl_op = 9;
 	case 1024:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 10);
+		shl_op = 10;
 	case 2048:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 11);
+		shl_op = 11;
 	case 4096:
-		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, 12);
+		shl_op = 12;
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
 	end:switch
+
+	if shl_op != 0 then
+		EncodeCmdRegConst(@Buff, "shl", Reg, RegMode, shl_op);
+	end:if
 
 	Emit(@Buff);
 end
 
 /*****************************************************************************/
 
-word Emit_MUL_Reg_Const(word Reg; word RegMode; word Value)
-	word n = FindMulTrick(Value);
-	when n >= nMUL_TRICKS:
-		return 0;
+bool Emit_MUL_Reg_Const(word Reg; word RegMode; word Value)
+	char Buff[nBUFF];
 
+	when Value == 1:
+		return true;
+
+	word n = FindMulTrick(Value);
+	if n >= nMUL_TRICKS then
+		Buff[0] = #0;
+		EncodeCmdRegConst(@Buff, "imul", Reg, RegMode, Value);
+		Emit(@Buff);
+		return true;
+	end:if
+
+	word@ Mults = @MulTricks[n].Multipliers;
 	word i = 0;
 	forever do
-		/* FIXME: causes internal error: */
-		// word Mult = MulTricks[n].Multipliers[i];
-		word@ Mults = @MulTricks[n].Multipliers;
 		word Mult = Mults[i];
 		when Mult == 0:
-			return 1;
-		Emit_Trick_MUL_Reg_Const(Reg, RegMode, Mult);
+			return true;
+		Emit_Trick_MUL_Reg_Const(@Buff, Reg, RegMode, Mult);
 		inc i;
 	end:forever
-
 end
 
 /*****************************************************************************/
