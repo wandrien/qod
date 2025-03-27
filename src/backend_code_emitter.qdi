@@ -178,9 +178,9 @@ end
 
 /*****************************************************************************/
 
-word Code_List(word P)
+word Code_List(word P; char @Buff)
 	while P < nNODE do
-		word pType = Code(P);
+		word pType = Code_(P, @Buff);
 		when pType == st_noreturn:
 			return st_noreturn;
 		P = Node[P].pRight;
@@ -188,10 +188,10 @@ word Code_List(word P)
 	return st_void;
 end
 
-word Code_Block(word P)
+word Code_Block(word P; char @Buff)
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);
-	word pType = Code_List(P);
+	word pType = Code_List(P, @Buff);
 	Code_EndBlock(@CB);
 	return pType;
 end
@@ -2239,7 +2239,7 @@ void EmitFunction(char @Buff; word I)
 				end:if
 				if StaticDataIsZeroed == 0
 				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == false then
-					Code(Dict[J].pNode);
+					Code_(Dict[J].pNode, @Buff);
 				end:if
 			end:if
 
@@ -2257,7 +2257,7 @@ void EmitFunction(char @Buff; word I)
 	word  P = Dict[I].pNode;
 	word  pType = st_void;
 	while P < nNODE do
-		pType = Code(P);
+		pType = Code_(P, @Buff);
 		when pType == st_noreturn:
 			exit;
 		P = Node[P].pRight;
@@ -2268,7 +2268,7 @@ void EmitFunction(char @Buff; word I)
 			pReturnVoid = Peek();
 			Node[pReturnVoid].ID = iRETURN;
 		end
-		Code(pReturnVoid);
+		Code_(pReturnVoid, @Buff);
 	end
 
 	Code_EndBlock(@CB);
