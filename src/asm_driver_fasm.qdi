@@ -3,11 +3,11 @@ namespace FasmDriver of
 
 void Fasm_EmitFileHeader(char @Buff)
 	select
-	case TargetFileFormat == tPE & TargetMode == mCON:
+	case TargetFileFormat == TARGET_FORMAT.tPE & TargetMode == TARGET_MODE.mCON:
 		EmitStringNL("format  PE  CONSOLE");
-	case TargetFileFormat == tPE & TargetMode == mGUI:
+	case TargetFileFormat == TARGET_FORMAT.tPE & TargetMode == TARGET_MODE.mGUI:
 		EmitStringNL("format  PE  GUI");
-	case TargetFileFormat == tELF:
+	case TargetFileFormat == TARGET_FORMAT.tELF:
 		EmitStringNL("format  ELF executable");
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -20,9 +20,9 @@ end
 
 void Fasm_EmitCodeSectionStart(char @Buff)
 	select
-	case TargetFileFormat == tPE:
+	case TargetFileFormat == TARGET_FORMAT.tPE:
 		EmitStringNL("section ~".code~" code readable executable");
-	case TargetFileFormat == tELF:
+	case TargetFileFormat == TARGET_FORMAT.tELF:
 		EmitStringNL("segment readable executable");
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -35,9 +35,9 @@ end
 
 void Fasm_EmitRODataSectionStart(char @Buff)
 	select
-	case TargetFileFormat == tPE:
+	case TargetFileFormat == TARGET_FORMAT.tPE:
 		EmitStringNL("section ~".rodata~" data readable");
-	case TargetFileFormat == tELF:
+	case TargetFileFormat == TARGET_FORMAT.tELF:
 		EmitStringNL("segment readable");
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -50,9 +50,9 @@ end
 
 void Fasm_EmitDataSectionStart(char @Buff)
 	select
-	case TargetFileFormat == tPE:
+	case TargetFileFormat == TARGET_FORMAT.tPE:
 		EmitStringNL("section ~".data~" data readable writeable");
-	case TargetFileFormat == tELF:
+	case TargetFileFormat == TARGET_FORMAT.tELF:
 		EmitStringNL("segment readable writeable");
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -65,9 +65,9 @@ end
 
 void Fasm_EmitBssSectionStart(char @Buff)
 	select
-	case TargetFileFormat == tPE:
+	case TargetFileFormat == TARGET_FORMAT.tPE:
 		EmitStringNL("section ~".bss~" data readable writeable");
-	case TargetFileFormat == tELF:
+	case TargetFileFormat == TARGET_FORMAT.tELF:
 		EmitStringNL("segment readable writeable");
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);

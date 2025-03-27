@@ -91,15 +91,15 @@ void DoWarnUnusedGlobals()
 	while P < nDict do
 		if Dict[P].Used == 0 then
 			select
-			case Dict[P].Class == cDATA:
+			case Dict[P].Class == CLASS.cDATA:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @L10n.wGLOBALVARUNUSED);
 				Warn(@Buff);
-			case Dict[P].Class == cFUNC:
+			case Dict[P].Class == CLASS.cFUNC:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @L10n.wFUNCUNUSED);
 				Warn(@Buff);
-			case Dict[P].Class == cTYPE & Dict[P].Sub <= sBASE_MAX:
+			case Dict[P].Class == CLASS.cTYPE & Dict[P].Sub <= SUBCLASS.sBASE_MAX:
 				strcpy(@Buff, @DictGetName(P));
 				strcat(@Buff, @L10n.wTYPEUNUSED);
 				Warn(@Buff);
@@ -126,14 +126,14 @@ word     Enum(word P; word Flag)
       while P<nNODE do
         select
           case Node[P].ID==iSELECT:
-            LabelAllocate(P, lEXIT);
+            LabelAllocate(P, JmpLbl.lEXIT);
             word  CASE = Node[P].pLeft;
             while CASE < nNODE do
                 when Node[CASE].ID != iCASE:
                     StopInternal(__FILE__, __LINE__);
 
-                LabelAllocate(CASE, lCASEBODY);
-                LabelAllocate(CASE, lCASEBODYEND);
+                LabelAllocate(CASE, JmpLbl.lCASEBODY);
+                LabelAllocate(CASE, JmpLbl.lCASEBODYEND);
 
                 word COND = Node[CASE].pLeft;
                 word BODY = Node[COND].pRight;
@@ -154,7 +154,7 @@ word     Enum(word P; word Flag)
 
           case Node[P].ID==iSWITCH :
 
-			LabelAllocate(P, lEXIT);
+			LabelAllocate(P, JmpLbl.lEXIT);
 
 			word COND = Node[P].pLeft;
 			when Node[COND].ID != iCOND:
@@ -167,7 +167,7 @@ word     Enum(word P; word Flag)
 				when Node[CASE_I].ID != iCASE:
 					StopInternal(__FILE__, __LINE__);
 
-				LabelAllocate(CASE_I, lCASEBODY);
+				LabelAllocate(CASE_I, JmpLbl.lCASEBODY);
 
 				word  VALUE_I = Node[CASE_I].pLeft;
 				while VALUE_I < nNode do
@@ -194,9 +194,9 @@ word     Enum(word P; word Flag)
             |    Node[COND].ID != iCOND:
                 StopInternal(__FILE__, __LINE__);
 
-            LabelAllocate(P, lLOOPBODY);
-            LabelAllocate(P, lCONTINUE);
-            LabelAllocate(P, lEXIT);
+            LabelAllocate(P, JmpLbl.lLOOPBODY);
+            LabelAllocate(P, JmpLbl.lCONTINUE);
+            LabelAllocate(P, JmpLbl.lEXIT);
 
             Enum(Node[COND].pLeft,0);
 
@@ -223,7 +223,7 @@ word     Enum(word P; word Flag)
       Enum(Node[P].pLeft, 0);
 
       if Node[P].ID == iOR | Node[P].ID == iAND then
-        LabelAllocate(P, lBRANCH);
+        LabelAllocate(P, JmpLbl.lBRANCH);
       end
 
       Enum(Node[P].pRight,0);
@@ -243,7 +243,7 @@ word AssignLabels_Data()
 	word I = 0;
 	while I < nDict do
 		select
-		case Dict[I].Class == cDATA & Dict[I].Used != 0:
+		case Dict[I].Class == CLASS.cDATA & Dict[I].Used != 0:
 			Dict[I].Label = D;
 			word Size = SizeOfType(Dict[I].pType);
 			D = D + DefaultStaticAlign(Size);
@@ -263,7 +263,7 @@ end
 void AssignLabels_Func()
 	word I=0;
 	while I<nDict do
-		if Dict[I].Class==cFUNC & Dict[I].Sub!=sSYS & Dict[I].Used!=0 then
+		if Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used != 0 then
 			Dict[I].Label = NewLabel();
 			Dict[I].StackSize = Enum(Dict[I].pNode,1);
 			when Dict[I].Forward != 0:
@@ -281,12 +281,12 @@ void AssignLabels_FuncExternal()
 
   word I=0;
   while I<nDict do
-    if Dict[I].Class==cLIB then
+    if Dict[I].Class == CLASS.cLIB then
       word  J=0;
       while J<nDict do
-        if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
+        if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used != 0 then
           word Label = NewLabel();
-          if Dict[I].Used==0 then
+          if Dict[I].Used == 0 then
             Dict[I].Label = Label;
             Dict[I].Used = 1;
           end

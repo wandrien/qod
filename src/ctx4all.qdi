@@ -79,7 +79,7 @@ void Translate()
 	/* Отметка используемых объектов. */
 	DictMarkUsed(pMainFunc);
 	select
-		case TargetFileFormat == tPE:
+		case TargetFileFormat == TARGET_FORMAT.tPE:
 			pExitProcess = ResolveInNamespace("ExitProcess", pGlobalNamespace);
 			when pExitProcess != nDICT:
 				Dict[pExitProcess].Used = 1;
@@ -142,7 +142,7 @@ void Translate()
 	EmitSection_Bss(@Buff, D);
 
 	select
-	case TargetFileFormat == tPE:
+	case TargetFileFormat == TARGET_FORMAT.tPE:
 		EmitPEImport(@Buff);
 	end:select
 
@@ -182,14 +182,14 @@ end
 void SetupTarget(char@ Target)
 	select
 	case str_eq(@Target, "--linux"  ):
-		TargetFileFormat = tELF;
-		TargetMode = mNONE;
+		TargetFileFormat = TARGET_FORMAT.tELF;
+		TargetMode = TARGET_MODE.mNONE;
 	case str_eq(@Target, "--win32-c"):
-		TargetFileFormat = tPE;
-		TargetMode = mCON;
+		TargetFileFormat = TARGET_FORMAT.tPE;
+		TargetMode = TARGET_MODE.mCON;
 	case str_eq(@Target, "--win32-w"):
-		TargetFileFormat = tPE;
-		TargetMode = mGUI;
+		TargetFileFormat = TARGET_FORMAT.tPE;
+		TargetMode = TARGET_MODE.mGUI;
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
@@ -231,9 +231,9 @@ end
 void SetupAssembler(char@ Mode)
 	select
 	case str_eq(@Mode, "fasm"):
-		TargetAssembler = aFASM;
+		TargetAssembler = ASM_MODE.aFASM;
 	case str_eq(@Mode, "nasm"):
-		TargetAssembler = aNASM;
+		TargetAssembler = ASM_MODE.aNASM;
 	default:
 		Stop(@L10n.eWRONGOPTION);
 	end:select

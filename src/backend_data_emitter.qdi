@@ -228,7 +228,7 @@ void EmitROData()
 	if RODataMergeMode == RODataMergeModeAgressive then
 		I = 0;
 		while I < nDict do
-			if (Dict[I].Class == cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+			if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 				int len = as_signed(Dict[I].nLiteralSize);
 				when len < 0:
 					StopInternalCodegen(__FILE__, __LINE__);
@@ -249,7 +249,7 @@ void EmitROData()
 		next_len = -1;
 		I = 0;
 		while I < nDict do
-			if (Dict[I].Class == cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+			if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 				int len = as_signed(Dict[I].nLiteralSize);
 				when len < 0:
 					StopInternalCodegen(__FILE__, __LINE__);
@@ -282,7 +282,7 @@ void AssignStringOffsets()
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if (Dict[I].Class == cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+		if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 			word len = Dict[I].nLiteralSize;
 			Dict[I].Label = data_len;
 			data_len = data_len + len;
@@ -306,7 +306,7 @@ void EmitSection_Data_Strings(char @Buff)
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if (Dict[I].Class == cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+		if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
 			word len = Dict[I].nLiteralSize;
 			if Dict[I].Label != data_len then
 				StopInternalCodegen(__FILE__, __LINE__);
@@ -372,7 +372,7 @@ void EmitPEImport(char @Buff)
 
 	word I  = 0;
 	while I<nDict do
-		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
 
 			word Label = NewLabel();
 			inc LabelCount;
@@ -397,12 +397,12 @@ void EmitPEImport(char @Buff)
 
 	I =0;
 	while I<nDict do
-		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
 			EmitNL();
 
 			word  J=0;
 			while J<nDict do
-				if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
+				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used != 0 then
 
 					word Label = NewLabel();
 					inc LabelCount;
@@ -432,7 +432,7 @@ void EmitPEImport(char @Buff)
 	word Label = FirstLabel + 1;
 	I =0;
 	while I<nDict do
-		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
 			LABEL L; L.Value = Label;
 			EmitLabel(@L);
 			EmitPhoSkip(@strcpy3(@Buff,"db     ~"",@DictGetName(I),".DLL~", 0"));
@@ -447,12 +447,12 @@ void EmitPEImport(char @Buff)
 
 	I =0;
 	while I<nDict do
-		if Dict[I].Class==cLIB & Dict[I].Used!=0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
 			EmitNL();
 
 			word  J=0;
 			while J<nDict do
-				if Dict[J].Class==cFUNC & Dict[J].Sub==sSYS & Dict[J].pNode==I & Dict[J].Used!=0 then
+				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used != 0 then
 					LABEL L; L.Value = Label;
 					EmitLabel(@L);
 					EmitPhoSkip("dw      0");

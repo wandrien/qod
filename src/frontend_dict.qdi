@@ -110,7 +110,7 @@ word DefineIntegerInNamespace(char @Name; word Type; word Value; word pNamespace
 	word D = DictAlloc();
 	DictSetName(D, @Name);
 	DICT @d = @Dict[D];
-	d.Class = cLITERAL;
+	d.Class = CLASS.cLITERAL;
 	d.RO = 1;
 	d.pType = Type;
 	d.LiteralValue = Value;
@@ -132,7 +132,7 @@ word DefineBoolInNamespace(char @Name; bool Value; word pNamespace)
 	word D = DictAlloc();
 	DictSetName(D, @Name);
 	DICT @d = @Dict[D];
-	d.Class = cLITERAL;
+	d.Class = CLASS.cLITERAL;
 	d.RO = 1;
 	d.pType = st_bool;
 	if Value then
@@ -160,7 +160,7 @@ word DefineStringInNamespace(char @Name; char @Value; word pNamespace)
 	word D = DictAlloc();
 	DictSetName(D, @Name);
 	DICT @d = @Dict[D];
-	d.Class = cLITERAL;
+	d.Class = CLASS.cLITERAL;
 	d.RO = 1;
 	d.pType = T_PtrTo(st_char);
 	d.LiteralValue = SaveString(@Value, i);

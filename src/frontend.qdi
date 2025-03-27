@@ -158,49 +158,49 @@ void InitFrontEnd()
 
 	pEnteredNamespace = pInternalNamespace;
 
-	st_cond_branch = BaseType("cond_branch", sINTERNAL_COND_BRANCH, 0);
+	st_cond_branch = BaseType("cond_branch", SUBCLASS.sINTERNAL_COND_BRANCH, 0);
 
 	pEnteredNamespace = pGlobalNamespace;
 
-	st_type    = BaseType("type", sBASE_TYPE, 0);
-	st_void    = BaseType("void", sBASE_VOID, 0);
-	st_noreturn = BaseType("noreturn", sBASE_NORET, 0);
-	st_nulltype = BaseType("nulltype", sBASE_NULL, target_size_of_pointer);
+	st_type    = BaseType("type", SUBCLASS.sBASE_TYPE, 0);
+	st_void    = BaseType("void", SUBCLASS.sBASE_VOID, 0);
+	st_noreturn = BaseType("noreturn", SUBCLASS.sBASE_NORET, 0);
+	st_nulltype = BaseType("nulltype", SUBCLASS.sBASE_NULL, target_size_of_pointer);
 
-	st_bool8   = BaseType("bool8", sBASE_BOOL, 1);
-	st_bool16  = BaseType("bool16", sBASE_BOOL, 2);
-	st_bool32  = BaseType("bool32", sBASE_BOOL, 4);
-	st_bool    = BaseType("bool", sBASE_BOOL, target_size_of_bool);
+	st_bool8   = BaseType("bool8", SUBCLASS.sBASE_BOOL, 1);
+	st_bool16  = BaseType("bool16", SUBCLASS.sBASE_BOOL, 2);
+	st_bool32  = BaseType("bool32", SUBCLASS.sBASE_BOOL, 4);
+	st_bool    = BaseType("bool", SUBCLASS.sBASE_BOOL, target_size_of_bool);
 
-	st_char    = BaseType("char", sBASE_CHAR, 1);
-	st_byte    = BaseType("byte", sBASE_UINT, 1);
+	st_char    = BaseType("char", SUBCLASS.sBASE_CHAR, 1);
+	st_byte    = BaseType("byte", SUBCLASS.sBASE_UINT, 1);
 
-	st_int8    = BaseType("int8", sBASE_SINT, 1);
-	st_int16   = BaseType("int16", sBASE_SINT, 2);
-	st_int32   = BaseType("int32", sBASE_SINT, 4);
-	st_int64   = BaseType("int64", sBASE_SINT, 8);
-	st_int128  = BaseType("int128", sBASE_SINT, 16);
+	st_int8    = BaseType("int8", SUBCLASS.sBASE_SINT, 1);
+	st_int16   = BaseType("int16", SUBCLASS.sBASE_SINT, 2);
+	st_int32   = BaseType("int32", SUBCLASS.sBASE_SINT, 4);
+	st_int64   = BaseType("int64", SUBCLASS.sBASE_SINT, 8);
+	st_int128  = BaseType("int128", SUBCLASS.sBASE_SINT, 16);
 
-	st_uint8   = BaseType("uint8", sBASE_UINT, 1);
-	st_uint16  = BaseType("uint16", sBASE_UINT, 2);
-	st_uint32  = BaseType("uint32", sBASE_UINT, 4);
-	st_uint64  = BaseType("uint64", sBASE_UINT, 8);
-	st_uint128 = BaseType("uint128", sBASE_UINT, 16);
+	st_uint8   = BaseType("uint8", SUBCLASS.sBASE_UINT, 1);
+	st_uint16  = BaseType("uint16", SUBCLASS.sBASE_UINT, 2);
+	st_uint32  = BaseType("uint32", SUBCLASS.sBASE_UINT, 4);
+	st_uint64  = BaseType("uint64", SUBCLASS.sBASE_UINT, 8);
+	st_uint128 = BaseType("uint128", SUBCLASS.sBASE_UINT, 16);
 
-	st_intptr  = BaseType("intptr", sBASE_SINT, target_size_of_pointer);
-	st_uintptr = BaseType("uintptr", sBASE_UINT, target_size_of_pointer);
+	st_intptr  = BaseType("intptr", SUBCLASS.sBASE_SINT, target_size_of_pointer);
+	st_uintptr = BaseType("uintptr", SUBCLASS.sBASE_UINT, target_size_of_pointer);
 
-	st_short   = BaseType("short" , sBASE_SINT, target_size_of_short);
-	st_ushort  = BaseType("ushort", sBASE_UINT, target_size_of_short);
-	st_int     = BaseType("int" , sBASE_SINT, target_size_of_int);
-	st_uint    = BaseType("uint", sBASE_UINT, target_size_of_int);
-	st_long    = BaseType("long" , sBASE_SINT, target_size_of_long);
-	st_ulong   = BaseType("ulong", sBASE_UINT, target_size_of_long);
-	st_word    = BaseType("word", sBASE_UINT, target_size_of_word);
+	st_short   = BaseType("short" , SUBCLASS.sBASE_SINT, target_size_of_short);
+	st_ushort  = BaseType("ushort", SUBCLASS.sBASE_UINT, target_size_of_short);
+	st_int     = BaseType("int" , SUBCLASS.sBASE_SINT, target_size_of_int);
+	st_uint    = BaseType("uint", SUBCLASS.sBASE_UINT, target_size_of_int);
+	st_long    = BaseType("long" , SUBCLASS.sBASE_SINT, target_size_of_long);
+	st_ulong   = BaseType("ulong", SUBCLASS.sBASE_UINT, target_size_of_long);
+	st_word    = BaseType("word", SUBCLASS.sBASE_UINT, target_size_of_word);
 
-	st_float   = BaseType("float", sBASE_FLOAT, target_size_of_float);
-	st_double  = BaseType("double", sBASE_FLOAT, target_size_of_double);
-	st_long_double = BaseType("long_double", sBASE_FLOAT, target_size_of_long_double);
+	st_float   = BaseType("float", SUBCLASS.sBASE_FLOAT, target_size_of_float);
+	st_double  = BaseType("double", SUBCLASS.sBASE_FLOAT, target_size_of_double);
+	st_long_double = BaseType("long_double", SUBCLASS.sBASE_FLOAT, target_size_of_long_double);
 
 	InitExpressionParser();
 	InitStatementParser();
@@ -222,13 +222,13 @@ void InitFrontEnd()
 	DefineStringInNamespace("qod_version_string", "0.1", pNamespace_qod);
 
 	select
-	case TargetFileFormat == tPE:
+	case TargetFileFormat == TARGET_FORMAT.tPE:
 		DefineStringInNamespace("target", "i386-win32-pe", pNamespace_qod_impl);
 		DefineBoolInNamespace("__LINUX__", false, pNamespace_qod_env);
 		DefineBoolInNamespace("__WIN32__", true, pNamespace_qod_env);
 
 		strcat(@Text,"noreturn ExitProcess(word uExitCode) external KERNEL32;");
-	case TargetFileFormat == tELF:
+	case TargetFileFormat == TARGET_FORMAT.tELF:
 		DefineStringInNamespace("target", "i386-linux-elf", pNamespace_qod_impl);
 		DefineBoolInNamespace("__LINUX__", true, pNamespace_qod_env);
 		DefineBoolInNamespace("__WIN32__", false, pNamespace_qod_env);

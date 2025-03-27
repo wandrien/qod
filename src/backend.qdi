@@ -46,9 +46,9 @@ include "backend_misc.qdi";
 
 void InitAsmDriver()
 	switch TargetAssembler of
-	case aFASM:
+	case ASM_MODE.aFASM:
 		EnableFasmDriver();
-	case aNASM:
+	case ASM_MODE.aNASM:
 		EnableNasmDriver();
 	default:
 		StopInternalCodegen(__FILE__, __LINE__);

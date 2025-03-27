@@ -8,7 +8,7 @@ LABEL @CodeExtractJump(word P)
 	case iVIRTUAL_JUMP:
 		return @LabelResolve(Node[P].Value, Node[P].pType);
 	case iCONTINUE:
-		return @LabelResolve(Node[P].Value, lCONTINUE);
+		return @LabelResolve(Node[P].Value, JmpLbl.lCONTINUE);
 	case iEXIT:
 		return @CodeExtractExitLabel(Node[P].Value);
 	default:
@@ -21,7 +21,7 @@ LABEL @CodeExtractExitLabel(word P)
 	when Node[P].pRight != nNODE:
 		@L_Exit = @CodeExtractJump(Node[P].pRight);
 	when @L_Exit == NULL:
-		@L_Exit = @LabelResolve(P, lEXIT);
+		@L_Exit = @LabelResolve(P, JmpLbl.lEXIT);
 	return @L_Exit;
 end
 
@@ -41,7 +41,7 @@ end
 /*****************************************************************************/
 
 word Code_OR(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
-	LABEL @L = @LabelResolve(P, lBRANCH);
+	LABEL @L = @LabelResolve(P, JmpLbl.lBRANCH);
 	if @T == NULL then
 		CodeBooleanExpr(Node[P].pLeft , NULL, @M, @L);
 		EmitLabelIfUsed(@L);
@@ -69,7 +69,7 @@ end
 /*****************************************************************************/
 
 word Code_AND(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
-	LABEL @L = @LabelResolve(P, lBRANCH);
+	LABEL @L = @LabelResolve(P, JmpLbl.lBRANCH);
 	if @T == NULL then
 		CodeBooleanExpr(Node[P].pLeft , @F, NULL, @L);
 		EmitLabelIfUsed(@L);
@@ -186,15 +186,15 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 	end:if
 
-	if Dict[pCurrentFunc].Sub == sMAIN then
+	if Dict[pCurrentFunc].Sub == SUBCLASS.sMAIN then
 		select
-		case TargetFileFormat == tPE:
+		case TargetFileFormat == TARGET_FORMAT.tPE:
 			when pExitProcess == nDICT:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			Emit("xor     EAX,  EAX");
 			Emit("push    EAX");
 			Emit(@strcpy3(@Buff,"call   [@",@str(Dict[pExitProcess].Label),"]"));
-		case TargetFileFormat == tELF:
+		case TargetFileFormat == TARGET_FORMAT.tELF:
 			Emit("mov     EAX,  1");
 			Emit("xor     EBX,  EBX");
 			Emit("int     80H");
@@ -258,7 +258,7 @@ word Code_SELECT(word P; char @Buff)
 		if Node[CASE].pRight == nNODE then
 			@L_CASEBODYEND = @L_Exit;
 		else
-			@L_CASEBODYEND = @LabelResolve(CASE, lCASEBODYEND);
+			@L_CASEBODYEND = @LabelResolve(CASE, JmpLbl.lCASEBODYEND);
 		end:if
 
 		@L_Jump = NULL;
@@ -267,13 +267,13 @@ word Code_SELECT(word P; char @Buff)
 			@L_Jump = @CodeExtractJump(Node[BODY].pLeft);
 			word pCondType;
 			if @L_Jump == NULL then
-				pCondType = CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, lCASEBODY));
+				pCondType = CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, JmpLbl.lCASEBODY));
 			else
 				pCondType = CodeBooleanExpr(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
 			end:if
 			when pCondType != st_cond_branch:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			EmitLabelIfUsed(@LabelResolve(CASE, lCASEBODY));
+			EmitLabelIfUsed(@LabelResolve(CASE, JmpLbl.lCASEBODY));
 		else
 			DefaultBranchPresent = true;
 		end
@@ -291,7 +291,7 @@ word Code_SELECT(word P; char @Buff)
 			end
 		end
 
-		EmitLabelIfUsed(@LabelResolve(CASE, lCASEBODYEND));
+		EmitLabelIfUsed(@LabelResolve(CASE, JmpLbl.lCASEBODYEND));
 
 		LAST_CASE = CASE;
 		CASE = Node[CASE].pRight;
@@ -300,13 +300,13 @@ word Code_SELECT(word P; char @Buff)
 	when !DefaultBranchPresent:
 		pTypeFinal = st_void;
 
-	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
+	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
 	if
 		(pTypeBody == st_noreturn) &
 		(@L_Jump == NULL) &
-		!LabelIsUsed(@LabelResolve(P, lEXIT)) &
-		!LabelIsUsed(@LabelResolve(LAST_CASE, lCASEBODYEND))
+		!LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)) &
+		!LabelIsUsed(@LabelResolve(LAST_CASE, JmpLbl.lCASEBODYEND))
 	then
 		pTypeFinal = st_noreturn;
 	end:if
@@ -395,7 +395,7 @@ word Code_SWITCH(word P; char @Buff)
 		word BODY_I = Code_SWITCH_CASE_GetBody(CASE_I);
 		LABEL @L_Jump = @CodeExtractJump(Node[BODY_I].pLeft);
 		when @L_Jump == NULL:
-			@L_Jump = @LabelResolve(CASE_I, lCASEBODY);
+			@L_Jump = @LabelResolve(CASE_I, JmpLbl.lCASEBODY);
 
 		word  VALUE_I = Node[CASE_I].pLeft;
 		while VALUE_I < nNode do
@@ -436,7 +436,7 @@ word Code_SWITCH(word P; char @Buff)
 
 				EmitBranchToLabel("e", @L_Jump);
 			case iDEFAULT:
-				@L_Default = @LabelResolve(CASE_I, lCASEBODY);
+				@L_Default = @LabelResolve(CASE_I, JmpLbl.lCASEBODY);
 				DefaultBranchPresent = true;
 				DEFAULT_CASE_I = CASE_I;
 			case iBODY:
@@ -465,7 +465,7 @@ word Code_SWITCH(word P; char @Buff)
 		LABEL @L_Jump = @CodeExtractJump(Node[BODY_I].pLeft);
 
 		if @L_Jump == NULL then
-			EmitLabel(@LabelResolve(CASE_I, lCASEBODY));
+			EmitLabel(@LabelResolve(CASE_I, JmpLbl.lCASEBODY));
 			PHO_RestoreState(@State);
 			if CASE_I != DEFAULT_CASE_I & Size == 4 then
 				PHO_RegLoadConst(Reg, 0);
@@ -489,9 +489,9 @@ word Code_SWITCH(word P; char @Buff)
 	when !DefaultBranchPresent:
 		pTypeFinal = st_void;
 
-	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
+	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
-	when (pTypeBody == st_noreturn) & !LabelIsUsed(@LabelResolve(P, lEXIT)):
+	when (pTypeBody == st_noreturn) & !LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)):
 		pTypeFinal = st_noreturn;
 
 	return pTypeFinal;
@@ -523,26 +523,26 @@ word Code_WHILE(word P; char @Buff)
 	|    Node[COND].ID != iCOND:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
-	EmitLabel(@LabelResolve(P, lCONTINUE));
+	EmitLabel(@LabelResolve(P, JmpLbl.lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
 		when CodeBooleanExpr(
-			Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, lLOOPBODY)
+			Node[COND].pLeft, @L_Exit, NULL, @LabelResolve(P, JmpLbl.lLOOPBODY)
 		) != st_cond_branch:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-		EmitLabelIfUsed(@LabelResolve(P, lLOOPBODY));
+		EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lLOOPBODY));
 	end
 
-	CodeList_InsertVirtualJump(Node[BODY].pLeft, P, lCONTINUE);
+	CodeList_InsertVirtualJump(Node[BODY].pLeft, P, JmpLbl.lCONTINUE);
 	word pTypeBody = Code_List(Node[BODY].pLeft, @Buff);
 	when pTypeBody != st_noreturn:
-		EmitJumpToLabelWithComment(@LabelResolve(P, lCONTINUE), "while");
+		EmitJumpToLabelWithComment(@LabelResolve(P, JmpLbl.lCONTINUE), "while");
 
-	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
+	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
 	Code_EndBlock(@CB);
 
-	when !LabelIsUsed(@LabelResolve(P, lEXIT)):
+	when !LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)):
 		return st_noreturn;
 
 	return Node[P].pType;
@@ -581,20 +581,20 @@ word Code_REPEAT(word P; char @Buff)
 		return st_void;
 	end
 
-	EmitLabel(@LabelResolve(P, lLOOPBODY));
+	EmitLabel(@LabelResolve(P, JmpLbl.lLOOPBODY));
 
 	Code_List(Node[BODY].pLeft, @Buff);
 
-	EmitLabelIfUsed(@LabelResolve(P, lCONTINUE));
+	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
 		when CodeBooleanExpr(
-			Node[COND].pLeft, @LabelResolve(P, lLOOPBODY), NULL, @LabelResolve(P, lEXIT)
+			Node[COND].pLeft, @LabelResolve(P, JmpLbl.lLOOPBODY), NULL, @LabelResolve(P, JmpLbl.lEXIT)
 		) != st_cond_branch:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	end
 
-	EmitLabelIfUsed(@LabelResolve(P, lEXIT));
+	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
 	Code_EndBlock(@CB);
 

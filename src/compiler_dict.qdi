@@ -160,8 +160,8 @@ end
 
 void DictFree(word @D)
 	Dict[D].Used = 0;
-	Dict[D].Class = cNONE;
-	Dict[D].Sub = sNONE;
+	Dict[D].Class = CLASS.cNONE;
+	Dict[D].Sub = SUBCLASS.sNONE;
 	DictSetName_None(D);
 	@D = NULL;
 end
@@ -169,7 +169,7 @@ end
 /*****************************************************************************/
 
 word DictResolveAlias(word P)
-	while Dict[P].Class == cNAME do
+	while Dict[P].Class == CLASS.cNAME do
 		P = Dict[P].pType;
 		when P >= nDict:
 			StopInternal(__FILE__, __LINE__);
@@ -194,7 +194,7 @@ word FindInNamespace(char @Name; word pNamespace)
 			StopInternal(__FILE__, __LINE__);
 		if Dict[P].NameHash == hash
 		&  str_eq(@DictGetName(P), @Name)
-		&  Dict[P].Class != cFILE then
+		&  Dict[P].Class != CLASS.cFILE then
 			return DictResolveAlias(P);
 		end
 		P = Dict[P].pNext;
@@ -216,7 +216,7 @@ word Find(char @Name)
 		DICT @d = @Dict[P];
 		if d.NameHash == hash
 		&  str_eq(@DictGetName(P), @Name)
-		&  d.Class != cFILE
+		&  d.Class != CLASS.cFILE
 		&  d.pNamespace == nDICT then
 			return DictResolveAlias(P);
 		end
@@ -236,7 +236,7 @@ word Find_cFILE(char @Name)
 	while P < nDict do
 		if Dict[P].NameHash == hash
 		&  str_eq(@DictGetName(P), @Name)
-		&  Dict[P].Class == cFILE
+		&  Dict[P].Class == CLASS.cFILE
 		&  Dict[P].pNamespace == nDICT then
 			return P;
 		end
@@ -252,8 +252,8 @@ word DictMakeNamespace(char @Name)
 	word pNamespace = DictAlloc();
 	when @Name != NULL:
 		DictSetName(pNamespace, @Name);
-	Dict[pNamespace].Class = cTYPE;
-	Dict[pNamespace].Sub = sNAMESPACE;
+	Dict[pNamespace].Class = CLASS.cTYPE;
+	Dict[pNamespace].Sub = SUBCLASS.sNAMESPACE;
 	return pNamespace;
 end
 
@@ -287,7 +287,7 @@ end
 word DictMakeWord(char @Name)
 	word p = DictAlloc();
 	DictSetName(p, @Name);
-	Dict[p].Class = cWORD;
+	Dict[p].Class = CLASS.cWORD;
 	return p;
 end
 
@@ -297,7 +297,7 @@ end
 word DictMakeBaseType(char @Name; byte TypeDomain; word Size)
 	word p = DictAlloc();
 	DictSetName(p, @Name);
-	Dict[p].Class    = cTYPE;
+	Dict[p].Class    = CLASS.cTYPE;
 	Dict[p].Sub      = TypeDomain;
 	Dict[p].TypeSize = Size;
 	return p;
@@ -309,7 +309,7 @@ word DictDupLiteral(word D1)
 	when D1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	when Dict[D1].Class != cLITERAL:
+	when Dict[D1].Class != CLASS.cLITERAL:
 		StopInternal(__FILE__, __LINE__);
 
 	word D2 = DictAlloc();
@@ -332,13 +332,13 @@ end
 bool Dict_IsFunction(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[D].Class == cFUNC;
+	return Dict[D].Class == CLASS.cFUNC;
 end
 
 bool Dict_IsType(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[D].Class == cTYPE;
+	return Dict[D].Class == CLASS.cTYPE;
 end
 
 /*****************************************************************************/
@@ -347,13 +347,13 @@ bool T_Equal(word T1, T2)
 	when T1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	when Dict[T1].Class != cTYPE:
+	when Dict[T1].Class != CLASS.cTYPE:
 		StopInternal(__FILE__, __LINE__);
 
 	when T2 >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	when Dict[T2].Class != cTYPE:
+	when Dict[T2].Class != CLASS.cTYPE:
 		StopInternal(__FILE__, __LINE__);
 
 	when T1 == T2:
@@ -361,7 +361,12 @@ bool T_Equal(word T1, T2)
 
 	if Dict[T1].Sub == Dict[T2].Sub then
 		switch Dict[T1].Sub of
-		case sBASE_UINT, sBASE_SINT, sBASE_CHAR, sBASE_BOOL, sBASE_FLOAT:
+		case
+			SUBCLASS.sBASE_UINT,
+			SUBCLASS.sBASE_SINT,
+			SUBCLASS.sBASE_CHAR,
+			SUBCLASS.sBASE_BOOL,
+			SUBCLASS.sBASE_FLOAT:
 			when Dict[T1].TypeSize == Dict[T2].TypeSize:
 				return true;
 		end:switch
@@ -375,37 +380,37 @@ end
 bool T_IsType(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_TYPE;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sBASE_TYPE;
 end
 
 bool T_IsNulltype(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_NULL;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sBASE_NULL;
 end
 
 bool T_IsChar(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_CHAR;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sBASE_CHAR;
 end
 
 bool T_IsBool(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_BOOL;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sBASE_BOOL;
 end
 
 bool T_IsUnsigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_UINT;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sBASE_UINT;
 end
 
 bool T_IsSigned(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sBASE_SINT;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sBASE_SINT;
 end
 
 bool T_IsInteger(word T)
@@ -420,10 +425,10 @@ word T_SizeOf(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	when Dict[T].Class != cTYPE:
+	when Dict[T].Class != CLASS.cTYPE:
 		StopInternal(__FILE__, __LINE__);
 
-	when Dict[T].Sub == sARRAY:
+	when Dict[T].Sub == SUBCLASS.sARRAY:
 		return Dict[T].TypeSize * T_SizeOf(Dict[T].pType);
 
 	return Dict[T].TypeSize;
@@ -462,13 +467,13 @@ word T_GetIntegerPair_(word T)
 		word Size = T_SizeOf(T);
 		char Buff[nBUFF];
 		strcpy3(@Buff, "unsigned(", @str(Size),")");
-		return DictMakeBaseType(@Buff, sBASE_UINT, Size);
+		return DictMakeBaseType(@Buff, SUBCLASS.sBASE_UINT, Size);
 
 	case T_IsUnsigned(T):
 		word Size = T_SizeOf(T);
 		char Buff[nBUFF];
 		strcpy3(@Buff, "signed(", @str(Size),")");
-		return DictMakeBaseType(@Buff, sBASE_SINT, Size);
+		return DictMakeBaseType(@Buff, SUBCLASS.sBASE_SINT, Size);
 
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -534,7 +539,7 @@ end
 bool T_IsStruct(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sSTRUCT;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sSTRUCT;
 end
 
 /*****************************************************************************/
@@ -542,7 +547,7 @@ end
 bool T_IsArray(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sARRAY;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sARRAY;
 end
 
 word T_DerefArray(word T)
@@ -554,7 +559,7 @@ end
 word T_ArrayGetLen(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[T].Class != cTYPE | Dict[T].Sub != sARRAY:
+	when Dict[T].Class != CLASS.cTYPE | Dict[T].Sub != SUBCLASS.sARRAY:
 		StopInternal(__FILE__, __LINE__);
 	return Dict[T].TypeSize;
 end
@@ -569,7 +574,7 @@ word T_Array(word T; word S)
 	word P = tArrayTypes;
 	while P < nDict do
 		DICT @d = @Dict[P];
-		when d.Class != cTYPE | d.Sub != sARRAY:
+		when d.Class != CLASS.cTYPE | d.Sub != SUBCLASS.sARRAY:
 			StopInternal(__FILE__, __LINE__);
 		if d.pType == T
 		 & d.TypeSize == S then
@@ -580,8 +585,8 @@ word T_Array(word T; word S)
 
 	P = DictAlloc();
 	DICT @d = @Dict[P];
-	d.Class    = cTYPE;
-	d.Sub      = sARRAY;
+	d.Class    = CLASS.cTYPE;
+	d.Sub      = SUBCLASS.sARRAY;
 	d.pType    = T;
 	d.TypeSize = S;
 	d.tLink    = tArrayTypes;
@@ -594,7 +599,7 @@ end
 bool T_IsPtr(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sPTR;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sPTR;
 end
 
 bool T_IsPtrTo(word T; word T2)
@@ -610,7 +615,7 @@ end
 word T_PtrTo(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[T].Class != cTYPE:
+	when Dict[T].Class != CLASS.cTYPE:
 		StopInternal(__FILE__, __LINE__);
 
 	if T_IsArray(T) then
@@ -620,8 +625,8 @@ word T_PtrTo(word T)
 	if Dict[T].tCachedPtrToMe >= nDICT then
 		word PTR = DictAlloc();
 		DICT @dPtr = @Dict[PTR];
-		dPtr.Class    = cTYPE;
-		dPtr.Sub      = sPTR;
+		dPtr.Class    = CLASS.cTYPE;
+		dPtr.Sub      = SUBCLASS.sPTR;
 		dPtr.TypeSize = target_size_of_pointer;
 		dPtr.pType    = T;
 		Dict[T].tCachedPtrToMe = PTR;
@@ -643,7 +648,7 @@ end
 bool T_IsFunc(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	return Dict[T].Class == cTYPE & Dict[T].Sub == sFUNCTYPE;
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sFUNCTYPE;
 end
 
 word T_FuncGetRetType(word T)
@@ -678,10 +683,10 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 	when T1 == T2:
 		return true;
 
-	when !(Dict[T1].Class == cTYPE & Dict[T1].Sub == sFUNCTYPE):
+	when !(Dict[T1].Class == CLASS.cTYPE & Dict[T1].Sub == SUBCLASS.sFUNCTYPE):
 		return false;
 
-	when !(Dict[T2].Class == cTYPE & Dict[T2].Sub == sFUNCTYPE):
+	when !(Dict[T2].Class == CLASS.cTYPE & Dict[T2].Sub == SUBCLASS.sFUNCTYPE):
 		return false;
 
 	when !T_Equal(T_FuncGetRetType(T1), T_FuncGetRetType(T2)):
@@ -714,7 +719,7 @@ word T_FuncTypeForFunction(word F)
 
 	when F >= nDict:
 		StopInternal(__FILE__, __LINE__);
-	when Dict[F].Class != cFUNC:
+	when Dict[F].Class != CLASS.cFUNC:
 		StopInternal(__FILE__, __LINE__);
 
 	when Dict[F].tCachedFuncTypeOfMe < nDict:
@@ -723,8 +728,8 @@ word T_FuncTypeForFunction(word F)
 	word P = 0;
 	while P < nDict do
 		if Dict[P].pNamespace == nDICT
-		 & Dict[P].Class == cTYPE
-		 & Dict[P].Sub == sFUNCTYPE
+		 & Dict[P].Class == CLASS.cTYPE
+		 & Dict[P].Sub == SUBCLASS.sFUNCTYPE
 		 & str_eq(@DictGetName(P), "")
 		 & T_IsFuctTypesIdentical(F, P) == true
 		 then
@@ -734,15 +739,15 @@ word T_FuncTypeForFunction(word F)
 	end:while
 
 	P = DictAlloc();
-	Dict[P].Class = cTYPE;
-	Dict[P].Sub   = sFUNCTYPE;
+	Dict[P].Class = CLASS.cTYPE;
+	Dict[P].Sub   = SUBCLASS.sFUNCTYPE;
 	Dict[P].pType = Dict[F].pType;
 
 	word F_ARGS = FindInNamespace("args", F);
 
 	word P_ARGS = DictAlloc();
 	DictSetName(P_ARGS, "args");
-	Dict[P_ARGS].Class = cARGS;
+	Dict[P_ARGS].Class = CLASS.cARGS;
 	DictAddToNamespace(P_ARGS, P);
 
 	word F_ARG = Dict[F_ARGS].pFirst;
@@ -752,7 +757,7 @@ word T_FuncTypeForFunction(word F)
 
 		word P_ARG = DictAlloc();
 		DictSetName(P_ARG, "");
-		Dict[P_ARG].Class = cARG;
+		Dict[P_ARG].Class = CLASS.cARG;
 		Dict[P_ARG].pType = Dict[F_ARG].pType;
 		DictAddToNamespace(P_ARG, P_ARGS);
 
@@ -771,16 +776,16 @@ void T_GetName_(word T; strbuf @Buff)
 		StopInternal(__FILE__, __LINE__);
 
 	select
-	case Dict[T].Sub == sSTRUCT:
+	case Dict[T].Sub == SUBCLASS.sSTRUCT:
 		/* TODO: not implemented */
 		strbuf_append_cstr(@Buff, @DictGetFullyQualifiedName(T));
-	case Dict[T].Sub == sFUNCTYPE:
+	case Dict[T].Sub == SUBCLASS.sFUNCTYPE:
 		/* TODO: not implemented */
 		strbuf_append_cstr(@Buff, @DictGetFullyQualifiedName(T));
-	case Dict[T].Sub == sPTR:
+	case Dict[T].Sub == SUBCLASS.sPTR:
 		strbuf_append_cstr(@Buff, "@");
 		T_GetName_(Dict[T].pType, @Buff);
-	case Dict[T].Sub == sARRAY:
+	case Dict[T].Sub == SUBCLASS.sARRAY:
 		strbuf_append_cstr(@Buff, "[");
 		strbuf_append_cstr(@Buff, @str_saved(T_ArrayGetLen(T)));
 		strbuf_append_cstr(@Buff, "]");
@@ -837,36 +842,36 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 
 	char @s_CLASS;
 	switch Dict[I].Class of
-	case cWORD: @s_CLASS = "cWORD";
-	case cNAME: @s_CLASS = "cNAME";
-	case cLITERAL: @s_CLASS = "cLITERAL";
-	case cTYPE: @s_CLASS = "cTYPE";
-	case cDATA: @s_CLASS = "cDATA";
-	case cFUNC: @s_CLASS = "cFUNC";
-	case cLIB: @s_CLASS = "cLIB";
-	case cFILE: @s_CLASS = "cFILE";
-	case cFIELD: @s_CLASS = "cFIELD";
-	case cARGS: @s_CLASS = "cARGS";
-	case cARG: @s_CLASS = "cARG";
+	case CLASS.cWORD: @s_CLASS = "cWORD";
+	case CLASS.cNAME: @s_CLASS = "cNAME";
+	case CLASS.cLITERAL: @s_CLASS = "cLITERAL";
+	case CLASS.cTYPE: @s_CLASS = "cTYPE";
+	case CLASS.cDATA: @s_CLASS = "cDATA";
+	case CLASS.cFUNC: @s_CLASS = "cFUNC";
+	case CLASS.cLIB: @s_CLASS = "cLIB";
+	case CLASS.cFILE: @s_CLASS = "cFILE";
+	case CLASS.cFIELD: @s_CLASS = "cFIELD";
+	case CLASS.cARGS: @s_CLASS = "cARGS";
+	case CLASS.cARG: @s_CLASS = "cARG";
 	default: @s_CLASS = "<UNK>";
 	end:switch
 
 	char @s_SUB;
 	switch Dict[I].Sub of
-	case sNONE: @s_SUB = "sNONE";
-	case sBASE_VOID: @s_SUB = "sBASE_VOID";
-	case sBASE_BOOL: @s_SUB = "sBASE_BOOL";
-	case sBASE_CHAR: @s_SUB = "sBASE_CHAR";
-	case sBASE_SINT: @s_SUB = "sBASE_SINT";
-	case sBASE_UINT: @s_SUB = "sBASE_UINT";
-	case sBASE_FLOAT: @s_SUB = "sBASE_FLOAT";
-	case sSTRUCT: @s_SUB = "sSTRUCT";
-	case sFUNCTYPE: @s_SUB = "sFUNCTYPE";
-	case sPTR: @s_SUB = "sPTR";
-	case sARRAY: @s_SUB = "sARRAY";
-	case sSYS: @s_SUB = "sSYS";
-	case sFUNC: @s_SUB = "sFUNC";
-	case sMAIN: @s_SUB = "sMAIN";
+	case SUBCLASS.sNONE: @s_SUB = "sNONE";
+	case SUBCLASS.sBASE_VOID: @s_SUB = "sBASE_VOID";
+	case SUBCLASS.sBASE_BOOL: @s_SUB = "sBASE_BOOL";
+	case SUBCLASS.sBASE_CHAR: @s_SUB = "sBASE_CHAR";
+	case SUBCLASS.sBASE_SINT: @s_SUB = "sBASE_SINT";
+	case SUBCLASS.sBASE_UINT: @s_SUB = "sBASE_UINT";
+	case SUBCLASS.sBASE_FLOAT: @s_SUB = "sBASE_FLOAT";
+	case SUBCLASS.sSTRUCT: @s_SUB = "sSTRUCT";
+	case SUBCLASS.sFUNCTYPE: @s_SUB = "sFUNCTYPE";
+	case SUBCLASS.sPTR: @s_SUB = "sPTR";
+	case SUBCLASS.sARRAY: @s_SUB = "sARRAY";
+	case SUBCLASS.sSYS: @s_SUB = "sSYS";
+	case SUBCLASS.sFUNC: @s_SUB = "sFUNC";
+	case SUBCLASS.sMAIN: @s_SUB = "sMAIN";
 	default: @s_SUB = "<UNK>";
 	end:switch
 

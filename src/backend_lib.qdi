@@ -27,7 +27,7 @@ end
 /*****************************************************************************/
 
 word SizeOfType(word pType)
-	when Dict[pType].Class != cTYPE:
+	when Dict[pType].Class != CLASS.cTYPE:
 		StopInternal(__FILE__, __LINE__);
 	return T_SizeOf(pType);
 end

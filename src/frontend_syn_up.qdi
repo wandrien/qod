@@ -59,17 +59,17 @@ void DeclMainFunc(char@ Buff)
 	DictSetName(pFunction, "");
 	DictSetName(pFuncType, "");
 
-	Dict[pFunction].Class = cFUNC;
-	Dict[pFunction].Sub   = sMAIN;
+	Dict[pFunction].Class = CLASS.cFUNC;
+	Dict[pFunction].Sub   = SUBCLASS.sMAIN;
 	Dict[pFunction].pType = pFuncType;
 
-	Dict[pFuncType].Class = cTYPE;
-	Dict[pFuncType].Sub   = sFUNCTYPE;
+	Dict[pFuncType].Class = CLASS.cTYPE;
+	Dict[pFuncType].Sub   = SUBCLASS.sFUNCTYPE;
 	Dict[pFuncType].pType = st_void;
 
 	word pARGS = DictAlloc();
 	DictSetName(pARGS, "args");
-	Dict[pARGS].Class = cARGS;
+	Dict[pARGS].Class = CLASS.cARGS;
 	DictAddToNamespace(pARGS, pFuncType);
 
 	pCurrentFunc = pFunction;
@@ -95,8 +95,8 @@ void DeclAlias_Forward(word D; word pForward; word pExpr)
 		ErrorWithSubject(@L10n.eDUPLICATE, @DictGetName(D));
 	end:if
 
-	Dict[pForward].Class = cNAME;
-	Dict[pForward].Sub   = sNONE;
+	Dict[pForward].Class = CLASS.cNAME;
+	Dict[pForward].Sub   = SUBCLASS.sNONE;
 	Dict[pForward].pType = pFunc;
 end
 
@@ -125,27 +125,27 @@ bool DeclAlias(char @Buff)
 			end
 		end:if
 
-		word pExpr = Expr(PRIO_ZERO, @Buff);
+		word pExpr = Expr(PRIO.ZERO, @Buff);
 
 		select
 		case pForward != nDICT:
 			DeclAlias_Forward(D, pForward, pExpr);
 		case IsTypeExpr(pExpr):
-			Dict[D].Class = cNAME;
+			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = Node[pExpr].Value;
 		case IsConstExpr(pExpr):
-			Dict[D].Class = cLITERAL;
+			Dict[D].Class = CLASS.cLITERAL;
 			Dict[D].RO = 1;
 			Dict[D].pType = Node[pExpr].pType;
 			Dict[D].LiteralValue = Node[pExpr].Value;
 		case Node[pExpr].ID == iFUNC:
-			Dict[D].Class = cNAME;
+			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = Node[pExpr].Value;
 		case Node[pExpr].ID == iDATA:
-			Dict[D].Class = cNAME;
+			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = Node[pExpr].Value;
 		default:
-			Dict[D].Class = cNAME;
+			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = st_void; /* FIXME: better approach? */
 			ErrorWithSubjectAt(@Location, @L10n.eALIAS_WRONGRVALUE, @DictGetName(D));
 		end:select
@@ -184,8 +184,8 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 	word pFunc;
 	if pForward == nDICT then
 		pFunc = _pFunc;
-		Dict[pFunc].Class = cFUNC;
-		Dict[pFunc].Sub   = sFUNC;
+		Dict[pFunc].Class = CLASS.cFUNC;
+		Dict[pFunc].Sub   = SUBCLASS.sFUNC;
 		when !prototypeMismatch:
 			DictAddToNamespace(pFunc, pEnteredNamespace);
 	else
@@ -208,7 +208,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 		case str_eq(@Buff,"external"): /* Внешняя функция. */
 			select
-				case TargetFileFormat == tPE:
+				case TargetFileFormat == TARGET_FORMAT.tPE:
 					pass;
 				default:
 					Stop(@L10n.eNOTALLOWED);
@@ -219,9 +219,9 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 			if   pLib >= nDict then
 				pLib = DictAlloc();
 				DictSetName(pLib, @Buff);
-				Dict[pLib].Class = cLIB;
+				Dict[pLib].Class = CLASS.cLIB;
 			end:if
-			when Dict[pLib].Class != cLIB:
+			when Dict[pLib].Class != CLASS.cLIB:
 				StopInternal(__FILE__, __LINE__);
 
 			/*
@@ -237,7 +237,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 				word pAlias = DictAlloc();
 
 				DictSetName(pAlias, @DictGetName(pCurrentFunc));
-				Dict[pAlias].Class = cNAME;
+				Dict[pAlias].Class = CLASS.cNAME;
 				Dict[pAlias].pType = pCurrentFunc;
 				DictAddToNamespace(pAlias, pEnteredNamespace);
 
@@ -246,7 +246,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 			end:if
 
-			Dict[pCurrentFunc].Sub   = sSYS;
+			Dict[pCurrentFunc].Sub   = SUBCLASS.sSYS;
 			Dict[pCurrentFunc].pNode = pLib;
 
 			if str_ne(@Buff,";") then
@@ -282,8 +282,8 @@ void DeclVarFuncType(char @Buff; word pType)
 	word D = DictAlloc();
 
 	DictSetName(D, @Buff);
-	Dict[D].Class = cTYPE;
-	Dict[D].Sub   = sFUNCTYPE;
+	Dict[D].Class = CLASS.cTYPE;
+	Dict[D].Sub   = SUBCLASS.sFUNCTYPE;
 	DictAddToNamespace(D, pEnteredNamespace);
 
 	if str_ne(@Scan(@Buff),"(") then
@@ -320,13 +320,13 @@ void DeclType(char @Buff; word pType)
 			end
 		end:if
 
-		word pExpr = Expr(PRIO_ZERO, @Buff);
+		word pExpr = Expr(PRIO.ZERO, @Buff);
 		select
 		case IsTypeExpr(pExpr):
-			Dict[D].Class = cNAME;
+			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = Node[pExpr].Value;
 		default:
-			Dict[D].Class = cNAME;
+			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = st_void; /* FIXME: better approach? */
 			ErrorWithSubjectAt(@Location, @L10n.eTYPE_WRONGRVALUE, @DictGetName(D));
 			ErrorWithSubjectAt(@Location, @L10n.eWRONGTYPE_2NDLINE, @T_GetName(Node[pExpr].pType));
@@ -349,13 +349,13 @@ end
 /*****************************************************************************/
 
 void DeclVarFunc(char @Buff)
-	word pPrefixExpr = Expr(PRIO_LVALUE, @Buff);
+	word pPrefixExpr = Expr(PRIO.LVALUE, @Buff);
 	if Node[pPrefixExpr].ID != iTYPE then
 		Stop(@L10n.eTYPEEXP);
 	end
 
 	word pPrefixType = Node[pPrefixExpr].Value;
-	if pPrefixType == nDICT | Dict[pPrefixType].Class != cTYPE then
+	if pPrefixType == nDICT | Dict[pPrefixType].Class != CLASS.cTYPE then
 		Stop(@L10n.eTYPEEXP);
 	end
 
@@ -406,7 +406,7 @@ void DeclVarFunc(char @Buff)
 			Stop(@L10n.eNOVOID);
 		end
 
-		if Dict[Dict[D].pType].Sub == sFUNCTYPE then
+		if Dict[Dict[D].pType].Sub == SUBCLASS.sFUNCTYPE then
 			Stop(@L10n.eNOVAL);
 		end
 
@@ -415,10 +415,10 @@ void DeclVarFunc(char @Buff)
 
 		select
 		case T_IsStruct(pEnteredNamespace):
-			Dict[D].Class = cFIELD;
+			Dict[D].Class = CLASS.cFIELD;
 			AssignFieldOffset(D, @FieldNextOffset, @FieldMaxAlign);
 		default:
-			Dict[D].Class = cDATA;
+			Dict[D].Class = CLASS.cDATA;
 
 			if str_eq(@Buff,"=") then
 				/*if Dict[D].nIndx > 0 then
@@ -433,7 +433,7 @@ void DeclVarFunc(char @Buff)
 				word P3=Peek();
 				Node[P2].ID    =iEMPTY;
 				Node[P2].pLeft = P3;
-				Node[P2].pRight= Expr(PRIO_ZERO, @Scan(@Buff));
+				Node[P2].pRight= Expr(PRIO.ZERO, @Scan(@Buff));
 
 				Node[P3].ID    =iDATA;
 				Node[P3].Value =D;
@@ -469,7 +469,7 @@ bool DeclDefine(char @Buff)
 	word D = DictAlloc();
 
 	DictSetName(D, @Buff);
-	Dict[D].Class = cLITERAL;
+	Dict[D].Class = CLASS.cLITERAL;
 	Dict[D].RO = 1;
 	DictAddToNamespace(D, pEnteredNamespace);
 
@@ -477,7 +477,7 @@ bool DeclDefine(char @Buff)
 	select
 		case nPtr==0:
 
-			word P = Expr(PRIO_ZERO, @Buff);
+			word P = Expr(PRIO.ZERO, @Buff);
 
 			select
 				case Node[P].ID==iLITERAL:
@@ -547,14 +547,14 @@ void Include(word pFileName; word pGuard; bool Once)
 	if dFile == nDICT then
 		dFile = DictAlloc();
 		DictSetName(dFile, @FullFileName);
-		Dict[dFile].Class = cFILE;
+		Dict[dFile].Class = CLASS.cFILE;
 	end
 
 	IncludeFile(@FullFileName);
 end
 
 bool DeclInclude(char @Buff)
-	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
+	word pFileName = Expr(PRIO.ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
 		Stop(@L10n.eINCLUDE_SEMICOLON_EXP);
 	Include(pFileName, nNODE, false);
@@ -562,10 +562,10 @@ bool DeclInclude(char @Buff)
 end
 
 bool DeclIncludeWhen(char @Buff)
-	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
+	word pFileName = Expr(PRIO.ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ","):
 		Stop(@L10n.eINCLUDE_WHEN_COMMA_EXP);
-	word pGuard = Expr(PRIO_ZERO, @Scan(@Buff));
+	word pGuard = Expr(PRIO.ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
 		Stop(@L10n.eINCLUDE_WHEN_SEMICOLON_EXP);
 	Include(pFileName, pGuard, false);
@@ -573,7 +573,7 @@ bool DeclIncludeWhen(char @Buff)
 end
 
 bool DeclIncludeOnce(char @Buff)
-	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
+	word pFileName = Expr(PRIO.ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
 		Stop(@L10n.eINCLUDE_ONCE_SEMICOLON_EXP);
 	Include(pFileName, nNODE, true);
@@ -655,8 +655,8 @@ bool DeclStruct(char @Buff)
 
 	word pStruct = DictAlloc();
 	DictSetName(pStruct, @Buff);
-	Dict[pStruct].Class = cTYPE;
-	Dict[pStruct].Sub = sSTRUCT;
+	Dict[pStruct].Class = CLASS.cTYPE;
+	Dict[pStruct].Sub = SUBCLASS.sSTRUCT;
 	DictAddToNamespace(pStruct, pEnteredNamespace);
 
 	char @TypeName = @DictGetName(pStruct);

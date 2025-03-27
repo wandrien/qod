@@ -72,7 +72,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		@BackLink = @Node[CASE].pRight;
 
 		if str_eq(@Buff,@Case) then
-			Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 			word pType = Node[Node[COND].pLeft].pType;
 
 			if str_ne(@Buff,@Then) then
@@ -120,7 +120,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	Node[COND].pRight = BODY;
 	Node[P1].pLeft = CASE;
 
-	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
+	Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if pType != st_bool then
@@ -171,7 +171,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	word @CaseBackLink = @Node[COND].pRight;
 
-	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
+	Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
 	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
@@ -191,7 +191,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		word @ValueBackLink = @Node[CASE].pLeft;
 
 		repeat
-			word EXPR = Expr(PRIO_ZERO, @Scan(@Buff));
+			word EXPR = Expr(PRIO.ZERO, @Scan(@Buff));
 
 			when !NodeHasImmediateValue(EXPR):
 				Stop(@L10n.eCONSTEXP);
@@ -278,7 +278,7 @@ void Statement_WHILE(char @Buff; word @P1; word @SkipFinalScan)
 	select
 	case str_eq(@Buff,"while"):
 		@End2 = "while";
-		Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
+		Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 		word pType = Node[Node[COND].pLeft].pType;
 
 		if pType != st_bool then
@@ -332,7 +332,7 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	Scan(@Buff);
 	Node[BODY].pLeft = Statements(@Buff, "until", NULL, NULL);
 
-	Node[COND].pLeft = Expr(PRIO_ZERO, @Scan(@Buff));
+	Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if str_ne(@Buff,";") then
@@ -392,7 +392,7 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 		Node[P1].ID =iDEC;
 	end:if
 
-	Node[P1].pLeft= Expr(PRIO_INC, @Scan(@Buff));
+	Node[P1].pLeft= Expr(PRIO.INC, @Scan(@Buff));
 	word pType = Node[Node[P1].pLeft].pType;
 
 	if str_ne(@Buff,";") then
@@ -424,7 +424,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	end:if
 
 	if pTypeReturn != st_void then
-		Node[P1].pLeft=Expr(PRIO_ZERO, @Buff);
+		Node[P1].pLeft=Expr(PRIO.ZERO, @Buff);
 		ImplicitCast(pTypeReturn, @Node[P1].pLeft);
 	end:if
 
@@ -521,7 +521,7 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefi
 			word P6=Peek();
 			Node[P5].ID    =iEMPTY;
 			Node[P5].pLeft = P6;
-			Node[P5].pRight= Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[P5].pRight= Expr(PRIO.ZERO, @Scan(@Buff));
 
 			Node[P6].ID    =iLOCAL;
 			Node[P6].Value =nLocal;
@@ -545,7 +545,7 @@ end
 
 void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
-	word pLValue = Expr(PRIO_LVALUE, @Buff);
+	word pLValue = Expr(PRIO.LVALUE, @Buff);
 
 	when pLValue == nNODE:
 		StopInternal(__FILE__, __LINE__);
@@ -564,7 +564,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 			if !NodeIsLValue(Node[P3].pLeft) then
 				Error(@L10n.eLVALUE_IN_ASSIGNMENT);
 			end:if
-			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[P3].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 			ImplicitCast(Node[pLValue].pType, @Node[P3].pRight);
 		end:if
 

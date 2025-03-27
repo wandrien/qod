@@ -13,49 +13,51 @@ define  _nCHAR  200000 // Длина таблицы CHAR.
 
 /*****************************************************************************/
 
-define  cNONE        0
-define  cWORD        1 // Заpезеpвиpованное слово
-define  cNAME        2 // Имя
-define  cLITERAL     3 // Литерал
-define  cTYPE        4 // Тип
-define  cDATA        5 // Глобальная пеpеменная
-define  cFUNC        6 // Функция
-define  cLIB         7 // Внешняя библиотека
-define  cFILE        8 // Включаемый файл
-define  cFIELD       9 // Поле структуры
-define  cARGS       10 // Пространство имён с аргументами функции
-define  cARG        11 // Аргумент функции
+namespace CLASS of
+	define  cNONE        0
+	define  cWORD        1 // Заpезеpвиpованное слово
+	define  cNAME        2 // Имя
+	define  cLITERAL     3 // Литерал
+	define  cTYPE        4 // Тип
+	define  cDATA        5 // Глобальная пеpеменная
+	define  cFUNC        6 // Функция
+	define  cLIB         7 // Внешняя библиотека
+	define  cFILE        8 // Включаемый файл
+	define  cFIELD       9 // Поле структуры
+	define  cARGS       10 // Пространство имён с аргументами функции
+	define  cARG        11 // Аргумент функции
+end:namespace
 
 /*****************************************************************************/
 
-define  sNONE        0
-                       // Базовые типы:
-define  sBASE_TYPE   1 // type
-define  sBASE_VOID   2 // void
-define  sBASE_BOOL   3 // bool
-define  sBASE_NORET  4 // noreturn
-define  sBASE_NULL   5 // nulltype
-define  sBASE_CHAR   6 // Символьный тип
-define  sBASE_SINT   7 // Целое со знаком
-define  sBASE_UINT   8 // Целое без знака
-define  sBASE_FLOAT  9 // Число с плавающей точкой:
-define  sBASE_MAX    9 //
-                       // Производные типы
-define  sSTRUCT     10 // Стpуктуpа
-define  sFUNCTYPE   11 // Функциональный тип
-define  sPTR        12 // Указатель
-define  sARRAY      13 // Массив
-define  sNAMESPACE  14
-//define  sCONST      15 // Константный подтип типа
-define  sINTERNAL_COND_BRANCH 16 // bool, который реализуется переходом по метке,
-                                 // а не значением в регистре.
-                                 // Используется в генераторе кода.
+namespace SUBCLASS of
+	define  sNONE        0
+						   // Базовые типы:
+	define  sBASE_TYPE   1 // type
+	define  sBASE_VOID   2 // void
+	define  sBASE_BOOL   3 // bool
+	define  sBASE_NORET  4 // noreturn
+	define  sBASE_NULL   5 // nulltype
+	define  sBASE_CHAR   6 // Символьный тип
+	define  sBASE_SINT   7 // Целое со знаком
+	define  sBASE_UINT   8 // Целое без знака
+	define  sBASE_FLOAT  9 // Число с плавающей точкой:
+	define  sBASE_MAX    9 //
+						   // Производные типы
+	define  sSTRUCT     10 // Стpуктуpа
+	define  sFUNCTYPE   11 // Функциональный тип
+	define  sPTR        12 // Указатель
+	define  sARRAY      13 // Массив
+	define  sNAMESPACE  14
+	//define  sCONST      15 // Константный подтип типа
+	define  sINTERNAL_COND_BRANCH 16 // bool, который реализуется переходом по метке,
+	                                 // а не значением в регистре.
+	                                 // Используется в генераторе кода.
 
-/*****************************************************************************/
-
-define  sSYS        17 // Функция ОС
-define  sFUNC       18 // Функция пpогpаммы
-define  sMAIN       19 // Главная функция
+	define  sSYS        17 // Функция ОС
+	define  sFUNC       18 // Функция пpогpаммы
+	define  sMAIN       19 // Главная функция
+end:namespace
 
 /*****************************************************************************/
 
@@ -146,42 +148,50 @@ define  iID_COUNT   67
 /*****************************************************************************/
 
 /* Operator priorities (precedence) */
-define  PRIO_ZERO        0
-define  PRIO_BOOL        1 // boolean operators
-define  PRIO_COMP        2 // <, >, >= etc
-define  PRIO_ADD         3 // + and -
-define  PRIO_MUL         4 // *, / and %
-define  PRIO_NEG         5 // unary minus
-define  PRIO_INC         6 // inc/dec
-define  PRIO_LVALUE      7 // LVALUE
-define  PRIO_EXPR       10 // an expression in parentheses
-define  PRIO_FUNCCALL   15 // foo(x)
-define  PRIO_LITER      20 // literals
+namespace PRIO of
+	define ZERO        0
+	define BOOL        1 // boolean operators
+	define COMP        2 // <, >, >= etc
+	define ADD         3 // + and -
+	define MUL         4 // *, / and %
+	define NEG         5 // unary minus
+	define INC         6 // inc/dec
+	define LVALUE      7 // LVALUE
+	define EXPR       10 // an expression in parentheses
+	define FUNCCALL   15 // foo(x)
+	define LITER      20 // literals
+end:namespace
 
 /*****************************************************************************/
 
-/* Имена ссылок */
-
-define lLOOPBODY    1
-define lCONTINUE    2
-define lEXIT        3
-define lCASEBODY    4
-define lCASEBODYEND 5
-define lBRANCH      6
-define lTRUE        7
-define lFALSE       8
-define lEND         9
+namespace JmpLbl of
+	define lLOOPBODY    1
+	define lCONTINUE    2
+	define lEXIT        3
+	define lCASEBODY    4
+	define lCASEBODYEND 5
+	define lBRANCH      6
+	define lTRUE        7
+	define lFALSE       8
+	define lEND         9
+end:namespace
 
 /*****************************************************************************/
 
-define  aFASM        0
-define  aNASM        1
+namespace ASM_MODE of
+	define  aFASM        0
+	define  aNASM        1
+end:namespace
 
-define  tPE          1 // PE  (Windows95/NT)
-define  tELF         2 // ELF (Linux)
+namespace TARGET_FORMAT of
+	define  tPE          1 // PE  (Windows95/NT)
+	define  tELF         2 // ELF (Linux)
+end:namespace
 
-define  mNONE        0
-define  mCON         1
-define  mGUI         2
+namespace TARGET_MODE of
+	define  mNONE        0
+	define  mCON         1
+	define  mGUI         2
+end:namespace
 
 /*****************************************************************************/

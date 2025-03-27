@@ -166,7 +166,7 @@ end
 word Tabl(char @Buff)
 	word nIndx = 0;
 	if str_eq(@Buff,"[") then
-		word P = Expr(PRIO_ZERO, @Scan(@Buff));
+		word P = Expr(PRIO.ZERO, @Scan(@Buff));
 
 		select
 		case !T_IsInteger(Node[P].pType):
@@ -223,7 +223,7 @@ end
 
 word StringNode()
 	word D = DictAlloc();
-	Dict[D].Class = cLITERAL;
+	Dict[D].Class = CLASS.cLITERAL;
 	Dict[D].RO = byte(ROStrings);
 	DictSetName(D, "");
 	ScanString(D);
@@ -241,7 +241,7 @@ word StringNode__FILE__()
 
 	if pCurrentFileLiteral == nDICT & ROStrings == 1 then
 		word D = DictAlloc();
-		Dict[D].Class = cLITERAL;
+		Dict[D].Class = CLASS.cLITERAL;
 		Dict[D].RO = byte(ROStrings);
 		DictSetName(D, "");
 		Dict[D].pType = T_PtrTo(st_char);
@@ -288,7 +288,7 @@ end
 
 void FuncArgs_ReadDecl(char @Buff; word pARGS)
 	word pPrefixType = ResolveGlobal(@Buff, NULL);
-	when pPrefixType >= nDICT | Dict[pPrefixType].Class != cTYPE:
+	when pPrefixType >= nDICT | Dict[pPrefixType].Class != CLASS.cTYPE:
 		StopWithSubject(@L10n.eTYPEEXP, @Buff);
 
 	forever do
@@ -301,7 +301,7 @@ void FuncArgs_ReadDecl(char @Buff; word pARGS)
 
 		pARG = DictAlloc();
 		DictSetName(pARG, @Buff);
-		Dict[pARG].Class = cARG;
+		Dict[pARG].Class = CLASS.cARG;
 		word pType = ReadTypeSuffix(@Buff, T_nPtrTo(nPtr, pPrefixType));
 		Dict[pARG].pType = pType;
 		DictAddToNamespace(pARG, pARGS);
@@ -321,7 +321,7 @@ end
 void FuncArgs(char @Buff; word pFunc)
 	word pARGS = DictAlloc();
 	DictSetName(pARGS, "args");
-	Dict[pARGS].Class = cARGS;
+	Dict[pARGS].Class = CLASS.cARGS;
 	DictAddToNamespace(pARGS, pFunc);
 
 	Scan(@Buff);
@@ -359,8 +359,8 @@ word ReadTypeSuffix(char @Buff; word pPrefixType)
 	case str_eq(@Buff, "("):
 		word D = DictAlloc();
 		DictSetName(D, "");
-		Dict[D].Class = cTYPE;
-		Dict[D].Sub   = sFUNCTYPE;
+		Dict[D].Class = CLASS.cTYPE;
+		Dict[D].Sub   = SUBCLASS.sFUNCTYPE;
 		FuncArgs(@Buff, D);
 		Scan(@Buff);
 		Dict[D].pType = ReadTypeSuffix(@Buff, pType);
@@ -418,7 +418,7 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
 	while pARG < nDICT do
 		word P8=Peek();
 		Node[P8].ID   =iPUSH;
-		Node[P8].pLeft=Expr(PRIO_ZERO, @Buff);
+		Node[P8].pLeft=Expr(PRIO.ZERO, @Buff);
 
 		ImplicitCast(Dict[pARG].pType, @Node[P8].pLeft);
 
@@ -452,7 +452,7 @@ word ExprInParentheses(char @Buff; char @ExprName)
 		end:if
 	end:if
 
-	word P = Expr(PRIO_ZERO, @Scan(@Buff));
+	word P = Expr(PRIO.ZERO, @Scan(@Buff));
 	if !str_eq(@Buff,@Bracket[b].RightBracket) then
 		ErrorWithSubject(@L10n.eCLOSEBRACKETEXPBEFORE, @Buff);
 		if @ExprName != NULL then
@@ -506,7 +506,7 @@ word ReadIndirecFuncCall(char @Buff; word pPtrExpr; word pBracket)
 end
 
 word ReadCast(char @Buff; word pTargetType; word pBracket)
-	word pCastee = Expr(PRIO_ZERO, @Scan(@Buff));
+	word pCastee = Expr(PRIO.ZERO, @Scan(@Buff));
 
 	if IsExplicitCastPossible(Node[pCastee].pType, pTargetType) then
 		AddCast(pTargetType, @pCastee);
@@ -531,14 +531,14 @@ end
 
 word MakeNodeForDict(word I)
 	switch Dict[I].Class of
-	case cDATA:
+	case CLASS.cDATA:
 		word P = Peek();
 		Node[P].ID = iDATA;
 		Node[P].Value = I;
 		Node[P].pType = Dict[I].pType;
 		return P;
 
-	case cLITERAL:
+	case CLASS.cLITERAL:
 		word P = Peek();
 		word pTypeI = Dict[I].pType;
 		select
@@ -567,21 +567,21 @@ word MakeNodeForDict(word I)
 
 		return P;
 
-	case cFUNC:
+	case CLASS.cFUNC:
 		word P = Peek();
 		Node[P].ID    = iFUNC;
 		Node[P].pType = T_PtrTo(T_FuncTypeForFunction(I));
 		Node[P].Value = I;
 		return P;
 
-	case cTYPE:
+	case CLASS.cTYPE:
 		word P = Peek();
 		Node[P].ID    = iTYPE;
 		Node[P].pType = st_type;
 		Node[P].Value = I;
 		return P;
 
-	case cWORD:
+	case CLASS.cWORD:
 		StopWithSubject(@L10n.eKEYWORDUNEXP, @DictGetName(I));
 	default:
 		StopWithSubject(@L10n.eUNDECLARED, @DictGetName(I));
@@ -596,7 +596,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			Node[P3].ID = iINDEX;
 			Node[P3].Value = T_ArrayGetLen(pType);
 			Node[P3].pLeft = pPrefixExpr;
-			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[P3].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 			pType = T_DerefArray(pType);
 			Node[P3].pType = pType;
 			ImplicitCast(st_word, @Node[P3].pRight);
@@ -613,7 +613,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 				Stop(@L10n.eNOADDR);
 			word P3 = Peek5(iADDR, pPrefixExpr, nNODE, T_DerefPtr(pType));
 
-			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
+			Node[P3].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 			ImplicitCast(st_word, @Node[P3].pRight);
 
 			when str_ne(@Buff,"]"):
@@ -661,11 +661,11 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 				pType = Node[pPrefixExpr].pType;
 				Scan(@Buff);
 
-			case Dict[pType].Sub == sSTRUCT:
+			case Dict[pType].Sub == SUBCLASS.sSTRUCT:
 				word F = FindInNamespace(@Buff, pType);
 				when F >= nDICT:
 					StopWithSubject(@L10n.eUNDECLARED_WITHIN_STRUCT, @Buff);
-				when Dict[F].Class != cFIELD:
+				when Dict[F].Class != CLASS.cFIELD:
 					StopInternal(__FILE__, __LINE__);
 
 				word P3=Peek();
@@ -770,14 +770,14 @@ word Primary(word Prty; char @Buff)
 		end:if
 
 		switch Dict[I].Class of
-		case cDATA:
+		case CLASS.cDATA:
 			P1 = Peek();
 			Node[P1].ID = iDATA;
 			Node[P1].Value = I;
 			pType = Dict[I].pType;
 			SkipScan = true;
 
-		case cLITERAL:
+		case CLASS.cLITERAL:
 			P1=Peek();
 			word pTypeI = Dict[I].pType;
 			select
@@ -806,7 +806,7 @@ word Primary(word Prty; char @Buff)
 			//pType          = Dict[I].pType;
 			SkipScan = true;
 
-		case cFUNC:
+		case CLASS.cFUNC:
 			word b = LookupBracket(BracketType_Parentheses, @Buff);
 			if b != BRACKET_INVALID then
 				P1 = ReadFuncCall(@Buff, Peek(), I, b);
@@ -821,7 +821,7 @@ word Primary(word Prty; char @Buff)
 				return P1;
 			end:if
 
-		case cTYPE:
+		case CLASS.cTYPE:
 			word b = LookupBracket(BracketType_Parentheses, @Buff);
 			if b != BRACKET_INVALID then
 				P1 = ReadCast(@Buff, I, b);
@@ -847,7 +847,7 @@ word Primary(word Prty; char @Buff)
 
 				return P1;
 			end:if
-		case cWORD:
+		case CLASS.cWORD:
 			StopWithSubject(@L10n.eKEYWORDUNEXP, @DictGetName(I));
 		default:
 			StopWithSubject(@L10n.eUNDECLARED, @DictGetName(I));
@@ -870,7 +870,7 @@ word Primary(word Prty; char @Buff)
 	P1 = ReadPostfixOperators(@Buff, P1);
 	pType = Node[P1].pType;
 
-	if (Prty >= PRIO_LVALUE) & str_ne(@Buff,"=") then
+	if (Prty >= PRIO.LVALUE) & str_ne(@Buff,"=") then
 		while T_IsPtr(pType) do
 			pType = T_DerefPtr(pType);
 		end:while
@@ -884,7 +884,7 @@ word Primary(word Prty; char @Buff)
 	end:while
 
 	word P4=nNODE;
-	if Prty < PRIO_INC then
+	if Prty < PRIO.INC then
 		if nPtr>nPtr1+1 then
 			Stop(@L10n.eNOADDR);
 		end:if
@@ -924,7 +924,7 @@ word Expr(word Prio; char @Buff)
 		CTE(P1);
 	else
 		P1 = Operator[O].Handler(nNODE, O, @Buff);
-		when Prio <= PRIO_EXPR:
+		when Prio <= PRIO.EXPR:
 			P1 = ReadPostfixOperators(@Buff, P1);
 	end:if
 
@@ -935,7 +935,7 @@ word Expr(word Prio; char @Buff)
 		end
 
 		P1 = Operator[O].Handler(P1, O, @Buff);
-		when Prio <= PRIO_EXPR:
+		when Prio <= PRIO.EXPR:
 			P1 = ReadPostfixOperators(@Buff, P1);
 	end:forever
 
@@ -968,7 +968,7 @@ word ExprParentheses(word P1; word O; char @Buff)
 	when b == BRACKET_INVALID:
 		StopInternal(__FILE__, __LINE__);
 
-	word P2 = Expr(PRIO_ZERO, @Scan(@Buff));
+	word P2 = Expr(PRIO.ZERO, @Scan(@Buff));
 	if !str_eq(@Buff,@Bracket[b].RightBracket) then
 		Stop(@L10n.eBRACKETEXP);
 	end
@@ -1229,55 +1229,55 @@ end
 
 void RegisterOperators()
 
-	RegisterOperator("|"    , PRIO_BOOL , OPERATOR_BLEFT, iOR , @ExprBinOp);
-	RegisterOperator("^"    , PRIO_BOOL , OPERATOR_BLEFT, iXOR, @ExprBinOp);
-	RegisterOperator("&"    , PRIO_BOOL , OPERATOR_BLEFT, iAND, @ExprBinOp);
+	RegisterOperator("|"    , PRIO.BOOL , OPERATOR_BLEFT, iOR , @ExprBinOp);
+	RegisterOperator("^"    , PRIO.BOOL , OPERATOR_BLEFT, iXOR, @ExprBinOp);
+	RegisterOperator("&"    , PRIO.BOOL , OPERATOR_BLEFT, iAND, @ExprBinOp);
 
-	RegisterOperator("<"    , PRIO_COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
-	RegisterOperator("<="   , PRIO_COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
-	RegisterOperator("=="   , PRIO_COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
-	RegisterOperator("!="   , PRIO_COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
-	RegisterOperator(">"    , PRIO_COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);
-	RegisterOperator(">="   , PRIO_COMP , OPERATOR_BLEFT, iGE , @ExprBinOp);
+	RegisterOperator("<"    , PRIO.COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
+	RegisterOperator("<="   , PRIO.COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
+	RegisterOperator("=="   , PRIO.COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
+	RegisterOperator("!="   , PRIO.COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
+	RegisterOperator(">"    , PRIO.COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);
+	RegisterOperator(">="   , PRIO.COMP , OPERATOR_BLEFT, iGE , @ExprBinOp);
 
-	RegisterOperator("+"    , PRIO_ADD  , OPERATOR_BLEFT, iADD, @ExprBinOp);
-	RegisterOperator("-"    , PRIO_ADD  , OPERATOR_BLEFT, iSUB, @ExprBinOp);
+	RegisterOperator("+"    , PRIO.ADD  , OPERATOR_BLEFT, iADD, @ExprBinOp);
+	RegisterOperator("-"    , PRIO.ADD  , OPERATOR_BLEFT, iSUB, @ExprBinOp);
 
-	RegisterOperator("*"    , PRIO_MUL  , OPERATOR_BLEFT, iMUL, @ExprBinOp);
-	RegisterOperator("/"    , PRIO_MUL  , OPERATOR_BLEFT, iDIV, @ExprBinOp);
-	RegisterOperator("%"    , PRIO_MUL  , OPERATOR_BLEFT, iMOD, @ExprBinOp);
+	RegisterOperator("*"    , PRIO.MUL  , OPERATOR_BLEFT, iMUL, @ExprBinOp);
+	RegisterOperator("/"    , PRIO.MUL  , OPERATOR_BLEFT, iDIV, @ExprBinOp);
+	RegisterOperator("%"    , PRIO.MUL  , OPERATOR_BLEFT, iMOD, @ExprBinOp);
 
-	RegisterOperator("-"    , PRIO_NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
-	RegisterOperator("!"    , PRIO_NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
+	RegisterOperator("-"    , PRIO.NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
+	RegisterOperator("!"    , PRIO.NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
 
-	RegisterOperator("("    , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
-	RegisterOperator("(*"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
-	RegisterOperator("(%"   , PRIO_EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("("    , PRIO.EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("(*"   , PRIO.EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
+	RegisterOperator("(%"   , PRIO.EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 
-	RegisterOperator("as_signed", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprAsSigned);
-	RegisterOperator("as_unsigned", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprAsUnsigned);
+	RegisterOperator("as_signed", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprAsSigned);
+	RegisterOperator("as_unsigned", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprAsUnsigned);
 
-	RegisterOperator("type_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeExpr);
-	RegisterOperator("const_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprConstExpr);
-	RegisterOperator("static_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprStaticExpr);
-	RegisterOperator("tangible_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTangibleExpr);
+	RegisterOperator("type_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeExpr);
+	RegisterOperator("const_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprConstExpr);
+	RegisterOperator("static_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprStaticExpr);
+	RegisterOperator("tangible_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprTangibleExpr);
 
-	RegisterOperator("is_type_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTypeExpr);
-	RegisterOperator("is_const_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsConstExpr);
-	RegisterOperator("is_static_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsStaticExpr);
-	RegisterOperator("is_tangible_expr", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTangibleExpr);
+	RegisterOperator("is_type_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTypeExpr);
+	RegisterOperator("is_const_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprIsConstExpr);
+	RegisterOperator("is_static_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprIsStaticExpr);
+	RegisterOperator("is_tangible_expr", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprIsTangibleExpr);
 
-	RegisterOperator("typeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeOf);
-	RegisterOperator("sizeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprSizeOf);
-	RegisterOperator("bitsizeof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprBitsizeOf);
-	RegisterOperator("countof", PRIO_FUNCCALL , OPERATOR_UPRE , 0, @ExprCountOf);
+	RegisterOperator("typeof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprTypeOf);
+	RegisterOperator("sizeof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprSizeOf);
+	RegisterOperator("bitsizeof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprBitsizeOf);
+	RegisterOperator("countof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprCountOf);
 
-	RegisterOperator("'"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
-	RegisterOperator("#"    , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
-	RegisterOperator("NULL" , PRIO_LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
-	RegisterOperator("null" , PRIO_LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
-	RegisterOperator("false", PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitFALSE);
-	RegisterOperator("true" , PRIO_LITER, OPERATOR_UPRE , iLITERAL, @ExprLitTRUE);
+	RegisterOperator("'"    , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
+	RegisterOperator("#"    , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
+	RegisterOperator("NULL" , PRIO.LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
+	RegisterOperator("null" , PRIO.LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
+	RegisterOperator("false", PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitFALSE);
+	RegisterOperator("true" , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitTRUE);
 end
 
 /*****************************************************************************/
