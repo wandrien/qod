@@ -204,7 +204,7 @@ void CTE(word P)
 	if ID == iDIV | ID == iMOD then
 		if NodeHasImmediateValue(pRight) then
 			if NodeGetImmediateValue(pRight) == 0 then
-				Error(@eDIVZERO);
+				Error(@L10n.eDIVZERO);
 				AddFakeCast(Node[pRight].pType, @Node[P].pRight);
 				pRight = Node[P].pRight;
 			end
@@ -474,7 +474,7 @@ void CTE_CodeList(word P)
 	while P != nNODE do
 		if Node[P].pType == st_noreturn then
 			if Node[P].pRight != nNODE then
-				WarnAtNode(Node[P].pRight, @wUNREACHABLE);
+				WarnAtNode(Node[P].pRight, @L10n.wUNREACHABLE);
 				NodeFree(@Node[P].pRight);
 			end:if
 			return;
@@ -532,7 +532,7 @@ void CTE_Function(word dFunc)
 	word pTypeReturn = Func_GetRetType(dFunc);
 
 	if fReturn & (pTypeReturn == st_noreturn) then
-		ErrorAtNode(pBody, @eRETINNORET2);
+		ErrorAtNode(pBody, @L10n.eRETINNORET2);
 		return;
 	end:if
 
@@ -545,7 +545,7 @@ void CTE_Function(word dFunc)
 		(!fLastReturn & !fLastNoReturn & !fLastInlineAssembly) &
 		(pTypeReturn != st_void & pTypeReturn != st_noreturn)
 	then
-		ErrorAtNodeWithSubject(pBody, @eMISSINGRET, @DictGetName(dFunc));
+		ErrorAtNodeWithSubject(pBody, @L10n.eMISSINGRET, @DictGetName(dFunc));
 	end:if
 
 end

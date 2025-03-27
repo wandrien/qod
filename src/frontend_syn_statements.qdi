@@ -6,7 +6,7 @@ namespace StatementParser of
 void MatchSemicolon(char @Buff)
 	Scan(@Buff);
 	if str_ne(@Buff,";") then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end
 end
 
@@ -23,7 +23,7 @@ word EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
 		| (@A2 != NULL & str_eq(@Buff, @A2)) then
 			Scan(@Buff);
 		else
-			Stop(@eNOTALLOWED);
+			Stop(@L10n.eNOTALLOWED);
 		end:if
 	end:if
 
@@ -50,7 +50,7 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 		@Else="default";
 
 		if str_ne(@Scan(@Buff),"case") then
-			Stop(@eCASEEXP);
+			Stop(@L10n.eCASEEXP);
 		end:if
 	else
 		strcpy(@Buff,@Case);
@@ -76,16 +76,16 @@ void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
 			word pType = Node[Node[COND].pLeft].pType;
 
 			if str_ne(@Buff,@Then) then
-				Stop(@eTHENEXP);
+				Stop(@L10n.eTHENEXP);
 			end:if
 
 			if pType != st_bool then
-				ErrorAtNode(COND, @eTYPE_COND_EXPR);
+				ErrorAtNode(COND, @L10n.eTYPE_COND_EXPR);
 			end:if
 		else
 			if str_eq(@Else,"default") then
 				if str_ne(@Scan(@Buff),":") then
-					Stop(@eCOLONEXP);
+					Stop(@L10n.eCOLONEXP);
 				end:if
 			end:if
 
@@ -124,11 +124,11 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if pType != st_bool then
-		ErrorAtNode(COND, @eTYPE_COND_EXPR);
+		ErrorAtNode(COND, @L10n.eTYPE_COND_EXPR);
 	end:if
 
 	if str_ne(@Buff,":") then
-		Stop(@eTHENEXP);
+		Stop(@L10n.eTHENEXP);
 	end:if
 
 	Scan(@Buff);
@@ -175,13 +175,13 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 	word pType = Node[Node[COND].pLeft].pType;
 
 	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
-		Stop(@eSWTYPE);
+		Stop(@L10n.eSWTYPE);
 
 	when str_ne(@Buff,"of"):
-		Stop(@eOFEXP);
+		Stop(@L10n.eOFEXP);
 
 	when str_ne(@Scan(@Buff),"case"):
-		Stop(@eCASEEXP);
+		Stop(@L10n.eCASEEXP);
 
 	while str_eq(@Buff,"case") do
 		word CASE = Peek();
@@ -194,17 +194,17 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 			word EXPR = Expr(PRIO_ZERO, @Scan(@Buff));
 
 			when !NodeHasImmediateValue(EXPR):
-				Stop(@eCONSTEXP);
+				Stop(@L10n.eCONSTEXP);
 
 			when !Statement_SWITCH_CheckCast(pType, Node[EXPR].pType):
-				Stop(@eCONSTEXP);
+				Stop(@L10n.eCONSTEXP);
 
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do
 				word  VALUE_I = Node[CASE_I].pLeft;
 				while VALUE_I < nNode & Node[VALUE_I].ID == iVALUE do
 					if Node[Node[VALUE_I].pLeft].Value == Node[EXPR].Value then
-						Stop(@eDUPCASE);
+						Stop(@L10n.eDUPCASE);
 					end:if
 
 					VALUE_I = Node[VALUE_I].pRight;
@@ -222,7 +222,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 		until str_ne(@Buff,",");
 
 		if str_ne(@Buff,":") then
-			Stop(@eCOLONEXP);
+			Stop(@L10n.eCOLONEXP);
 		end
 
 		word BODY = Peek();
@@ -235,7 +235,7 @@ void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
 
 	if str_eq(@Buff,"default") then
 		if str_ne(@Scan(@Buff),":") then
-			Stop(@eCOLONEXP);
+			Stop(@L10n.eCOLONEXP);
 		end
 
 		word CASE = Peek();
@@ -282,17 +282,17 @@ void Statement_WHILE(char @Buff; word @P1; word @SkipFinalScan)
 		word pType = Node[Node[COND].pLeft].pType;
 
 		if pType != st_bool then
-			Error(@eTYPE);
+			Error(@L10n.eTYPE);
 		end
 
 		if str_ne(@Buff,"do") then
-			Stop(@eDOEXP);
+			Stop(@L10n.eDOEXP);
 		end
 	case str_eq(@Buff,"forever"):
 		@End2 = "forever";
 		Scan(@Buff);
 		if str_ne(@Buff,"do") then
-			Stop(@eDOEXP);
+			Stop(@L10n.eDOEXP);
 		end
 	case str_eq(@Buff,"do"):
 		Deprecated("'do' should be replaced with 'forever do'");
@@ -336,11 +336,11 @@ void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
 	word pType = Node[Node[COND].pLeft].pType;
 
 	if str_ne(@Buff,";") then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end
 
 	if pType != st_bool then
-		Stop(@eTYPE);
+		Stop(@L10n.eTYPE);
 	end
 
 	pLoop=pLoop1;
@@ -352,7 +352,7 @@ end
 
 void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
 	when pLoop>=nNODE:
-		Stop(@eWRONGCONTINUE);
+		Stop(@L10n.eWRONGCONTINUE);
 
 	when Node[pLoop].ID != iWHILE
 	&    Node[pLoop].ID != iREPEAT:
@@ -369,7 +369,7 @@ end
 
 void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
 	when pLoop>=nNODE:
-		Stop(@eWRONGEXIT);
+		Stop(@L10n.eWRONGEXIT);
 
 	when Node[pLoop].ID != iWHILE
 	&    Node[pLoop].ID != iREPEAT:
@@ -396,15 +396,15 @@ void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
 	word pType = Node[Node[P1].pLeft].pType;
 
 	if str_ne(@Buff,";") then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end
 
 	select
 	case !NodeIsLValue(Node[P1].pLeft):
-		ErrorAtNode(P1, @eLVALUE_IN_INC);
+		ErrorAtNode(P1, @L10n.eLVALUE_IN_INC);
 		AddFakeCast(st_word, @Node[P1].pLeft);
 	case pType!=st_byte & pType!=st_word & pType!=st_int:
-		ErrorAtNode(P1, @eTYPE);
+		ErrorAtNode(P1, @L10n.eTYPE);
 		AddFakeCast(st_word, @Node[P1].pLeft);
 	end:select
 
@@ -420,7 +420,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	word pTypeReturn = Func_GetRetType(pCurrentFunc);
 
 	if pTypeReturn == st_noreturn then
-		Stop(@eRETINNORET);
+		Stop(@L10n.eRETINNORET);
 	end:if
 
 	if pTypeReturn != st_void then
@@ -429,7 +429,7 @@ void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
 	end:if
 
 	if str_ne(@Buff,";") then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end
 
 	Node[P1].pType = st_noreturn;
@@ -441,7 +441,7 @@ void Statement_INLINE(char @Buff; word @P1; word @SkipFinalScan)
 
 	word Code=val(@Scan(@Buff));
 	if Code>255 then
-		Stop(@eOVERFLOW);
+		Stop(@L10n.eOVERFLOW);
 	end
 
 	Node[P1].ID   =iINLINE;
@@ -454,7 +454,7 @@ void Statement_INLINE(char @Buff; word @P1; word @SkipFinalScan)
 	end
 
 	if str_ne(@Buff,";") then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end
 
 end
@@ -470,11 +470,11 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefi
 
 		word I = ResolveLocal(@Buff);
 		when I < nLOCAL:
-			ErrorWithSubject(@eDUPLICATE, @Buff);
+			ErrorWithSubject(@L10n.eDUPLICATE, @Buff);
 
 		I = ResolveParm(@Buff);
 		when I < nDICT:
-			ErrorWithSubject(@eDUPLICATE, @Buff);
+			ErrorWithSubject(@L10n.eDUPLICATE, @Buff);
 
 		EnsureValidIdentifier(@Buff);
 
@@ -482,11 +482,11 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefi
 		word pType = ReadTypeSuffix(@Scan(@Buff), T_nPtrTo(nPtr, pPrefixType));
 
 		if pType == st_void then
-			Stop(@eNOVOID);
+			Stop(@L10n.eNOVOID);
 		end:if
 
 		if T_IsFunc(pType) then
-			Stop(@eNOVAL);
+			Stop(@L10n.eNOVAL);
 		end:if
 
 		when nLocal>=nLOCAL:
@@ -511,7 +511,7 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefi
 
 		if str_eq(@Buff,"=") then
 			/*if Local[nLocal].nIndx > 0 then
-				Stop(@eNOTAVAIL);
+				Stop(@L10n.eNOTAVAIL);
 			end:if*/
 
 			word P5=Peek();
@@ -562,7 +562,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 
 		if str_eq(@Buff,"=") then
 			if !NodeIsLValue(Node[P3].pLeft) then
-				Error(@eLVALUE_IN_ASSIGNMENT);
+				Error(@L10n.eLVALUE_IN_ASSIGNMENT);
 			end:if
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 			ImplicitCast(Node[pLValue].pType, @Node[P3].pRight);
@@ -576,7 +576,7 @@ void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
 	end:if
 
 	if str_ne(@Buff,";") then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end:if
 end
 
@@ -658,7 +658,7 @@ word Ctrl(char @Buff)
 		case str_eq(@Buff,"null"):
 			Node[P1].ID   =iEMPTY;
 			MatchSemicolon(@Buff);
-			Warn(@dprNULL);
+			Warn(@L10n.dprNULL);
 
 		default:
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);

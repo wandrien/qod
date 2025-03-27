@@ -132,12 +132,12 @@ void ImplicitCast(word pTypeTo; word @P)
 	:
 		char Buff[nBUFF];
 		strcpy4(@Buff,
-			@msgIMPLICITCAST_1,
+			@L10n.msgIMPLICITCAST_1,
 			@T_GetName(Node[P].pType),
-			@msgIMPLICITCAST_2,
+			@L10n.msgIMPLICITCAST_2,
 			@T_GetName(pTypeTo)
 		);
-		ErrorWithSubject(@eTYPE, @Buff);
+		ErrorWithSubject(@L10n.eTYPE, @Buff);
 		AddFakeCast(pTypeTo, @P);
 	default:
 		AddImplicitCast(pTypeTo, @P);
@@ -263,9 +263,9 @@ void ApplyUACCastsForIntegers(word P_OP; word O)
 
 	if rankSigned == rankUnsigned then
 		if allow_implicit_cast_uint_to_int then
-			Warn(@wTYPE_SIGNED_UNSIGNED);
+			Warn(@L10n.wTYPE_SIGNED_UNSIGNED);
 		else
-			Error(@wTYPE_SIGNED_UNSIGNED);
+			Error(@L10n.wTYPE_SIGNED_UNSIGNED);
 		end:if
 		word pTargetType = pTypeSigned;
 		ApplyCommonType(P_OP, pTypeSigned);
@@ -317,12 +317,12 @@ void Cast2(word P_OP; word O)
 		case T_IsNulltype(pType1):
 			pass;
 		default:
-			StopAtNode(P_OP, @eTYPE);
+			StopAtNode(P_OP, @L10n.eTYPE);
 		end:select
 
 	default:
 		AddFakeCast(pType1, @Node[P_OP].pRight);
-		ErrorAtNode(P_OP, @eTYPE);
+		ErrorAtNode(P_OP, @L10n.eTYPE);
 	end:select
 
 	/**************************************************************************/
@@ -335,9 +335,9 @@ void Cast2(word P_OP; word O)
 		case pTypeOp == st_bool:
 			pass;
 		case T_IsSigned(pTypeOp):
-			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_SIGNED_BIT_OP);
 		default:
-			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_LOGIC_OP);
 		end
 
 		CTE(P_OP);
@@ -347,11 +347,11 @@ void Cast2(word P_OP; word O)
 		case T_IsUnsigned(pTypeOp):
 			Node[P_OP].ID=iBIT_XOR;
 		case pTypeOp == st_bool:
-			Stop(@eXORNOTIMPL);
+			Stop(@L10n.eXORNOTIMPL);
 		case T_IsSigned(pTypeOp):
-			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_SIGNED_BIT_OP);
 		default:
-			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_LOGIC_OP);
 		end
 
 		CTE(P_OP);
@@ -363,9 +363,9 @@ void Cast2(word P_OP; word O)
 		case pTypeOp == st_bool:
 			pass;
 		case T_IsSigned(pTypeOp):
-			ErrorAtNode(P_OP, @eTYPE_SIGNED_BIT_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_SIGNED_BIT_OP);
 		default:
-			ErrorAtNode(P_OP, @eTYPE_LOGIC_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_LOGIC_OP);
 		end
 
 		CTE(P_OP);
@@ -382,7 +382,7 @@ void Cast2(word P_OP; word O)
 				!T_IsNulltype(pTypeOp) &
 				!T_IsType(pTypeOp)
 			then
-				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+				ErrorAtNode(P_OP, @L10n.eTYPE_COMP_OP);
 			end
 		else
 			/* Сравнение больше/меньше */
@@ -391,7 +391,7 @@ void Cast2(word P_OP; word O)
 				!T_IsInteger(pTypeOp) &
 				!T_IsChar(pTypeOp)
 			then
-				ErrorAtNode(P_OP, @eTYPE_COMP_OP);
+				ErrorAtNode(P_OP, @L10n.eTYPE_COMP_OP);
 			end
 		end:if
 		pTypeOp = st_bool;
@@ -401,7 +401,7 @@ void Cast2(word P_OP; word O)
 	case iADD<=ID & ID<=iMOD:
 		/* Арифметические операции только с целыми. */
 		if !T_IsInteger(pTypeOp) then
-			ErrorAtNode(P_OP, @eTYPE_ARITH_OP);
+			ErrorAtNode(P_OP, @L10n.eTYPE_ARITH_OP);
 		end
 		CTE(P_OP);
 

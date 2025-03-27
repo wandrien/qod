@@ -8,7 +8,7 @@
 
 void FlushOutput()
 	if write(hText, @Text, nText) != nText then
-		Stop(@eWRITEERR);
+		Stop(@L10n.eWRITEERR);
 	end:if
 
 	nText=0;

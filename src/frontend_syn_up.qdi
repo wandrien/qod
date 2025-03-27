@@ -25,17 +25,17 @@ bool StaticAssert(char@ Buff)
 	case NodeIsTrue(pExpr):
 		pass;
 	case NodeIsFalse(pExpr):
-		ErrorAt(@Location, @eSTATIC_ASSERT_FALSE);
+		ErrorAt(@Location, @L10n.eSTATIC_ASSERT_FALSE);
 	default:
 		bool caught = false;
 		word pType = Node[pExpr].pType;
 		if !T_IsBool(pType) then
-			ErrorAt(@Location, @eSTATIC_ASSERT_NON_BOOL);
-			ErrorWithSubjectAt(@Location, @eWRONGTYPE_2NDLINE, @T_GetName(pType));
+			ErrorAt(@Location, @L10n.eSTATIC_ASSERT_NON_BOOL);
+			ErrorWithSubjectAt(@Location, @L10n.eWRONGTYPE_2NDLINE, @T_GetName(pType));
 			caught = true;
 		end
 		if !IsStaticExpr(pExpr) then
-			ErrorAt(@Location, @eSTATIC_ASSERT_NON_CONST);
+			ErrorAt(@Location, @L10n.eSTATIC_ASSERT_NON_CONST);
 			caught = true;
 		end:if
 		when !caught:
@@ -45,7 +45,7 @@ bool StaticAssert(char@ Buff)
 	if str_eq(@Buff,";") then
 		Scan(@Buff);
 	else
-		Error(@eSEMICOLONEXP);
+		Error(@L10n.eSEMICOLONEXP);
 	end:if
 	return false;
 end
@@ -87,12 +87,12 @@ end
 
 void DeclAlias_Forward(word D; word pForward; word pExpr)
 	if Node[pExpr].ID != iFUNC then
-		ErrorWithSubject(@eDUPLICATE, @DictGetName(D));
+		ErrorWithSubject(@L10n.eDUPLICATE, @DictGetName(D));
 	end:if
 
 	word pFunc = Node[pExpr].Value;
 	if !T_IsFuctTypesIdentical(pFunc, pForward) then
-		ErrorWithSubject(@eDUPLICATE, @DictGetName(D));
+		ErrorWithSubject(@L10n.eDUPLICATE, @DictGetName(D));
 	end:if
 
 	Dict[pForward].Class = cNAME;
@@ -105,9 +105,9 @@ bool DeclAlias(char @Buff)
 		word pForward = ResolveInNamespace(@Scan(@Buff), pEnteredNamespace);
 		if pForward < nDICT then
 			when !Dict_IsFunction(pForward):
-				StopWithSubject(@eDUPLICATE, @Buff);
+				StopWithSubject(@L10n.eDUPLICATE, @Buff);
 			when Dict[pForward].Forward == 0:
-				StopWithSubject(@eDUPLICATE, @Buff);
+				StopWithSubject(@L10n.eDUPLICATE, @Buff);
 		end
 
 		word D = DictAlloc();
@@ -119,9 +119,9 @@ bool DeclAlias(char @Buff)
 			Scan(@Buff);
 		else
 			if str_eq(@Buff,".") then
-				StopWithSubject(@eASSIGNEXP2, @DictGetName(D));
+				StopWithSubject(@L10n.eASSIGNEXP2, @DictGetName(D));
 			else
-				ErrorWithSubject(@eASSIGNEXP2, @DictGetName(D));
+				ErrorWithSubject(@L10n.eASSIGNEXP2, @DictGetName(D));
 			end
 		end:if
 
@@ -147,7 +147,7 @@ bool DeclAlias(char @Buff)
 		default:
 			Dict[D].Class = cNAME;
 			Dict[D].pType = st_void; /* FIXME: better approach? */
-			ErrorWithSubjectAt(@Location, @eALIAS_WRONGRVALUE, @DictGetName(D));
+			ErrorWithSubjectAt(@Location, @L10n.eALIAS_WRONGRVALUE, @DictGetName(D));
 		end:select
 
 		when pForward == nDICT:
@@ -157,7 +157,7 @@ bool DeclAlias(char @Buff)
 			return true;
 
 		if str_ne(@Buff,",") then
-			Error(@eSEMICOLONEXP);
+			Error(@L10n.eSEMICOLONEXP);
 			return false;
 		end:if
 	end:forever
@@ -169,14 +169,14 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 	word pFuncType = Dict[_pFunc].pType;
 
 	when T_IsStruct(pEnteredNamespace):
-		Stop(@eNOTAVAIL);
+		Stop(@L10n.eNOTAVAIL);
 
 	when !T_IsFunc(pFuncType):
 		StopInternal(__FILE__, __LINE__);
 
 	bool prototypeMismatch = false;
 	if pForward != nDICT & !T_IsFuctTypesIdentical(pFuncType, pForward) then
-		Error(@eTYPE_FUNC_FWD);
+		Error(@L10n.eTYPE_FUNC_FWD);
 		prototypeMismatch = true;
 		pForward = nDICT;
 	end
@@ -211,7 +211,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 				case TargetFileFormat == tPE:
 					pass;
 				default:
-					Stop(@eNOTALLOWED);
+					Stop(@L10n.eNOTALLOWED);
 			end
 
 			/* Читаем имя библиотеки. Добавляем библиотеку в словарь, если она туда еще не занесена. */
@@ -231,7 +231,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 			*/
 			if str_eq(@Scan(@Buff),".") then
 				if Find(@Scan(@Buff)) < nDict then
-					StopWithSubject(@eDUPLICATE, @Buff);
+					StopWithSubject(@L10n.eDUPLICATE, @Buff);
 				end:if
 
 				word pAlias = DictAlloc();
@@ -250,7 +250,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 			Dict[pCurrentFunc].pNode = pLib;
 
 			if str_ne(@Buff,";") then
-				Stop(@eSEMICOLONEXP);
+				Stop(@L10n.eSEMICOLONEXP);
 			end:if
 
 		default: /* Тело функции. */
@@ -287,14 +287,14 @@ void DeclVarFuncType(char @Buff; word pType)
 	DictAddToNamespace(D, pEnteredNamespace);
 
 	if str_ne(@Scan(@Buff),"(") then
-		Stop(@eBRACKETEXP);
+		Stop(@L10n.eBRACKETEXP);
 	end
 
 	Dict[D].pType = T_nPtrTo(nPtr, pType);
 	FuncArgs(@Buff, D);
 
 	if (str_ne(@Scan(@Buff),";")) then
-		Stop(@eSEMICOLONEXP);
+		Stop(@L10n.eSEMICOLONEXP);
 	end
 
 end
@@ -314,9 +314,9 @@ void DeclType(char @Buff; word pType)
 			Scan(@Buff);
 		else
 			if str_eq(@Buff,".") then
-				StopWithSubject(@eASSIGNEXP2, @DictGetName(D));
+				StopWithSubject(@L10n.eASSIGNEXP2, @DictGetName(D));
 			else
-				ErrorWithSubject(@eASSIGNEXP2, @DictGetName(D));
+				ErrorWithSubject(@L10n.eASSIGNEXP2, @DictGetName(D));
 			end
 		end:if
 
@@ -328,8 +328,8 @@ void DeclType(char @Buff; word pType)
 		default:
 			Dict[D].Class = cNAME;
 			Dict[D].pType = st_void; /* FIXME: better approach? */
-			ErrorWithSubjectAt(@Location, @eTYPE_WRONGRVALUE, @DictGetName(D));
-			ErrorWithSubjectAt(@Location, @eWRONGTYPE_2NDLINE, @T_GetName(Node[pExpr].pType));
+			ErrorWithSubjectAt(@Location, @L10n.eTYPE_WRONGRVALUE, @DictGetName(D));
+			ErrorWithSubjectAt(@Location, @L10n.eWRONGTYPE_2NDLINE, @T_GetName(Node[pExpr].pType));
 		end:select
 
 		DictAddToNamespace(D, pEnteredNamespace);
@@ -338,7 +338,7 @@ void DeclType(char @Buff; word pType)
 			exit;
 
 		if str_ne(@Buff,",") then
-			Error(@eSEMICOLONEXP);
+			Error(@L10n.eSEMICOLONEXP);
 			exit;
 		end:if
 
@@ -351,12 +351,12 @@ end
 void DeclVarFunc(char @Buff)
 	word pPrefixExpr = Expr(PRIO_LVALUE, @Buff);
 	if Node[pPrefixExpr].ID != iTYPE then
-		Stop(@eTYPEEXP);
+		Stop(@L10n.eTYPEEXP);
 	end
 
 	word pPrefixType = Node[pPrefixExpr].Value;
 	if pPrefixType == nDICT | Dict[pPrefixType].Class != cTYPE then
-		Stop(@eTYPEEXP);
+		Stop(@L10n.eTYPEEXP);
 	end
 
 	if pPrefixType == st_type then
@@ -379,9 +379,9 @@ void DeclVarFunc(char @Buff)
 		word pForward = ResolveInNamespace(@Buff, pEnteredNamespace);
 		if pForward < nDict then
 			when !Dict_IsFunction(pForward):
-				StopWithSubject(@eDUPLICATE, @Buff);
+				StopWithSubject(@L10n.eDUPLICATE, @Buff);
 			when Dict[pForward].Forward == 0:
-				StopWithSubject(@eDUPLICATE, @Buff);
+				StopWithSubject(@L10n.eDUPLICATE, @Buff);
 		end
 
 		word D = DictAlloc();
@@ -392,7 +392,7 @@ void DeclVarFunc(char @Buff)
 
 		if T_IsFunc(Dict[D].pType) then
 			when !FirstName:
-				Stop(@eNOFUNCTION);
+				Stop(@L10n.eNOFUNCTION);
 			DeclFunc1(@Buff, D, pForward);
 			return;
 		end
@@ -400,14 +400,14 @@ void DeclVarFunc(char @Buff)
 		FirstName = false;
 
 		when pForward < nDict:
-			StopWithSubject(@eDUPLICATE, @DictGetName(D));
+			StopWithSubject(@L10n.eDUPLICATE, @DictGetName(D));
 
 		if Dict[D].pType == st_void then
-			Stop(@eNOVOID);
+			Stop(@L10n.eNOVOID);
 		end
 
 		if Dict[Dict[D].pType].Sub == sFUNCTYPE then
-			Stop(@eNOVAL);
+			Stop(@L10n.eNOVAL);
 		end
 
 		DictAddToNamespace(D, pEnteredNamespace);
@@ -422,7 +422,7 @@ void DeclVarFunc(char @Buff)
 
 			if str_eq(@Buff,"=") then
 				/*if Dict[D].nIndx > 0 then
-					Stop(@eNOTAVAIL);
+					Stop(@L10n.eNOTAVAIL);
 				end*/
 
 				word P1=Peek();
@@ -449,7 +449,7 @@ void DeclVarFunc(char @Buff)
 		end
 
 		if str_ne(@Buff,",") then
-			Stop(@eSEMICOLONEXP);
+			Stop(@L10n.eSEMICOLONEXP);
 		end
 
 		Scan(@Buff);
@@ -485,7 +485,7 @@ bool DeclDefine(char @Buff)
 					Dict[D].LiteralValue = Node[P].Value;
 
 				default:
-					Stop(@eTYPE);
+					Stop(@L10n.eTYPE);
 			end:select
 
 			if str_eq(@Buff,";") then
@@ -496,7 +496,7 @@ bool DeclDefine(char @Buff)
 
 		default:
 			if str_ne(@Buff,"~"") then
-				Stop(@eQUOTEXP);
+				Stop(@L10n.eQUOTEXP);
 			end
 			ScanString(D);
 	end:select
@@ -511,12 +511,12 @@ void Include(word pFileName; word pGuard; bool Once)
 
 	if pGuard != nNODE then
 		if !IsConstExpr(pGuard) then
-			Error(@eINCLUDE_GUARD_CONST_EXP);
+			Error(@L10n.eINCLUDE_GUARD_CONST_EXP);
 			DoInclude = false;
 		end:if
 
 		if !NodeIsTrue(pGuard) & !NodeIsFalse(pGuard) then
-			Error(@eINCLUDE_GUARD_WRONG_TYPE);
+			Error(@L10n.eINCLUDE_GUARD_WRONG_TYPE);
 			DoInclude = false;
 		end:if
 
@@ -529,7 +529,7 @@ void Include(word pFileName; word pGuard; bool Once)
 		pFileName = Node[pFileName].pLeft;
 
 	if !NodeIsLiteralString(pFileName) then
-		Error(@eINCLUDE_NAME_WRONG_TYPE);
+		Error(@L10n.eINCLUDE_NAME_WRONG_TYPE);
 		DoInclude = false;
 	end:if
 
@@ -556,7 +556,7 @@ end
 bool DeclInclude(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
-		Stop(@eINCLUDE_SEMICOLON_EXP);
+		Stop(@L10n.eINCLUDE_SEMICOLON_EXP);
 	Include(pFileName, nNODE, false);
 	return true;
 end
@@ -564,10 +564,10 @@ end
 bool DeclIncludeWhen(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ","):
-		Stop(@eINCLUDE_WHEN_COMMA_EXP);
+		Stop(@L10n.eINCLUDE_WHEN_COMMA_EXP);
 	word pGuard = Expr(PRIO_ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
-		Stop(@eINCLUDE_WHEN_SEMICOLON_EXP);
+		Stop(@L10n.eINCLUDE_WHEN_SEMICOLON_EXP);
 	Include(pFileName, pGuard, false);
 	return true;
 end
@@ -575,7 +575,7 @@ end
 bool DeclIncludeOnce(char @Buff)
 	word pFileName = Expr(PRIO_ZERO, @Scan(@Buff));
 	when str_ne(@Buff, ";"):
-		Stop(@eINCLUDE_ONCE_SEMICOLON_EXP);
+		Stop(@L10n.eINCLUDE_ONCE_SEMICOLON_EXP);
 	Include(pFileName, nNODE, true);
 	return true;
 end
@@ -617,13 +617,13 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 		case str_eq(@Buff,"end"):
 			when Eob.EndKeyword:
 				exit;
-			Stop(@eWRONGEND_NAMESPACE);
+			Stop(@L10n.eWRONGEND_NAMESPACE);
 		case str_eq(@Buff,"}"):
 			when Eob.CurlyBraces:
 				exit;
-			Stop(@eWRONGBRACE_NAMESPACE);
+			Stop(@L10n.eWRONGBRACE_NAMESPACE);
 		case str_eq(@Buff, ";"):
-			Warn(@wDANGLING_SEMICOLON);
+			Warn(@L10n.wDANGLING_SEMICOLON);
 		case TopLevel & str_eq(@Buff,"begin"):
 			DeclMainFunc(@Buff);
 			exit;
@@ -662,7 +662,7 @@ bool DeclStruct(char @Buff)
 	char @TypeName = @DictGetName(pStruct);
 
 	if str_eq(@Scan(@Buff),";") then
-		Stop(@eNOTAVAIL);
+		Stop(@L10n.eNOTAVAIL);
 	end
 
 	word pPrevNamespace = pEnteredNamespace;
@@ -689,7 +689,7 @@ bool DeclStruct(char @Buff)
 	default:
 		Eob.CurlyBraces = false;
 		Eob.EndKeyword = true;
-		Deprecated(@dptMISSINGOF_NAMESPACE);
+		Deprecated(@L10n.dptMISSINGOF_NAMESPACE);
 	end
 
     bool DoScan = ParseDeclBlock(@Buff, @Eob);
@@ -714,7 +714,7 @@ bool DeclNamespace(char @Buff)
 	char @TypeName = @DictGetName(pNamespace);
 
 	if str_eq(@Scan(@Buff),";") then
-		Stop(@eNOTAVAIL);
+		Stop(@L10n.eNOTAVAIL);
 	end
 
 	word pPrevNamespace = pEnteredNamespace;
@@ -736,7 +736,7 @@ bool DeclNamespace(char @Buff)
 	default:
 		Eob.CurlyBraces = false;
 		Eob.EndKeyword = true;
-		Deprecated(@dptMISSINGOF_NAMESPACE);
+		Deprecated(@L10n.dptMISSINGOF_NAMESPACE);
 	end
 
     bool DoScan = ParseDeclBlock(@Buff, @Eob);

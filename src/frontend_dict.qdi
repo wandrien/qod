@@ -91,7 +91,7 @@ end
 void CheckDuplicateInNamespace(char @Buff; word pNamespace)
 	word pDuplicateName = ResolveInNamespace(@Buff, pNamespace);
 	if pDuplicateName != nDICT then
-		StopWithSubject(@eDUPLICATE, @Buff);
+		StopWithSubject(@L10n.eDUPLICATE, @Buff);
 	end
 end
 

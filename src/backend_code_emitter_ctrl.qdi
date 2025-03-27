@@ -57,13 +57,13 @@ end
 /*****************************************************************************/
 
 word Code_XOR(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
-	Stop(@eXORNOTIMPL);
+	Stop(@L10n.eXORNOTIMPL);
 end
 
 /*****************************************************************************/
 
 word Code_EQV(word P; LABEL @F; LABEL @T; LABEL @M; char @Buff)
-	Stop(@eEQVNOTIMPL);
+	Stop(@L10n.eEQVNOTIMPL);
 end
 
 /*****************************************************************************/

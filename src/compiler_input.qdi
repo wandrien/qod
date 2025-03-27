@@ -144,7 +144,7 @@ void OpenInputFile(char @FileName)
 
 	word hFile=open(@FileName);
 	when is_handle_valid(hFile) == 0:
-		StopWithSubject(@eNOFILE, @FileName);
+		StopWithSubject(@L10n.eNOFILE, @FileName);
 
 	hText = hFile;
 

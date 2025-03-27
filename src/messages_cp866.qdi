@@ -1,3 +1,5 @@
+namespace L10n of
+
 define @eWRONGOPTION     "Неизвестный параметр командной строки"       // unrecognized command line option
 define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
 define @eNOFILE          "Невозможно открыть файл"                     // Can't open file
@@ -186,3 +188,5 @@ define @msgUSAGE
 "Генерировать выходной файл в формате указанного ассемблера.~r~n"
 "По умолчанию FASM.~r~n"
 "~r~n"
+
+end:namespace

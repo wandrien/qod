@@ -40,7 +40,7 @@ end
 
 void PrintUsage()
 	PrintVersionAndCopyright();
-	puts(@msgUSAGE);
+	puts(@L10n.msgUSAGE);
 end
 
 /*****************************************************************************/
@@ -235,7 +235,7 @@ void SetupAssembler(char@ Mode)
 	case str_eq(@Mode, "nasm"):
 		TargetAssembler = aNASM;
 	default:
-		Stop(@eWRONGOPTION);
+		Stop(@L10n.eWRONGOPTION);
 	end:select
 end
 
@@ -261,19 +261,19 @@ void __main()
 		   | str_eq(@arg, "--win32-w"):
 			SetupTarget(@arg);
 		case str_eq(@arg, "--output" ):
-			@OutputFile = @GetArgNext(@i, @eFNAMEEXP);
+			@OutputFile = @GetArgNext(@i, @L10n.eFNAMEEXP);
 		case str_eq(@arg, "--output-tree" ):
-			@OutputTreeFile = @GetArgNext(@i, @eFNAMEEXP);
+			@OutputTreeFile = @GetArgNext(@i, @L10n.eFNAMEEXP);
 		case str_eq(@arg, "--output-include-list" ):
-			@OutputIncludeListFile = @GetArgNext(@i, @eFNAMEEXP);
+			@OutputIncludeListFile = @GetArgNext(@i, @L10n.eFNAMEEXP);
 		case str_eq(@arg, "--asm" ):
-			SetupAssembler(@GetArgNext(@i, @eCMDLINEPARAM));
+			SetupAssembler(@GetArgNext(@i, @L10n.eCMDLINEPARAM));
 		case str_eq(@arg, "--file" ):
-			@InputFile = @GetArgNext(@i, @eFNAMEEXP);
+			@InputFile = @GetArgNext(@i, @L10n.eFNAMEEXP);
 		case str_eq(@arg, "--show-parse-progress" ):
 			show_parse_progress = 1;
 		case str_eq(@arg, "--optimize" ):
-			SetupOptimization(@GetArgNext(@i, @eCMDLINEPARAM));
+			SetupOptimization(@GetArgNext(@i, @L10n.eCMDLINEPARAM));
 		case str_eq(@arg, "--warn-unused-globals" ):
 			WarnUnusedGlobals = 1;
 		case str_eq(@arg, "--error-deprecated-features" ):
@@ -283,9 +283,9 @@ void __main()
 		case str_eq(@arg, "--emit-source-line-notes" ):
 			EmitSourceLineNotes = 1;
 		case str_has_prefix(@arg, "-"):
-			Stop(@eWRONGOPTION);
+			Stop(@L10n.eWRONGOPTION);
 		default:
-			@InputFile = @GetArg(i, @eFNAMEEXP);
+			@InputFile = @GetArg(i, @L10n.eFNAMEEXP);
 		end:select
 		inc i;
 	end:while
@@ -300,7 +300,7 @@ void __main()
 	if @OutputFile == NULL then
 		word l = strlen(@InputFile);
 		if l + 4 >= nBUFF then
-			Stop(@eLONGFILENAME);
+			Stop(@L10n.eLONGFILENAME);
 		end:if
 		strcat(@strcpy(@Name, @InputFile), ".asm");
 		@OutputFile = @Name;

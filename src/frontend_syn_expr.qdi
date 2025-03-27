@@ -32,13 +32,13 @@ end
 /* Парсинг строки в целое число по указанному основанию. */
 word val2(char @Str; int StrLen; word Base)
 	when StrLen < 1:
-		Stop(@eMALFORMEDINT);
+		Stop(@L10n.eMALFORMEDINT);
 
 	when Str[0] == #0:
-		Stop(@eMALFORMEDINT);
+		Stop(@L10n.eMALFORMEDINT);
 
 	if Base < 2 | Base > 36 then
-		Stop(@eINVALIDBASE);
+		Stop(@L10n.eINVALIDBASE);
 	end
 
 	bool Overflow = false;
@@ -55,13 +55,13 @@ word val2(char @Str; int StrLen; word Base)
 		word Digit = Char2Digit[ch];
 
 		when Digit >= Base:
-			StopWithSubjectChar(@eWRONGCHARININT, char(ch));
+			StopWithSubjectChar(@L10n.eWRONGCHARININT, char(ch));
 
 		word NewValue = Value * Base + Digit;
 
 		if !Overflow & NewValue < Value then
 			Overflow = true;
-			Error(@eINTTOOBIG);
+			Error(@L10n.eINTTOOBIG);
 		end:if
 
 		Value = NewValue;
@@ -135,7 +135,7 @@ word val(char @Buff)
 			Len  = StrLen;
 		/* Символ $ в начале строки - шестнадцатиричное. */
 		case k == 0:
-			Deprecated(@dprHEXFORMAT);
+			Deprecated(@L10n.dprHEXFORMAT);
 			Base = 16;
 			P    = 1;
 			Len  = StrLen - P;
@@ -157,7 +157,7 @@ end
 void EnsureValidIdentifier(char @Buff)
 	word I = 0;
 	if !isalpha(Buff[0]) then
-		StopWithSubject(@eNAMEEXPECTED, @Buff);
+		StopWithSubject(@L10n.eNAMEEXPECTED, @Buff);
 	end:if
 end
 
@@ -170,25 +170,25 @@ word Tabl(char @Buff)
 
 		select
 		case !T_IsInteger(Node[P].pType):
-			Error(@eARR_SIZE_TYPE);
-			ErrorWithSubject(@eARR_SIZE_TYPE_2, @T_GetName(Node[P].pType));
+			Error(@L10n.eARR_SIZE_TYPE);
+			ErrorWithSubject(@L10n.eARR_SIZE_TYPE_2, @T_GetName(Node[P].pType));
 			nIndx = 1;
 		case !NodeHasImmediateValue(P):
-			Error(@eARR_SIZE_CONSTEXP);
+			Error(@L10n.eARR_SIZE_CONSTEXP);
 			nIndx = 1;
 		default:
 			nIndx = NodeGetImmediateValue(P);
 		end:select
 
 		if nIndx < 1 then
-			Error(@eARR_SIZE_LO_BOUND);
+			Error(@L10n.eARR_SIZE_LO_BOUND);
 			nIndx = 1;
 		end
 
 		if T_IsSigned(Node[P].pType) then
 			int i = as_signed(nIndx);
 			if i < 1 then
-				Error(@eARR_SIZE_LO_BOUND);
+				Error(@L10n.eARR_SIZE_LO_BOUND);
 				nIndx = 1;
 			end
 		end
@@ -196,13 +196,13 @@ word Tabl(char @Buff)
 		/*
 		TODO:
 		if nIndx > SIZE_MAX then
-			Error(@eARR_SIZE_HI_BOUND);
+			Error(@L10n.eARR_SIZE_HI_BOUND);
 			nIndx = 1;
 		end
 		*/
 
 		when str_ne(@Buff,"]"):
-			Stop(@eBRACKETEXP);
+			Stop(@L10n.eBRACKETEXP);
 	    Scan(@Buff);
 	end:if
 
@@ -289,7 +289,7 @@ end
 void FuncArgs_ReadDecl(char @Buff; word pARGS)
 	word pPrefixType = ResolveGlobal(@Buff, NULL);
 	when pPrefixType >= nDICT | Dict[pPrefixType].Class != cTYPE:
-		StopWithSubject(@eTYPEEXP, @Buff);
+		StopWithSubject(@L10n.eTYPEEXP, @Buff);
 
 	forever do
 		word nPtr = ReadPtrs(@Buff);
@@ -297,7 +297,7 @@ void FuncArgs_ReadDecl(char @Buff; word pARGS)
 		EnsureValidIdentifier(@Buff);
 		word pARG = FindInNamespace(@Buff, pARGS);
 		when pARG < nDICT:
-			ErrorWithSubject(@eDUPLICATE, @Buff);
+			ErrorWithSubject(@L10n.eDUPLICATE, @Buff);
 
 		pARG = DictAlloc();
 		DictSetName(pARG, @Buff);
@@ -307,9 +307,9 @@ void FuncArgs_ReadDecl(char @Buff; word pARGS)
 		DictAddToNamespace(pARG, pARGS);
 
 		when pType == st_void:
-			Error(@eNOVOID);
+			Error(@L10n.eNOVOID);
 		when T_IsFunc(pType):
-			Error(@eNOVAL);
+			Error(@L10n.eNOVAL);
 
 		when str_ne(@Scan(@Buff), ","):
 			exit;
@@ -339,7 +339,7 @@ void FuncArgs(char @Buff; word pFunc)
 			when str_eq(@Buff, ")"):
 				exit;
 		default:
-			Stop(@eSEMICOLONEXP);
+			Stop(@L10n.eSEMICOLONEXP);
 		end
 	end:forever
 end
@@ -429,14 +429,14 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
 
 		if  pARG < nDICT then
 			when str_ne(@Buff, ","):
-				Stop(@eCOMMAEXP);
+				Stop(@L10n.eCOMMAEXP);
 			Scan(@Buff);
 		end:if
 
 	end:while
 
 	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
-		Stop(@eBRACKETEXP);
+		Stop(@L10n.eBRACKETEXP);
 	Scan(@Buff);
 end
 
@@ -446,17 +446,17 @@ word ExprInParentheses(char @Buff; char @ExprName)
 	word b = LookupBracket(BracketType_Parentheses, @Buff);
 	if b == BRACKET_INVALID then
 		if @ExprName != NULL then
-			StopWithSubject(@eOPENBRACKETEXPAFTER, @ExprName);
+			StopWithSubject(@L10n.eOPENBRACKETEXPAFTER, @ExprName);
 		else
-			Stop(@eOPENBRACKETEXP);
+			Stop(@L10n.eOPENBRACKETEXP);
 		end:if
 	end:if
 
 	word P = Expr(PRIO_ZERO, @Scan(@Buff));
 	if !str_eq(@Buff,@Bracket[b].RightBracket) then
-		ErrorWithSubject(@eCLOSEBRACKETEXPBEFORE, @Buff);
+		ErrorWithSubject(@L10n.eCLOSEBRACKETEXPBEFORE, @Buff);
 		if @ExprName != NULL then
-			ErrorWithSubject(@eMISSINGBRACKETIN, @ExprName);
+			ErrorWithSubject(@L10n.eMISSINGBRACKETIN, @ExprName);
 		end:if
 	else
 		Scan(@Buff);
@@ -514,16 +514,16 @@ word ReadCast(char @Buff; word pTargetType; word pBracket)
 		AddFakeCast(pTargetType, @pCastee);
 		char Buff2[nBUFF];
 		strcpy4(@Buff2,
-			@msgNOWAYTOCAST_1,
+			@L10n.msgNOWAYTOCAST_1,
 			@T_GetName(Node[pCastee].pType),
-			@msgNOWAYTOCAST_2,
+			@L10n.msgNOWAYTOCAST_2,
 			@T_GetName(pTargetType)
 		);
-		ErrorWithSubject(@eTYPE, @Buff2);
+		ErrorWithSubject(@L10n.eTYPE, @Buff2);
 	end:if
 
 	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
-		Stop(@eBRACKETEXP);
+		Stop(@L10n.eBRACKETEXP);
 	Scan(@Buff);
 	
 	return pCastee;
@@ -582,9 +582,9 @@ word MakeNodeForDict(word I)
 		return P;
 
 	case cWORD:
-		StopWithSubject(@eKEYWORDUNEXP, @DictGetName(I));
+		StopWithSubject(@L10n.eKEYWORDUNEXP, @DictGetName(I));
 	default:
-		StopWithSubject(@eUNDECLARED, @DictGetName(I));
+		StopWithSubject(@L10n.eUNDECLARED, @DictGetName(I));
 	end:switch
 end
 
@@ -602,7 +602,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			ImplicitCast(st_word, @Node[P3].pRight);
 
 			when str_ne(@Buff,"]"):
-				Stop(@eBRACKETEXP);
+				Stop(@L10n.eBRACKETEXP);
 			Scan(@Buff);
 
 			pPrefixExpr = P3;
@@ -610,14 +610,14 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 
 		while str_eq(@Buff,"[") do /* Индексация указателя. */
 			when !T_IsPtr(pType):
-				Stop(@eNOADDR);
+				Stop(@L10n.eNOADDR);
 			word P3 = Peek5(iADDR, pPrefixExpr, nNODE, T_DerefPtr(pType));
 
 			Node[P3].pRight = Expr(PRIO_ZERO, @Scan(@Buff));
 			ImplicitCast(st_word, @Node[P3].pRight);
 
 			when str_ne(@Buff,"]"):
-				Stop(@eBRACKETEXP);
+				Stop(@L10n.eBRACKETEXP);
 			Scan(@Buff);
 
 			pPrefixExpr = P3;
@@ -643,7 +643,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 				pPrefixExpr = ReadCast(@Buff, Node[pPrefixExpr].Value, b);
 				pType = Node[pPrefixExpr].pType;
 			default:
-				Stop(@eHEADEREXP);
+				Stop(@L10n.eHEADEREXP);
 			end:select
 
 		case str_eq(@Buff,"."): /* Обращение к полю структуры/пространства имён. */
@@ -656,7 +656,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			case pType == st_type:
 				word pMember = ResolveInNamespace(@Buff, Node[pPrefixExpr].Value);
 				when pMember >= nDICT:
-					StopWithSubject(@eUNDECLARED_WITHIN_NAMESPACE, @Buff);
+					StopWithSubject(@L10n.eUNDECLARED_WITHIN_NAMESPACE, @Buff);
 				pPrefixExpr = MakeNodeForDict(pMember);
 				pType = Node[pPrefixExpr].pType;
 				Scan(@Buff);
@@ -664,7 +664,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			case Dict[pType].Sub == sSTRUCT:
 				word F = FindInNamespace(@Buff, pType);
 				when F >= nDICT:
-					StopWithSubject(@eUNDECLARED_WITHIN_STRUCT, @Buff);
+					StopWithSubject(@L10n.eUNDECLARED_WITHIN_STRUCT, @Buff);
 				when Dict[F].Class != cFIELD:
 					StopInternal(__FILE__, __LINE__);
 
@@ -678,7 +678,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 
 				Scan(@Buff);
 			default:
-				StopWithSubject(@eSTRUCTEXP, @Buff);
+				StopWithSubject(@L10n.eSTRUCTEXP, @Buff);
 			end:select
 		default:
 			exit;
@@ -718,7 +718,7 @@ word Primary(word Prty; char @Buff)
 	if Flag == 0 then /* Это имя текущего файла? */
 		if Buff[0] == '_' & str_eq(@Buff,"__FILE__") then
 			if nPtr>0 then
-				Stop(@eSTRING);
+				Stop(@L10n.eSTRING);
 			end
 
 			P1    = StringNode__FILE__();
@@ -731,7 +731,7 @@ word Primary(word Prty; char @Buff)
 	if Flag == 0 then /* Это строка? */
 		if str_eq(@Buff,"~"") then
 			if nPtr>0 then
-				Stop(@eSTRING);
+				Stop(@L10n.eSTRING);
 			end
 
 			P1    = StringNode();
@@ -766,7 +766,7 @@ word Primary(word Prty; char @Buff)
 	if Flag == 0 then /* Значит это глобальное имя. */
 		word I = ResolveGlobal(@Buff, NULL);
 		if I>=nDict then
-			StopWithSubject(@eUNDECLARED, @Buff);
+			StopWithSubject(@L10n.eUNDECLARED, @Buff);
 		end:if
 
 		switch Dict[I].Class of
@@ -837,7 +837,7 @@ word Primary(word Prty; char @Buff)
 				return P1;
 			else
 				if nPtr>0 then
-					Stop(@eUNDECLARED);
+					Stop(@L10n.eUNDECLARED);
 				end:if
 
 				P1 = Peek();
@@ -848,9 +848,9 @@ word Primary(word Prty; char @Buff)
 				return P1;
 			end:if
 		case cWORD:
-			StopWithSubject(@eKEYWORDUNEXP, @DictGetName(I));
+			StopWithSubject(@L10n.eKEYWORDUNEXP, @DictGetName(I));
 		default:
-			StopWithSubject(@eUNDECLARED, @DictGetName(I));
+			StopWithSubject(@L10n.eUNDECLARED, @DictGetName(I));
 		end:switch
 	end:if
 
@@ -886,7 +886,7 @@ word Primary(word Prty; char @Buff)
 	word P4=nNODE;
 	if Prty < PRIO_INC then
 		if nPtr>nPtr1+1 then
-			Stop(@eNOADDR);
+			Stop(@L10n.eNOADDR);
 		end:if
 
 		if nPtr>nPtr1 then
@@ -970,7 +970,7 @@ word ExprParentheses(word P1; word O; char @Buff)
 
 	word P2 = Expr(PRIO_ZERO, @Scan(@Buff));
 	if !str_eq(@Buff,@Bracket[b].RightBracket) then
-		Stop(@eBRACKETEXP);
+		Stop(@L10n.eBRACKETEXP);
 	end
 	Scan(@Buff);
 
@@ -990,8 +990,8 @@ word ExprAsSigned(word P1; word O; char @Buff)
 	case T_IsSigned(Node[P].pType):
 		pass;
 	default:
-		Error(@eWRONGTYPE_AS_SIGNED);
-		ErrorWithSubject(@eWRONGTYPE_2NDLINE, @T_GetName(Node[P].pType));
+		Error(@L10n.eWRONGTYPE_AS_SIGNED);
+		ErrorWithSubject(@L10n.eWRONGTYPE_2NDLINE, @T_GetName(Node[P].pType));
 		AddFakeCast(st_int, @P);
 	end:select
 	return P;
@@ -1008,8 +1008,8 @@ word ExprAsUnsigned(word P1; word O; char @Buff)
 	case T_IsUnsigned(Node[P].pType):
 		pass;
 	default:
-		Error(@eWRONGTYPE_AS_SIGNED);
-		ErrorWithSubject(@eWRONGTYPE_2NDLINE, @T_GetName(Node[P].pType));
+		Error(@L10n.eWRONGTYPE_AS_SIGNED);
+		ErrorWithSubject(@L10n.eWRONGTYPE_2NDLINE, @T_GetName(Node[P].pType));
 		AddFakeCast(st_int, @P);
 	end:select
 	return P;
@@ -1033,19 +1033,19 @@ end
 /*****************************************************************************/
 
 word ExprTypeExpr(word P1; word O; char @Buff)
-	return Expr_GuardedExpr(@Scan(@Buff), IsTypeExpr, @eNOTATYPEEXPR, @OperatorGetName(O));
+	return Expr_GuardedExpr(@Scan(@Buff), IsTypeExpr, @L10n.eNOTATYPEEXPR, @OperatorGetName(O));
 end
 
 word ExprConstExpr(word P1; word O; char @Buff)
-	return Expr_GuardedExpr(@Scan(@Buff), IsConstExpr, @eNOTACONSTEXPR, @OperatorGetName(O));
+	return Expr_GuardedExpr(@Scan(@Buff), IsConstExpr, @L10n.eNOTACONSTEXPR, @OperatorGetName(O));
 end
 
 word ExprStaticExpr(word P1; word O; char @Buff)
-	return Expr_GuardedExpr(@Scan(@Buff), IsStaticExpr, @eNOTASTATICEXPR, @OperatorGetName(O));
+	return Expr_GuardedExpr(@Scan(@Buff), IsStaticExpr, @L10n.eNOTASTATICEXPR, @OperatorGetName(O));
 end
 
 word ExprTangibleExpr(word P1; word O; char @Buff)
-	return Expr_GuardedExpr(@Scan(@Buff), IsTangibleExpr, @eNOTATANGIBLEEXPR, @OperatorGetName(O));
+	return Expr_GuardedExpr(@Scan(@Buff), IsTangibleExpr, @L10n.eNOTATANGIBLEEXPR, @OperatorGetName(O));
 end
 
 /*****************************************************************************/
@@ -1100,7 +1100,7 @@ word ExprBitsizeOf(word _P1; word O; char @Buff)
 	word Size = T_SizeOf(pType);
 	word BitSize = Size * 8;
 	when BitSize < Size:
-		Stop(@eBITSIZEOVERFLOW);
+		Stop(@L10n.eBITSIZEOVERFLOW);
 	word P1 = Peek();
 	NodeAssignWord(P1, BitSize);
 	return P1;
@@ -1109,7 +1109,7 @@ end
 word ExprCountOf(word _P1; word O; char @Buff)
 	word pType = TypeOrTypeOf(ExprInParentheses(@Scan(@Buff), @OperatorGetName(O)));
 	when !T_IsArray(pType):
-		Stop(@eCOUNTOFREQARR);
+		Stop(@L10n.eCOUNTOFREQARR);
 	word P1 = Peek();
 	NodeAssignWord(P1, T_ArrayGetLen(pType));
 	return P1;
@@ -1125,14 +1125,14 @@ word ExprLitChar(word P_; word O; char @Buff)
 	case str_eq(@Buff,"#"): /* Символ в #-виде. */
 		word N=val(@Scan(@Buff));
 		if   N>255 then
-			Stop(@eOVERFLOW);
+			Stop(@L10n.eOVERFLOW);
 		end
 		NodeAssignChar(P1, N);
 
 	case str_eq(@Buff,"'"): /* Символ. */
 		NodeAssignChar(P1, word(ScanChar()));
 		if Read()!='~'' then
-			Stop(@eQUOTEXP);
+			Stop(@L10n.eQUOTEXP);
 		end
 		Next();
 	default:
@@ -1184,7 +1184,7 @@ word ExprNOT(word P_; word O; char @Buff)
 		P1 = Not(P2);
 
 	default:
-		Stop(@eTYPE);
+		Stop(@L10n.eTYPE);
 	end:select
 
 	Node[P1].pType = pType;
@@ -1216,7 +1216,7 @@ word ExprNEG(word P_; word O; char @Buff)
 	select
 	case (Node[pLeft].ID == iLITERAL) & (Node[pLeft].pType == st_word | Node[pLeft].pType == st_int):
 		if Node[pLeft].pType == st_word & Node[pLeft].Value > 0x80000000 then
-			Stop(@eCALCERR);
+			Stop(@L10n.eCALCERR);
 		end
 		NodeAssignInt(P1, -Node[pLeft].Value);
 	end:select

@@ -84,7 +84,7 @@ void ScanString(word D)
 				exit;
 
 			if Ch == '~r' | Ch == '~n' then
-				Stop(@eQUOTEXP);
+				Stop(@L10n.eQUOTEXP);
 			end
 
 			if i >= nMAX_STR_LEN then
@@ -129,7 +129,7 @@ void ScanAlphaNum(char@ Buff; word @Len)
 		Buff[P] = Ch;
 		inc  P;
 		if   P >= nBUFF then
-			Stop(@eLONGTERM);
+			Stop(@L10n.eLONGTERM);
 		end
 
 		Next();
@@ -196,7 +196,7 @@ char@ Scan(char@ Buff)
 			word PrefixLen = 0;
 			ScanAlphaNum(@Buff, @PrefixLen);
 			if PrefixLen == 0 then
-				Stop(@eEXPECTED);
+				Stop(@L10n.eEXPECTED);
 			end
 			@Suffix = @Buff;
 			SuffixLen = PrefixLen;

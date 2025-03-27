@@ -93,15 +93,15 @@ void DoWarnUnusedGlobals()
 			select
 			case Dict[P].Class == cDATA:
 				strcpy(@Buff, @DictGetName(P));
-				strcat(@Buff, @wGLOBALVARUNUSED);
+				strcat(@Buff, @L10n.wGLOBALVARUNUSED);
 				Warn(@Buff);
 			case Dict[P].Class == cFUNC:
 				strcpy(@Buff, @DictGetName(P));
-				strcat(@Buff, @wFUNCUNUSED);
+				strcat(@Buff, @L10n.wFUNCUNUSED);
 				Warn(@Buff);
 			case Dict[P].Class == cTYPE & Dict[P].Sub <= sBASE_MAX:
 				strcpy(@Buff, @DictGetName(P));
-				strcat(@Buff, @wTYPEUNUSED);
+				strcat(@Buff, @L10n.wTYPEUNUSED);
 				Warn(@Buff);
 			end:select
 		end:if
@@ -269,7 +269,7 @@ void AssignLabels_Func()
 			when Dict[I].Forward != 0:
 				ErrorAtNodeWithSubject(
 					Dict[I].pNode,
-					@eNEVERDEFINED, @DictGetFullyQualifiedName(I)
+					@L10n.eNEVERDEFINED, @DictGetFullyQualifiedName(I)
 				);
 		end
 		inc I;

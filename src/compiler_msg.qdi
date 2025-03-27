@@ -48,7 +48,7 @@ end
 void WarnAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
-	PutMessage(@SourceLocation, @msgWARNING, @Msg);
+	PutMessage(@SourceLocation, @L10n.msgWARNING, @Msg);
 end
 
 void Warn(char @Msg)
@@ -64,7 +64,7 @@ end
 void ErrorAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
-	PutMessage(@SourceLocation, @msgERROR, @Msg);
+	PutMessage(@SourceLocation, @L10n.msgERROR, @Msg);
 	HasErrors = true;
 end
 
@@ -86,7 +86,7 @@ end
 
 void DeprecatedAt(SOURCELOCATION @SourceLocation; char @Msg)
 	char Buff[nMSGBUFF];
-	ComposeMsg(@Buff, nMSGBUFF, @wDEPRECATED, @Msg);
+	ComposeMsg(@Buff, nMSGBUFF, @L10n.wDEPRECATED, @Msg);
 	if ErrorDeprecatedFeatures != 0 then
 		ErrorAt(@SourceLocation, @Buff);
 	else
@@ -101,7 +101,7 @@ end
 void StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
-	PutMessage(@SourceLocation, @msgERROR, @Msg);
+	PutMessage(@SourceLocation, @L10n.msgERROR, @Msg);
 	halt(1);
 end
 
@@ -126,12 +126,12 @@ void StopInternal(char @File; word Line)
 	char Buff[nMSGBUFF];
 	strbuf buf;
 	strbuf_init(@buf, @Buff, nMSGBUFF);
-	strbuf_append_cstr4(@buf, @eINTERNAL, @File, ":", @str(Line));
+	strbuf_append_cstr4(@buf, @L10n.eINTERNAL, @File, ":", @str(Line));
 	Stop(@Buff);
 end
 
 void StopMemory()
-	Stop(@eNOMEMORY);
+	Stop(@L10n.eNOMEMORY);
 end
 
 void ShowParseProgress(word nl)

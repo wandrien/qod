@@ -47,7 +47,7 @@ word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
 	end:while
 
 	if quoted != 0 then
-		Stop(@eCMDLINEQUOTE);
+		Stop(@L10n.eCMDLINEQUOTE);
 	end:if
 
 	len = s_i;
