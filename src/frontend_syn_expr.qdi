@@ -836,9 +836,7 @@ word Primary(word Prty; char @Buff)
 				*/
 				return P1;
 			else
-				if nPtr>0 then
-					Stop(@L10n.eUNDECLARED);
-				end:if
+				I = T_nPtrTo(nPtr, I);
 
 				P1 = Peek();
 				Node[P1].ID    = iTYPE;

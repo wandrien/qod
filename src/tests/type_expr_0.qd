@@ -1,0 +1,15 @@
+// TEST: should_print 'OK1 '
+
+include "../include/test_env.qdi";
+
+uint32 @ref;
+
+type ref_t = @uint32;
+
+begin
+	if typeof(@ref) == ref_t then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end
+end
