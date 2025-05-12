@@ -1,0 +1,37 @@
+// TEST: should_print '20 110 120 200 '
+
+include "../include/test_env.qdi";
+
+struct X of
+	int x;
+	int f1@(int a);
+	int f2@(X @x; int a);
+	void f3@(int a);
+end
+
+int f2(X @x; int a);
+
+X x;
+
+int f1(int a)
+	return a + 10;
+end
+
+int f2(X @x; int a)
+	return x.x + a;
+end
+
+void f3(int a)
+	puts(@str(a)); puts(" ");
+end
+
+begin
+	x.x = 20;
+	@x.f1 = f1;
+	@x.f2 = f2;
+	@x.f3 = f3;
+	puts(@str(x.x)); puts(" ");
+	puts(@str(x.f1(100))); puts(" ");
+	puts(@str(x.f2(@x, 100))); puts(" ");
+	x.f3(200);
+end
