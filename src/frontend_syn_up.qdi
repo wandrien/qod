@@ -168,9 +168,6 @@ end
 void DeclFunc1(char @Buff; word _pFunc; word pForward)
 	word pFuncType = Dict[_pFunc].pType;
 
-	when T_IsStruct(pEnteredNamespace):
-		Stop(@L10n.eNOTAVAIL);
-
 	when !T_IsFunc(pFuncType):
 		StopInternal(__FILE__, __LINE__);
 
