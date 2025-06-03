@@ -373,19 +373,36 @@ void DeclVarFunc(char @Buff)
 	forever do
 		word nPtr = ReadPtrs(@Buff);
 
-		word pForward = ResolveInNamespace(@Buff, pEnteredNamespace);
+		//word pForward = ResolveInNamespace(@Buff, pEnteredNamespace);
+		bool SingleItem = false;
+		word pNamespace = nDICT;
+		word pForward = ResolveGlobal(@Buff, @pNamespace, @SingleItem);
+
+		NAME Name;
+		if pForward < nDict then
+			Name = Dict[pForward].Name;
+		else
+			Name_SetFromString0(@Name, @Buff);
+			Scan(@Buff);
+		end:if
+
+		if SingleItem & pNamespace != pEnteredNamespace then
+			pNamespace = nDICT;
+			pForward = nDICT;
+		end
+
 		if pForward < nDict then
 			when !Dict_IsFunction(pForward):
-				StopWithSubject(@L10n.eDUPLICATE, @Buff);
+				StopWithSubject(@L10n.eDUPLICATE, @Name_GetString(@Name));
 			when Dict[pForward].Forward == 0:
-				StopWithSubject(@L10n.eDUPLICATE, @Buff);
+				StopWithSubject(@L10n.eDUPLICATE, @Name_GetString(@Name));
 		end
 
 		word D = DictAlloc();
 
-		DictSetName(D, @Buff);
+		Dict[D].Name = Name;
 		Dict[D].pType = T_nPtrTo(nPtr, pPrefixType);
-		Dict[D].pType = ReadTypeSuffix(@Scan(@Buff), Dict[D].pType);
+		Dict[D].pType = ReadTypeSuffix(@Buff, Dict[D].pType);
 
 		if T_IsFunc(Dict[D].pType) then
 			when !FirstName:

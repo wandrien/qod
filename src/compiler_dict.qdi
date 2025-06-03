@@ -7,6 +7,18 @@ word    tArrayTypes;
 
 /*****************************************************************************/
 
+void Name_SetFromString0(NAME @Name; char@ Str)
+	Name.Offset = SaveString0(@Str);
+	Name.Hash = str_hash(@Str);
+end
+
+char @Name_GetString(NAME @Name)
+	return @Char[Name.Offset];
+end
+
+
+/*****************************************************************************/
+
 /* Индексы встроенных типов данных. */
 
 word st_type;
@@ -64,30 +76,25 @@ end
 /*****************************************************************************/
 
 void DictSetName(word D; char@ Name)
-
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	Dict[D].Name2    = SaveString0(@Name);
-	Dict[D].NameHash = str_hash(@Name);
+	Name_SetFromString0(@Dict[D].Name, @Name);
 end
 
 /*****************************************************************************/
 
-word DictSetName_None_Name2 = as_unsigned(-1);
-word DictSetName_None_NameHash = 0;
+NAME DictSetName_None_Name;
+bool DictSetName_None_Name_Initialized = false;
 
 void DictSetName_None(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	if DictSetName_None_Name2 == as_unsigned(-1) then
+	if !DictSetName_None_Name_Initialized then
 		DictSetName(D, "<None>");
-		DictSetName_None_Name2    = Dict[D].Name2;
-		DictSetName_None_NameHash = Dict[D].NameHash;
+		DictSetName_None_Name = Dict[D].Name;
 	else
-		Dict[D].Name2    = DictSetName_None_Name2;
-		Dict[D].NameHash = DictSetName_None_NameHash;
+		Dict[D].Name = DictSetName_None_Name;
 	end:if
 end
 
@@ -96,8 +103,7 @@ end
 char @DictGetName(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
-	return @Char[Dict[D].Name2];
+	return @Name_GetString(@Dict[D].Name);
 end
 
 /*****************************************************************************/
@@ -142,7 +148,6 @@ word DictAlloc()
 
 	DICT @d = @Dict[r];
 
-	d.Name2 = 0;
 	d.Used = 0;
 	d.FullyQualifiedName = 0;
 	d.pType = nDICT;
@@ -192,7 +197,7 @@ word FindInNamespace(char @Name; word pNamespace)
 	while P < nDict do
 		when Dict[P].pNamespace != pNamespace:
 			StopInternal(__FILE__, __LINE__);
-		if Dict[P].NameHash == hash
+		if Dict[P].Name.Hash == hash
 		&  str_eq(@DictGetName(P), @Name)
 		&  Dict[P].Class != CLASS.cFILE then
 			return DictResolveAlias(P);
@@ -214,7 +219,7 @@ word Find(char @Name)
 	word P = 0;
 	while P < nDict do
 		DICT @d = @Dict[P];
-		if d.NameHash == hash
+		if d.Name.Hash == hash
 		&  str_eq(@DictGetName(P), @Name)
 		&  d.Class != CLASS.cFILE
 		&  d.pNamespace == nDICT then
@@ -234,7 +239,7 @@ word Find_cFILE(char @Name)
 	word hash = str_hash(@Name);
 	word  P = 0;
 	while P < nDict do
-		if Dict[P].NameHash == hash
+		if Dict[P].Name.Hash == hash
 		&  str_eq(@DictGetName(P), @Name)
 		&  Dict[P].Class == CLASS.cFILE
 		&  Dict[P].pNamespace == nDICT then

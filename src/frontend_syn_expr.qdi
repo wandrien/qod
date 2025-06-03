@@ -287,7 +287,7 @@ end
 /*****************************************************************************/
 
 void FuncArgs_ReadDecl(char @Buff; word pARGS)
-	word pPrefixType = ResolveGlobal(@Buff, NULL);
+	word pPrefixType = ResolveGlobal(@Buff, NULL, NULL);
 	when pPrefixType >= nDICT | Dict[pPrefixType].Class != CLASS.cTYPE:
 		StopWithSubject(@L10n.eTYPEEXP, @Buff);
 
@@ -764,7 +764,7 @@ word Primary(word Prty; char @Buff)
 	end:if
 
 	if Flag == 0 then /* Значит это глобальное имя. */
-		word I = ResolveGlobal(@Buff, NULL);
+		word I = ResolveGlobal(@Buff, NULL, NULL);
 		if I>=nDict then
 			StopWithSubject(@L10n.eUNDECLARED, @Buff);
 		end:if

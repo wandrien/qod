@@ -26,9 +26,13 @@ struct NODE of           // Узел синтаксического деpева
 	SOURCELOCATION SourceLocation;
 end
 
+struct NAME of
+	word   Offset;
+	word   Hash;
+end
+
 struct DICT of           // Элемент таблицы глобальных имен
-	word   Name2;        // Имя
-	word   NameHash;     // Хэш имени
+	NAME   Name;
 
 	word   FullyQualifiedName; // Имя вида Namespace.Namespace.Name
 

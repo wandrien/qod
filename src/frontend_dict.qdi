@@ -27,7 +27,7 @@ word ResolveGlobalSingleItem(char @Buff; word @_pNamespace)
 		word pName = ResolveInNamespace(@Buff, pNamespace);
 		if pName != nDICT then
 			when @_pNamespace != NULL:
-				_pNamespace = pEnteredNamespace;
+				_pNamespace = pNamespace;
 			return pName;
 		end:if
 
@@ -42,30 +42,15 @@ word ResolveGlobalSingleItem(char @Buff; word @_pNamespace)
 	return nDICT;
 end
 
-word ResolveGlobal(char @Buff; word @_pNamespace)
-$comment XXX
-	/* Пробуем разрешить имя относительно текущего пространства имён */
-	word pNamespace = pEnteredNamespace;
-	word pName = ResolveInNamespace(@Buff, pNamespace);
-
-	if pName == nDICT & pNamespace != pGlobalNamespace then
-		/* Пробуем разрешить имя относительно глобального пространства имён */
-		pNamespace = pGlobalNamespace;
-		pName = ResolveInNamespace(@Buff, pNamespace);
-	end
-
-	if pName == nDICT then
-		when @_pNamespace != NULL:
-			_pNamespace = pEnteredNamespace;
-		return pName;
-	end
-XXX
-
+word ResolveGlobal(char @Buff; word @_pNamespace; bool @_SingleItem)
+	bool SingleItem = true;
 	word pNamespace;
 	word pName = ResolveGlobalSingleItem(@Buff, @pNamespace);
 	if pName == nDICT then
 		when @_pNamespace != NULL:
 			_pNamespace = pNamespace;
+		when @_SingleItem != NULL:
+			_SingleItem = SingleItem;
 		return pName;
 	end
 
@@ -74,8 +59,12 @@ XXX
 		if !Dict_IsType(pName) | str_ne(@Buff,".") then
 			when @_pNamespace != NULL:
 				_pNamespace = pNamespace;
+			when @_SingleItem != NULL:
+				_SingleItem = SingleItem;
 			return pName;
 		end
+
+		SingleItem = false;
 
 		Scan(@Buff);
 		pNamespace = pName;
@@ -83,6 +72,8 @@ XXX
 		if pName == nDICT then
 			when @_pNamespace != NULL:
 				_pNamespace = pNamespace;
+			when @_SingleItem != NULL:
+				_SingleItem = SingleItem;
 			return pName;
 		end
 	end:while
