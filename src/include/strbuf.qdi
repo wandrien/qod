@@ -3,9 +3,22 @@ struct strbuf of
 	char @Buff;
 	word BuffSize;
 	word BuffLen;
+
+	void init(strbuf @Dst; char @Buff; word BuffSize);
+	word get_virtual_len(strbuf @Dst);
+	word get_actual_len(strbuf @Dst);
+	word append_cstr(strbuf @Dst; char @Src);
+	word append_cstr2(strbuf @Dst; char @Src1; char @Src2);
+	word append_cstr3(strbuf @Dst; char @Src1; char @Src2; char @Src3);
+	word append_cstr4(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+	                               char @Src4);
+	word append_cstr5(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+	                               char @Src4; char @Src5);
+	word append_cstr6(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+	                               char @Src4; char @Src5; char @Src6);
 end
 
-void strbuf_init(strbuf @Dst; char @Buff; word BuffSize)
+void strbuf.init(strbuf @Dst; char @Buff; word BuffSize)
 	when @Buff == NULL:
 		BuffSize = 0;
 	@Dst.Buff = @Buff;
@@ -15,11 +28,11 @@ void strbuf_init(strbuf @Dst; char @Buff; word BuffSize)
 		Buff[0] = #0;
 end
 
-word strbuf_get_virtual_len(strbuf @Dst)
+word strbuf.get_virtual_len(strbuf @Dst)
 	return Dst.BuffLen;
 end
 
-word strbuf_get_actual_len(strbuf @Dst)
+word strbuf.get_actual_len(strbuf @Dst)
 	word BuffSize = Dst.BuffSize;
 	if BuffSize == 0 then
 		return 0;
@@ -32,7 +45,7 @@ word strbuf_get_actual_len(strbuf @Dst)
 	end
 end
 
-word strbuf_append_cstr(strbuf @Dst; char @Src)
+word strbuf.append_cstr(strbuf @Dst; char @Src)
 	when @Src == NULL:
 		return Dst.BuffLen;
 	word SrcLen = strlen(@Src);
@@ -56,41 +69,41 @@ word strbuf_append_cstr(strbuf @Dst; char @Src)
 	return NewLen;
 end
 
-word strbuf_append_cstr2(strbuf @Dst; char @Src1; char @Src2)
-	strbuf_append_cstr(@Dst, @Src1);
-	return strbuf_append_cstr(@Dst, @Src2);
+word strbuf.append_cstr2(strbuf @Dst; char @Src1; char @Src2)
+	strbuf.append_cstr(@Dst, @Src1);
+	return strbuf.append_cstr(@Dst, @Src2);
 end
 
-word strbuf_append_cstr3(strbuf @Dst; char @Src1; char @Src2; char @Src3)
-	strbuf_append_cstr(@Dst, @Src1);
-	strbuf_append_cstr(@Dst, @Src2);
-	return strbuf_append_cstr(@Dst, @Src3);
+word strbuf.append_cstr3(strbuf @Dst; char @Src1; char @Src2; char @Src3)
+	strbuf.append_cstr(@Dst, @Src1);
+	strbuf.append_cstr(@Dst, @Src2);
+	return strbuf.append_cstr(@Dst, @Src3);
 end
 
-word strbuf_append_cstr4(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+word strbuf.append_cstr4(strbuf @Dst; char @Src1; char @Src2; char @Src3;
                                       char @Src4)
-	strbuf_append_cstr(@Dst, @Src1);
-	strbuf_append_cstr(@Dst, @Src2);
-	strbuf_append_cstr(@Dst, @Src3);
-	return strbuf_append_cstr(@Dst, @Src4);
+	strbuf.append_cstr(@Dst, @Src1);
+	strbuf.append_cstr(@Dst, @Src2);
+	strbuf.append_cstr(@Dst, @Src3);
+	return strbuf.append_cstr(@Dst, @Src4);
 end
 
-word strbuf_append_cstr5(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+word strbuf.append_cstr5(strbuf @Dst; char @Src1; char @Src2; char @Src3;
                                       char @Src4; char @Src5)
-	strbuf_append_cstr(@Dst, @Src1);
-	strbuf_append_cstr(@Dst, @Src2);
-	strbuf_append_cstr(@Dst, @Src3);
-	strbuf_append_cstr(@Dst, @Src4);
-	return strbuf_append_cstr(@Dst, @Src5);
+	strbuf.append_cstr(@Dst, @Src1);
+	strbuf.append_cstr(@Dst, @Src2);
+	strbuf.append_cstr(@Dst, @Src3);
+	strbuf.append_cstr(@Dst, @Src4);
+	return strbuf.append_cstr(@Dst, @Src5);
 end
 
-word strbuf_append_cstr6(strbuf @Dst; char @Src1; char @Src2; char @Src3;
+word strbuf.append_cstr6(strbuf @Dst; char @Src1; char @Src2; char @Src3;
                                       char @Src4; char @Src5; char @Src6)
-	strbuf_append_cstr(@Dst, @Src1);
-	strbuf_append_cstr(@Dst, @Src2);
-	strbuf_append_cstr(@Dst, @Src3);
-	strbuf_append_cstr(@Dst, @Src4);
-	strbuf_append_cstr(@Dst, @Src5);
-	return strbuf_append_cstr(@Dst, @Src6);
+	strbuf.append_cstr(@Dst, @Src1);
+	strbuf.append_cstr(@Dst, @Src2);
+	strbuf.append_cstr(@Dst, @Src3);
+	strbuf.append_cstr(@Dst, @Src4);
+	strbuf.append_cstr(@Dst, @Src5);
+	return strbuf.append_cstr(@Dst, @Src6);
 end
 

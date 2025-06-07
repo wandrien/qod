@@ -113,9 +113,9 @@ void Dict_MakeFullyQualifiedName(strbuf @Buff; word D)
 		return;
 	when Dict[D].pNamespace != D:
 		Dict_MakeFullyQualifiedName(@Buff, Dict[D].pNamespace);
-	when strbuf_get_virtual_len(@Buff) > 0:
-		strbuf_append_cstr(@Buff, ".");
-	strbuf_append_cstr(@Buff, @DictGetName(D));
+	when strbuf.get_virtual_len(@Buff) > 0:
+		strbuf.append_cstr(@Buff, ".");
+	strbuf.append_cstr(@Buff, @DictGetName(D));
 end
 
 char @DictGetFullyQualifiedName(word D)
@@ -128,7 +128,7 @@ char @DictGetFullyQualifiedName(word D)
 
 	char Buff[nBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf.init(@buf, @Buff, nBUFF);
 	Dict_MakeFullyQualifiedName(@buf, D);
 
 	Index = SaveString0(@Buff);
@@ -783,20 +783,20 @@ void T_GetName_(word T; strbuf @Buff)
 	select
 	case Dict[T].Sub == SUBCLASS.sSTRUCT:
 		/* TODO: not implemented */
-		strbuf_append_cstr(@Buff, @DictGetFullyQualifiedName(T));
+		strbuf.append_cstr(@Buff, @DictGetFullyQualifiedName(T));
 	case Dict[T].Sub == SUBCLASS.sFUNCTYPE:
 		/* TODO: not implemented */
-		strbuf_append_cstr(@Buff, @DictGetFullyQualifiedName(T));
+		strbuf.append_cstr(@Buff, @DictGetFullyQualifiedName(T));
 	case Dict[T].Sub == SUBCLASS.sPTR:
-		strbuf_append_cstr(@Buff, "@");
+		strbuf.append_cstr(@Buff, "@");
 		T_GetName_(Dict[T].pType, @Buff);
 	case Dict[T].Sub == SUBCLASS.sARRAY:
-		strbuf_append_cstr(@Buff, "[");
-		strbuf_append_cstr(@Buff, @str_saved(T_ArrayGetLen(T)));
-		strbuf_append_cstr(@Buff, "]");
+		strbuf.append_cstr(@Buff, "[");
+		strbuf.append_cstr(@Buff, @str_saved(T_ArrayGetLen(T)));
+		strbuf.append_cstr(@Buff, "]");
 		T_GetName_(Dict[T].pType, @Buff);
 	default:
-		strbuf_append_cstr(@Buff, @DictGetFullyQualifiedName(T));
+		strbuf.append_cstr(@Buff, @DictGetFullyQualifiedName(T));
 	end:select
 end
 
@@ -806,7 +806,7 @@ char @T_GetName(word T)
 
 	char Buff[nBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nBUFF);
+	strbuf.init(@buf, @Buff, nBUFF);
 	T_GetName_(T, @buf);
 
 	word Index = SaveString0(@Buff);

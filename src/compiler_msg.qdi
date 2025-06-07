@@ -16,10 +16,10 @@ bool HasErrors = false;
 
 void ComposeMsg(char @Buff; word BuffSize; char @Msg1; char @Msg2)
 	strbuf buf;
-	strbuf_init(@buf, @Buff, BuffSize);
-	strbuf_append_cstr(@buf, @Msg1);
+	strbuf.init(@buf, @Buff, BuffSize);
+	strbuf.append_cstr(@buf, @Msg1);
 	if @Msg2 != NULL then
-		strbuf_append_cstr2(@buf, ": ", @Msg2);
+		strbuf.append_cstr2(@buf, ": ", @Msg2);
 	end
 end
 
@@ -125,8 +125,8 @@ end
 noreturn StopInternal(char @File; word Line)
 	char Buff[nMSGBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nMSGBUFF);
-	strbuf_append_cstr4(@buf, @L10n.eINTERNAL, @File, ":", @str(Line));
+	strbuf.init(@buf, @Buff, nMSGBUFF);
+	strbuf.append_cstr4(@buf, @L10n.eINTERNAL, @File, ":", @str(Line));
 	Stop(@Buff);
 end
 
@@ -149,8 +149,8 @@ void ShowParseProgress(word nl)
 	end
 	char Buff[nMSGBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nMSGBUFF);
-	strbuf_append_cstr6(@buf,
+	strbuf.init(@buf, @Buff, nMSGBUFF);
+	strbuf.append_cstr6(@buf,
 		"~r",
 		@CurrentFileInfo.FileName,
 		"(",

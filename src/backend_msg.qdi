@@ -4,11 +4,11 @@ noreturn StopAtNodeInternalCodegen(char @File; word Line; word P)
 
 	char Buff[nBUFF];
 	strbuf buf;
-	strbuf_init(@buf, @Buff, nBUFF);
-	strbuf_append_cstr(@buf, @L10n.eINTERNAL_CODEGEN);
-	strbuf_append_cstr(@buf, @File);
-	strbuf_append_cstr(@buf, ":");
-	strbuf_append_cstr(@buf, @str(Line));
+	strbuf.init(@buf, @Buff, nBUFF);
+	strbuf.append_cstr(@buf, @L10n.eINTERNAL_CODEGEN);
+	strbuf.append_cstr(@buf, @File);
+	strbuf.append_cstr(@buf, ":");
+	strbuf.append_cstr(@buf, @str(Line));
 
 	if P < nNODE then
 		StopAt(@Node[P].SourceLocation, @Buff);

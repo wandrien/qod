@@ -6,21 +6,21 @@ begin
 	char charBuff[10];
 	strbuf Buff;
 
-	strbuf_init(@Buff, @charBuff, countof(charBuff));
-	strbuf_append_cstr(@Buff, "0123456789abcd");
+	strbuf.init(@Buff, @charBuff, countof(charBuff));
+	strbuf.append_cstr(@Buff, "0123456789abcd");
 
-	puts(@str(strbuf_get_virtual_len(@Buff))); puts(" ");
-	puts(@str(strbuf_get_actual_len(@Buff))); puts(" ");
+	puts(@str(strbuf.get_virtual_len(@Buff))); puts(" ");
+	puts(@str(strbuf.get_actual_len(@Buff))); puts(" ");
 	puts(@charBuff); puts(" ");
 
-	strbuf_init(@Buff, NULL, 0);
-	strbuf_append_cstr(@Buff, "0123456789abcd");
-	puts(@str(strbuf_get_virtual_len(@Buff))); puts(" ");
-	puts(@str(strbuf_get_actual_len(@Buff))); puts(" ");
+	strbuf.init(@Buff, NULL, 0);
+	strbuf.append_cstr(@Buff, "0123456789abcd");
+	puts(@str(strbuf.get_virtual_len(@Buff))); puts(" ");
+	puts(@str(strbuf.get_actual_len(@Buff))); puts(" ");
 
-	strbuf_init(@Buff, @charBuff, countof(charBuff));
-	strbuf_append_cstr(@Buff, "abc");
-	strbuf_append_cstr(@Buff, ".");
-	strbuf_append_cstr(@Buff, "def");
+	strbuf.init(@Buff, @charBuff, countof(charBuff));
+	strbuf.append_cstr(@Buff, "abc");
+	strbuf.append_cstr(@Buff, ".");
+	strbuf.append_cstr(@Buff, "def");
 	puts(@charBuff); puts(" ");
 end
