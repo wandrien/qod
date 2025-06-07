@@ -4,7 +4,9 @@ include "../include/test_env.qdi";
 
 begin
 	word x1[int(10)];
-	//word x2[byte(10)]; // FIXME
-	//word x3[int(word(byte(10)))]; // FIXME
+	word x2[byte(10)];
+	word x3[int(word(byte(10)))];
+	word x4[uint16(10)];
+	word x5[int16(10)];
 	puts("OK");
 end
