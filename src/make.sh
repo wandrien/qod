@@ -295,7 +295,7 @@ do_test_with_compiler ()
 	local stdout_log="$tests_out_dir"/"$test_name".stdout
 	local stderr_log="$tests_out_dir"/"$test_name".stderr
 
-	local COMPILER_FLAGS="`grep -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
+	local COMPILER_FLAGS="`grep -a -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
 
 	local COMPILER="$COMPILER_BUILD_DIR/${compiler_name}_$c"
 
@@ -392,8 +392,8 @@ do_tests ()
 	nr_passed_expected_to_fail=0
 	for f in `(cd tests && grep -l  -- 'TEST:' *.* )` ; do
 		local t="`basename -s .qd  -- "$f"`"
-		local c="`grep  -- 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
-		local expected_to_fail="`grep -- 'EXPECTED-TO-FAIL:' "tests/$f"`"
+		local c="`grep -a -- 'TEST:' "tests/$f" | sed 's/^.*TEST://'`"
+		local expected_to_fail="`grep -a -- 'EXPECTED-TO-FAIL:' "tests/$f"`"
 		if ! (eval do_test $t $c) ; then
 			if [ -z "$expected_to_fail" ] ; then
 				failed_tests="`concat_list "$failed_tests" ", " "$t"`"
