@@ -319,10 +319,7 @@ void FuncArgs_ReadDecl(char @Buff; word pARGS)
 end
 
 void FuncArgs(char @Buff; word pFunc)
-	word pARGS = DictAlloc();
-	DictSetName(pARGS, "args");
-	Dict[pARGS].Class = CLASS.cARGS;
-	DictAddToNamespace(pARGS, pFunc);
+	word pARGS = T_FuncMakeArgs(pFunc);
 
 	Scan(@Buff);
 	when str_eq(@Buff, ")"):

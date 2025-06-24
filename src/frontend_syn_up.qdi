@@ -67,10 +67,7 @@ void DeclMainFunc(char@ Buff)
 	Dict[pFuncType].Sub   = SUBCLASS.sFUNCTYPE;
 	Dict[pFuncType].pType = st_void;
 
-	word pARGS = DictAlloc();
-	DictSetName(pARGS, "args");
-	Dict[pARGS].Class = CLASS.cARGS;
-	DictAddToNamespace(pARGS, pFuncType);
+	word pARGS = T_FuncMakeArgs(pFuncType);
 
 	pCurrentFunc = pFunction;
 	pMainFunc = pFunction;

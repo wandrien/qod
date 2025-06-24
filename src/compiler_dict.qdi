@@ -151,6 +151,7 @@ word DictAlloc()
 	d.Used = 0;
 	d.FullyQualifiedName = 0;
 	d.pType = nDICT;
+	d.pArgs = nDICT;
 	d.tCachedPtrToMe = nDICT;
 	d.tCachedFuncTypeOfMe = nDICT;
 	d.tCachedIntegerPair = nDICT;
@@ -650,6 +651,8 @@ end
 
 /*****************************************************************************/
 
+define ArgsInNamespace true
+
 bool T_IsFunc(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
@@ -665,7 +668,23 @@ end
 word T_FuncGetArgs(word T)
 	when !T_IsFunc(T):
 		StopInternal(__FILE__, __LINE__);
-	return FindInNamespace("args", T);
+	return Dict[T].pArgs;
+end
+
+word T_FuncMakeArgs(word T)
+	when !T_IsFunc(T):
+		StopInternal(__FILE__, __LINE__);
+	when Dict[T].pArgs != nDICT:
+		StopInternal(__FILE__, __LINE__);
+
+	word pARGS = DictAlloc();
+	Dict[pARGS].Class = CLASS.cARGS;
+	if ArgsInNamespace then
+		DictSetName(pARGS, "args");
+		DictAddToNamespace(pARGS, T);
+	end:if
+	Dict[T].pArgs = pARGS;
+	return pARGS;
 end
 
 /*
@@ -748,12 +767,8 @@ word T_FuncTypeForFunction(word F)
 	Dict[P].Sub   = SUBCLASS.sFUNCTYPE;
 	Dict[P].pType = Dict[F].pType;
 
-	word F_ARGS = FindInNamespace("args", F);
-
-	word P_ARGS = DictAlloc();
-	DictSetName(P_ARGS, "args");
-	Dict[P_ARGS].Class = CLASS.cARGS;
-	DictAddToNamespace(P_ARGS, P);
+	word F_ARGS = T_FuncGetArgs(F);
+	word P_ARGS = T_FuncMakeArgs(P);
 
 	word F_ARG = Dict[F_ARGS].pFirst;
 	forever do
