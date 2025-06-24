@@ -1,5 +1,5 @@
 
-begin
+void _start() of
 	word a;
 	word b;
 	word c;

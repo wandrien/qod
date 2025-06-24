@@ -186,7 +186,7 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 	end:if
 
-	if Dict[pCurrentFunc].Sub == SUBCLASS.sMAIN then
+	if Dict[pCurrentFunc].Sub == SUBCLASS.sSTART_FUNC then
 		select
 		case TargetFileFormat == TARGET_FORMAT.tPE:
 			when pExitProcess == nDICT:

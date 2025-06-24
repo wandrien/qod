@@ -62,6 +62,27 @@ char@ DefaultTarget;
 
 /*****************************************************************************/
 
+word LocateStartFunc()
+	when pStartFunc != nDICT:
+		return pStartFunc;
+
+	pStartFunc = ResolveInNamespace("_start", pGlobalNamespace);
+	when pStartFunc != nDICT:
+		return pStartFunc;
+
+	word pStd = ResolveInNamespace("std", pGlobalNamespace);
+	when pStd == nDICT:
+		return nDICT;
+
+	when !T_IsNamespace(pStd):
+		return nDICT;
+
+	pStartFunc = ResolveInNamespace("start", pStd);
+	return pStartFunc;
+end
+
+/*****************************************************************************/
+
 void Translate()
 
 	/* Синтаксический анализ **********************/
@@ -76,8 +97,15 @@ void Translate()
 
 	/* Промежуточные операции *********************/
 
+	word pStartFunc = LocateStartFunc();
+	if pStartFunc != nDICT then
+		DictMarkUsed(pStartFunc);
+		Dict[pStartFunc].Sub = SUBCLASS.sSTART_FUNC;
+	else
+		Error(@L10n.eNOSTART);
+	end:if
+
 	/* Отметка используемых объектов. */
-	DictMarkUsed(pMainFunc);
 	select
 		case TargetFileFormat == TARGET_FORMAT.tPE:
 			pExitProcess = ResolveInNamespace("ExitProcess", pGlobalNamespace);

@@ -144,6 +144,12 @@ void Scan1(char @Buff; word @Len)
 
 	SkipWhitespaces();
 
+	if IsEos() then
+		Buff[0] = #0;
+		Len = 0;
+		return;
+	end
+
 	ScanAlphaNum(@Buff, @Len);
 	if Len != 0 then
 		return;

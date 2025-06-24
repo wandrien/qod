@@ -2196,10 +2196,9 @@ word pReturnVoid = nNODE;
 void EmitFunction(char @Buff; word I)
 	EmitStringNL("");
 	strcpy(@Buff,"## ");
-	if Dict[I].Sub != SUBCLASS.sMAIN then
-		strcat(@Buff, @DictGetName(I));
-	else
-		strcat(@Buff, "<begin>");
+	strcat(@Buff, @DictGetName(I));
+	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
+		strcat(@Buff, "<entry>");
 	end:if
 	strcat(@Buff," ##");
 	LABEL L; L.Value = Dict[I].Label;
@@ -2230,7 +2229,7 @@ void EmitFunction(char @Buff; word I)
 		end:if
 	end:if
 
-	if Dict[I].Sub == SUBCLASS.sMAIN then
+	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
 		word  J = 0;
 		while J < nDict do
 			if Dict[J].Class == CLASS.cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
@@ -2281,7 +2280,7 @@ void EmitFunctions(char @Buff)
 	while I < nDict do
 		select
 			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used != 0:
-				if Dict[I].Sub == SUBCLASS.sMAIN then
+				if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
 					EntryLabel = Dict[I].Label;
 					EmitEntrySymbol(@Buff);
 				end:if

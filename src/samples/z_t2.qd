@@ -85,7 +85,7 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
 end
 
 
-begin
+void _start() of
   HANDLE   hInst=GetModuleHandle(NULL);
 
   WNDCLASS WndClass;

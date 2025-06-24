@@ -56,7 +56,7 @@ namespace SUBCLASS of
 
 	define  sSYS        17 // Функция ОС
 	define  sFUNC       18 // Функция пpогpаммы
-	define  sMAIN       19 // Главная функция
+	define  sSTART_FUNC 19 // Точка входа в программу из ОС
 end:namespace
 
 /*****************************************************************************/

@@ -2,7 +2,7 @@ include "../sys4win.qdi";
 include "../include/hosted.qdi";
 
 
-begin
+void _start() of
 	word i = 0;
 	forever do
 		when (i & 1) == 1:

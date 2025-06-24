@@ -1,4 +1,4 @@
-begin
+void _start() of
 	word a = 0;
 	word b = 1;
 	word c = 2;

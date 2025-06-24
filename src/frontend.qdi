@@ -52,7 +52,7 @@ word pNamespace_qod_optional;
 
 word pEnteredNamespace;
 word pCurrentFunc;
-word pMainFunc;
+word pStartFunc;
 word pLoop;
 
 /*****************************************************************************/
@@ -83,7 +83,7 @@ void InitFrontEnd()
 
 	pLoop = nNODE;
 	pCurrentFunc = nDICT;
-	pMainFunc = nDICT;
+	pStartFunc = nDICT;
 
 	pInternalNamespace = DictMakeNamespace("<INTERNAL>");
 	pKeywordsNamespace = DictMakeNamespace("");

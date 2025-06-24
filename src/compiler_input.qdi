@@ -33,6 +33,7 @@ word    hText;         // Дескриптор открытого файла.
 
 word AlreadyOnNext = 0;
 word BeforeFirstFile;
+bool EndOfSource = false;
 
 /*****************************************************************************/
 
@@ -70,6 +71,12 @@ end
 
 /*****************************************************************************/
 
+bool IsEos()
+	return EndOfSource;
+end
+
+/*****************************************************************************/
+
 char Read()
 
 	word a = AlreadyOnNext;
@@ -96,7 +103,8 @@ char Read()
 			Flag  = 1;
 		else
 			if nFile < 1 then
-				//Stop(@eEOF);
+				//Stop(@L10n.eEOF);
+				EndOfSource = true;
 				return #0;
 			end
 			PopCurrentFile();

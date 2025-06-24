@@ -549,6 +549,14 @@ end
 
 /*****************************************************************************/
 
+bool T_IsNamespace(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sNAMESPACE;
+end
+
+/*****************************************************************************/
+
 bool T_IsArray(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);
@@ -890,7 +898,7 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	case SUBCLASS.sARRAY: @s_SUB = "sARRAY";
 	case SUBCLASS.sSYS: @s_SUB = "sSYS";
 	case SUBCLASS.sFUNC: @s_SUB = "sFUNC";
-	case SUBCLASS.sMAIN: @s_SUB = "sMAIN";
+	case SUBCLASS.sSTART_FUNC: @s_SUB = "sSTART_FUNC";
 	default: @s_SUB = "<UNK>";
 	end:switch
 

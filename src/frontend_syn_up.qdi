@@ -53,6 +53,8 @@ end
 /*****************************************************************************/
 
 void DeclMainFunc(char@ Buff)
+	Warn("begin..end is deprecated, please use _start() instead");
+
 	word pFunction = DictAlloc();
 	word pFuncType = DictAlloc();
 
@@ -60,7 +62,7 @@ void DeclMainFunc(char@ Buff)
 	DictSetName(pFuncType, "");
 
 	Dict[pFunction].Class = CLASS.cFUNC;
-	Dict[pFunction].Sub   = SUBCLASS.sMAIN;
+	Dict[pFunction].Sub   = SUBCLASS.sSTART_FUNC;
 	Dict[pFunction].pType = pFuncType;
 
 	Dict[pFuncType].Class = CLASS.cTYPE;
@@ -70,7 +72,7 @@ void DeclMainFunc(char@ Buff)
 	word pARGS = T_FuncMakeArgs(pFuncType);
 
 	pCurrentFunc = pFunction;
-	pMainFunc = pFunction;
+	pStartFunc = pFunction;
 	word Saved_nLocal = nLocal;
 
 	Scan(@Buff);
@@ -638,6 +640,12 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 		case TopLevel & str_eq(@Buff,"begin"):
 			DeclMainFunc(@Buff);
 			exit;
+		case str_eq(@Buff, ""):
+			if TopLevel then
+				exit;
+			else
+				Stop(@L10n.eEOF);
+			end:if
 		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff);
 		end:select

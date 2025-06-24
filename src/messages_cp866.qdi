@@ -12,6 +12,7 @@ define @eINCLUDE_SEMICOLON_EXP "Пропущена точка с запятой в директиве include"
 define @eINCLUDE_WHEN_SEMICOLON_EXP "Пропущена точка с запятой в директиве includewhen"
 define @eINCLUDE_ONCE_SEMICOLON_EXP "Пропущена точка с запятой в директиве includeonce"
 
+define @eNOSTART         "Должна быть определена _start() или std.start()"
 
 define @eEOF             "Конец файла"                                 // Unexpected EOF
 define @eNOMEMORY        "Недостаточно памяти"                         // Not enough memory
