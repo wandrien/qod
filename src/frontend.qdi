@@ -244,7 +244,7 @@ void InitFrontEnd()
 	CurrentFileInfo.Line = 1;
 	CurrentFileInfo.Column = 1;
 	@CurrentFileInfo.FileName = NULL;
-	BeforeFirstFile = 1;
+	BeforeFirstFile = true;
 end
 
 /*****************************************************************************/

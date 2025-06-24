@@ -16,11 +16,8 @@ ARGS@ GetProgramArgs();
 
 /*****************************************************************************/
 
-word is_handle_valid(word h)
-	if h >= 0x80000000 then
-		return 0;
-	end
-	return 1;
+bool is_handle_valid(word h)
+	return (h < 0x80000000);
 end
 
 /*****************************************************************************/

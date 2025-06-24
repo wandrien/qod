@@ -31,8 +31,8 @@ word    hText;         // Дескриптор открытого файла.
 
 /*****************************************************************************/
 
-word AlreadyOnNext = 0;
-word BeforeFirstFile;
+bool AlreadyOnNext = false;
+bool BeforeFirstFile = true;
 bool EndOfSource = false;
 
 /*****************************************************************************/
@@ -79,9 +79,9 @@ end
 
 char Read()
 
-	word a = AlreadyOnNext;
+	bool _AlreadyOnNext = AlreadyOnNext;
 
-	AlreadyOnNext = 0;
+	AlreadyOnNext = false;
 
 	/*
 		Пока у нас нечего читать, мы по очереди пробуем:
@@ -99,7 +99,7 @@ char Read()
 		if Flag == 0 then
 			nText = pFile + read(hText, @Text[pFile], nTEXT);
 			pText = pFile;
-			BeforeFirstFile = 0;
+			BeforeFirstFile = false;
 			Flag  = 1;
 		else
 			if nFile < 1 then
@@ -113,7 +113,7 @@ char Read()
 	end:while
 
 	char r = Text[pText];
-	if BeforeFirstFile == 0 & a != 0 & r == '~n' then
+	if !BeforeFirstFile & _AlreadyOnNext & r == '~n' then
 		if  CurrentFileInfo.Line % 50 == 0 then
 			ShowParseProgress(0);
 		end
@@ -134,12 +134,12 @@ end
 	это свидетельствует об ошибке в парсере, и программа завершится с eINTERNAL.
 */
 void Next()
-	when AlreadyOnNext != 0:
+	when AlreadyOnNext:
 		StopInternal(__FILE__, __LINE__);
 
-	AlreadyOnNext = 1;
+	AlreadyOnNext = true;
 
-	when BeforeFirstFile == 0:
+	when !BeforeFirstFile:
 		inc CurrentFileInfo.Column;
 
 	inc pText;
@@ -151,7 +151,7 @@ end
 void OpenInputFile(char @FileName)
 
 	word hFile=open(@FileName);
-	when is_handle_valid(hFile) == 0:
+	when !is_handle_valid(hFile):
 		StopWithSubject(@L10n.eNOFILE, @FileName);
 
 	hText = hFile;
