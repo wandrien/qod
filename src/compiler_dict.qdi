@@ -196,14 +196,13 @@ word FindInNamespace(char @Name; word pNamespace)
 	word hash = str_hash(@Name);
 	word P = Dict[pNamespace].pFirst;
 	while P < nDict do
-		when Dict[P].pNamespace != pNamespace:
-			StopInternal(__FILE__, __LINE__);
-		if Dict[P].Name.Hash == hash
+		DICT @d = @Dict[P];
+		if d.Name.Hash == hash
 		&  str_eq(@DictGetName(P), @Name)
-		&  Dict[P].Class != CLASS.cFILE then
+		/*&  d.Class != CLASS.cFILE*/ then
 			return DictResolveAlias(P);
 		end
-		P = Dict[P].pNext;
+		P = d.pNext;
 	end
 
 	return nDICT;
