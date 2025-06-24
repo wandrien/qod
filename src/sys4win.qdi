@@ -1,9 +1,34 @@
 include "include/freestanding.qdi";
 include "sys4win_typedefs.qdi";
 
-define FILE_SHARE_DELETE 0x00000004	
-define FILE_SHARE_READ   0x00000001	
+define FILE_SHARE_DELETE 0x00000004
+define FILE_SHARE_READ   0x00000001
 define FILE_SHARE_WRITE  0x00000002
+
+define GENERIC_ALL     0x10000000
+define GENERIC_EXECUTE 0x20000000
+define GENERIC_WRITE   0x40000000
+define GENERIC_READ    0x80000000
+
+define CREATE_ALWAYS 2
+define CREATE_NEW 1
+define OPEN_ALWAYS 4
+define OPEN_EXISTING 3
+define TRUNCATE_EXISTING 5
+
+define FILE_ATTRIBUTE_ARCHIVE 0x20
+define FILE_ATTRIBUTE_ENCRYPTED 0x4000
+define FILE_ATTRIBUTE_HIDDEN 0x2
+define FILE_ATTRIBUTE_NORMAL 0x80
+define FILE_ATTRIBUTE_OFFLINE 0x1000
+define FILE_ATTRIBUTE_READONLY 0x1
+define FILE_ATTRIBUTE_SYSTEM 0x4
+define FILE_ATTRIBUTE_TEMPORARY 0x100
+
+define STD_INPUT_HANDLE  0xFFFFFFF6
+define STD_OUTPUT_HANDLE 0xFFFFFFF5
+define STD_ERROR_HANDLE  0xFFFFFFF4
+
 
 char    @GetCommandLine()                              external KERNEL32.GetCommandLineA;
 
@@ -13,7 +38,7 @@ HANDLE   CreateFile    (char  @lpFileName;
                         DWORD  dwDesiredAccess;
                         DWORD  dwShareMode;
                         void  @SecurityAttributes;
-                        DWORD  dwCreationDistribution;
+                        DWORD  dwCreationDisposition;
                         DWORD  dwFlagsAndAttributes;
                         HANDLE hTemplateFile)          external KERNEL32.CreateFileA;
 
@@ -32,36 +57,36 @@ BOOL     WriteFile     (HANDLE hFile;
 BOOL     CloseHandle   (HANDLE hObject)                external KERNEL32;
 
 
-word     open(char @Name)
-	return CreateFile(@Name,0x80000000,FILE_SHARE_READ,NULL,3,0x80,0);
+word open(char @Name)
+	return CreateFile(@Name,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,0);
 end
 
 
-word     create(char @Name)
-	return CreateFile(@Name,0x40000000,0,NULL,2,0x80,0);
+word create(char @Name)
+	return CreateFile(@Name,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
 end
 
 
-word     read(word F; void @Buff; word N)
+word read(word F; void @Buff; word N)
 	ReadFile(F,@Buff,N,@N,NULL);
 	return N;
 end
 
 
-word     write(word F; void @Buff; word N)
+word write(word F; void @Buff; word N)
 	WriteFile(F,@Buff,N,@N,NULL);
 	return N;
 end
 
 
-void     close(word F)
+void close(word F)
 	CloseHandle(F);
 end
 
 
-void     puts(char @S)
+void puts(char @S)
 	word N;
-	WriteFile(GetStdHandle(0xFFFFFFF5),@S,strlen(@S),@N,NULL);
+	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),@S,strlen(@S),@N,NULL);
 end
 
 
