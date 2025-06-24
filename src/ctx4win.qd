@@ -3,6 +3,9 @@ include "sys4win.qdi";
 include "messages_cp866.qdi";
 include "ctx4all.qdi";
 
+ARGS __args;
+bool __args_parsed = false;
+
 define nCMDLINEBUFF 1024
 char CmdLineBuff[nCMDLINEBUFF];
 word nCmdLineBuff = nCMDLINEBUFF;
@@ -55,44 +58,46 @@ word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
 end
 
 void ParseCmdLine(char@ S)
-	if S[0] == #0 then
-		return;
-	end:if
+	__args.argc = 0;
+	@__args.argv = @ArgV;
 
-	@S = @S[str_skip_wspace(@S)];
+	forever do
+		when S[0] == #0:
+			exit;
 
-	if S[0] == #0 then
-		return;
-	end:if
+		@S = @S[str_skip_wspace(@S)];
 
-	word i;
-	word l = StrParseFirstWord(@CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff], nCmdLineBuff, @S, @i);
+		when S[0] == #0:
+			exit;
 
-	@ArgV[Argc].Arg = @CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff];
-	inc Argc;
-	if Argc >= nARGV then
-		StopMemory();
-	end:if
+		word i;
+		word l = StrParseFirstWord(@CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff], nCmdLineBuff, @S, @i);
 
-	nCmdLineBuff = nCmdLineBuff - l;
+		@ArgV[__args.argc].arg = @CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff];
+		inc __args.argc;
+		if __args.argc >= nARGV then
+			StopMemory();
+		end:if
 
-	ParseCmdLine(@S[i]);
+		nCmdLineBuff = nCmdLineBuff - l;
+
+		@S = @S[i];
+	end:forever
 end
 
+ARGS@ GetProgramArgs()
+	if !__args_parsed then
+		char @CmdLine = @GetCommandLine();
+		ParseCmdLine(@CmdLine);
+		__args_parsed = true;
+	end
+	return @__args;
+end
 
-begin
-
+void _start() of
 	@fpath_p_dir_separator = "\";
 	@fpath_p_dir_separators = "/\";
 
-	@Argv = @ArgV;
-	Argc  = 0;
-
-	char @CmdLine = @GetCommandLine();
-	ParseCmdLine(@CmdLine);
-
-	@DefaultTarget = "--win32-c";
-
-	__main();
-
+	word result = main();
+	ExitProcess(result);
 end

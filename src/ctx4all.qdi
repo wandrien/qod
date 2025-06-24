@@ -58,7 +58,16 @@ char@ OutputFile;
 char@ OutputTreeFile;
 char@ OutputIncludeListFile;
 
-char@ DefaultTarget;
+/*****************************************************************************/
+
+char @GetDefaultTarget()
+	when qod.env.__LINUX__:
+		return "--linux";
+	when qod.env.__WIN32__:
+		return "--win32-c";
+	/* FIXME: ensure dead code */
+	StopInternal(__FILE__, __LINE__);
+end
 
 /*****************************************************************************/
 
@@ -83,7 +92,7 @@ end
 
 /*****************************************************************************/
 
-void Translate()
+noreturn Translate()
 
 	/* Синтаксический анализ **********************/
 
@@ -181,13 +190,16 @@ void Translate()
 
 	ShowParseProgress(1);
 
+	halt(0);
 end
 
 /*****************************************************************************/
 
 char@ GetArg(word I; char@ ErrMsg)
 
-	if I >= Argc then
+	ARGS@ args = @GetProgramArgs();
+
+	if I >= args.argc then
 		if @ErrMsg == NULL then
 			StopInternal(__FILE__, __LINE__);
 		else
@@ -195,7 +207,7 @@ char@ GetArg(word I; char@ ErrMsg)
 		end
 	end:if
 
-	return @Argv[I].Arg;
+	return @args.argv[I].arg;
 end
 
 /*****************************************************************************/
@@ -269,21 +281,23 @@ end
 
 /*****************************************************************************/
 
-void __main()
+word main()
 
-	SetupTarget(@DefaultTarget);
+	SetupTarget(@GetDefaultTarget());
 	SetupOptimization("none");
 
+	ARGS@ args = @GetProgramArgs();
+
 	word i = 1;
-	while i < Argc do
+	while i < args.argc do
 		char@ arg = @GetArg(i, NULL);
 		select
 		case str_eq(@arg, "--help"   ):
 			PrintUsage();
-			return;
+			return 0;
 		case str_eq(@arg, "--version"):
 			PrintVersionAndCopyright();
-			return;
+			return 0;
 		case str_eq(@arg, "--linux"  )
 		   | str_eq(@arg, "--win32-c")
 		   | str_eq(@arg, "--win32-w"):
@@ -320,7 +334,7 @@ void __main()
 
 	if @InputFile == NULL then
 		PrintUsage();
-		return;
+		return 1;
 	end
 
 	char Name[nBUFF];
