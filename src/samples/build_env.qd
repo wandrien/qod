@@ -1,7 +1,7 @@
 /* TARGET: linux, win32-c */
 include "../include/hosted.qdi";
 
-void _start() of
+word main() of
 	puts("This program is compiled with ");
 	puts(@qod.impl.impl_name);
 	puts(" ");
@@ -15,4 +15,5 @@ void _start() of
 	puts("Qod Version is ");
 	puts(@qod.qod_version_string);
 	put_nl();
+	return 0;
 end
