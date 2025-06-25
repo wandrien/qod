@@ -5,8 +5,12 @@ struct strbuf of
 	word BuffLen;
 
 	void init(strbuf @Dst; char @Buff; word BuffSize);
+	char @deref_buff(strbuf @Dst; word Index);
+	void truncate(strbuf @Dst; word NewLen);
 	word get_virtual_len(strbuf @Dst);
 	word get_actual_len(strbuf @Dst);
+	word append_char(strbuf @Dst; char Char);
+	word append_buf(strbuf @Dst; char @Src; word SrcLen);
 	word append_cstr(strbuf @Dst; char @Src);
 	word append_cstr2(strbuf @Dst; char @Src1; char @Src2);
 	word append_cstr3(strbuf @Dst; char @Src1; char @Src2; char @Src3);
@@ -28,6 +32,23 @@ void strbuf.init(strbuf @Dst; char @Buff; word BuffSize)
 		Buff[0] = #0;
 end
 
+char @strbuf.deref_buff(strbuf @Dst; word Index)
+	when @Dst.Buff == NULL:
+		return NULL;
+	when Index >= Dst.BuffSize:
+		return NULL;
+	return @Dst.Buff[Index];
+end
+
+void strbuf.truncate(strbuf @Dst; word NewLen)
+	if NewLen < Dst.BuffLen then
+		Dst.BuffLen = NewLen;
+		if (@Dst.Buff != NULL) & (NewLen < Dst.BuffSize) then
+			Dst.Buff[NewLen] = #0;
+		end:if
+	end:if
+end
+
 word strbuf.get_virtual_len(strbuf @Dst)
 	return Dst.BuffLen;
 end
@@ -45,10 +66,16 @@ word strbuf.get_actual_len(strbuf @Dst)
 	end
 end
 
-word strbuf.append_cstr(strbuf @Dst; char @Src)
+word strbuf.append_char(strbuf @Dst; char Char)
+	char s[2];
+	s[0] = Char;
+	s[1] = #0;
+	return strbuf.append_buf(@Dst, @s, 1);
+end
+
+word strbuf.append_buf(strbuf @Dst; char @Src; word SrcLen)
 	when @Src == NULL:
 		return Dst.BuffLen;
-	word SrcLen = strlen(@Src);
 	word BuffSize = Dst.BuffSize;
 	word OldLen = Dst.BuffLen;
 	word NewLen = OldLen + SrcLen;
@@ -67,6 +94,10 @@ word strbuf.append_cstr(strbuf @Dst; char @Src)
 	Dst.BuffLen = NewLen;
 	Dst.Buff[OldLen + RoomSize] = #0;
 	return NewLen;
+end
+
+word strbuf.append_cstr(strbuf @Dst; char @Src)
+	return strbuf.append_buf(@Dst, @Src, strlen(@Src));
 end
 
 word strbuf.append_cstr2(strbuf @Dst; char @Src1; char @Src2)
