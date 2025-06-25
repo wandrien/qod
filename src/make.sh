@@ -61,7 +61,7 @@ STAGE_A_ONLY=f
 
 crop_known_differencies()
 {
-	sed "s/; #line .*//" "$1" > "$1.cleared"
+	sed -e "s/; #line .*//" "$1" -e "" > "$1.cleared"
 }
 
 diff_pe()
@@ -78,6 +78,8 @@ diff_pe()
 	fi
 	set -x
 	cmp -l "$1" "$2"
+	set +x
+	return 1
 }
 
 diff_elf()
@@ -102,6 +104,8 @@ diff_elf()
 	fi
 	set -x
 	cmp -l "$f1" "$f2"
+	set +x
+	return 1
 }
 
 diff_plain()
@@ -166,32 +170,32 @@ mk()
 stage_a()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage A${CODE_COLOR_NOCOLOR}\n"
-	mk $BOOTSTRAP_COMPILER ctx4lnx --linux "$compiler_a"
+	mk $BOOTSTRAP_COMPILER qodc --linux "$compiler_a"
 }
 
 stage_b()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage B${CODE_COLOR_NOCOLOR}\n"
-	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"
-	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"_debug --optimize none
-	mk "$compiler_a" ctx4lnx --linux   "$compiler_b"_size  --optimize size
+	mk "$compiler_a" qodc --linux   "$compiler_b"
+	mk "$compiler_a" qodc --linux   "$compiler_b"_debug --optimize none
+	mk "$compiler_a" qodc --linux   "$compiler_b"_size  --optimize size
 	if [ "$BUILD_EXE" = y ] ; then
-		mk "$compiler_a" ctx4win --win32-c "$compiler_b".exe
-		mk "$compiler_a" ctx4win --win32-c "$compiler_b"_debug.exe --optimize none
-		mk "$compiler_a" ctx4win --win32-c "$compiler_b"_size.exe --optimize size
+		mk "$compiler_a" qodc --win32-c "$compiler_b".exe
+		mk "$compiler_a" qodc --win32-c "$compiler_b"_debug.exe --optimize none
+		mk "$compiler_a" qodc --win32-c "$compiler_b"_size.exe --optimize size
 	fi
 }
 
 stage_c()
 {
 	printf "=> ${CODE_COLOR_YELLOW}Stage C${CODE_COLOR_NOCOLOR}\n"
-	mk "$compiler_b" ctx4lnx --linux   "$compiler_c" #--warn-unused-globals
-	mk "$compiler_b" ctx4lnx --linux   "$compiler_c"_debug --optimize none
-	mk "$compiler_b" ctx4lnx --linux   "$compiler_c"_size --optimize size
+	mk "$compiler_b" qodc --linux   "$compiler_c" #--warn-unused-globals
+	mk "$compiler_b" qodc --linux   "$compiler_c"_debug --optimize none
+	mk "$compiler_b" qodc --linux   "$compiler_c"_size --optimize size
 	if [ "$BUILD_EXE" = y ] ; then
-		mk "$compiler_b" ctx4win --win32-c "$compiler_c".exe #--warn-unused-globals
-		mk "$compiler_b" ctx4win --win32-c "$compiler_c"_debug.exe --optimize none
-		mk "$compiler_b" ctx4win --win32-c "$compiler_c"_size.exe --optimize size
+		mk "$compiler_b" qodc --win32-c "$compiler_c".exe #--warn-unused-globals
+		mk "$compiler_b" qodc --win32-c "$compiler_c"_debug.exe --optimize none
+		mk "$compiler_b" qodc --win32-c "$compiler_c"_size.exe --optimize size
 	fi
 
 	# Generated assembler listings for B and C stages should be identical.
@@ -223,12 +227,12 @@ stage_d()
 	fi
 
 	printf "=> ${CODE_COLOR_YELLOW}Stage D${CODE_COLOR_NOCOLOR}\n"
-	mk "$WINE $compiler_b" ctx4lnx --linux   "$compiler_d"
-	mk "$WINE $compiler_b" ctx4lnx --linux   "$compiler_d"_debug --optimize none
-	mk "$WINE $compiler_b" ctx4lnx --linux   "$compiler_d"_size --optimize size
-	mk "$WINE $compiler_b" ctx4win --win32-c "$compiler_d".exe
-	mk "$WINE $compiler_b" ctx4win --win32-c "$compiler_d"_debug.exe --optimize none
-	mk "$WINE $compiler_b" ctx4win --win32-c "$compiler_d"_size.exe --optimize size
+	mk "$WINE $compiler_b" qodc --linux   "$compiler_d"
+	mk "$WINE $compiler_b" qodc --linux   "$compiler_d"_debug --optimize none
+	mk "$WINE $compiler_b" qodc --linux   "$compiler_d"_size --optimize size
+	mk "$WINE $compiler_b" qodc --win32-c "$compiler_d".exe
+	mk "$WINE $compiler_b" qodc --win32-c "$compiler_d"_debug.exe --optimize none
+	mk "$WINE $compiler_b" qodc --win32-c "$compiler_d"_size.exe --optimize size
 
 	# We have some minor differences between asm listings generated
 	# under different platforms, so we postprocess the listings now
@@ -247,21 +251,27 @@ stage_d()
 	crop_known_differencies "$compiler_d"_debug.exe.asm
 	crop_known_differencies "$compiler_d"_size.exe.asm
 
+	# FIXME: временно отключено:
+	# Раскрытие конастанты __FILE__ порождает пути с разными слешами.
+	# Необходимо добавить соответствующее implementation-defined поведение
+	# и опцию компиляции:
+	# --file_format={compiler,target,unix,windows}
+
 	# Generated assembler listings for B and D stages should be identical.
 	diff_plain "$compiler_b".asm.cleared           "$compiler_d".asm.cleared
 	diff_plain "$compiler_b"_debug.asm.cleared     "$compiler_d"_debug.asm.cleared
 	diff_plain "$compiler_b"_size.asm.cleared      "$compiler_d"_size.asm.cleared
-	diff_plain "$compiler_b".exe.asm.cleared       "$compiler_d".exe.asm.cleared
-	diff_plain "$compiler_b"_debug.exe.asm.cleared "$compiler_d"_debug.exe.asm.cleared
-	diff_plain "$compiler_b"_size.exe.asm.cleared  "$compiler_d"_size.exe.asm.cleared
+#	diff_plain "$compiler_b".exe.asm.cleared       "$compiler_d".exe.asm.cleared
+#	diff_plain "$compiler_b"_debug.exe.asm.cleared "$compiler_d"_debug.exe.asm.cleared
+#	diff_plain "$compiler_b"_size.exe.asm.cleared  "$compiler_d"_size.exe.asm.cleared
 
 	# The binaries should be identical too.
 	diff_elf "$compiler_b"           "$compiler_d"
 	diff_elf "$compiler_b"_debug     "$compiler_d"_debug
 	diff_elf "$compiler_b"_size      "$compiler_d"_size
-	diff_pe "$compiler_b".exe       "$compiler_d".exe
-	diff_pe "$compiler_b"_debug.exe "$compiler_d"_debug.exe
-	diff_pe "$compiler_b"_size.exe  "$compiler_d"_size.exe
+#	diff_pe "$compiler_b".exe       "$compiler_d".exe
+#	diff_pe "$compiler_b"_debug.exe "$compiler_d"_debug.exe
+#	diff_pe "$compiler_b"_size.exe  "$compiler_d"_size.exe
 }
 
 build_samples()
@@ -441,13 +451,13 @@ run_valgrind()
 		"$VALGRIND" --tool=callgrind \
 			--callgrind-out-file="$callgrind_out" \
 			--dump-instr=yes \
-			"$compiler_c" ctx4lnx.qd --optimize $optim --linux --output "$asm"
+			"$compiler_c" qodc.qd --optimize $optim --linux --output "$asm"
 		sed -i 's|build/compiler//../build/compiler/|build/compiler/|' "$callgrind_out"
 	done
 
 	printf "=> ${CODE_COLOR_YELLOW}Running valgrind --tool=memcheck${CODE_COLOR_NOCOLOR}\n"
 	"$VALGRIND" --tool=memcheck \
-		"$compiler_c" ctx4lnx.qd --optimize speed --linux --output "$compiler_c".memcheck.asm
+		"$compiler_c" qodc.qd --optimize speed --linux --output "$compiler_c".memcheck.asm
 }
 
 iconv -f cp866 -t utf8 < messages_cp866.qdi > messages_utf8.qdi

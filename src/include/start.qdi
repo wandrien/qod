@@ -1,0 +1,3 @@
+word main();
+include_when "platform/linux/start.qdi", qod.env.__LINUX__;
+include_when "platform/windows/start.qdi", qod.env.__WIN32__;

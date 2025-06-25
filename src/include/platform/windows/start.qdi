@@ -1,5 +1,3 @@
-include "ctx4all.qdi";
-
 namespace CommandLineParser of
 	/*
 		Windows command line parsing:

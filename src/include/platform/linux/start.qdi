@@ -1,5 +1,3 @@
-include "ctx4all.qdi";
-
 ARGS __args;
 
 ARGS@ GetProgramArgs()

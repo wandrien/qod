@@ -1,8 +1,6 @@
-
 include "freestanding.qdi";
 include "platform.qdi";
 include "fpath.qdi";
-
 
 void put_word(word i)
 	puts(@str(i));
@@ -58,3 +56,5 @@ noreturn panic3(char @file; word line; word exitcode; char @msg, @msg2, @msg3) o
 		puts("~r~n");
 	halt(exitcode);
 end
+
+include "start.qdi";

@@ -19,12 +19,12 @@ set compiler_c=%COMPILER_BUILD_DIR%\%compiler_name%_c
 set compiler_d=%COMPILER_BUILD_DIR%\%compiler_name%_d
 
 
-call :mk %BOOTSTRAP_COMPILER% ctx4win --win32-c %compiler_a%.exe
+call :mk %BOOTSTRAP_COMPILER% qodc --win32-c %compiler_a%.exe
 
-call :mk %compiler_a%.exe ctx4win --win32-c %compiler_b%.exe
-call :mk %compiler_b%.exe ctx4win --win32-c %compiler_c%.exe
-call :mk %compiler_c%.exe ctx4lnx --linux   %compiler_c%
-call :mk %compiler_c%.exe ctx4win --win32-c %compiler_c%_debug.exe --optimize none
+call :mk %compiler_a%.exe qodc --win32-c %compiler_b%.exe
+call :mk %compiler_b%.exe qodc --win32-c %compiler_c%.exe
+call :mk %compiler_c%.exe qodc --linux   %compiler_c%
+call :mk %compiler_c%.exe qodc --win32-c %compiler_c%_debug.exe --optimize none
 
 call :mk %compiler_c%.exe samples\z_t1  --win32-c %SAMPLES_BUILD_DIR%\z_t1.exe
 call :mk %compiler_c%.exe samples\z_t2  --win32-w %SAMPLES_BUILD_DIR%\z_t2.exe

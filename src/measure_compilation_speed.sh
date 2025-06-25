@@ -6,7 +6,7 @@ repetitions=30
 
 run_test() {
 	for a in {1..30} ; do
-		../build/compiler/qodc_c --optimize none  --output "$O" ctx4lnx.qd
+		../build/compiler/qodc_c --optimize none  --output "$O" qodc.qd
 	done
 }
 
