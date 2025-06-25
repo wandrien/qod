@@ -151,9 +151,14 @@ mk()
 		asm_opt="--asm $assembler_mode"
 	fi
 
+	if test -f "$src.qd" -a ! -f "$src" ; then
+		src="$src.qd"
+	fi
+
 	echo "    BUILD $dst"
 	mkdir -p "`dirname "$dst"`"
-	$compiler $src.qd\
+	$compiler \
+		"$src" \
 		$platform \
 		--optimize speed \
 		--output "$dst".asm \
@@ -283,12 +288,28 @@ build_samples()
 
 	printf "=> ${CODE_COLOR_YELLOW}Building samples${CODE_COLOR_NOCOLOR}\n"
 
-	mk "$compiler_c" samples/z_t1  --win32-c "$SAMPLES_BUILD_DIR/z_t1.exe"
-	mk "$compiler_c" samples/z_t2  --win32-w "$SAMPLES_BUILD_DIR/z_t2.exe"
-	mk "$compiler_c" samples/z_t3  --win32-c "$SAMPLES_BUILD_DIR/z_t3.exe"
-	mk "$compiler_c" samples/z_t4  --win32-c "$SAMPLES_BUILD_DIR/z_t4.exe"
-	mk "$compiler_c" samples/z_t5  --win32-c "$SAMPLES_BUILD_DIR/z_t5.exe"
-	mk "$compiler_c" samples/z_t6  --win32-c "$SAMPLES_BUILD_DIR/z_t6.exe"
+	for f in samples/*qd ; do
+		local basename="`basename "$f" .qd`"
+		local targets="`grep -a -- 'TARGET:' "$f" | sed 's/^.*TARGET://'`"
+		local skipped=y
+		printf "  $f\n"
+		if echo "$targets" | grep -q 'linux' ; then
+			mk "$compiler_c" "$f" --linux "$SAMPLES_BUILD_DIR/$basename"
+			skipped=n
+		fi
+		if echo "$targets" | grep -q 'win32-c' ; then
+			mk "$compiler_c" "$f" --win32-c "$SAMPLES_BUILD_DIR/$basename.exe"
+			skipped=n
+		fi
+		if echo "$targets" | grep -q 'win32-w' ; then
+			mk "$compiler_c" "$f" --win32-w "$SAMPLES_BUILD_DIR/$basename.exe"
+			skipped=n
+		fi
+		if test "$skipped" = y ; then
+			echo "    SKIPPED"
+		fi
+	done
+
 }
 
 do_test_with_compiler ()

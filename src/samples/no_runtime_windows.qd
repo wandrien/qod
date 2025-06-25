@@ -1,0 +1,28 @@
+/* TARGET: win32-w */
+
+/*
+	This is an example of a program without runtime library.
+	The generated assembly code and the binary file is very tiny and include
+	only what you see in this file.
+
+	_start() is the program entry point, that overrides the default std.start().
+
+	See also no_runtime.qd
+*/
+
+
+alias HWND = @void;
+alias UINT = uint32;
+
+int MessageBox(
+	HWND hWnd;
+	char @lpText;
+	char @lpCaption;
+	UINT uType
+) external USER32.MessageBoxA;
+
+char @GetCommandLine() external KERNEL32.GetCommandLineA;
+
+void _start() of
+	MessageBox(NULL, @GetCommandLine(), "The command line is", 0);
+end

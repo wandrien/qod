@@ -1,0 +1,205 @@
+/* TARGET: linux, win32-c */
+include "../include/hosted.qdi";
+
+/*
+	Try
+	calc_cmdline 10 + 3 + 50
+	calc_cmdline 5 '*' 7
+	calc_cmdline 100 / 20
+	calc_cmdline 0xFF - 0o33
+	calc_cmdline 0xFE '&' 0b101
+	and so on.
+
+	Try
+	calc_cmdline 1 / 0
+	to force the crash.
+*/
+
+/*****************************************************************************/
+
+define @eMALFORMEDINT "malformed integer"
+define @eINVALIDRADIX "invalid radix"
+define @eWRONGDIGIT "wrong digit: "
+define @eINTTOOBIG "integer literal too big"
+define @eWRONGCMDLINE "wrong command line"
+
+/*****************************************************************************/
+
+word Char2Digit[256];
+
+void InitNumberParser()
+	word Ch = 0;
+	while Ch < 256 do
+		word Digit;
+		select
+		case Ch >= word('0') & Ch <= word('9'):
+			Digit = Ch - word('0');
+		case Ch >= word('A') & Ch <= word('Z'):
+			Digit = Ch - word('A') + 10;
+		case Ch >= word('a') & Ch <= word('z'):
+			Digit = Ch - word('a') + 10;
+		default:
+			Digit = 10000;
+		end:select
+		Char2Digit[Ch] = Digit;
+		inc Ch;
+	end:while
+end
+
+/*****************************************************************************/
+
+word val2(char @Str; int StrLen; word Base)
+	when StrLen < 1:
+		panic(__FILE__, __LINE__, 1, @eMALFORMEDINT);
+
+	when Str[0] == #0:
+		panic(__FILE__, __LINE__, 1, @eMALFORMEDINT);
+
+	when Base < 2 | Base > 36:
+		panic(__FILE__, __LINE__, 1, @eINVALIDRADIX);
+
+	int i = 0;
+
+	word Value = 0;
+	while i < StrLen & Str[i] != #0 do
+
+		while Str[i] == '_' do
+			inc i;
+		end
+
+		word ch = word(Str[i]);
+		word Digit = Char2Digit[ch];
+
+		if Digit >= Base then
+			char buf[2];
+			buf[0] = char(ch);
+			buf[1] = #0;
+			panic2(__FILE__, __LINE__, 1, @eWRONGDIGIT, @buf);
+		end
+
+		word NewValue = Value * Base + Digit;
+
+		when NewValue < Value:
+			panic(__FILE__, __LINE__, 1, @eINTTOOBIG);
+
+		Value = NewValue;
+
+		inc i;
+	end:while
+
+	return Value;
+end
+
+/*****************************************************************************/
+
+word val(char @Buff)
+	word Base;
+	int P;
+	int Len = 0;
+
+	forever do
+		int StrLen = int(strlen(@Buff));
+		when StrLen < 0:
+			panic(__FILE__, __LINE__, 1, @eMALFORMEDINT);
+
+		if StrLen == 1 then
+			/* A single-digit number */
+			Base = 10;
+			P    = 0;
+			Len  = StrLen;
+			exit;
+		end:if
+
+		char LastChar = Buff[StrLen - 1];
+		if LastChar == 'h' | LastChar == 'H' then
+			/* "F0h" */
+			Base = 16;
+			P    = 0;
+			Len  = StrLen - 1;
+			exit;
+		end:if
+
+		if Buff[0] == '0' then
+			switch Buff[1] of
+			case 'x', 'X':
+				/* "0xF0" */
+				Base = 16;
+				P    = 2;
+				Len  = StrLen - P;
+				exit;
+			case 'b', 'B':
+				/* "0b1010" */
+				Base = 2;
+				P    = 2;
+				Len  = StrLen - P;
+				exit;
+			case 'o', 'O':
+			/* "0o333" */
+				Base = 8;
+				P    = 2;
+				Len  = StrLen - P;
+				exit;
+			end:switch
+		end:if
+
+		int k = int(str_find_chars(@Buff, "$"));
+		select
+		/* no '$' -- radix is 10 */
+		case Buff[k] == #0:
+			Base = 10;
+			P    = 0;
+			Len  = StrLen;
+		/* '$' at the beginning -- radix is 16 */
+		case k == 0:
+			Base = 16;
+			P    = 1;
+			Len  = StrLen - P;
+		/* "radix$number" */
+		default:
+			Base = val2(@Buff, k, 10);
+			P    = k + 1;
+			Len  = StrLen - P;
+		end:select
+
+		exit;
+	end:forever
+
+	return val2(@Buff[P], Len, Base);
+end
+
+
+word main()
+	InitNumberParser();
+
+	ARGS@ args = @GetProgramArgs();
+	when args.argc < 2:
+		panic(__FILE__, __LINE__, 1, @eWRONGCMDLINE);
+
+	int acc = as_signed(val(@args.argv[1].arg));
+	word i = 2;
+
+	while i < args.argc do
+		char @operator = @args.argv[i].arg;
+		inc i;
+		when i >= args.argc:
+			panic(__FILE__, __LINE__, 1, @eWRONGCMDLINE);
+		int operand = as_signed(val(@args.argv[i].arg));
+		
+		select
+		case str_eq(@operator, "+"): acc = acc + operand;
+		case str_eq(@operator, "-"): acc = acc - operand;
+		case str_eq(@operator, "*"): acc = acc * operand;
+		case str_eq(@operator, "/"): acc = acc / operand;
+		case str_eq(@operator, "%"): acc = acc % operand;
+		case str_eq(@operator, "|"): acc = as_signed(as_unsigned(acc) | as_unsigned(operand));
+		case str_eq(@operator, "&"): acc = as_signed(as_unsigned(acc) & as_unsigned(operand));
+		default:
+			panic(__FILE__, __LINE__, 1, @eWRONGCMDLINE);
+		end:select
+		inc i;
+	end:while
+	put_int(acc);
+	put_nl();
+
+	return 0;
+end

@@ -1,0 +1,50 @@
+/* TARGET: linux, win32-c */
+
+/*
+	This is an example of a program without runtime library.
+	The generated assembly code and the binary file is very tiny and include
+	only what you see in this file.
+
+	_start() is the program entry point, that overrides the default std.start().
+
+	See also no_runtime_windows.qd for more interactive example.
+*/
+
+char @hello_world = NULL;
+int x = 15;
+int zero = 0;
+
+void _start() of
+	/*
+		Since we have no runtime library,
+		we can't output anything to the user here.
+
+		But at least we can write some code and make sure it compiles.
+	*/
+
+	@hello_world = "Hellow, World!";
+	int a = 7;
+	x = x * 2 + a;
+	// x = x + 1; /* uncomment to make the program crash */
+
+	if x != 37 then
+		/* x should be 37, if we calculate correctly. */
+		/* If we make a mistake, the program will crash on the next line
+		   with division by zero. */
+		x = x / zero;
+	end
+
+	/*
+		If control reaches the end of the _start() function,
+		the program terminates in an implementation-defined manner,
+		when building in a hosted environment.
+		The control stops in an infinite loop,
+		when building in a freestanding environment.
+
+		Although the program is compiled without runtime,
+		a hosted environment is specified in the compilation options
+		(see the TARGET line above and the corresponding logic
+		in the build scripts).
+		So the program should terminate normally.
+	*/
+end

@@ -1,3 +1,4 @@
+/* TARGET: linux, win32-c */
 include "../include/hosted.qdi";
 
 void _start() of
@@ -7,11 +8,11 @@ void _start() of
 	puts(@qod.impl.impl_version_string);
 	puts(" on host ");
 	puts(@qod.impl.build_host);
-	puts("~r~n");
+	put_nl();
 	puts("Target is ");
 	puts(@qod.impl.target);
-	puts("~r~n");
+	put_nl();
 	puts("Qod Version is ");
 	puts(@qod.qod_version_string);
-	puts("~r~n");
+	put_nl();
 end

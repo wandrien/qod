@@ -1,0 +1,8 @@
+/* TARGET: linux, win32-c */
+include "../include/hosted.qdi";
+
+word main() of
+	puts("Hello, World!");
+	put_nl();
+	return 0;
+end

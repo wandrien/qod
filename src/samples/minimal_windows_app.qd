@@ -1,3 +1,4 @@
+/* TARGET: win32-w */
 include "../include/hosted.qdi";
 include "../include/windows.qdi";
 
@@ -84,7 +85,7 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
 end
 
 
-void _start() of
+word main() of
   HANDLE   hInst=GetModuleHandle(NULL);
 
   WNDCLASS WndClass;
@@ -141,5 +142,7 @@ void _start() of
   end:while
 
   DeleteObject(hFont);
+
+  return 0;
 end
 

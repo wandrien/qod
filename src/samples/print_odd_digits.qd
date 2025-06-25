@@ -1,0 +1,17 @@
+/* TARGET: linux, win32-c */
+include "../include/hosted.qdi";
+
+word main() of
+	word i = 0;
+	forever do
+		if (i & 1) == 1 then
+			put_uint(i);
+			puts(" ");
+		end:if
+		when i >= 10:
+			exit;
+		inc i;
+	end:forever
+	put_nl();
+	return 0;
+end
