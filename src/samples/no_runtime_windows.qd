@@ -2,7 +2,7 @@
 
 /*
 	This is an example of a program without runtime library.
-	The generated assembly code and the binary file is very tiny and include
+	The generated assembly code and the binary file are very tiny and include
 	only what you see in this file.
 
 	_start() is the program entry point, that overrides the default std.start().
