@@ -3,92 +3,191 @@ include "sys4win.qdi";
 include "messages_cp866.qdi";
 include "ctx4all.qdi";
 
-ARGS __args;
-bool __args_parsed = false;
+namespace CommandLineParser of
+	/*
+		Windows command line parsing:
+		https://nullprogram.com/blog/2022/02/18/
+		https://gitlab.winehq.org/wine/wine/-/blob/5a66eab72/dlls/shcore/main.c#l264
+		https://daviddeley.com/autohotkey/parameters/parameters.htm
+	*/
 
-define nCMDLINEBUFF 1024
-char CmdLineBuff[nCMDLINEBUFF];
-word nCmdLineBuff = nCMDLINEBUFF;
+	void append_argv(word @argc; ARG @argv; word argv_size; strbuf @d) of
+		if @argv != NULL & argc < argv_size & @d != NULL then
+			@argv[argc].arg = @strbuf.deref_buff(@d, strbuf.get_virtual_len(@d));
+		end:if
+		inc argc;
+	end
 
-define nARGV 40
-ARG ArgV[nARGV];
+	/* FIXME: обложить тестами.	*/
+	word _ParseCommandLine(char@ cmdline; ARG @argv; word argv_size; strbuf @d) of
+		word argc = 0;
+		when @cmdline == NULL:
+			return argc;
 
-/*
-	Парсит первое слово в строке S и помещает его в буфер Buff.
-	Если слово превышает размер буфера (BuffLen) или содержит незакрытую кавычку,
-	завершает работу программы с сообщением об ошибке.
+		char @s = @cmdline;
+		word i = 0;
 
-	Возвращает длину слова в буфере, включая #0-символ.
-	В len возвращает количество обработанных символов S.
-*/
-word StrParseFirstWord(char@ Buff; word BuffLen; char@ S; word @len)
+		append_argv(@argc, @argv, argv_size, @d);
+		/* The first argument, the executable path, follows special rules */
+		if s[i] == '"' then
+			/* The executable path ends at the next quote, no matter what */
+			inc i;
+			while s[i] != #0 do
+				if s[i] == '"' then
+					inc i;
+					exit;
+				end:if
+				strbuf.append_char(@d, s[i]);
+				inc i;
+			end:while
+		else
+			/* The executable path ends at the next space, no matter what */
+			while s[i] != #0 & s[i] != ' ' & s[i] != '~t' do
+				strbuf.append_char(@d, s[i]);
+				inc i;
+			end:while
+		end:if
+		/* close the executable path */
+		strbuf.append_char(@d, #0);
 
-	word s_i = 0;
-	word b_i = 0;
-	word quoted = 0;
+		/* skip to the first argument, if any */
+		while s[i] == ' ' | s[i] == '~t' do
+			inc i;
+		end:while
 
-	while S[s_i] != #0 do
-		char c = S[s_i];
+		word qcount = 0;
+		word bcount = 0;
 
-		select
-		case c == '"':
-			quoted = !quoted;
-		case quoted == 0 & (c == ' ' | c == '~t' | c == '~r' | c == '~n') :
-			Buff[b_i] = #0;
-			inc b_i;
-			exit;
-		default:
-			Buff[b_i] = c;
-			inc b_i;
-		end:select
-
-		if b_i >= BuffLen then
-			StopMemory();
+		if s[i] != #0 then
+			append_argv(@argc, @argv, argv_size, @d);
 		end
 
-		inc s_i;
-	end:while
+		/* Analyze the remaining arguments */
+		while s[i] != #0 do
+			select
+			case (s[i] == ' ' | s[i] == '~t') & (qcount == 0):
+				/* close the argument */
+				strbuf.append_char(@d, #0);
+				bcount = 0;
 
-	if quoted != 0 then
-		Stop(@L10n.eCMDLINEQUOTE);
-	end:if
+				/* skip to the next one and initialize it if any */
+				inc i;
+				while s[i] == ' ' | s[i] == '~t' do
+					inc i;
+				end:while
+				if s[i] != #0 then
+					append_argv(@argc, @argv, argv_size, @d);
+					/* i not incremented */
+				end:if
+			case s[i] == '\':
+				strbuf.append_char(@d, s[i]);
+				inc bcount;
+			case s[i] == '"':
+				if (bcount & 1) == 0 then
+					/* Preceded by an even number of '\', this is half that
+					 * number of '\', plus a quote which we erase.
+					 */
+					word len = strbuf.get_virtual_len(@d) - bcount / 2;
+					strbuf.truncate(@d, len);
+					inc qcount;
+				else
+					/* Preceded by an odd number of '\', this is half that
+					 * number of '\' followed by a '"'
+					 */
+					word len = strbuf.get_virtual_len(@d) - bcount / 2 - 1;
+					strbuf.truncate(@d, len);
+					strbuf.append_char(@d, '"');
+				end:if
+				inc i;
+				bcount = 0;
+				/* Now count the number of consecutive quotes. Note that qcount
+				 * already takes into account the opening quote if any, as well as
+				 * the quote that lead us here.
+				 */
+				while s[i] == '"' do
+					inc qcount;
+					if qcount == 3 then
+						strbuf.append_char(@d, '"');
+						qcount = 0;
+					end:if
+					inc i;
+				end:while
+				when qcount == 2:
+					qcount = 0;
+			default:
+				/* a regular character */
+				bcount = 0;
+				strbuf.append_char(@d, s[i]);
+				inc i;
+			end:select
+		end:while
 
-	len = s_i;
-	return b_i;
-end
-
-void ParseCmdLine(char@ S)
-	__args.argc = 0;
-	@__args.argv = @ArgV;
-
-	forever do
-		when S[0] == #0:
-			exit;
-
-		@S = @S[str_skip_wspace(@S)];
-
-		when S[0] == #0:
-			exit;
-
-		word i;
-		word l = StrParseFirstWord(@CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff], nCmdLineBuff, @S, @i);
-
-		@ArgV[__args.argc].arg = @CmdLineBuff[nCMDLINEBUFF - nCmdLineBuff];
-		inc __args.argc;
-		if __args.argc >= nARGV then
-			StopMemory();
+		strbuf.append_char(@d, #0);
+		if @argv != NULL & argc < argv_size then
+			@argv[argc].arg = NULL;
 		end:if
 
-		nCmdLineBuff = nCmdLineBuff - l;
+		return argc;
+	end
 
-		@S = @S[i];
-	end:forever
-end
+	define nARGV 256
+	ARG ArgV[nARGV];
+	word nArgV = 0;
+
+	define nCHARBUFF (1024 * 32)
+	char CharBuff[nCHARBUFF];
+	word nCharBuff = 0;
+
+	/*
+		FIXME: заменить на LocalAlloc.
+		После подсчёта размера, необходимого для хранения результата,
+		следует выделить его цельным блоком через LocalAlloc(),
+		и затем использовать его и для размещения argv,
+		и для размещения массива char.
+	*/
+	ARG@ AllocateArgv(word nr) of
+		when nArgV + nr >= countof(ArgV):
+			StopMemory();
+		ARG @result = @ArgV[nArgV];
+		nArgV = nArgV + nr;
+		return @result;
+	end
+
+	char@ AllocateCharBuff(word nr) of
+		when nCharBuff + nr >= countof(CharBuff):
+			StopMemory();
+		char @result = @CharBuff[nCharBuff];
+		nCharBuff = nCharBuff + nr;
+		return @result;
+	end
+
+	void ParseCommandLine(ARGS@ __args; char@ cmdline)
+		strbuf buf;
+		strbuf.init(@buf, NULL, 0);
+		word argc = _ParseCommandLine(@cmdline, NULL, 0, @buf);
+
+		word argv_size = argc + 1;
+		ARG @argv = @AllocateArgv(argv_size);
+
+		word char_buff_size = strbuf.get_virtual_len(@buf) + 1;
+		char @char_buf = @AllocateCharBuff(char_buff_size);
+		strbuf.init(@buf, @char_buf, char_buff_size);
+
+		_ParseCommandLine(@cmdline, @argv, argv_size, @buf);
+
+		__args.argc = argc;
+		@__args.argv = @argv;
+	end
+
+end:CommandLineParser
+
+ARGS __args;
+bool __args_parsed = false;
 
 ARGS@ GetProgramArgs()
 	if !__args_parsed then
 		char @CmdLine = @GetCommandLine();
-		ParseCmdLine(@CmdLine);
+		CommandLineParser.ParseCommandLine(@__args, @CmdLine);
 		__args_parsed = true;
 	end
 	return @__args;
