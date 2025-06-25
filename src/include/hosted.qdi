@@ -1,5 +1,6 @@
 
 include "freestanding.qdi";
+include "platform.qdi";
 include "fpath.qdi";
 
 

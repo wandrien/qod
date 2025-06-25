@@ -21,3 +21,6 @@ bool is_handle_valid(word h)
 end
 
 /*****************************************************************************/
+
+include_when "platform/linux/platform.qdi", qod.env.__LINUX__;
+include_when "platform/windows/platform.qdi", qod.env.__WIN32__;

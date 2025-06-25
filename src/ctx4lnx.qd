@@ -1,6 +1,3 @@
-
-include "sys4lnx.qdi";
-include "messages_utf8.qdi";
 include "ctx4all.qdi";
 
 ARGS __args;
@@ -9,21 +6,23 @@ ARGS@ GetProgramArgs()
 	return @__args;
 end
 
-void _start() of
-	word _argc;
-	inline 0x8B, 0x45, 0x04; // mov   EAX,  [EBP + 4]
-	inline 0x89, 0x45, 0xFC; // mov   [_argc], EAX
+namespace std of
+	void start() of
+		word _argc;
+		inline 0x8B, 0x45, 0x04; // mov   EAX,  [EBP + 4]
+		inline 0x89, 0x45, 0xFC; // mov   [_argc], EAX
 
-	ARG@ _argv;
-	inline 0x8D, 0x45, 0x08; // lea   EAX, [EBP + 8]
-	inline 0x89, 0x45, 0xF8; // mov   [_argv], EAX
+		ARG@ _argv;
+		inline 0x8D, 0x45, 0x08; // lea   EAX, [EBP + 8]
+		inline 0x89, 0x45, 0xF8; // mov   [_argv], EAX
 
-	__args.argc  = _argc;
-	@__args.argv = @_argv;
+		__args.argc  = _argc;
+		@__args.argv = @_argv;
 
-	@fpath_p_dir_separator = "/";
-	@fpath_p_dir_separators = "/";
+		@fpath_p_dir_separator = "/";
+		@fpath_p_dir_separators = "/";
 
-	word result = main();
-	halt(result);
-end
+		word result = main();
+		halt(result);
+	end
+end:namespace

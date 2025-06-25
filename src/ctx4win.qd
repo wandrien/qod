@@ -1,6 +1,3 @@
-
-include "sys4win.qdi";
-include "messages_cp866.qdi";
 include "ctx4all.qdi";
 
 namespace CommandLineParser of
@@ -197,10 +194,12 @@ ARGS@ GetProgramArgs()
 	return @__args;
 end
 
-void _start() of
-	@fpath_p_dir_separator = "\";
-	@fpath_p_dir_separators = "/\";
+namespace std of
+	void start() of
+		@fpath_p_dir_separator = "\";
+		@fpath_p_dir_separators = "/\";
 
-	word result = main();
-	ExitProcess(result);
-end
+		word result = main();
+		ExitProcess(result);
+	end
+end:namespace

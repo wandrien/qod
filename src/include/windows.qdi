@@ -1,5 +1,3 @@
-include "sys4win.qdi";
-
 define   IDI_APPLICATION         0x00007F00                // default icon
 define   IDI_WINLOGO             0x00007F05
 

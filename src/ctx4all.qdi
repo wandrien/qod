@@ -1,8 +1,7 @@
-
-include "version.qdi";
-
 include "include/hosted.qdi";
-include "sys.qdi";
+
+include_when "messages_utf8.qdi", qod.env.__LINUX__;
+include_when "messages_cp866.qdi", qod.env.__WIN32__;
 
 include "compiler_htl_defines.qdi";
 include "compiler_htl_structs.qdi";
@@ -15,6 +14,8 @@ include "compiler_dict.qdi";
 
 include "frontend_config.qdi";
 include "backend_config.qdi";
+
+include "version.qdi";
 
 /*****************************************************************************/
 

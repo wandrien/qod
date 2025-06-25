@@ -1,3 +1,1 @@
-include_when "../sys4lnx.qdi", qod.env.__LINUX__;
-include_when "../sys4win.qdi", qod.env.__WIN32__;
 include_once "hosted.qdi";

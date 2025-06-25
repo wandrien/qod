@@ -1,6 +1,4 @@
-include "../sys4win.qdi";
 include "../include/hosted.qdi";
-
 
 void _start() of
 	puts("This program is compiled with ");
