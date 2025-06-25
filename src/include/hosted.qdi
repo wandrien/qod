@@ -2,6 +2,10 @@ include "freestanding.qdi";
 include "platform.qdi";
 include "fpath.qdi";
 
+void put_nl()
+	puts("~r~n");
+end
+
 void put_word(word i)
 	puts(@str(i));
 end
