@@ -22,7 +22,7 @@ void _start() of
 		But at least we can write some code and make sure it compiles.
 	*/
 
-	@hello_world = "Hellow, World!";
+	@hello_world = "Hello, World!";
 	int a = 7;
 	x = x * 2 + a;
 	// x = x + 1; /* uncomment to make the program crash */
