@@ -325,15 +325,18 @@ word main()
 		case str_eq(@arg, "--emit-source-line-notes" ):
 			EmitSourceLineNotes = 1;
 		case str_has_prefix(@arg, "-"):
-			Stop(@L10n.eWRONGOPTION);
+			ErrorWithSubject(@L10n.eWRONGOPTION, @arg);
 		default:
 			@InputFile = @GetArg(i, @L10n.eFNAMEEXP);
 		end:select
 		inc i;
 	end:while
 
+	when HasErrors:
+		return 1;
+
 	if @InputFile == NULL then
-		PrintUsage();
+		Error(@L10n.eNOINPUTFILES);
 		return 1;
 	end
 

@@ -1,7 +1,8 @@
 namespace L10n of
 
 define @eWRONGOPTION     "Неизвестный параметр командной строки"       // unrecognized command line option
-define @eLONGFILENAME    "Слишком длинное имя файла"                   // FileName too long
+define @eNOINPUTFILES    "Не заданы входные файлы"                     // no input files
+define @eLONGFILENAME    "Слишком длинное имя файла"                   // filename too long
 define @eNOFILE          "Невозможно открыть файл"                     // Can't open file
 
 define @eINCLUDE_GUARD_CONST_EXP "Условие в директиве includeonce должно быть вычислимо во время компиляции"
