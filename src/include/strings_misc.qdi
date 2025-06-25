@@ -56,3 +56,14 @@ word str_hash(char @S)
 end
 
 /*****************************************************************************/
+
+char str_last_char(char @S)
+	when @S == NULL:
+		return #0;
+	word len = strlen(@S);
+	when len == 0:
+		return #0;
+	return S[len - 1];
+end
+
+/*****************************************************************************/

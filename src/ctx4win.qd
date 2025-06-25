@@ -147,7 +147,9 @@ namespace CommandLineParser of
 	*/
 	ARG@ AllocateArgv(word nr) of
 		when nArgV + nr >= countof(ArgV):
-			StopMemory();
+			panic(__FILE__, __LINE__, 1, "no memory");
+			// FIXME: add support of __FUNCTION__
+			// panic2(__FILE__, __LINE__, 1, "no memory at ", __FUNCTION__);
 		ARG @result = @ArgV[nArgV];
 		nArgV = nArgV + nr;
 		return @result;
@@ -155,7 +157,9 @@ namespace CommandLineParser of
 
 	char@ AllocateCharBuff(word nr) of
 		when nCharBuff + nr >= countof(CharBuff):
-			StopMemory();
+			panic(__FILE__, __LINE__, 1, "no memory");
+			// FIXME: add support of __FUNCTION__
+			// panic2(__FILE__, __LINE__, 1, "no memory at ", __FUNCTION__);
 		char @result = @CharBuff[nCharBuff];
 		nCharBuff = nCharBuff + nr;
 		return @result;

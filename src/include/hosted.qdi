@@ -21,3 +21,39 @@ void putc(char c)
 	s[1] = #0;
 	puts(@s);
 end
+
+noreturn panic(char @file; word line; word exitcode; char @msg) of
+	puts(@file);
+	puts(":");
+	put_uint(line);
+	puts(": ");
+	puts(@msg);
+	when str_last_char(@msg) != '~n':
+		puts("~r~n");
+	halt(exitcode);
+end
+
+noreturn panic2(char @file; word line; word exitcode; char @msg, @msg2) of
+	puts(@file);
+	puts(":");
+	put_uint(line);
+	puts(": ");
+	puts(@msg);
+	puts(@msg2);
+	when str_last_char(@msg2) != '~n':
+		puts("~r~n");
+	halt(exitcode);
+end
+
+noreturn panic3(char @file; word line; word exitcode; char @msg, @msg2, @msg3) of
+	puts(@file);
+	puts(":");
+	put_uint(line);
+	puts(": ");
+	puts(@msg);
+	puts(@msg2);
+	puts(@msg3);
+	when str_last_char(@msg3) != '~n':
+		puts("~r~n");
+	halt(exitcode);
+end
