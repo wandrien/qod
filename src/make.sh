@@ -481,8 +481,13 @@ run_valgrind()
 		"$compiler_c" qodc.qd --optimize speed --linux --output "$compiler_c".memcheck.asm
 }
 
-iconv -f cp866 -t utf8 < messages_cp866.qdi > messages_utf8.qdi
+prepare_sources()
+{
+	iconv -f cp866 -t utf8 < messages_cp866.qdi > messages_utf8.qdi
+}
 
+print_info()
+{
 printf "=> ${CODE_COLOR_YELLOW}INFO:${CODE_COLOR_NOCOLOR}\n"
 printf "\
     The precompiled compiler is used to build A.
@@ -491,23 +496,36 @@ printf "\
     (OPTIONAL) The Windows version of B is also used to build D.
     Building B, C and D all should produce the same result both
     in the intermediate representation and the binary code.\n"
+}
 
-if [ "x$1" = "xtest-stage-a" ] ; then
+test_stage_a()
+{
 	STAGE_A_ONLY=t
+	prepare_sources
 	stage_a
 	do_tests
-else
+}
+
+build_compiler()
+{
+	print_info
+	prepare_sources
 	stage_a
 	stage_b
 	stage_c
 	stage_d
+}
+
+build_all()
+{
+	build_compiler
 	build_samples
 	do_tests
 	run_valgrind
-fi
+}
 
-
-if [ "x$1" = "x--save-to-precompiled" ] ; then
+save_to_precompiled()
+{
 	printf "=> ${CODE_COLOR_YELLOW}Saving binaries:${CODE_COLOR_NOCOLOR}\n"
 	date_tag="`date -u +%F`"
 	rel_tag=1
@@ -547,5 +565,26 @@ if [ "x$1" = "x--save-to-precompiled" ] ; then
 	echo "$save_dir" > "../precompiled/latest.tmp" && mv "../precompiled/latest.tmp" "../precompiled/latest"
 
 	printf "    Binaries: `ls "$save_path" | tr "\n" " "`\n"
-fi
+}
 
+build_and_save_to_precompiled()
+{
+	build_all
+	save_to_precompiled
+}
+
+if [ "$#" -eq 0 ] ; then
+	build_all
+else
+	for arg in "$@" ; do
+		if ! declare -F "$arg" &>/dev/null ; then
+			printf "${CODE_COLOR_RED}unknown build action: ${CODE_COLOR_NOCOLOR} %s\n" "$arg"
+			exit 1
+		fi
+	done
+
+	for arg in "$@" ; do
+		printf "${CODE_COLOR_BLUE}::${CODE_COLOR_NOCOLOR} %s\n" "$arg"
+		"$arg"
+	done
+fi
