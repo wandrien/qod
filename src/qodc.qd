@@ -243,6 +243,7 @@ void SetupOptimization(char@ Mode)
 	case str_eq(@Mode, "size"):
 		RODataMergeMode = RODataMergeModeAgressive;
 		PHOptimization  = true;
+		OmitRedundantFramePointer = true;
 		EmitEnterInstruction = true;
 		EmitLeaveInstruction = true;
 		EmitShortCode = true;
@@ -251,6 +252,7 @@ void SetupOptimization(char@ Mode)
 	case str_eq(@Mode, "speed"):
 		RODataMergeMode = RODataMergeModeNormal;
 		PHOptimization  = true;
+		OmitRedundantFramePointer = true;
 		EmitEnterInstruction = false;
 		EmitLeaveInstruction = true;
 		EmitFastMult = true;
@@ -259,6 +261,7 @@ void SetupOptimization(char@ Mode)
 	default:
 		RODataMergeMode = RODataMergeModeNone;
 		PHOptimization  = false;
+		OmitRedundantFramePointer = false;
 		EmitEnterInstruction = false;
 		EmitLeaveInstruction = true;
 		EmitFastMult = false;

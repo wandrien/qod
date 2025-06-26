@@ -14,8 +14,17 @@ bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(word P);
 bool CodeRequiresSingleRegister(word P);
 
-word ParmFrameSize; /* Размер фрейма стека, освобождаемого при выходе из функции. */
-word AllocatedFrameSize; /* Текущий размер фрейма стека, задействованный под локальные переменные. */
+struct FunctionContext of
+	word pFunc;
+	word ParamFrameSize; /* Размер фрейма стека, освобождаемого при выходе из функции. */
+	word AllocatedFrameSize; /* Текущий размер фрейма стека, задействованный под локальные переменные. */
+	word StackSize;
+	bool FramePointer;
+end
+
+void EmitFunctionEpilogue(char @Buff; FunctionContext @FnCtx);
+
+FunctionContext FnCtx;
 
 word Reg_TARGET;
 word Reg_ALT_TARGET;
@@ -168,12 +177,12 @@ end
 
 void Code_BeginBlock(CODEBLOCK@ CB)
 	CB.Saved_nLocal = nLocal;
-	CB.Saved_AllocatedFrameSize = AllocatedFrameSize;
+	CB.Saved_AllocatedFrameSize = FnCtx.AllocatedFrameSize;
 end
 
 void Code_EndBlock(CODEBLOCK@ CB)
 	nLocal = CB.Saved_nLocal;
-	AllocatedFrameSize = CB.Saved_AllocatedFrameSize;
+	FnCtx.AllocatedFrameSize = CB.Saved_AllocatedFrameSize;
 end
 
 /*****************************************************************************/
@@ -2142,12 +2151,12 @@ word Code_(word P; char @Buff)
 		word pType = Node[P].pType;
 		word Size  = SizeOfType(pType);
 
-		AllocatedFrameSize = AllocatedFrameSize + DefaultInStackAlign(Size);
+		FnCtx.AllocatedFrameSize = FnCtx.AllocatedFrameSize + DefaultInStackAlign(Size);
 
 		word i = nLocal;
 		inc nLocal;
-		Local[i].pType=pType;
-		Local[i].Value=AllocatedFrameSize;
+		Local[i].pType = pType;
+		Local[i].Value = FnCtx.AllocatedFrameSize;
 		when EmitDebugComments_LocalDefs:
 			EmitComment(@strcpy4(@Buff, "iDEF_LOCAL: ",@Char[Node[P].Value]," ",@str(Local[i].Value)));
 
@@ -2191,6 +2200,78 @@ end
 
 /*****************************************************************************/
 
+void EmitFunctionPrologue(char @Buff; FunctionContext @FnCtx)
+	if OmitRedundantFramePointer & FnCtx.ParamFrameSize == 0 & FnCtx.StackSize == 0 then
+		FnCtx.FramePointer = false;
+	else
+		FnCtx.FramePointer = true;
+	end
+
+	if FnCtx.FramePointer then
+		/*
+			enter 1FEh, 0        - c8 fe 01 00
+			push  ebp            - 55
+			mov   ebp, esp       - 89 e5
+			sub   esp, 07Eh      - 83 ec 7e
+			sub   esp, 0FEh      - 81 ec fe 00 00 00
+			enter is always 4 bytes, with 0FFFFh is the maximum possible value
+			sub esp, num is 3 bytes for signed byte operand, 6 bytes otherwise
+		*/
+		select
+		case FnCtx.StackSize == 0:
+			Emit("push    EBP");
+			Emit("mov     EBP,  ESP");
+		case EmitEnterInstruction & (FnCtx.StackSize <= 0xFFFF):
+			Emit(@strcpy3(@Buff,"enter   ",@str(FnCtx.StackSize), ", 0"));
+		default:
+			Emit("push    EBP");
+			Emit("mov     EBP,  ESP");
+			Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(FnCtx.StackSize)));
+		end:select
+	end:if
+end
+
+void EmitFunctionEpilogue(char @Buff; FunctionContext @FnCtx)
+	if FnCtx.FramePointer then
+		/*
+			leave            - c9
+			pop    ebp       - 5d
+			mov    esp, ebp  - 89 ec
+		*/
+		select
+		case FnCtx.StackSize == 0:
+			Emit("pop     EBP");
+		case EmitLeaveInstruction:
+			Emit("leave");
+		default:
+			Emit("mov     ESP,  EBP");
+			Emit("pop     EBP");
+		end:select
+	end:if
+
+	if FnCtx.ParamFrameSize > 0 then
+		Emit(@strcpy2(@Buff,"ret     ",@str(FnCtx.ParamFrameSize)));
+	else
+		Emit("ret");
+	end:if
+end
+
+/*****************************************************************************/
+
+word Assign_ParamLabels(word pFunc)
+	word Result = 0;
+	word pARGS = Func_GetArgs(pFunc);
+	when pARGS >= nDICT:
+		StopInternalCodegen(__FILE__, __LINE__);
+	word pARG = Dict[pARGS].pFirst;
+	while pARG < nDICT do
+		Dict[pARG].Label = Result + 8;
+		Result = Result + DefaultInStackAlign(SizeOfType(Dict[pARG].pType));
+		pARG = Dict[pARG].pNext;
+	end:while
+	return Result;
+end
+
 word pReturnVoid = nNODE;
 
 void EmitFunction(char @Buff; word I)
@@ -2204,30 +2285,14 @@ void EmitFunction(char @Buff; word I)
 	LABEL L; L.Value = Dict[I].Label;
 	EmitLabelWithComment(@L, @Buff);
 
-	word S1 = 0;
-
-	word pARGS = Func_GetArgs(I);
-	when pARGS >= nDICT:
-		StopInternalCodegen(__FILE__, __LINE__);
-	word pARG = Dict[pARGS].pFirst;
-	while pARG < nDICT do
-		Dict[pARG].Label = S1 + 8;
-		S1 = S1 + DefaultInStackAlign(SizeOfType(Dict[pARG].pType));
-		pARG = Dict[pARG].pNext;
-	end:while
+	FnCtx.pFunc = I;
+	FnCtx.ParamFrameSize = Assign_ParamLabels(FnCtx.pFunc);
+	FnCtx.AllocatedFrameSize = 0;
+	FnCtx.StackSize = Dict[I].StackSize;
 
 	PHO_InvalidateRegs();
 
-	if EmitEnterInstruction & Dict[I].StackSize > 0 then
-		Emit(@strcpy3(@Buff,"enter   ",@str(Dict[I].StackSize), ", 0"));
-	else
-		Emit("push    EBP");
-		Emit("mov     EBP,  ESP");
-
-		if Dict[I].StackSize > 0 then
-			Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(Dict[I].StackSize)));
-		end:if
-	end:if
+	EmitFunctionPrologue(@Buff, @FnCtx);
 
 	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
 		word  J = 0;
@@ -2245,10 +2310,6 @@ void EmitFunction(char @Buff; word I)
 			inc J;
 		end:while
 	end:if
-
-	pCurrentFunc = I;
-	ParmFrameSize = S1;
-	AllocatedFrameSize = 0;
 
 	CODEBLOCK CB;
 	Code_BeginBlock(@CB);

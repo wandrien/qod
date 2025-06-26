@@ -186,7 +186,7 @@ word Code_RETURN(word P; char @Buff)
 		end:if
 	end:if
 
-	if Dict[pCurrentFunc].Sub == SUBCLASS.sSTART_FUNC then
+	if Dict[FnCtx.pFunc].Sub == SUBCLASS.sSTART_FUNC then
 		select
 		case TargetFileFormat == TARGET_FORMAT.tPE:
 			when pExitProcess == nDICT:
@@ -202,18 +202,7 @@ word Code_RETURN(word P; char @Buff)
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 		end:select
 	else
-		if EmitLeaveInstruction then
-			Emit("leave");
-		else
-			Emit("mov     ESP,  EBP");
-			Emit("pop     EBP");
-		end:if
-
-		if ParmFrameSize > 0 then
-			Emit(@strcpy2(@Buff,"ret     ",@str(ParmFrameSize)));
-		else
-			Emit("ret");
-		end:if
+		EmitFunctionEpilogue(@Buff, @FnCtx);
 	end:if
 
 	return st_noreturn;

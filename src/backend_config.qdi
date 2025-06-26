@@ -42,16 +42,16 @@ word RODataMergeMode = RODataMergeModeNormal;
 bool PHOptimization = true;
 
 /*
-	false - генерировать стандартный пролог для всех функций.
-	true  - уменьшать длину пролога функции при помощи инструкции enter, где это возможно.
+	true - уменьшать длину пролога функции при помощи инструкции enter, где это возможно.
 */
 bool EmitEnterInstruction = false;
 
 /*
-	false - генерировать стандартный эпилог для всех функций.
-	true  - уменьшать длину эпилога функции при помощи инструкции leave.
+	true  - уменьшать длину эпилога функции при помощи инструкции leave, где это возможно.
 */
 bool EmitLeaveInstruction = false;
+
+bool OmitRedundantFramePointer = false;
 
 bool EmitShortCode = false;
 bool SlowIncDec = false;
