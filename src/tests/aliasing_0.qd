@@ -1,0 +1,22 @@
+// TEST: should_print '501 1 '
+
+include "../include/test_env.qdi";
+
+int arr[10];
+
+begin
+	int @ptr = @arr[1];
+
+	arr[4] = 100;
+	arr[5] = 200;
+	inc (arr)[5];
+	(arr)[5] = (arr)[5] + (arr)[4];
+	(arr)[5] = (arr)[5] + (arr)[4];
+	tangible_expr(arr)[5] = tangible_expr(arr)[5] + tangible_expr((arr)[const_expr(4)]);
+	put_int(arr[5]); puts(" ");
+
+	arr[1] = arr[4];
+	ptr = 1;
+	arr[2] = arr[1];
+	put_int(arr[2]); puts(" ");
+end
