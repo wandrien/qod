@@ -553,6 +553,9 @@ word Code_LOAD(word pPrimary; ValueRef @Ref)
 	Buff[0] = #0;
 
 	if Ref.ID == iREG then
+		if Reg_ALT_TARGET == RegNone then
+			Reg_TARGET = Ref.IX;
+		end:if
 		if Ref.IX != Reg_TARGET then
 			Emit_MOV_Reg_Reg(Reg_TARGET, Ref.IX, Mach.PointerSize);
 		end:if
@@ -2124,12 +2127,13 @@ word CodePrimaryWrapped(word P)
 
 	ValueRef Ref;
 	CodePrimary(P, @Ref);
-	Code_LOAD(P, @Ref);
 
 	if Saved_Reg_ALT_TARGET == RegNone & Reg_ALT_TARGET != RegNone then
 		//EmitComment("XXX: incorrect Reg_ALT_TARGET");
 		Reg_ALT_TARGET = RegNone;
 	end:if
+
+	Code_LOAD(P, @Ref);
 
 	return Ref.pType;
 end
