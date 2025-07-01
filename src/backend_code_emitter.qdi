@@ -341,8 +341,7 @@ word Code_INDEX_ChooseIndexReg(word pIndex)
 
 	if Reg_TARGET == RegA
 	&  PHO_IsNodeLinkable(pIndex)
-	&  CodeRequiresSingleRegister(pIndex)
-	&  !NodeCanBeEncodedAsMemoryOperand(pIndex) then
+	&  CodeRequiresSingleRegister(pIndex) then
 		TryChooseIndexReg = true;
 	end
 
@@ -2118,6 +2117,8 @@ end
 /*****************************************************************************/
 
 word CodePrimaryWrapped(word P)
+	word Saved_Reg_ALT_TARGET = Reg_ALT_TARGET;
+
 	if PHO_CheckRegForNode(Reg_TARGET, P) then
 		EmitWithExprComment("", "Node link reuse in CodePrimaryWrapped");
 		return Node[P].pType;
@@ -2126,6 +2127,12 @@ word CodePrimaryWrapped(word P)
 	ValueRef Ref;
 	CodePrimary(P, @Ref);
 	Code_LOAD(P, @Ref);
+
+	if Saved_Reg_ALT_TARGET == RegNone & Reg_ALT_TARGET != RegNone then
+		//EmitComment("XXX: incorrect Reg_ALT_TARGET");
+		Reg_ALT_TARGET = RegNone;
+	end:if
+
 	return Ref.pType;
 end
 
