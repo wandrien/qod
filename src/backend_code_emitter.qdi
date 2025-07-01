@@ -58,12 +58,14 @@ word ChooseEmptyRegRated()
 	word I = 0;
 	while I < countof(RegChoiceOrder) do
 		word Reg = RegChoiceOrder[I];
-		int Rate = PHO_GetRegRate(Reg);
-		when Rate == 0:
-			return Reg;
-		if Rate < BestRate then
-			BestRate = Rate;
-			BestReg = Reg;
+		if IsRegSelectable(Reg) then
+			int Rate = PHO_GetRegRate(Reg);
+			when Rate == 0:
+				return Reg;
+			if Rate < BestRate then
+				BestRate = Rate;
+				BestReg = Reg;
+			end:if
 		end:if
 		inc I;
 	end:while
@@ -346,7 +348,7 @@ word Code_INDEX_ChooseIndexReg(word pIndex)
 
 	if TryChooseIndexReg then
 		RegAllocate(Reg_TARGET);
-		New_Reg_TARGET = ChooseEmptyReg();
+		New_Reg_TARGET = ChooseEmptyRegRated();
 		RegFree(Reg_TARGET);
 	end
 
