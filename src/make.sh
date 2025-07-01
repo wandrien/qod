@@ -42,6 +42,8 @@ export ASSEMBLER_MODE="${ASSEMBLER_MODE:-fasm}"
 export EXE_ASSEMBLER_MODE="${EXE_ASSEMBLER_MODE:-fasm}"
 export QOD_FLAGS="${QOD_FLAGS:-}"
 export TESTS_QOD_FLAGS="${TESTS_QOD_FLAGS:-}"
+export TESTS_CUSTOM_COMPILER="${TESTS_CUSTOM_COMPILER:-}"
+export TESTS_CUSTOM_ID="${TESTS_CUSTOM_ID:-custom}"
 
 # Paths
 BUILD_DIR="../build"
@@ -316,11 +318,12 @@ do_test_with_compiler ()
 {
 	local failed=1
 	local passed=0
-	local c="$1" ; shift
+	local stage_name="$1" ; shift
+	local compiler="$1" ; shift
 	local test_name="$1" ; shift
 	local condition="$1" ; shift
 
-	local tests_out_dir="$TESTS_BUILD_DIR/$c"
+	local tests_out_dir="$TESTS_BUILD_DIR/$stage_name"
 	mkdir -p "$tests_out_dir"
 
 	local stdout_log="$tests_out_dir"/"$test_name".stdout
@@ -328,7 +331,12 @@ do_test_with_compiler ()
 
 	local COMPILER_FLAGS="`grep -a -- 'COMPILER_FLAGS:' "tests/$f" | sed 's/^.*COMPILER_FLAGS://'`"
 
-	local COMPILER="$COMPILER_BUILD_DIR/${compiler_name}_$c"
+	local COMPILER=""
+	if [ -z "$compiler" ] ; then
+		COMPILER="$COMPILER_BUILD_DIR/${compiler_name}_$stage_name"
+	else
+		local COMPILER="$compiler"
+	fi
 
 	if [ "x$condition" = "xcompilation_should_fail" ] ; then
 		if (mk "$COMPILER" tests/"$test_name"\
@@ -373,13 +381,15 @@ do_test_with_compiler ()
 
 _run_test ()
 {
-	if [ "$STAGE_A_ONLY" = t ] ; then
-		do_test_with_compiler a "$@"
+	if [ -n "$TESTS_CUSTOM_COMPILER" ] ; then
+		do_test_with_compiler "$TESTS_CUSTOM_ID" "$TESTS_CUSTOM_COMPILER" "$@"
+	elif [ "$STAGE_A_ONLY" = t ] ; then
+		do_test_with_compiler a '' "$@"
 	else
-		do_test_with_compiler a "$@" \
-		&& do_test_with_compiler c "$@" \
-		&& do_test_with_compiler c_debug "$@" \
-		&& do_test_with_compiler c_size "$@"
+		do_test_with_compiler a '' "$@" \
+		&& do_test_with_compiler c '' "$@" \
+		&& do_test_with_compiler c_debug '' "$@" \
+		&& do_test_with_compiler c_size '' "$@"
 	fi
 }
 
