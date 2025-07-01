@@ -52,7 +52,8 @@ bool PHO_IsNodeLinkable_NoRecursion(word P)
 		iLPTR,iADDR,iFIELD,iINDEX,iCAST,
 		iNEG,iBIT_NOT,
 		iADD,iSUB,iMUL,iDIV,iMOD,
-		iBIT_OR,iBIT_XOR,iBIT_AND:
+		iBIT_OR,iBIT_XOR,iBIT_AND,
+		iINDEX_CALC:
 		return true;
 	default:
 		return false;

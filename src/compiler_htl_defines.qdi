@@ -141,9 +141,11 @@ define  iBRANCH_NSF 64 // used in the backend for branch optimization
 
 define  iNOOP_CAST  65 // used in the backend
 
-define  iINVALID    66 // when something must not be accepted by backend
+define  iINDEX_CALC 66 // used in the backend
 
-define  iID_COUNT   67
+define  iINVALID    67 // when something must not be accepted by backend
+
+define  iID_COUNT   68
 
 /*****************************************************************************/
 

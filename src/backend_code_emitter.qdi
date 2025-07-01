@@ -13,6 +13,7 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M);
 bool CodeAsMemoryOperand(char @Buff; word pPrimary; word @pTypeFinal);
 bool CodeRequiresSingleRegister_(word P);
 bool CodeRequiresSingleRegister(word P);
+bool NodeCanBeEncodedAsMemoryOperand(word pPrimary);
 
 struct FunctionContext of
 	word pFunc;
@@ -242,6 +243,8 @@ void Code_ADDR(word P1; ValueRef @Ref)
 		pIndex = nNODE;
 	end:if
 
+	word Saved_Reg_TARGET = RegNone;
+
 	if pIndex < nNODE then
 		select
 		case Ref.IX == RegNone:
@@ -254,15 +257,19 @@ void Code_ADDR(word P1; ValueRef @Ref)
 			if Reg_TARGET != Reg_ALT_TARGET then
 				Emit_SaveReg(Reg_ALT_TARGET, "saved in Code_ADDR");
 			end:if
-			Buff[0] = #0;
 			Emit_XCHG_Reg_Reg(Ref.IX, Reg_ALT_TARGET, Mach.AllowedRegSize);
 			Reg_TARGET = Ref.IX;
 			Ref.IX = Reg_ALT_TARGET;
 		default:
-			Reg_ALT_TARGET = Ref.IX;
-			Reg_TARGET = ChooseEmptyReg2();
-			when Reg_TARGET == RegNone:
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+			if Reg_TARGET == Ref.IX then
+				when Reg_ALT_TARGET != RegNone:
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+				Reg_ALT_TARGET = Ref.IX;
+				Saved_Reg_TARGET = Reg_TARGET;
+				Reg_TARGET = ChooseEmptyReg2();
+				when Reg_TARGET == RegNone:
+					StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+			end:if
 		end:select
 
 		Code_(pIndex, @Buff);
@@ -286,38 +293,38 @@ void Code_ADDR(word P1; ValueRef @Ref)
 			strcpy3(@Buff,"mov     ",@TX,",  ");
 		end:if
 		Emit(@ValueRef_Encode(@Buff, @Ref));
+		Ref.IX = Reg_TARGET;
+		if Saved_Reg_TARGET != RegNone then
+			Reg_TARGET = Saved_Reg_TARGET;
+			Reg_ALT_TARGET = RegNone;
+		end:if
 	case iREG:
-		if Ref.IX != RegNone then
-			if Reg_TARGET != Ref.IX then
-				char @RX = @EncodeReg(NULL, Ref.IX, 4);
-				if Ref.Offset != 0 then
-					strcpy3(@Buff,"lea     ",@TX,",  dword ");
-					strcat7(@Buff,"[",@TX,"+",@RX,"+",@istr(Ref.Offset),"]");
-					EmitPhoInvalidate(@Buff);
-				else
-					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@RX));
-				end:if
+		when Ref.IX == RegNone:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+		if Reg_TARGET != Ref.IX then
+			char @RX = @EncodeReg(NULL, Ref.IX, 4);
+			if Ref.Offset != 0 then
+				strcpy3(@Buff,"lea     ",@TX,",  dword ");
+				strcat7(@Buff,"[",@TX,"+",@RX,"+",@istr(Ref.Offset),"]");
+				EmitPhoInvalidate(@Buff);
+			else
+				Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@RX));
 			end:if
+		end:if
+
+		if Reg_TARGET == Reg_ALT_TARGET | Reg_ALT_TARGET == RegNone then
+			Ref.IX = Reg_TARGET;
 		else
-			//Reg_TARGET = Ref.IX;
-			pass;
+			when (Reg_ALT_TARGET == RegNone):
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+			word Reg_TARGET_tmp = Reg_TARGET;
+			Reg_TARGET = Reg_ALT_TARGET;
+			Ref.IX = Reg_TARGET_tmp;
 		end:if
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 	end:switch
 
-	if Reg_TARGET == Reg_ALT_TARGET | Reg_ALT_TARGET == RegNone then
-		Ref.IX = Reg_TARGET;
-	else
-		word Reg_TARGET_tmp = Reg_TARGET;
-		if Ref.IX != RegNone then
-			when (Reg_ALT_TARGET == RegNone):
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-			Reg_TARGET = Reg_ALT_TARGET;
-		end:if
-
-		Ref.IX = Reg_TARGET_tmp;
-	end:if
 
 	Ref.pType = pTypeDeref;
 	Ref.ID = iREF;
@@ -326,30 +333,83 @@ end
 
 /*****************************************************************************/
 
-void Code_INDEX(word P1; ValueRef @Ref)
+word Code_INDEX_ChooseIndexReg(word pIndex)
+	bool TryChooseIndexReg = false;
+	word New_Reg_TARGET = RegNone;
+
+	if Reg_TARGET == RegA
+	&  PHO_IsNodeLinkable(pIndex)
+	&  CodeRequiresSingleRegister(pIndex)
+	&  !NodeCanBeEncodedAsMemoryOperand(pIndex) then
+		TryChooseIndexReg = true;
+	end
+
+	if TryChooseIndexReg then
+		RegAllocate(Reg_TARGET);
+		New_Reg_TARGET = ChooseEmptyReg();
+		RegFree(Reg_TARGET);
+	end
+
+	return New_Reg_TARGET;
+end
+
+void Code_INDEX(word _P1; ValueRef @Ref)
 	Ref.pType = T_DerefArray(Ref.pType);
-	word Size = T_SizeOf(Ref.pType);
+
+	word pIndexCalc;
+	word pIndex;
+	if Node[_P1].ID != iINDEX_CALC then
+		pIndex = _P1;
+		pIndexCalc = Peek2(iINDEX_CALC);
+		Node[pIndexCalc].pLeft = _P1;
+		Node[pIndexCalc].Value = T_SizeOf(Ref.pType);
+	else
+		pIndexCalc = _P1;
+		pIndex = Node[pIndexCalc].pLeft;
+	end:if
+	word Size = Node[pIndexCalc].Value;
+
 	select
-	case NodeIsLiteralWord(P1):
-		word IndexingOffset = Size * Node[P1].Value;
+	case NodeIsLiteralWord(pIndex):
+		word IndexingOffset = Size * Node[pIndex].Value;
 		Ref.Offset = Ref.Offset + int(IndexingOffset);
 	case Ref.IX == RegNone:
-		Code(P1);
-		Ref.IX = Reg_TARGET;
-		Emit_MUL_Reg_Const(Ref.IX, 4, Size);
+		word IX = PHO_LookupRegForNode(pIndexCalc);
+		if IX == RegNone then
+			word Saved_Reg_TARGET = RegNone;
+			IX = PHO_LookupRegForNode(pIndex);
+			if IX == RegNone then
+				word New_Reg_TARGET = Code_INDEX_ChooseIndexReg(pIndex);
+				if New_Reg_TARGET != RegNone then
+					Saved_Reg_TARGET = Reg_TARGET;
+					Reg_TARGET = New_Reg_TARGET;
+				end:if
+				Code(pIndex);
+				IX = Reg_TARGET;
+			else
+				Saved_Reg_TARGET = Reg_TARGET;
+				Reg_TARGET = IX;
+			end:if
+			Emit_MUL_Reg_Const(IX, 4, Size);
+			PHO_LinkNode(IX, pIndexCalc);
+			if Saved_Reg_TARGET != RegNone then
+				Reg_TARGET = Saved_Reg_TARGET;
+			end:if
+		end
+		Ref.IX = IX;
 		when Reg_ALT_TARGET == RegNone:
 			Reg_ALT_TARGET = Ref.IX;
 	default:
 		when Reg_ALT_TARGET != RegNone & Reg_ALT_TARGET != Ref.IX:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, pIndex);
 		Reg_TARGET = ChooseEmptyReg();
 		when Reg_TARGET == Reg_ALT_TARGET | Reg_TARGET == RegNone:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
-		Code(P1);
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, pIndex);
+		Code(pIndex);
 		Emit_MUL_Reg_Const(Reg_TARGET, 4, Size);
 		if Reg_TARGET == Reg_ALT_TARGET then
 			when Reg_TARGET != Ref.IX:
-				StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
+				StopAtNodeInternalCodegen(__FILE__, __LINE__, pIndex);
 			Reg_TARGET = ChooseEmptyReg();
 			Emit_RestoreReg(Reg_TARGET, "restored in Code_INDEX");
 		end:if
@@ -364,9 +424,8 @@ void Code_LPTR(word P1; ValueRef @Ref)
 	char Buff [nBUFF];
 	Buff[0] = #0;
 
-	char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
-
 	if Ref.IX != RegNone then
+		char @TX = @EncodeReg(NULL, Ref.IX, 4);
 		switch Ref.ID of
 		case iDATA, iSTRING:
 			strcpy3(@Buff,"add     ",@TX,",  ");
@@ -375,21 +434,16 @@ void Code_LPTR(word P1; ValueRef @Ref)
 			strcpy3(@Buff,"lea     ",@TX,",  ");
 			EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
 		case iREF:
-			if Reg_TARGET != Ref.IX then
-				if Ref.Offset != 0 then
-					strcpy3(@Buff,"lea     ",@TX,",  ");
-					EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
-				else
-					Emit_MOV_Reg_Reg(Reg_TARGET, Ref.IX, Mach.PointerSize);
-				end
+			if Ref.Offset != 0 then
+				Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@istr(Ref.Offset)));
 			else
-				when Ref.Offset != 0:
-					Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@istr(Ref.Offset)));
-			end
+				pass;
+			end:if
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:switch
 	else
+		char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
 		switch Ref.ID of
 		case iDATA, iSTRING:
 			strcpy3(@Buff,"mov     ",@TX,",  ");
@@ -397,16 +451,14 @@ void Code_LPTR(word P1; ValueRef @Ref)
 		case iPARM, iLOCAL:
 			strcpy3(@Buff,"lea     ",@TX,",  ");
 			EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
-		case iREF:
-			pass;
 		default:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		end:switch
+		Ref.IX = Reg_TARGET;
 	end:if
 
 	Ref.pType = T_PtrTo(Ref.pType);
 	Ref.ID = iREG;
-	Ref.IX = Reg_TARGET;
 	Ref.Offset = 0;
 end
 
@@ -416,8 +468,8 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 	char Buff[nBUFF];
 	Buff[0] = #0;
 
-	if Reg_ALT_TARGET == RegA & Reg_TARGET != RegA then
-		Emit_SaveReg(RegA, "saved in Code_CALL");
+	if Reg_ALT_TARGET != RegNone & Reg_TARGET != Reg_ALT_TARGET then
+		Emit_SaveReg(Reg_ALT_TARGET, "saved in Code_CALL");
 	end:if
 	Reg_TARGET = RegA;
 
@@ -499,14 +551,14 @@ word Code_LOAD(word pPrimary; ValueRef @Ref)
 	char Buff[nBUFF];
 	Buff[0] = #0;
 
-	if Ref.ID==iREG then
-		//when Ref.IX != Reg_TARGET:
-		//	StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);
+	if Ref.ID == iREG then
+		if Ref.IX != Reg_TARGET then
+			Emit_MOV_Reg_Reg(Reg_TARGET, Ref.IX, Mach.PointerSize);
+		end:if
 		return Ref.pType;
 	end:if
 
 	word Size = T_SizeOf(Ref.pType);
-
 	select
 	case IsNativeOperandSize(Size):
 		strcpy3(@Buff, "mov     ", @EncodeReg(NULL, Reg_TARGET, Size), ",  ");
@@ -535,24 +587,23 @@ void Code_STORE(ValueRef @Ref; word pLinkStore, pLinkLoad)
 		strcpy(@Buff,"mov     ");
 		ValueRef_Encode(@Buff, @Ref);
 
-		/*when Ref.IX != Reg_TARGET & Ref.IX != RegNone:
-			StopAtNodeInternalCodegen(__FILE__, __LINE__, pPrimary);*/
-
 		select
 		case Reg_TARGET != Reg_ALT_TARGET:
 			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, Reg_ALT_TARGET, Size)));
 			PHO_LinkNode(Reg_ALT_TARGET, pLinkLoad);
 			PHO_LinkNode_Store(Reg_ALT_TARGET, pLinkStore);
-		case Ref.IX==RegA:
-			Emit_RestoreReg(RegB, "restored in Code_STORE");
-			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, RegB, Size)));
-			PHO_LinkNode(RegB, pLinkLoad);
-			PHO_LinkNode_Store(RegB, pLinkStore);
-		case Ref.IX==RegB:
+		case Ref.IX != RegA:
 			Emit_RestoreReg(RegA, "restored in Code_STORE");
 			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, RegA, Size)));
 			PHO_LinkNode(RegA, pLinkLoad);
 			PHO_LinkNode_Store(RegA, pLinkStore);
+		case Ref.IX != RegB:
+			Emit_RestoreReg(RegB, "restored in Code_STORE");
+			Emit(@strcat2(@Buff,", ",@EncodeReg(NULL, RegB, Size)));
+			PHO_LinkNode(RegB, pLinkLoad);
+			PHO_LinkNode_Store(RegB, pLinkStore);
+		default:
+			StopAtNodeInternalCodegen(__FILE__, __LINE__, pLinkStore);
 		end:select
 	default:
 		strcpy(@Buff,"lea     EDI,  ");
