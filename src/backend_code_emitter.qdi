@@ -339,8 +339,7 @@ word Code_INDEX_ChooseIndexReg(word pIndex)
 	bool TryChooseIndexReg = false;
 	word New_Reg_TARGET = RegNone;
 
-	if Reg_TARGET == RegA
-	&  PHO_IsNodeLinkable(pIndex)
+	if PHO_IsNodeLinkable(pIndex)
 	&  CodeRequiresSingleRegister(pIndex) then
 		TryChooseIndexReg = true;
 	end
