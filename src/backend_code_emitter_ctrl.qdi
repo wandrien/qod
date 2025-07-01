@@ -179,6 +179,7 @@ end
 word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
+		Reg_ALT_TARGET = RegNone;
 		Reg_TARGET = RegA;
 		word pType = Code_(Node[P].pLeft, @Buff);
 		if Reg_TARGET != RegA then
