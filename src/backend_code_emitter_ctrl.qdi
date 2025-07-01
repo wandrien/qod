@@ -166,9 +166,7 @@ word Code_PUSH(word P; char @Buff)
 		Emit(@strcpy2(@Buff,"sub     ESP,  ",@str(DefaultInStackAlign(Size))));
 		Emit(@strcpy2(@Buff,"mov     ESI,  ",@TX));
 		Emit("mov     EDI,  ESP");
-		Emit("cld");
-		Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
-		Emit("rep     movsb");
+		Emit_MOVS(Size);
 	end:select
 
 	return nDICT;

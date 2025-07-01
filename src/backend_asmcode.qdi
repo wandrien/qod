@@ -508,6 +508,17 @@ end
 
 /*****************************************************************************/
 
+void Emit_Load_Constant(word Reg; word RegMode; word Value)
+	when PHO_Try_Emit_Load_Constant(Reg, RegMode, Value):
+		return;
+
+	char Buff[nBUFF];
+	Buff[0] = #0;
+	Emit(@EncodeLoadConstant(@Buff, Reg, RegMode, Value));
+end
+
+/*****************************************************************************/
+
 void Emit_TEST_Reg_Self(word Reg; word RegMode)
 	char Buff[nBUFF];
 	Buff[0] = #0;
@@ -554,15 +565,22 @@ void Emit_DEC_Reg(word Reg; word RegMode)
 	Emit(@EncodeCmdReg(@Buff, "dec", Reg, RegMode));
 end
 
-/*****************************************************************************/
+void Emit_MOVS(word Size)
+	Emit("cld");
 
-void Emit_Load_Constant(word Reg; word RegMode; word Value)
-	when PHO_Try_Emit_Load_Constant(Reg, RegMode, Value):
-		return;
-
-	char Buff[nBUFF];
-	Buff[0] = #0;
-	Emit(@EncodeLoadConstant(@Buff, Reg, RegMode, Value));
+	select
+	case Size == 0:
+		pass;
+	case Size % 4 == 0:
+		Emit_Load_Constant(RegC, 4, Size / 4);
+		Emit("rep     movsd");
+	case Size % 2 == 0:
+		Emit_Load_Constant(RegC, 4, Size / 2);
+		Emit("rep     movsw");
+	default:
+		Emit_Load_Constant(RegC, 4, Size);
+		Emit("rep     movsb");
+	end:select
 end
 
 /*****************************************************************************/

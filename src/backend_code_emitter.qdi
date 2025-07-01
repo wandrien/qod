@@ -617,9 +617,7 @@ void Code_STORE(ValueRef @Ref; word pLinkStore, pLinkLoad)
 			EmitWithExprComment("pop     ESI", "restored in Code_STORE");
 		end:if
 
-		Emit("cld");
-		Emit(@strcpy2(@Buff,"mov     ECX,  ",@str(Size)));
-		Emit("rep     movsb");
+		Emit_MOVS(Size);
 		PHO_RegConnectConst(RegC, 0);
 	end:select
 end
