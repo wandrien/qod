@@ -508,7 +508,6 @@ word ReadCast(char @Buff; word pTargetType; word pBracket)
 	if IsExplicitCastPossible(Node[pCastee].pType, pTargetType) then
 		AddCast(pTargetType, @pCastee);
 	else
-		AddFakeCast(pTargetType, @pCastee);
 		char Buff2[nBUFF];
 		strcpy4(@Buff2,
 			@L10n.msgNOWAYTOCAST_1,
@@ -517,6 +516,7 @@ word ReadCast(char @Buff; word pTargetType; word pBracket)
 			@T_GetName(pTargetType)
 		);
 		ErrorWithSubject(@L10n.eTYPE, @Buff2);
+		AddFakeCast(pTargetType, @pCastee);
 	end:if
 
 	when !str_eq(@Buff,@Bracket[pBracket].RightBracket):
