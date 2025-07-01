@@ -61,6 +61,8 @@ bool PHO_IsNodeLinkable_NoRecursion(word P)
 end
 
 bool PHO_IsNodeLinkable(word P)
+	when !PHOptimization:
+		return false;
 	while P != nNODE do
 		when !PHO_IsNodeLinkable_NoRecursion(P):
 			return false;
