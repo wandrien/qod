@@ -1,0 +1,19 @@
+// TEST: should_print '1 1 0 0 '
+
+include "../include/test_env.qdi";
+
+int p1 = 1;
+int p2 = 2;
+int p3 = 3;
+int p4 = 4;
+int p5 = 5;
+
+int m5 = -5;
+
+word main() of
+	put_int(int(p1 + p2 == p3)); puts(" ");
+	put_int(int(int(p1 + p2 == p3))); puts(" ");
+	put_uint(uint(p1 + p2 + 1 == p3)); puts(" ");
+	put_uint(uint(uint(p1 + p2 + 1 == p3))); puts(" ");
+	return 0;
+end

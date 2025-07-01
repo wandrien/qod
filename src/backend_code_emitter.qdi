@@ -640,8 +640,10 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 	case T_Equal(pTypeTo, pTypeFrom):
 		pass;
-	case (T_IsInteger(pTypeTo) | pTypeTo == st_char)&
-	     (T_IsInteger(pTypeFrom) | pTypeFrom == st_char):
+	case
+		( T_IsInteger(pTypeFrom) & T_IsIntegerlike(pTypeTo) )
+		|
+		( T_IsInteger(pTypeFrom) | T_IsIntegerlike(pTypeFrom) ):
 		word SizeTo = T_SizeOf(pTypeTo);
 		word SizeFrom = T_SizeOf(pTypeFrom);
 		/*

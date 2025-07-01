@@ -150,13 +150,10 @@ bool IsExplicitCastPossible(word From; word To)
 	when IsImplicitCastPossible(From, To):
 		return true;
 
-	when T_IsInteger(From) & T_IsInteger(To):
+	when T_IsInteger(From) & T_IsIntegerlike(To):
 		return true;
 
-	when T_IsInteger(From) & (To == st_char):
-		return true;
-
-	when (From == st_char) & T_IsInteger(To):
+	when T_IsIntegerlike(From) & T_IsInteger(To):
 		return true;
 
 	when T_IsPtr(From) & (To == st_intptr | To == st_uintptr):

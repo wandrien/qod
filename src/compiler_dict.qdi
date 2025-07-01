@@ -424,6 +424,10 @@ bool T_IsInteger(word T)
 	return T_IsUnsigned(T) | T_IsSigned(T);
 end
 
+bool T_IsIntegerlike(word T)
+	return T_IsInteger(T) | T_IsChar(T) | T_IsBool(T);
+end
+
 /*****************************************************************************/
 
 word T_SizeOf(word T)
