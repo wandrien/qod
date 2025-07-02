@@ -950,6 +950,17 @@ end
 
 /*****************************************************************************/
 
+bool CodeLoadsConst(word P)
+	switch Node[P].ID of
+	case iLITERAL, iSTRING, iNULL, iFUNC:
+		return true;
+	default:
+		return false;
+	end:switch
+end
+
+/*****************************************************************************/
+
 /** Checks if the operands can be swapped for no cost, but we should change the operation ID as well.
     Returns the ID of swapped operation, if the operation is swappable.
     Returns the same ID, if the operation is commutative.
@@ -2057,10 +2068,12 @@ end
 
 word Code_ASSIGN(word P; char @Buff)
 	word P1 = Node[P].pLeft;
-	if Node[P1].pRight < nNODE then
-		word RegRight = LookupRegForNode(Node[P1].pRight);
+	word pLeft = Node[P1].pLeft;
+	word pRight = Node[P1].pRight;
+	if pRight < nNODE then
+		word RegRight = LookupRegForNode(pRight);
 		select
-		case RegRight != RegNone & CodeRequiresSingleRegister(Node[P1].pLeft):
+		case RegRight != RegNone & CodeRequiresSingleRegister(pLeft):
 			EmitWithExprComment("", "Node link reuse in Code_ASSIGN (1)");
 			Reg_ALT_TARGET = RegNone;
 			Reg_TARGET = RegRight;
@@ -2068,45 +2081,64 @@ word Code_ASSIGN(word P; char @Buff)
 			Reg_ALT_TARGET = Reg_TARGET;
 			Reg_TARGET = ChooseEmptyReg2();
 			ValueRef Ref;
-			CodePrimary(Node[P1].pLeft, @Ref);
-			Code_STORE(@Ref, Node[P1].pLeft, Node[P1].pRight);
-		case !CodeRequiresSingleRegister(Node[P1].pLeft)
-		& CodeRequiresSingleRegister(Node[P1].pRight):
-			Reg_TARGET = RegA;
+			CodePrimary(pLeft, @Ref);
+			Code_STORE(@Ref, pLeft, pRight);
+		case CodeLoadsConst(pRight) | NodeCanBeEncodedAsMemoryOperand(pRight):
 			Reg_ALT_TARGET = RegNone;
+			Reg_TARGET = ChooseEmptyReg2();
+			Reg_TARGET = RegA;
 			ValueRef Ref;
-			CodePrimary(Node[P1].pLeft, @Ref);
+			CodePrimary(pLeft, @Ref);
 
 			Reg_ALT_TARGET = Ref.IX;
-			Reg_TARGET = ChooseEmptyReg2();
-			Code_(Node[P1].pRight, @Buff);
+			Reg_TARGET = LookupRegForNode(pRight);
+			if Reg_TARGET == RegNone then
+				Reg_TARGET = ChooseEmptyRegRated();
+				Code_(pRight, @Buff);
+			else
+				EmitWithExprComment("", "Node link reuse in Code_ASSIGN (2)");
+			end:if
 
 			Reg_ALT_TARGET = Reg_TARGET;
 			Reg_TARGET = RegNone;
-			Code_STORE(@Ref, Node[P1].pLeft, Node[P1].pRight);
+			Code_STORE(@Ref, pLeft, pRight);
+		case !CodeRequiresSingleRegister(pLeft)
+		& CodeRequiresSingleRegister(pRight):
+			Reg_TARGET = RegA;
+			Reg_ALT_TARGET = RegNone;
+			ValueRef Ref;
+			CodePrimary(pLeft, @Ref);
+
+			Reg_ALT_TARGET = Ref.IX;
+			Reg_TARGET = ChooseEmptyReg2();
+			Code_(pRight, @Buff);
+
+			Reg_ALT_TARGET = Reg_TARGET;
+			Reg_TARGET = RegNone;
+			Code_STORE(@Ref, pLeft, pRight);
 		default:
-			Reg_ALT_TARGET = PHO_LookupRegForNode(Node[P1].pRight);
+			Reg_ALT_TARGET = PHO_LookupRegForNode(pRight);
 			if Reg_ALT_TARGET == RegNone then
-				if CodeRequiresSingleRegister(Node[P1].pLeft) then
-					Reg_TARGET = ChooseOptimalRegForNode(Node[P1].pRight, RegA);
+				if CodeRequiresSingleRegister(pLeft) then
+					Reg_TARGET = ChooseOptimalRegForNode(pRight, RegA);
 				else
 					Reg_TARGET = RegA;
 				end:if
-				Code_(Node[P1].pRight, @Buff);
+				Code_(pRight, @Buff);
 				Reg_ALT_TARGET = Reg_TARGET;
 			else
-				EmitWithExprComment("", "Node link reuse in Code_ASSIGN (2)");
+				EmitWithExprComment("", "Node link reuse in Code_ASSIGN (3)");
 			end
 
 			Reg_TARGET = ChooseEmptyReg2();
 			ValueRef Ref;
-			CodePrimary(Node[P1].pLeft, @Ref);
-			Code_STORE(@Ref, Node[P1].pLeft, Node[P1].pRight);
+			CodePrimary(pLeft, @Ref);
+			Code_STORE(@Ref, pLeft, pRight);
 		end
 	else
 		Reg_TARGET = RegA;
 		Reg_ALT_TARGET = RegNone;
-		Code_(Node[P1].pLeft, @Buff);
+		Code_(pLeft, @Buff);
 	end
 
 	Reg_TARGET = RegA;
