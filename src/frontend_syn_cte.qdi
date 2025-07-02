@@ -368,6 +368,47 @@ void CTE_SELECT(word P)
 	         [body]     NULL
 	*/
 
+	forever loop
+		word CASE = Node[P].pLeft;
+		word @CASE_BACKLINK = @Node[P].pLeft;
+		while CASE < nNODE do
+			when Node[CASE].ID != iCASE:
+				StopInternal(__FILE__, __LINE__);
+
+			word COND = Node[CASE].pLeft;
+			word BODY = Node[COND].pRight;
+
+			when Node[BODY].ID != iBODY
+			|    Node[COND].ID != iCOND:
+				StopInternal(__FILE__, __LINE__);
+
+			select
+			case NodeIsFalse(Node[COND].pLeft):
+				/* Condition is false, eliminate this case entirely. */
+				word NEXT_CASE = Node[CASE].pRight;
+				CASE_BACKLINK = NEXT_CASE;
+				NodeFree(@CASE);
+				CASE = NEXT_CASE;
+			case NodeIsTrue(Node[COND].pLeft):
+				/* Condition is true, so this is effectively the else/default branch. */
+				NodeFree(@Node[COND].pLeft);
+				NodeFree(@Node[CASE].pRight);
+				@CASE_BACKLINK = @Node[CASE].pRight;
+				CASE = Node[CASE].pRight;
+			default:
+				@CASE_BACKLINK = @Node[CASE].pRight;
+				CASE = Node[CASE].pRight;
+			end:select
+		end:while
+
+		exit;
+	end:forever
+
+	if Node[P].pLeft == nNODE then
+		Node[P].ID = iEMPTY;
+		return;
+	end
+
 	word pTypeFinal = st_noreturn;
 	bool DefaultBranchPresent = false;
 	word CASE = Node[P].pLeft;
