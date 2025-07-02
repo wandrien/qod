@@ -228,7 +228,11 @@ void EmitROData()
 	if RODataMergeMode == RODataMergeModeAgressive then
 		I = 0;
 		while I < nDict do
-			if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+			if (Dict[I].Class == CLASS.cLITERAL)
+			&  Dict[I].RO
+			&  T_IsPtr(Dict[I].pType)
+			&  Dict[I].Used
+			then
 				int len = as_signed(Dict[I].nLiteralSize);
 				when len < 0:
 					StopInternalCodegen(__FILE__, __LINE__);
@@ -249,7 +253,11 @@ void EmitROData()
 		next_len = -1;
 		I = 0;
 		while I < nDict do
-			if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO != 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+			if (Dict[I].Class == CLASS.cLITERAL)
+			&  Dict[I].RO
+			&  T_IsPtr(Dict[I].pType)
+			&  Dict[I].Used
+			then
 				int len = as_signed(Dict[I].nLiteralSize);
 				when len < 0:
 					StopInternalCodegen(__FILE__, __LINE__);
@@ -278,11 +286,14 @@ end
 	Назначает смещения символьным строкам для случая, когда строки расположены в секции изменяемых данных.
 */
 void AssignStringOffsets()
-
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+		if (Dict[I].Class == CLASS.cLITERAL)
+		&  !Dict[I].RO
+		&  T_IsPtr(Dict[I].pType)
+		&  Dict[I].Used
+		then
 			word len = Dict[I].nLiteralSize;
 			Dict[I].Label = data_len;
 			data_len = data_len + len;
@@ -298,15 +309,16 @@ end
 	Смещения строк должны быть заполнены заранее.
 */
 void EmitSection_Data_Strings(char @Buff)
-
 	EmitStringNL("");
-
 	Emit("~r~n@@RWLITERALS:");
-
 	word data_len = 0;
 	word I = 0;
 	while I < nDict do
-		if (Dict[I].Class == CLASS.cLITERAL) & (Dict[I].RO == 0) & T_IsPtr(Dict[I].pType) & (Dict[I].Used != 0) then
+		if (Dict[I].Class == CLASS.cLITERAL)
+		&  !Dict[I].RO
+		&  T_IsPtr(Dict[I].pType)
+		&  Dict[I].Used
+		then
 			word len = Dict[I].nLiteralSize;
 			if Dict[I].Label != data_len then
 				StopInternalCodegen(__FILE__, __LINE__);
@@ -359,7 +371,6 @@ end
 /*****************************************************************************/
 
 void EmitPEImport(char @Buff)
-
 	EmitNL();
 	EmitStringNL("section ~".idata~" import data readable writeable");
 	EmitNL();
@@ -367,13 +378,11 @@ void EmitPEImport(char @Buff)
 	word FirstLabel = NewLabel();
 	word LabelCount = 0;
 
-
 	/* Таблица экспортируемых библиотек. */
 
 	word I  = 0;
 	while I<nDict do
-		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
-
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			word Label = NewLabel();
 			inc LabelCount;
 			when FirstLabel + LabelCount != Label: StopInternalCodegen(__FILE__, __LINE__);
@@ -397,12 +406,12 @@ void EmitPEImport(char @Buff)
 
 	I =0;
 	while I<nDict do
-		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			EmitNL();
 
 			word  J=0;
 			while J<nDict do
-				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used != 0 then
+				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used then
 
 					word Label = NewLabel();
 					inc LabelCount;
@@ -432,7 +441,7 @@ void EmitPEImport(char @Buff)
 	word Label = FirstLabel + 1;
 	I =0;
 	while I<nDict do
-		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			LABEL L; L.Value = Label;
 			EmitLabel(@L);
 			EmitPhoSkip(@strcpy3(@Buff,"db     ~"",@DictGetName(I),".DLL~", 0"));
@@ -447,12 +456,12 @@ void EmitPEImport(char @Buff)
 
 	I =0;
 	while I<nDict do
-		if Dict[I].Class == CLASS.cLIB & Dict[I].Used != 0 then
+		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			EmitNL();
 
 			word  J=0;
 			while J<nDict do
-				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used != 0 then
+				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used then
 					LABEL L; L.Value = Label;
 					EmitLabel(@L);
 					EmitPhoSkip("dw      0");

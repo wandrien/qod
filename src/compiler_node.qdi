@@ -16,7 +16,7 @@ word Peek5(word ID; word pLeft; word pRight; word pType)
 
 	NODE @n = @Node[nNode];
 
-	n.Used = 0;
+	n.Used   = false;
 	n.ID     = ID;
 	n.pLeft  = pLeft;
 	n.pRight = pRight;
@@ -46,7 +46,7 @@ word Peek()
 
 	NODE @n = @Node[nNode];
 
-	n.Used = 0;
+	n.Used   = false;
 	n.pLeft  = nNODE;
 	n.pRight = nNODE;
 	n.pType  = nDICT;

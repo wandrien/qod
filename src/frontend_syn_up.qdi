@@ -134,7 +134,7 @@ bool DeclAlias(char @Buff)
 			Dict[D].pType = Node[pExpr].Value;
 		case IsConstExpr(pExpr):
 			Dict[D].Class = CLASS.cLITERAL;
-			Dict[D].RO = 1;
+			Dict[D].RO = true;
 			Dict[D].pType = Node[pExpr].pType;
 			Dict[D].LiteralValue = Node[pExpr].Value;
 		case Node[pExpr].ID == iFUNC:
@@ -483,7 +483,7 @@ bool DeclDefine(char @Buff)
 
 	DictSetName(D, @Buff);
 	Dict[D].Class = CLASS.cLITERAL;
-	Dict[D].RO = 1;
+	Dict[D].RO = true;
 	DictAddToNamespace(D, pEnteredNamespace);
 
 	Scan(@Buff);

@@ -148,7 +148,7 @@ word DictAlloc()
 
 	DICT @d = @Dict[r];
 
-	d.Used = 0;
+	d.Used = false;
 	d.FullyQualifiedName = 0;
 	d.pType = nDICT;
 	d.pArgs = nDICT;
@@ -165,7 +165,7 @@ word DictAlloc()
 end
 
 void DictFree(word @D)
-	Dict[D].Used = 0;
+	Dict[D].Used = false;
 	Dict[D].Class = CLASS.cNONE;
 	Dict[D].Sub = SUBCLASS.sNONE;
 	DictSetName_None(D);

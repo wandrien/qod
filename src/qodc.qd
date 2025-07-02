@@ -93,7 +93,7 @@ noreturn Translate()
 		case TargetFileFormat == TARGET_FORMAT.tPE:
 			pExitProcess = ResolveInNamespace("ExitProcess", pGlobalNamespace);
 			when pExitProcess != nDICT:
-				Dict[pExitProcess].Used = 1;
+				Dict[pExitProcess].Used = true;
 	end:select
 
 	/* Назначаем метки и смещения. */

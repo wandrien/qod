@@ -536,7 +536,7 @@ word CodePrimary(word pPrimary; ValueRef @Ref)
 	default:
 		word pType = Code(pPrimary);
 		Ref.ID = iREG;
-		Ref.RO = 0;
+		Ref.RO = false;
 		Ref.pType = pType;
 		Ref.Offset = 0;
 		Ref.IX = Reg_TARGET;
@@ -2392,7 +2392,7 @@ void EmitFunction(char @Buff; word I)
 	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
 		word  J = 0;
 		while J < nDict do
-			if Dict[J].Class == CLASS.cDATA & Dict[J].pNode < nNODE & Dict[J].Used != 0 then
+			if Dict[J].Class == CLASS.cDATA & Dict[J].pNode < nNODE & Dict[J].Used then
 				if Node[Dict[J].pNode].ID != iASSIGN then
 					StopInternalCodegen(__FILE__, __LINE__);
 				end:if
@@ -2435,7 +2435,7 @@ void EmitFunctions(char @Buff)
 	word I = 0;
 	while I < nDict do
 		select
-			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used != 0:
+			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used:
 				if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
 					EntryLabel = Dict[I].Label;
 					EmitEntrySymbol(@Buff);

@@ -17,13 +17,13 @@ end
 
 struct NODE of           // Узел синтаксического деpева
 	word   ID;           // Тип узла
-	byte   Used;
-	word   Value;        // Значение
 	word  pLeft;         // Ссылка на левое  поддеpево
 	word  pRight;        // Ссылка на пpавое поддеpево
 	word  pType;         // Тип данных
+	word   Value;        // Значение
 	word  pLabel;        // Индекс в таблице ссылок на голову списка ссылок
 	SOURCELOCATION SourceLocation;
+	bool   Used;
 end
 
 struct NAME of
@@ -43,8 +43,8 @@ struct DICT of           // Элемент таблицы глобальных �
 
 	byte   Class;        // Слово, литерал, тип, пеpеменная, функция
 	byte   Sub;          // Подкласс
-	byte   Used;         // Пpизнак использования
-	byte   RO;           // cLITERAL: Размещать литерал в секции rdata или data
+	bool   Used;         // Пpизнак использования
+	bool   RO;           // cLITERAL: Размещать литерал в секции rdata или data
 	word  tCachedPtrToMe;
 	word  tCachedFuncTypeOfMe;
 	word  tCachedIntegerPair;

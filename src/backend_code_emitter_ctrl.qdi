@@ -120,7 +120,7 @@ word Code_PUSH(word P; char @Buff)
 		ValueRef Ref;
 		ValueRef_ExtractDataInfo(@Ref, Node[P1].pLeft);
 		char @s = "dword @@ROLITERALS+";
-		when Ref.RO == 0:
+		when !Ref.RO:
 			@s = "dword @@RWLITERALS+";
 		EmitPhoSkip(@strcpy3(@Buff, "push    ",@s,@str(Ref.Offset)));
 		return nDICT;

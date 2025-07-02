@@ -328,7 +328,7 @@ void EmitFunctionTrees()
 	word I = 0;
 	while I < nDict do
 		select
-			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used != 0:
+			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used:
 				EmitNL();
 				EmitString(@LinePrefix);
 				EmitString("== ");

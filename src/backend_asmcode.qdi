@@ -282,16 +282,16 @@ iCONST                              Offset     No        No
 
 struct ValueRef of
 	word ID;
-	word RO;
 	word pType;
 	int  Offset;
 	word IX;
+	bool RO;
 end
 
 bool ValueRef_IsLValue(ValueRef@ vref)
 	switch vref.ID of
 	case iSTRING:
-		when vref.RO == 0:
+		when !vref.RO:
 			return true;
 		return false;
 	case iDATA, iPARM, iLOCAL, iREF:
@@ -333,19 +333,19 @@ void ValueRef_ExtractDataInfo(ValueRef @Ref; word P)
 		Ref.Offset = as_signed(Dict[Value].Label);
 		when Ref.Offset < 0:
 			StopInternal(__FILE__, __LINE__);
-		Ref.RO     = 0;
+		Ref.RO     = false;
 
 	case iPARM:
 		when Dict[Value].Class != CLASS.cARG:
 			StopInternal(__FILE__, __LINE__);
 		Ref.pType  = Dict[Value].pType;
 		Ref.Offset = as_signed(Dict[Value].Label);
-		Ref.RO     = 0;
+		Ref.RO     = false;
 
 	case iLOCAL:
 		Ref.pType  = Local[Value].pType;
 		Ref.Offset = -Local[Value].Value;
-		Ref.RO     = 0;
+		Ref.RO     = false;
 
 	case iSTRING:
 		Ref.pType  = Dict[Value].pType;
@@ -437,7 +437,7 @@ char @ValueRef_Encode_StaticOffset(char @Buff; ValueRef @Ref)
 	case iDATA:
 		@Prefix = "@@DATA";
 	case iSTRING:
-		if Ref.RO == 0 then
+		if !Ref.RO then
 			@Prefix = "@@RWLITERALS";
 		else
 			@Prefix = "@@ROLITERALS";

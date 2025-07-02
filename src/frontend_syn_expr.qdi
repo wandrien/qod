@@ -224,7 +224,7 @@ end
 word StringNode()
 	word D = DictAlloc();
 	Dict[D].Class = CLASS.cLITERAL;
-	Dict[D].RO = byte(ROStrings);
+	Dict[D].RO = bool(ROStrings);
 	DictSetName(D, "");
 	ScanString(D);
 
@@ -242,7 +242,7 @@ word StringNode__FILE__()
 	if pCurrentFileLiteral == nDICT & ROStrings == 1 then
 		word D = DictAlloc();
 		Dict[D].Class = CLASS.cLITERAL;
-		Dict[D].RO = byte(ROStrings);
+		Dict[D].RO = bool(ROStrings);
 		DictSetName(D, "");
 		Dict[D].pType = T_PtrTo(st_char);
 		Dict[D].LiteralValue = SaveString(@Value, i);
@@ -554,7 +554,7 @@ word MakeNodeForDict(word I)
 				Node[P].Value = I;
 			else
 				word NewLiteral = DictDupLiteral(I);
-				Dict[NewLiteral].RO = 0;
+				Dict[NewLiteral].RO = false;
 				Node[P].Value = NewLiteral;
 			end
 
@@ -792,7 +792,7 @@ word Primary(word Prty; char @Buff)
 					Node[P1].Value = I;
 				else
 					word NewLiteral = DictDupLiteral(I);
-					Dict[NewLiteral].RO = 0;
+					Dict[NewLiteral].RO = false;
 					Node[P1].Value = NewLiteral;
 				end
 				pType = st_char;
