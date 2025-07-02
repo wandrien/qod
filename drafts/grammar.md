@@ -67,6 +67,7 @@ switch_case:
 switch_case_match:
 	expr {"," expr}
 loop_body:
+	"loop" statement_list end
 	"do" statement_list end
 end:
 	"end" [":" ident] [";"]

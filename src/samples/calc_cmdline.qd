@@ -29,7 +29,7 @@ word Char2Digit[256];
 
 void InitNumberParser()
 	word Ch = 0;
-	while Ch < 256 do
+	while Ch < 256 loop
 		word Digit;
 		select
 		case Ch >= word('0') & Ch <= word('9'):
@@ -61,9 +61,9 @@ word val2(char @Str; int StrLen; word Base)
 	int i = 0;
 
 	word Value = 0;
-	while i < StrLen & Str[i] != #0 do
+	while i < StrLen & Str[i] != #0 loop
 
-		while Str[i] == '_' do
+		while Str[i] == '_' loop
 			inc i;
 		end
 
@@ -97,7 +97,7 @@ word val(char @Buff)
 	int P;
 	int Len = 0;
 
-	forever do
+	forever loop
 		int StrLen = int(strlen(@Buff));
 		when StrLen < 0:
 			panic(__FILE__, __LINE__, 1, @eMALFORMEDINT);
@@ -178,7 +178,7 @@ word main()
 	int acc = as_signed(val(@args.argv[1].arg));
 	word i = 2;
 
-	while i < args.argc do
+	while i < args.argc loop
 		char @operator = @args.argv[i].arg;
 		inc i;
 		when i >= args.argc:

@@ -23,6 +23,7 @@ void ProcessSeparatorKeywordError(char @Buff; char @Keyword)
 	bool EatIt =
 		str_eq(@Buff, "then") |
 		str_eq(@Buff, ":") |
+		str_eq(@Buff, "loop") |
 		str_eq(@Buff, "do") |
 		str_eq(@Buff, "of")
 	;
@@ -56,6 +57,19 @@ void EatSeparatorKeyword(char @Buff; char @Keyword)
 		return;
 	end:if
 	ProcessSeparatorKeywordError(@Buff, @Keyword);
+end
+
+char @EatSeparatorKeyword2(char @Buff; char @Keyword; char @Keyword2)
+	if str_eq(@Buff, @Keyword) then
+		Scan(@Buff);
+		return @Keyword;
+	end:if
+	if str_eq(@Buff, @Keyword2) then
+		Scan(@Buff);
+		return @Keyword2;
+	end:if
+	ProcessSeparatorKeywordError(@Buff, @Keyword);
+	return @Keyword;
 end
 
 /*****************************************************************************/
@@ -326,6 +340,7 @@ void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 
 	Node [COND].ID = iCOND;
 
+	char @End1 = NULL;
 	char @End2 = NULL;
 
 	select
@@ -336,14 +351,11 @@ void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 		if pType != st_bool then
 			Error(@L10n.eTYPE);
 		end
-		EatSeparatorKeyword(@Buff, "do");
+		@End1 = @EatSeparatorKeyword2(@Buff, "loop", "do");
 	case str_eq(@Buff,"forever"):
 		@End2 = "forever";
 		Scan(@Buff);
-		EatSeparatorKeyword(@Buff, "do");
-	case str_eq(@Buff,"do"):
-		Deprecated("'do' should be replaced with 'forever do'");
-		Scan(@Buff);
+		@End1 = @EatSeparatorKeyword2(@Buff, "loop", "do");
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
@@ -353,7 +365,7 @@ void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 
 	Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 
-	SkipFinalScan = EndOf(@Buff, "do", @End2, true);
+	SkipFinalScan = EndOf(@Buff, @End1, @End2, true);
 
 	pLoop=pLoop1;
 
@@ -661,7 +673,7 @@ word Ctrl(char @Buff)
 		case str_eq(@Buff,"if") | str_eq(@Buff,"select"):
 			Statement_IF(@Buff, @P1, @SkipFinalScan);
 
-		case str_eq(@Buff,"while") | str_eq(@Buff,"do") | str_eq(@Buff,"forever"):
+		case str_eq(@Buff,"while") | str_eq(@Buff,"forever"):
 			Statement_WHILE(@Buff, @P1, @SkipFinalScan);
 
 		case str_eq(@Buff,"when"):

@@ -136,7 +136,7 @@ word main() of
   UpdateWindow(hWnd);
 
   MSG   Message;
-  while GetMessage  (@Message,0,0,0)!=0 do
+  while GetMessage  (@Message,0,0,0)!=0 loop
     TranslateMessage(@Message);
     DispatchMessage (@Message);
   end:while

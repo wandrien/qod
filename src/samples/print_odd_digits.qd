@@ -3,7 +3,7 @@ include "../include/hosted.qdi";
 
 word main() of
 	word i = 0;
-	forever do
+	forever loop
 		if (i & 1) == 1 then
 			put_uint(i);
 			puts(" ");

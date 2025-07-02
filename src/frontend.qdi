@@ -140,6 +140,7 @@ void InitFrontEnd()
 	Word("include_when");
 	Word("inline");
 	Word("__LINE__");
+	Word("loop");
 	Word("null");
 	Word("NULL");
 	Word("of");

@@ -3,7 +3,7 @@
 include "../include/hosted.qdi";
 
 void f(int x; int y) of
-	while x < y do
+	while x < y loop
 		if false then
 			x = 0     /* missing semicolon */
 			pass      /* missing semicolon */
@@ -23,7 +23,7 @@ void f(int x; int y) of
 		pass;
 	end:while         /* wrong block id */
 
-	while false       /* missing do */
+	while false       /* missing loop */
 		pass;
 	end:if            /* wrong block id */
 
