@@ -508,6 +508,43 @@ printf "\
     in the intermediate representation and the binary code.\n"
 }
 
+print_help()
+{
+printf "=> ${CODE_COLOR_YELLOW}HELP:${CODE_COLOR_NOCOLOR}\n"
+printf "\
+    ${CODE_COLOR_GREEN}./make.sh build_all${CODE_COLOR_NOCOLOR}
+    The same as:
+        ${CODE_COLOR_GREEN}./make.sh build_compiler && \\
+        ./make.sh build_samples && \\
+        ./make.sh do_tests && \\
+        ./make.sh run_valgrind${CODE_COLOR_NOCOLOR}
+
+    ${CODE_COLOR_GREEN}./make.sh build_compiler${CODE_COLOR_NOCOLOR}
+    Build the compiler.
+    See '${CODE_COLOR_GREEN}./make.sh print_info${CODE_COLOR_NOCOLOR}' for details.
+
+    ${CODE_COLOR_GREEN}./make.sh build_samples${CODE_COLOR_NOCOLOR}
+    Build the example programs in the ${CODE_COLOR_GREEN}samples/${CODE_COLOR_NOCOLOR} directory.
+
+    ${CODE_COLOR_GREEN}./make.sh do_tests${CODE_COLOR_NOCOLOR}
+    Run the tests.
+
+    ${CODE_COLOR_GREEN}./make.sh run_valgrind${CODE_COLOR_NOCOLOR}
+    Run valgrind to measure compiler performance.
+
+    ${CODE_COLOR_GREEN}./make.sh test_stage_a${CODE_COLOR_NOCOLOR}
+    Build and test only stage A.
+
+    ${CODE_COLOR_GREEN}export TESTS_CUSTOM_COMPILER='path to custom qod compiler'
+    export TESTS_CUSTOM_ID='any text label'
+    ./make.sh do_tests${CODE_COLOR_NOCOLOR}
+    Run the tests against a user-provided compiler.
+
+    ${CODE_COLOR_GREEN}./make.sh build_and_save_to_precompiled${CODE_COLOR_NOCOLOR}
+    Build the compiler and place it to a separate subdirectory under ${CODE_COLOR_GREEN}../precompiled/${CODE_COLOR_NOCOLOR}
+"
+}
+
 test_stage_a()
 {
 	STAGE_A_ONLY=t
