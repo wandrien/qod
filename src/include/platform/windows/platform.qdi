@@ -89,6 +89,7 @@ void puts(char @S)
 end
 
 
+attribute(cold)
 noreturn halt(word Code)
 	ExitProcess(Code);
 end

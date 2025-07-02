@@ -14,6 +14,7 @@ bool HasErrors = false;
 
 /*****************************************************************************/
 
+attribute(cold)
 void ComposeMsg(char @Buff; word BuffSize; char @Msg1; char @Msg2)
 	strbuf buf;
 	strbuf.init(@buf, @Buff, BuffSize);
@@ -26,6 +27,7 @@ end
 
 /*****************************************************************************/
 
+attribute(cold)
 void PutLocation(SOURCELOCATION @SourceLocation)
 	if @SourceLocation != NULL & @SourceLocation.FileName != NULL then
 		puts(@SourceLocation.FileName);
@@ -37,6 +39,7 @@ void PutLocation(SOURCELOCATION @SourceLocation)
 	end:if
 end
 
+attribute(cold)
 void PutMessage(SOURCELOCATION @SourceLocation; char @MsgType; char @Msg)
 	puts("~r");
 	PutLocation(@SourceLocation);
@@ -45,22 +48,26 @@ void PutMessage(SOURCELOCATION @SourceLocation; char @MsgType; char @Msg)
 	puts("~r~n");
 end
 
+attribute(cold)
 void WarnAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
 	PutMessage(@SourceLocation, @L10n.msgWARNING, @Msg);
 end
 
+attribute(cold)
 void Warn(char @Msg)
 	WarnAt(@CurrentFileInfo, @Msg);
 end
 
+attribute(cold)
 void WarnWithSubject(char @Msg; char @Subject)
 	char Buff[nMSGBUFF];
 	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
 	Warn(@Buff);
 end
 
+attribute(cold)
 void ErrorAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
@@ -68,22 +75,26 @@ void ErrorAt(SOURCELOCATION @SourceLocation; char @Msg)
 	HasErrors = true;
 end
 
+attribute(cold)
 void Error(char @Msg)
 	ErrorAt(NULL, @Msg);
 end
 
+attribute(cold)
 void ErrorWithSubject(char @Msg; char @Subject)
 	char Buff[nMSGBUFF];
 	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
 	Error(@Buff);
 end
 
+attribute(cold)
 void ErrorWithSubjectAt(SOURCELOCATION @SourceLocation; char @Msg; char @Subject)
 	char Buff[nMSGBUFF];
 	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
 	ErrorAt(@SourceLocation, @Buff);
 end
 
+attribute(cold)
 void DeprecatedAt(SOURCELOCATION @SourceLocation; char @Msg)
 	char Buff[nMSGBUFF];
 	ComposeMsg(@Buff, nMSGBUFF, @L10n.wDEPRECATED, @Msg);
@@ -94,10 +105,12 @@ void DeprecatedAt(SOURCELOCATION @SourceLocation; char @Msg)
 	end:if
 end
 
+attribute(cold)
 void Deprecated(char @Msg)
 	DeprecatedAt(NULL, @Msg);
 end
 
+attribute(cold)
 noreturn StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
@@ -105,16 +118,19 @@ noreturn StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	halt(1);
 end
 
+attribute(cold)
 noreturn Stop(char @Msg)
 	StopAt(NULL, @Msg);
 end
 
+attribute(cold)
 noreturn StopWithSubject(char @Msg; char @Subject)
 	char Buff[nMSGBUFF];
 	ComposeMsg(@Buff, nMSGBUFF, @Msg, @Subject);
 	Stop(@Buff);
 end
 
+attribute(cold)
 noreturn StopWithSubjectChar(char @Msg; char Char)
 	char Subject[2];
 	Subject[0] = Char;
@@ -122,6 +138,7 @@ noreturn StopWithSubjectChar(char @Msg; char Char)
 	StopWithSubject(@Msg, @Subject);
 end
 
+attribute(cold)
 noreturn StopInternal(char @File; word Line)
 	char Buff[nMSGBUFF];
 	strbuf buf;
@@ -130,6 +147,7 @@ noreturn StopInternal(char @File; word Line)
 	Stop(@Buff);
 end
 
+attribute(cold)
 noreturn StopMemory()
 	Stop(@L10n.eNOMEMORY);
 end
