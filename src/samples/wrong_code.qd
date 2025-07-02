@@ -1,5 +1,5 @@
 /* TARGET-X: linux, win32-c */
-/* Replace TARGET-X with TARGET to enable compilation of this example and see various types of syntax error */
+/* Replace TARGET-X with TARGET above to enable compilation of this example and see various types of syntax errors */
 include "../include/hosted.qdi";
 
 void f(int x; int y) of
@@ -32,6 +32,8 @@ void f(int x; int y) of
 	end:switch        /* wrong block id */
 
 	switch y          /* missing of */
+	case 1, 1: return; /* duplicate value */
+	case x: return;   /* non-constant value */
 	case 0 return;    /* missing colon */
 	default x = 0;    /* missing colon */
 	end:switch

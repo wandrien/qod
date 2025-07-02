@@ -252,17 +252,17 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 			word EXPR = Expr(PRIO.ZERO, @Scan(@Buff));
 
 			when !NodeHasImmediateValue(EXPR):
-				Stop(@L10n.eCONSTEXP);
+				Error(@L10n.eCONSTEXP);
 
 			when !Statement_SWITCH_CheckCast(pType, Node[EXPR].pType):
-				Stop(@L10n.eCONSTEXP);
+				Error(@L10n.eCONSTEXP);
 
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do
 				word  VALUE_I = Node[CASE_I].pLeft;
 				while VALUE_I < nNode & Node[VALUE_I].ID == iVALUE do
 					if Node[Node[VALUE_I].pLeft].Value == Node[EXPR].Value then
-						Stop(@L10n.eDUPCASE);
+						Error(@L10n.eDUPCASE);
 					end:if
 
 					VALUE_I = Node[VALUE_I].pRight;
@@ -279,22 +279,17 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 
 		until str_ne(@Buff,",");
 
-		if str_ne(@Buff,":") then
-			Stop(@L10n.eCOLONEXP);
-		end
-
 		word BODY = Peek();
 		Node[BODY].ID = iBODY;
 		ValueBackLink = BODY;
 
-		Scan(@Buff);
+		EatSeparatorKeyword(@Buff, ":");
+
 		Node[BODY].pLeft = Statements(@Buff, "case", "default", "end");
 	end
 
 	if str_eq(@Buff,"default") then
-		if str_ne(@Scan(@Buff),":") then
-			Stop(@L10n.eCOLONEXP);
-		end
+		Scan(@Buff);
 
 		word CASE = Peek();
 		word DEFAULT = Peek();
@@ -308,7 +303,7 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 		Node[DEFAULT].pRight = BODY;
 		CaseBackLink = CASE;
 
-		Scan(@Buff);
+		EatSeparatorKeyword(@Buff, ":");
 		Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 	end:if
 
