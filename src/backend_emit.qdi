@@ -250,7 +250,7 @@ end
 SOURCELOCATION PrevSourceLocation;
 
 void EmitWithSourceNote(char @Inst; word P)
-	if P < nNODE & P > 0 & EmitSourceLineNotes != 0 then
+	if P < nNODE & P > 0 & EmitSourceLineNotes then
 		char Buff[nBUFF];
 		SOURCELOCATION @SourceLocation = @Node[P].SourceLocation;
 		if

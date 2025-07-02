@@ -1,8 +1,9 @@
 
+namespace QodFrontend of
+
 /*****************************************************************************/
 
 include "frontend_charid.qdi";
-include "frontend_node.qdi";
 include "frontend_lex.qdi";
 
 /*****************************************************************************/
@@ -249,4 +250,45 @@ void InitFrontEnd()
 end
 
 /*****************************************************************************/
+
+word LocateStartFunc()
+	when pStartFunc != nDICT:
+		return pStartFunc;
+
+	pStartFunc = ResolveInNamespace("_start", pGlobalNamespace);
+	when pStartFunc != nDICT:
+		return pStartFunc;
+
+	word pStd = ResolveInNamespace("std", pGlobalNamespace);
+	when pStd == nDICT:
+		return nDICT;
+
+	when !T_IsNamespace(pStd):
+		return nDICT;
+
+	pStartFunc = ResolveInNamespace("start", pStd);
+	return pStartFunc;
+end
+
+/*****************************************************************************/
+
+word ProcessSourceFile(char @InputFile) of
+	InitFrontEnd();
+	OpenInputFile(@InputFile);
+	Parse();
+	CloseAllFiles();
+	return LocateStartFunc();
+end
+
+/*****************************************************************************/
+
+end:QodFrontend
+
+alias isdigit = QodFrontend.isdigit;
+alias val = QodFrontend.val;
+alias CTE_LoopHasExits = QodFrontend.CTE_LoopHasExits;
+alias CTE_LoopHasContinues = QodFrontend.CTE_LoopHasContinues;
+alias pGlobalNamespace = QodFrontend.pGlobalNamespace;
+alias ResolveInNamespace = QodFrontend.ResolveInNamespace;
+alias ProcessSourceFile = QodFrontend.ProcessSourceFile;
 

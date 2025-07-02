@@ -2396,7 +2396,7 @@ void EmitFunction(char @Buff; word I)
 				if Node[Dict[J].pNode].ID != iASSIGN then
 					StopInternalCodegen(__FILE__, __LINE__);
 				end:if
-				if StaticDataIsZeroed == 0
+				if !StaticDataIsZeroed
 				 | NodeHasConst(Node[Node[Dict[J].pNode].pLeft].pRight, 0) == false then
 					Code_(Dict[J].pNode, @Buff);
 				end:if

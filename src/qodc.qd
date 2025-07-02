@@ -11,6 +11,7 @@ include "compiler_msg.qdi";
 include "compiler_chardata.qdi";
 include "compiler_input.qdi";
 include "compiler_dict.qdi";
+include "compiler_node.qdi";
 
 include "frontend_config.qdi";
 include "backend_config.qdi";
@@ -72,42 +73,14 @@ end
 
 /*****************************************************************************/
 
-word LocateStartFunc()
-	when pStartFunc != nDICT:
-		return pStartFunc;
-
-	pStartFunc = ResolveInNamespace("_start", pGlobalNamespace);
-	when pStartFunc != nDICT:
-		return pStartFunc;
-
-	word pStd = ResolveInNamespace("std", pGlobalNamespace);
-	when pStd == nDICT:
-		return nDICT;
-
-	when !T_IsNamespace(pStd):
-		return nDICT;
-
-	pStartFunc = ResolveInNamespace("start", pStd);
-	return pStartFunc;
-end
-
-/*****************************************************************************/
-
 noreturn Translate()
 
 	/* Синтаксический анализ **********************/
 
-	InitFrontEnd();
-
-	OpenInputFile(@InputFile);
-
-	Parse();
-
-	CloseAllFiles();
+	word pStartFunc = ProcessSourceFile(@InputFile);
 
 	/* Промежуточные операции *********************/
 
-	word pStartFunc = LocateStartFunc();
 	if pStartFunc != nDICT then
 		DictMarkUsed(pStartFunc);
 		Dict[pStartFunc].Sub = SUBCLASS.sSTART_FUNC;
@@ -131,7 +104,7 @@ noreturn Translate()
 
 	/* Вывод информации по анализу кода ***********/
 
-	when WarnUnusedGlobals != 0:
+	when WarnUnusedGlobals:
 		DoWarnUnusedGlobals();
 
 	word OutputTreeFile_Done = 0;
@@ -321,13 +294,13 @@ word main()
 		case str_eq(@arg, "--optimize" ):
 			SetupOptimization(@GetArgNext(@i, @L10n.eCMDLINEPARAM));
 		case str_eq(@arg, "--warn-unused-globals" ):
-			WarnUnusedGlobals = 1;
+			WarnUnusedGlobals = true;
 		case str_eq(@arg, "--error-deprecated-features" ):
 			ErrorDeprecatedFeatures = 1;
 		case str_eq(@arg, "--no-error-deprecated-features" ):
 			ErrorDeprecatedFeatures = 0;
 		case str_eq(@arg, "--emit-source-line-notes" ):
-			EmitSourceLineNotes = 1;
+			EmitSourceLineNotes = true;
 		case str_has_prefix(@arg, "-"):
 			ErrorWithSubject(@L10n.eWRONGOPTION, @arg);
 		default:
