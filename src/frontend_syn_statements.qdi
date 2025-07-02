@@ -6,13 +6,13 @@ namespace StatementParser of
 void MatchSemicolon(char @Buff)
 	Scan(@Buff);
 	if str_ne(@Buff,";") then
-		Stop(@L10n.eSEMICOLONEXP);
+		Error(@L10n.eSEMICOLONEXP);
 	end
 end
 
 /*****************************************************************************/
 
-word EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
+bool EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
 	when str_ne(@Buff, "end"):
 		StopInternal(__FILE__, __LINE__);
 
@@ -28,15 +28,15 @@ word EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
 	end:if
 
 	if EatSemicolon & str_eq(@Buff, ";") then
-		return 0;
+		return false;
 	else
-		return 1;
+		return true;
 	end
 end
 
 /*****************************************************************************/
 
-void Statement_IF(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_IF(char @Buff; word @P1; bool @SkipFinalScan)
 	Node[P1].ID = iSELECT;
 
 	char @End1="if";
@@ -104,7 +104,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_WHEN(char @Buff; word @P1; bool @SkipFinalScan)
 
 	Node[P1].ID=iSELECT;
 
@@ -135,7 +135,7 @@ void Statement_WHEN(char @Buff; word @P1; word @SkipFinalScan)
 
 	Node[BODY].pLeft = Ctrl(@Buff);
 
-	SkipFinalScan = 1;
+	SkipFinalScan = true;
 
 	CTE_SELECT(P1);
 end
@@ -161,7 +161,7 @@ bool Statement_SWITCH_CheckCast(word pTargetType; word pLiteralType)
 	return false;
 end
 
-void Statement_SWITCH(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 
 	Node[P1].ID = iSWITCH;
 
@@ -261,7 +261,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_WHILE(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 
 	word  BODY = Peek();
 	word  COND = Peek();
@@ -315,7 +315,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_REPEAT(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_REPEAT(char @Buff; word @P1; bool @SkipFinalScan)
 	word  BODY = Peek();
 	word  COND = Peek();
 	Node[P1].ID = iREPEAT;
@@ -350,7 +350,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_CONTINUE(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_CONTINUE(char @Buff; word @P1; bool @SkipFinalScan)
 	when pLoop>=nNODE:
 		Stop(@L10n.eWRONGCONTINUE);
 
@@ -367,7 +367,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_EXIT(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_EXIT(char @Buff; word @P1; bool @SkipFinalScan)
 	when pLoop>=nNODE:
 		Stop(@L10n.eWRONGEXIT);
 
@@ -384,7 +384,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_INCDEC(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_INCDEC(char @Buff; word @P1; bool @SkipFinalScan)
 
 	if str_eq(@Buff,"inc") then
 		Node[P1].ID =iINC;
@@ -412,7 +412,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_RETURN(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_RETURN(char @Buff; word @P1; bool @SkipFinalScan)
 
 	Node[P1].ID = iRETURN;
 	Scan(@Buff);
@@ -437,7 +437,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_INLINE(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_INLINE(char @Buff; word @P1; bool @SkipFinalScan)
 
 	word Code=val(@Scan(@Buff));
 	if Code>255 then
@@ -449,7 +449,7 @@ void Statement_INLINE(char @Buff; word @P1; word @SkipFinalScan)
 
 	if str_eq(@Scan(@Buff),",") then
 		strcpy (@Buff,"inline");
-		SkipFinalScan = 1;
+		SkipFinalScan = true;
 		return;
 	end
 
@@ -461,7 +461,7 @@ end
 
 /*****************************************************************************/
 
-void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefixType)
+void Statement_DEF_LOCAL(char @Buff; word @_P1; bool @SkipFinalScan; word pPrefixType)
 
 	word P1 = _P1;
 
@@ -543,7 +543,7 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; word @SkipFinalScan; word pPrefi
 	end:while
 end
 
-void Statement_ASSIGN(char @Buff; word @P1; word @SkipFinalScan)
+void Statement_ASSIGN(char @Buff; word @P1; bool @SkipFinalScan)
 
 	word pLValue = Expr(PRIO.LVALUE, @Buff);
 
@@ -613,7 +613,7 @@ end
 
 word Ctrl(char @Buff)
 
-	word SkipFinalScan = 0;
+	bool SkipFinalScan = false;
 
 	word P1 = Peek();
 
@@ -664,8 +664,8 @@ word Ctrl(char @Buff)
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
 	end:select
 
-	if SkipFinalScan == 0 then
-		Scan (@Buff);
+	if !SkipFinalScan then
+		Scan(@Buff);
 	end
 
 	return P1;
