@@ -61,6 +61,13 @@ end:namespace
 
 /*****************************************************************************/
 
+namespace ATTRIBUTE_FLAG of
+	define Cold  1
+	define Hot   2
+end:namespace
+
+/*****************************************************************************/
+
 define  iEMPTY       0 // Пустой узел
 define  iNULL        1 // NULL
 define  iLITERAL     2 // Литеральное значение

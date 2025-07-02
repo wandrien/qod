@@ -3,6 +3,60 @@ namespace TopLevelParser of
 
 /*****************************************************************************/
 
+word ReadAttributes(char @Buff) of
+	word AttributeFlags = 0;
+	while str_eq(@Buff, "attribute") do
+		Scan(@Buff);
+		if str_eq(@Buff, "(") then
+			Scan(@Buff);
+		else
+			ErrorWithSubject(@L10n.eOPENBRACKETEXPAFTER, "attribute");
+		end:if
+		if str_ne(@Buff, ")") then /* attribute list is allowed to be empty */
+			forever do
+				bool Optional = false;
+				if str_eq(@Buff, "optional") then
+					Optional = true;
+					Scan(@Buff);
+				end:if
+				word AttributeFlag = 0;
+				select
+				case str_eq(@Buff, "cold"): AttributeFlag = ATTRIBUTE_FLAG.Cold;
+				case str_eq(@Buff, "hot"): AttributeFlag = ATTRIBUTE_FLAG.Hot;
+				default:
+					if !Optional then
+						ErrorWithSubject(@L10n.eUNRECOGNIZED_ATTR, @Buff);
+					end:if
+				end:select
+				AttributeFlags = AttributeFlags | AttributeFlag;
+				Scan(@Buff);
+				if str_eq(@Buff, ")") then
+					Scan(@Buff);
+					exit;
+				end:if
+				if str_eq(@Buff, ",") then
+					Scan(@Buff);
+				else
+					Error(@L10n.eCOMMAEXP);
+				end:if
+			end:forever
+		end:if
+	end:while
+	return AttributeFlags;
+end
+
+void CheckValidAttributeFlags(word AttributeFlags, AllowedAttributeFlags; char @Statement)
+	when (AttributeFlags & !AllowedAttributeFlags) == 0:
+		return;
+	if @Statement != NULL then
+		ErrorWithSubject(@L10n.eINVALID_ATTR, @Statement);
+	else
+		Error(@L10n.eATTR_AT_WRONG_PLACE);
+	end
+end
+
+/*****************************************************************************/
+
 word FieldNextOffset = 0;
 word FieldMaxAlign = 1;
 
@@ -269,7 +323,7 @@ end
 
 /*****************************************************************************/
 
-void DeclVarFuncType(char @Buff; word pType)
+void DeclVarFuncType(char @Buff; word pType; word AttributeFlags)
 	Scan(@Buff);
 	word nPtr = ReadPtrs(@Buff);
 
@@ -280,6 +334,7 @@ void DeclVarFuncType(char @Buff; word pType)
 	DictSetName(D, @Buff);
 	Dict[D].Class = CLASS.cTYPE;
 	Dict[D].Sub   = SUBCLASS.sFUNCTYPE;
+	Dict[D].AttributeFlags = AttributeFlags;
 	DictAddToNamespace(D, pEnteredNamespace);
 
 	if str_ne(@Scan(@Buff),"(") then
@@ -297,12 +352,13 @@ end
 
 /*****************************************************************************/
 
-void DeclType(char @Buff; word pType)
+void DeclType(char @Buff; word pType; word AttributeFlags)
 	forever do
 		CheckDuplicate(@Buff);
 
 		word D = DictAlloc();
 		DictSetName(D, @Buff);
+		Dict[D].AttributeFlags = AttributeFlags;
 
 		SOURCELOCATION Location = CurrentFileInfo;
 
@@ -344,7 +400,7 @@ end
 
 /*****************************************************************************/
 
-void DeclVarFunc(char @Buff)
+void DeclVarFunc(char @Buff; word AttributeFlags)
 	word pPrefixExpr = Expr(PRIO.LVALUE, @Buff);
 	if Node[pPrefixExpr].ID != iTYPE then
 		Stop(@L10n.eTYPEEXP);
@@ -356,13 +412,13 @@ void DeclVarFunc(char @Buff)
 	end
 
 	if pPrefixType == st_type then
-		DeclType(@Buff, pPrefixType);
+		DeclType(@Buff, pPrefixType, AttributeFlags);
 		return;
 	end
 
 	/* Функтор-тип. */
 	if str_eq(@Buff,"function") then
-		DeclVarFuncType(@Buff, pPrefixType);
+		DeclVarFuncType(@Buff, pPrefixType, AttributeFlags);
 		return;
 	end
 
@@ -400,6 +456,7 @@ void DeclVarFunc(char @Buff)
 		word D = DictAlloc();
 
 		Dict[D].Name = Name;
+		Dict[D].AttributeFlags = AttributeFlags;
 		Dict[D].pType = T_nPtrTo(nPtr, pPrefixType);
 		Dict[D].pType = ReadTypeSuffix(@Buff, Dict[D].pType);
 
@@ -610,28 +667,39 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 
 	forever do
 		bool DoScan = true;
+		word AttributeFlags = ReadAttributes(@Buff);
 		select
 		case str_eq(@Buff,"include"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclInclude(@Buff);
 		case str_eq(@Buff,"include_when"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclIncludeWhen(@Buff);
 		case str_eq(@Buff,"include_once"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclIncludeOnce(@Buff);
 		case str_eq(@Buff,"define"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclDefine(@Buff);
 		case str_eq(@Buff,"struct"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclStruct(@Buff);
 		case str_eq(@Buff,"namespace"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclNamespace(@Buff);
 		case str_eq(@Buff,"alias"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclAlias(@Buff);
 		case str_eq(@Buff,"static_assert"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = StaticAssert(@Buff);
 		case str_eq(@Buff,"end"):
+			CheckValidAttributeFlags(AttributeFlags, 0, NULL);
 			when Eob.EndKeyword:
 				exit;
 			Stop(@L10n.eWRONGEND_NAMESPACE);
 		case str_eq(@Buff,"}"):
+			CheckValidAttributeFlags(AttributeFlags, 0, NULL);
 			when Eob.CurlyBraces:
 				exit;
 			Stop(@L10n.eWRONGBRACE_NAMESPACE);
@@ -647,7 +715,7 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 				Stop(@L10n.eEOF);
 			end:if
 		default: // Пеpеменная, функция, ...
-			DeclVarFunc(@Buff);
+			DeclVarFunc(@Buff, AttributeFlags);
 		end:select
 
 		if DoScan then

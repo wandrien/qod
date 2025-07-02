@@ -36,6 +36,10 @@ define @eOPENBRACKETEXPAFTER "Пропущена открывающая скобка после "
 define @eCLOSEBRACKETEXPBEFORE "Пропущена закрывающая скобка перед "
 define @eMISSINGBRACKETIN "Пропущена закрывающая скобка в выражении "
 
+define @eUNRECOGNIZED_ATTR "Нераспознанный атрибут"                    // unrecognized attribute
+define @eINVALID_ATTR      "Недопустимый атрибут в"                    // wrong attribute at
+define @eATTR_AT_WRONG_PLACE "Список атрибутов здесь недопустим"       // attribute list is wrong here
+
 define @eMISSING_SEP_1   "Пропущен разделитель '"                      // missing separator
 define @eMISSING_SEP_2   "'"
 

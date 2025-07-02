@@ -1,0 +1,24 @@
+// TEST: should_print 'OK '
+
+include "../include/test_env.qdi";
+
+attribute(cold)
+int f1(int a, b, c) of
+	int x = 2;
+	return a + b + c * x;
+end
+
+attribute(hot, optional no_such_attribute)
+int f2(int a, b, c) of
+	int x = 2;
+	return a + b + c * x;
+end
+
+word main() of
+	if f1(2, 3, 4) == f2(2, 3, 4) then
+		puts("OK ");
+	else
+		puts("OOPS ");
+	end
+	return 0;
+end

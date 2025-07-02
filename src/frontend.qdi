@@ -114,6 +114,7 @@ void InitFrontEnd()
 	RegisterHereCommentPrefix("$comment");
 
 	Word("alias");
+	Word("attribute");
 	Word("as_signed");
 	Word("as_unsigned");
 	Word("begin");

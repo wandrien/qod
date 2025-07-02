@@ -25,7 +25,7 @@ word FindMulTrick_(word Value)
 end
 
 word FindMulTrick(word Value)
-	if EmitFastMult then
+	if SwOptions.EmitFastMult then
 		return FindMulTrick_(Value);
 	else
 		return nMUL_TRICKS;

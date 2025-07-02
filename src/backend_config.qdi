@@ -41,21 +41,25 @@ word RODataMergeMode = RODataMergeModeNormal;
 /* Проводить ли peephole оптимизацию. */
 bool PHOptimization = true;
 
-/*
-	true - уменьшать длину пролога функции при помощи инструкции enter, где это возможно.
-*/
-bool EmitEnterInstruction = false;
-
-/*
-	true  - уменьшать длину эпилога функции при помощи инструкции leave, где это возможно.
-*/
-bool EmitLeaveInstruction = false;
-
-bool OmitRedundantFramePointer = false;
-
-bool EmitShortCode = false;
 bool SlowIncDec = false;
-bool EmitFastMult = false;
+
+bool SeparateColdSection = false;
+
+struct SWITCHABLE_OPTIONS of
+	/* true - уменьшать длину пролога функции при помощи инструкции enter, где это возможно. */
+	bool EmitEnterInstruction;
+	/* true  - уменьшать длину эпилога функции при помощи инструкции leave, где это возможно. */
+	bool EmitLeaveInstruction;
+	bool OmitRedundantFramePointer;
+	bool EmitShortCode;
+	bool EmitFastMult;
+end
+
+SWITCHABLE_OPTIONS SwOptions;
+SWITCHABLE_OPTIONS@ SwOptionsPrevUsed = NULL;
+SWITCHABLE_OPTIONS SwOptionsNormal;
+SWITCHABLE_OPTIONS SwOptionsCold;
+SWITCHABLE_OPTIONS SwOptionsHot;
 
 /*
 	Пытаться ли переупорядочивать вычисление операндов.

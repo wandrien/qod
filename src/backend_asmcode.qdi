@@ -499,7 +499,7 @@ void Emit_MOV_or_XCHG(word Reg1, Reg2; word RegMode)
 		See also notes on XCHG performance:
 		https://stackoverflow.com/questions/45766444/why-is-xchg-reg-reg-a-3-micro-op-instruction-on-modern-intel-architectures
 	*/
-	if EmitShortCode & (Reg1 == RegA | Reg2 == RegA) then
+	if SwOptions.EmitShortCode & (Reg1 == RegA | Reg2 == RegA) then
 		Emit_CmdRegReg("xchg", Reg1, RegMode, Reg2, RegMode);
 	else
 		Emit_CmdRegReg("mov", Reg1, RegMode, Reg2, RegMode);
@@ -594,7 +594,7 @@ word PreferIncDec(word Reg; word RegMode)
 	when Reg == RegA & RegMode == 1:
 		return 0;
 
-	if EmitShortCode then /* We don't care about the speed */
+	if SwOptions.EmitShortCode then /* We don't care about the speed */
 		when RegMode == Mach.Mode:
 			/* <ADD EAX, 1> takes 3 bytes and <INC EAX> takes just 1. So 2 INCs are okay, */
 			return 2;

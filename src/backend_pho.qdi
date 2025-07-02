@@ -344,7 +344,7 @@ word PHO_Optimize_FindReplacement(char @Buff; word Reg1; word Mask1; word Const2
 	end:if
 
 	/* <PUSH imm> + <POP reg> takes 3 bytes for short imms. */
-	if EmitShortCode & Mask1 == 0xFFFF_FFFF then
+	if SwOptions.EmitShortCode & Mask1 == 0xFFFF_FFFF then
 		if (Const2 <= 127) & (int(Const2) >= -128) then
 			strcpy(@Buff, "push    ");
 			strcat(@Buff, @str(Const2));

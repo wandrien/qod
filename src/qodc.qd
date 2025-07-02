@@ -216,30 +216,43 @@ void SetupOptimization(char@ Mode)
 	case str_eq(@Mode, "size"):
 		RODataMergeMode = RODataMergeModeAgressive;
 		PHOptimization  = true;
-		OmitRedundantFramePointer = true;
-		EmitEnterInstruction = true;
-		EmitLeaveInstruction = true;
-		EmitShortCode = true;
-		EmitFastMult = false;
 		ReorderOperands = true;
+		SeparateColdSection = false;
+		SwOptionsNormal.OmitRedundantFramePointer = true;
+		SwOptionsNormal.EmitEnterInstruction = true;
+		SwOptionsNormal.EmitLeaveInstruction = true;
+		SwOptionsNormal.EmitShortCode = true;
+		SwOptionsNormal.EmitFastMult = false;
+		SwOptionsCold = SwOptionsNormal;
+		SwOptionsHot = SwOptionsNormal;
 	case str_eq(@Mode, "speed"):
 		RODataMergeMode = RODataMergeModeNormal;
 		PHOptimization  = true;
-		OmitRedundantFramePointer = true;
-		EmitEnterInstruction = false;
-		EmitLeaveInstruction = true;
-		EmitFastMult = true;
-		EmitShortCode = false;
 		ReorderOperands = true;
+		SeparateColdSection = true;
+		SwOptionsNormal.OmitRedundantFramePointer = true;
+		SwOptionsNormal.EmitEnterInstruction = false;
+		SwOptionsNormal.EmitLeaveInstruction = true;
+		SwOptionsNormal.EmitShortCode = false;
+		SwOptionsNormal.EmitFastMult = true;
+		SwOptionsCold = SwOptionsNormal;
+		SwOptionsHot = SwOptionsNormal;
+		SwOptionsCold.EmitEnterInstruction = true;
+		SwOptionsCold.EmitLeaveInstruction = true;
+		SwOptionsCold.EmitShortCode = true;
+		SwOptionsCold.EmitFastMult = false;
 	default:
 		RODataMergeMode = RODataMergeModeNone;
 		PHOptimization  = false;
-		OmitRedundantFramePointer = false;
-		EmitEnterInstruction = false;
-		EmitLeaveInstruction = true;
-		EmitFastMult = false;
-		EmitShortCode = false;
 		ReorderOperands = true;
+		SeparateColdSection = false;
+		SwOptionsNormal.OmitRedundantFramePointer = false;
+		SwOptionsNormal.EmitEnterInstruction = false;
+		SwOptionsNormal.EmitLeaveInstruction = true;
+		SwOptionsNormal.EmitShortCode = false;
+		SwOptionsNormal.EmitFastMult = false;
+		SwOptionsCold = SwOptionsNormal;
+		SwOptionsHot = SwOptionsNormal;
 	end:select
 end
 

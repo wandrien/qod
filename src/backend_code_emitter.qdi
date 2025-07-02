@@ -2296,7 +2296,10 @@ end
 /*****************************************************************************/
 
 void EmitFunctionPrologue(char @Buff; FunctionContext @FnCtx)
-	if OmitRedundantFramePointer & FnCtx.ParamFrameSize == 0 & FnCtx.StackSize == 0 then
+	if SwOptions.OmitRedundantFramePointer
+	&  FnCtx.ParamFrameSize == 0
+	&  FnCtx.StackSize == 0
+	then
 		FnCtx.FramePointer = false;
 	else
 		FnCtx.FramePointer = true;
@@ -2316,7 +2319,7 @@ void EmitFunctionPrologue(char @Buff; FunctionContext @FnCtx)
 		case FnCtx.StackSize == 0:
 			Emit("push    EBP");
 			Emit("mov     EBP,  ESP");
-		case EmitEnterInstruction & (FnCtx.StackSize <= 0xFFFF):
+		case SwOptions.EmitEnterInstruction & (FnCtx.StackSize <= 0xFFFF):
 			Emit(@strcpy3(@Buff,"enter   ",@str(FnCtx.StackSize), ", 0"));
 		default:
 			Emit("push    EBP");
@@ -2336,7 +2339,7 @@ void EmitFunctionEpilogue(char @Buff; FunctionContext @FnCtx)
 		select
 		case FnCtx.StackSize == 0:
 			Emit("pop     EBP");
-		case EmitLeaveInstruction:
+		case SwOptions.EmitLeaveInstruction:
 			Emit("leave");
 		default:
 			Emit("mov     ESP,  EBP");
@@ -2349,6 +2352,24 @@ void EmitFunctionEpilogue(char @Buff; FunctionContext @FnCtx)
 	else
 		Emit("ret");
 	end:if
+end
+
+/*****************************************************************************/
+
+bool IsFunctionCold(word I) of
+	return (Dict[I].AttributeFlags & ATTRIBUTE_FLAG.Cold) != 0;
+end
+
+bool IsFunctionHot(word I) of
+	return (Dict[I].AttributeFlags & ATTRIBUTE_FLAG.Hot) != 0;
+end
+
+SWITCHABLE_OPTIONS @ChooseSwOptionsForFunction(word I) of
+	when IsFunctionCold(I):
+		return @SwOptionsCold;
+	when IsFunctionHot(I):
+		return @SwOptionsHot;
+	return @SwOptionsNormal;
 end
 
 /*****************************************************************************/
@@ -2370,6 +2391,17 @@ end
 word pReturnVoid = nNODE;
 
 void EmitFunction(char @Buff; word I)
+	SWITCHABLE_OPTIONS @SwOptionsNew = @ChooseSwOptionsForFunction(I);
+	if @SwOptionsNew != @SwOptionsPrevUsed then
+		@SwOptionsPrevUsed = @SwOptionsNew;
+		SwOptions = SwOptionsNew;
+	end:if
+
+	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
+		EntryLabel = Dict[I].Label;
+		EmitEntrySymbol(@Buff);
+	end:if
+
 	EmitStringNL("");
 	strcpy(@Buff,"## ");
 	strcat(@Buff, @DictGetName(I));
@@ -2432,18 +2464,43 @@ end
 /*****************************************************************************/
 
 void EmitFunctions(char @Buff)
-	word I = 0;
-	while I < nDict do
-		select
-			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used:
-				if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
-					EntryLabel = Dict[I].Label;
-					EmitEntrySymbol(@Buff);
-				end:if
+	if SeparateColdSection then
+		word I = 0;
+		while I < nDict do
+			if Dict[I].Class == CLASS.cFUNC
+			 & Dict[I].Sub != SUBCLASS.sSYS
+			 & Dict[I].Used
+			 & !IsFunctionCold(I)
+			then
 				EmitFunction(@Buff, I);
-		end:select
-		inc I;
-	end:while
+			end:if
+			inc I;
+		end:while
+		EmitStringNL("");
+		EmitComment("## COLD SECTION ##");
+		I = 0;
+		while I < nDict do
+			if Dict[I].Class == CLASS.cFUNC
+			 & Dict[I].Sub != SUBCLASS.sSYS
+			 & Dict[I].Used
+			 & IsFunctionCold(I)
+			then
+				EmitFunction(@Buff, I);
+			end:if
+			inc I;
+		end:while
+	else
+		word I = 0;
+		while I < nDict do
+			if Dict[I].Class == CLASS.cFUNC
+			 & Dict[I].Sub != SUBCLASS.sSYS
+			 & Dict[I].Used
+			then
+				EmitFunction(@Buff, I);
+			end:if
+			inc I;
+		end:while
+	end:if
 
 	when EntryLabel == 0:
 		StopInternalCodegen(__FILE__, __LINE__);
