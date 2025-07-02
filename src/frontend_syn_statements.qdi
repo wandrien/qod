@@ -3,11 +3,59 @@ namespace StatementParser of
 
 /*****************************************************************************/
 
-void MatchSemicolon(char @Buff)
-	Scan(@Buff);
+void MatchSemicolon(char @Buff; bool @SkipFinalScan)
 	if str_ne(@Buff,";") then
 		Error(@L10n.eSEMICOLONEXP);
+		SkipFinalScan = true;
+	else
+		SkipFinalScan = false;
 	end
+end
+
+void ScanAndMatchSemicolon(char @Buff; bool @SkipFinalScan)
+	Scan(@Buff);
+	MatchSemicolon(@Buff, @SkipFinalScan);
+end
+
+/*****************************************************************************/
+
+void ProcessSeparatorKeywordError(char @Buff; char @Keyword)
+	bool EatIt =
+		str_eq(@Buff, "then") |
+		str_eq(@Buff, ":") |
+		str_eq(@Buff, "do") |
+		str_eq(@Buff, "of")
+	;
+
+	char MsgBuff[nBUFF];
+	strbuf buf;
+	strbuf.init(@buf, @MsgBuff, countof(MsgBuff));
+
+	strbuf.append_cstr3(@buf,
+		@L10n.eMISSING_SEP_1,
+		@Keyword,
+		@L10n.eMISSING_SEP_2
+	);
+	Error(@buf.Buff);
+
+	if EatIt then
+		strbuf.truncate(@buf, 0);
+		strbuf.append_cstr3(@buf,
+			@L10n.eWRONG_SEP_1,
+			@Buff,
+			@L10n.eWRONG_SEP_2
+		);
+		Error(@buf.Buff);
+		Scan(@Buff);
+	end:if
+end
+
+void EatSeparatorKeyword(char @Buff; char @Keyword)
+	if str_eq(@Buff, @Keyword) then
+		Scan(@Buff);
+		return;
+	end:if
+	ProcessSeparatorKeywordError(@Buff, @Keyword);
 end
 
 /*****************************************************************************/
@@ -21,10 +69,28 @@ bool EndOf(char @Buff, @A1, @A2; bool EatSemicolon)
 		Scan(@Buff);
 		if str_eq(@Buff, @A1)
 		| (@A2 != NULL & str_eq(@Buff, @A2)) then
-			Scan(@Buff);
+			pass;
 		else
-			Stop(@L10n.eNOTALLOWED);
+			char MsgBuff[nBUFF];
+			strbuf buf;
+			strbuf.init(@buf, @MsgBuff, countof(MsgBuff));
+			strbuf.append_cstr5(@buf,
+				@L10n.eWRONG_END_ID_1,
+				@Buff,
+				@L10n.eWRONG_END_ID_2,
+				@A1,
+				@L10n.eWRONG_END_ID_3
+			);
+			if @A2 != NULL then
+				strbuf.append_cstr3(@buf,
+					@L10n.eWRONG_END_ID_4,
+					@A2,
+					@L10n.eWRONG_END_ID_5
+				);
+			end:if
+			Error(@buf.Buff);
 		end:if
+		Scan(@Buff);
 	end:if
 
 	if EatSemicolon & str_eq(@Buff, ";") then
@@ -71,30 +137,28 @@ void Statement_IF(char @Buff; word @P1; bool @SkipFinalScan)
 		BackLink = CASE;
 		@BackLink = @Node[CASE].pRight;
 
-		if str_eq(@Buff,@Case) then
+		select
+		case str_eq(@Buff,@Case):
 			Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 			word pType = Node[Node[COND].pLeft].pType;
-
-			if str_ne(@Buff,@Then) then
-				Stop(@L10n.eTHENEXP);
-			end:if
 
 			if pType != st_bool then
 				ErrorAtNode(COND, @L10n.eTYPE_COND_EXPR);
 			end:if
-		else
-			if str_eq(@Else,"default") then
-				if str_ne(@Scan(@Buff),":") then
-					Stop(@L10n.eCOLONEXP);
-				end:if
-			end:if
 
+			EatSeparatorKeyword(@Buff, @Then);
+			Node[BODY].pLeft = Statements(@Buff, @Case, @Else, "end");
+		case str_eq(@Buff, @Else):
+			if str_eq(@Else,"default") then
+				Scan(@Buff);
+				EatSeparatorKeyword(@Buff, ":");
+			else
+				Scan(@Buff);
+			end:if
 			@Case="";
 			@Else="";
-		end:if
-
-		Scan(@Buff);
-		Node[BODY].pLeft = Statements(@Buff, @Case, @Else, "end");
+			Node[BODY].pLeft = Statements(@Buff, @Case, @Else, "end");
+		end:select
 	end:while
 
 	SkipFinalScan = EndOf(@Buff, @End1, NULL, true);
@@ -105,7 +169,6 @@ end
 /*****************************************************************************/
 
 void Statement_WHEN(char @Buff; word @P1; bool @SkipFinalScan)
-
 	Node[P1].ID=iSELECT;
 
 	word CASE = Peek();
@@ -127,11 +190,7 @@ void Statement_WHEN(char @Buff; word @P1; bool @SkipFinalScan)
 		ErrorAtNode(COND, @L10n.eTYPE_COND_EXPR);
 	end:if
 
-	if str_ne(@Buff,":") then
-		Stop(@L10n.eTHENEXP);
-	end:if
-
-	Scan(@Buff);
+	EatSeparatorKeyword(@Buff, ":");
 
 	Node[BODY].pLeft = Ctrl(@Buff);
 
@@ -177,10 +236,9 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 	when pType != st_char & pType != st_byte & pType != st_word & pType != st_int:
 		Stop(@L10n.eSWTYPE);
 
-	when str_ne(@Buff,"of"):
-		Stop(@L10n.eOFEXP);
+	EatSeparatorKeyword(@Buff, "of");
 
-	when str_ne(@Scan(@Buff),"case"):
+	when str_ne(@Buff,"case"):
 		Stop(@L10n.eCASEEXP);
 
 	while str_eq(@Buff,"case") do
@@ -280,22 +338,17 @@ void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 		@End2 = "while";
 		Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 		word pType = Node[Node[COND].pLeft].pType;
-
 		if pType != st_bool then
 			Error(@L10n.eTYPE);
 		end
-
-		if str_ne(@Buff,"do") then
-			Stop(@L10n.eDOEXP);
-		end
+		EatSeparatorKeyword(@Buff, "do");
 	case str_eq(@Buff,"forever"):
 		@End2 = "forever";
 		Scan(@Buff);
-		if str_ne(@Buff,"do") then
-			Stop(@L10n.eDOEXP);
-		end
+		EatSeparatorKeyword(@Buff, "do");
 	case str_eq(@Buff,"do"):
 		Deprecated("'do' should be replaced with 'forever do'");
+		Scan(@Buff);
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:select
@@ -303,7 +356,6 @@ void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 	word pLoop1=pLoop;
 	pLoop=P1;
 
-	Scan(@Buff);
 	Node[BODY].pLeft = Statements(@Buff, "end", NULL, NULL);
 
 	SkipFinalScan = EndOf(@Buff, "do", @End2, true);
@@ -335,9 +387,7 @@ void Statement_REPEAT(char @Buff; word @P1; bool @SkipFinalScan)
 	Node[COND].pLeft = Expr(PRIO.ZERO, @Scan(@Buff));
 	word pType = Node[Node[COND].pLeft].pType;
 
-	if str_ne(@Buff,";") then
-		Stop(@L10n.eSEMICOLONEXP);
-	end
+	MatchSemicolon(@Buff, @SkipFinalScan);
 
 	if pType != st_bool then
 		Stop(@L10n.eTYPE);
@@ -362,7 +412,7 @@ void Statement_CONTINUE(char @Buff; word @P1; bool @SkipFinalScan)
 	Node[P1].Value = pLoop;
 	Node[P1].pType = st_noreturn;
 
-	MatchSemicolon(@Buff);
+	ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 end
 
 /*****************************************************************************/
@@ -379,7 +429,7 @@ void Statement_EXIT(char @Buff; word @P1; bool @SkipFinalScan)
 	Node[P1].Value = pLoop;
 	Node[P1].pType = st_noreturn;
 
-	MatchSemicolon(@Buff);
+	ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 end
 
 /*****************************************************************************/
@@ -395,9 +445,7 @@ void Statement_INCDEC(char @Buff; word @P1; bool @SkipFinalScan)
 	Node[P1].pLeft= Expr(PRIO.INC, @Scan(@Buff));
 	word pType = Node[Node[P1].pLeft].pType;
 
-	if str_ne(@Buff,";") then
-		Stop(@L10n.eSEMICOLONEXP);
-	end
+	MatchSemicolon(@Buff, @SkipFinalScan);
 
 	select
 	case !NodeIsLValue(Node[P1].pLeft):
@@ -428,9 +476,7 @@ void Statement_RETURN(char @Buff; word @P1; bool @SkipFinalScan)
 		ImplicitCast(pTypeReturn, @Node[P1].pLeft);
 	end:if
 
-	if str_ne(@Buff,";") then
-		Stop(@L10n.eSEMICOLONEXP);
-	end
+	MatchSemicolon(@Buff, @SkipFinalScan);
 
 	Node[P1].pType = st_noreturn;
 end
@@ -453,10 +499,7 @@ void Statement_INLINE(char @Buff; word @P1; bool @SkipFinalScan)
 		return;
 	end
 
-	if str_ne(@Buff,";") then
-		Stop(@L10n.eSEMICOLONEXP);
-	end
-
+	MatchSemicolon(@Buff, @SkipFinalScan);
 end
 
 /*****************************************************************************/
@@ -575,9 +618,7 @@ void Statement_ASSIGN(char @Buff; word @P1; bool @SkipFinalScan)
 		end:if
 	end:if
 
-	if str_ne(@Buff,";") then
-		Stop(@L10n.eSEMICOLONEXP);
-	end:if
+	MatchSemicolon(@Buff, @SkipFinalScan);
 end
 
 /*****************************************************************************/
@@ -607,6 +648,7 @@ void InitCtrlPrefix()
 	RegisterCtrlPrefix("inline");
 	RegisterCtrlPrefix("pass");
 	RegisterCtrlPrefix("null");
+	RegisterCtrlPrefix(";");
 end
 
 /*****************************************************************************/
@@ -653,12 +695,16 @@ word Ctrl(char @Buff)
 
 		case str_eq(@Buff,"pass"):
 			Node[P1].ID   =iEMPTY;
-			MatchSemicolon(@Buff);
+			ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 
 		case str_eq(@Buff,"null"):
 			Node[P1].ID   =iEMPTY;
-			MatchSemicolon(@Buff);
+			ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 			Warn(@L10n.dprNULL);
+
+		case str_eq(@Buff,";"):
+			MatchSemicolon(@Buff, @SkipFinalScan);
+			Error(@L10n.eSEMICOLONEXC);
 
 		default:
 			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
@@ -714,7 +760,8 @@ end
 
 end:StatementParser;
 
-alias MatchSemicolon = StatementParser.MatchSemicolon;
+alias ScanAndMatchSemicolon = StatementParser.ScanAndMatchSemicolon;
+//alias MatchSemicolon = StatementParser.MatchSemicolon;
 alias EndOf = StatementParser.EndOf;
 alias Statements = StatementParser.Statements;
 alias Ctrl = StatementParser.Ctrl;

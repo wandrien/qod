@@ -36,11 +36,20 @@ define @eOPENBRACKETEXPAFTER "Пропущена открывающая скобка после "
 define @eCLOSEBRACKETEXPBEFORE "Пропущена закрывающая скобка перед "
 define @eMISSINGBRACKETIN "Пропущена закрывающая скобка в выражении "
 
+define @eMISSING_SEP_1   "Пропущен разделитель '"                      // missing separator
+define @eMISSING_SEP_2   "'"
+
+define @eWRONG_SEP_1     "Обнаружен ошибочный разделитель '"           // wrong separator found
+define @eWRONG_SEP_2     "'"
+
+define @eWRONG_END_ID_1  "Ошибочная метка конца блока: '"              // wrong block lable
+define @eWRONG_END_ID_2  "' вместо '"
+define @eWRONG_END_ID_3  "'"
+define @eWRONG_END_ID_4  " или '"
+define @eWRONG_END_ID_5  "'"
+
 define @eCASEEXP         "Пропущено case"                              // case expected
-define @eTHENEXP         "Пропущено then или двоеточие"                // then or colon expected
 define @eCOLONEXP        "Пропущено двоеточие"                         // Colon expected
-define @eOFEXP           "Пропущено of"                                // of expected
-define @eDOEXP           "Пропущено do"                                // do expected
 define @eWRONGEXIT       "exit вне цикла"                              // exit statement outside a loop
 define @eWRONGCONTINUE   "continue вне цикла"                          // continue statement outside a loop
 define @eSTRUCTEXP       "Пропущена структурная переменная"            // Struct variable expected
@@ -81,6 +90,7 @@ define @eNOFUNCTION      "Объявление функции недопустимо"              // Illega
 define @eASSIGNEXP       "Пропущено ="                                 // = expected
 define @eASSIGNEXP2      "Пропущено = после имени"                     // = expected after name
 define @eSEMICOLONEXP    "Пропущена точка с запятой"                   // Semicolon expected
+define @eSEMICOLONEXC    "Избыточная точка с запятой"                  // Redundant semicolon
 define @eCOMMAEXP        "Пропущена запятая"                           // Comma expected
 define @eCALCERR         "Ошибка в константном выражении"              // Error in constant expression
 define @eDIVZERO         "Попытка деления на ноль"                     // Division by zero

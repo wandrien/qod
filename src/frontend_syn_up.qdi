@@ -660,8 +660,7 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 	case Eob.EndKeyword:
 		SkipFinalScan = EndOf(@Buff, @Eob.Name1, @Eob.Name2, true);
 	case Eob.CurlyBraces:
-		MatchSemicolon(@Buff);
-		SkipFinalScan = false;
+		ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 	end:select
 
 	return SkipFinalScan == false;

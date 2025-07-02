@@ -1,0 +1,44 @@
+/* TARGET-X: linux, win32-c */
+/* Replace TARGET-X with TARGET to enable compilation of this example and see various types of syntax error */
+include "../include/hosted.qdi";
+
+void f(int x; int y) of
+	while x < y do
+		if false then
+			x = 0     /* missing semicolon */
+			pass      /* missing semicolon */
+			continue  /* missing semicolon */
+			exit      /* missing semicolon */
+			return    /* missing semicolon */
+		end
+		inc x         /* missing semicolon */
+	end:while;;       /* redundant semicolon */
+
+	repeat
+		int a = 0     /* missing semicolon */
+		int b = 1     /* missing semicolon */
+	until true        /* missing semicolon */
+
+	if false          /* missing then */
+		pass;
+	end:while         /* wrong block id */
+
+	while false       /* missing do */
+		pass;
+	end:if            /* wrong block id */
+
+	while false then  /* do expected */
+		pass;
+	end:switch        /* wrong block id */
+
+	switch y          /* missing of */
+	case 0 return;    /* missing colon */
+	default x = 0;    /* missing colon */
+	end:switch
+end
+
+word main() of
+	puts("Hello, World!");
+	put_nl();
+	return 0;
+end
