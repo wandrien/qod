@@ -2397,6 +2397,8 @@ void EmitFunction(char @Buff; word I)
 		SwOptions = SwOptionsNew;
 	end:if
 
+	Emit_ALIGN(SwOptions.AlignFunctions);
+
 	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
 		EntryLabel = Dict[I].Label;
 		EmitEntrySymbol(@Buff);

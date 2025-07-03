@@ -511,6 +511,7 @@ word Code_WHILE(word P; char @Buff)
 	|    Node[COND].ID != iCOND:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
+	Emit_ALIGN(SwOptions.AlignLoops);
 	EmitLabel(@LabelResolve(P, JmpLbl.lCONTINUE));
 
 	if Node[COND].pLeft < nNODE then
@@ -569,6 +570,7 @@ word Code_REPEAT(word P; char @Buff)
 		return st_void;
 	end
 
+	Emit_ALIGN(SwOptions.AlignLoops);
 	EmitLabel(@LabelResolve(P, JmpLbl.lLOOPBODY));
 
 	Code_List(Node[BODY].pLeft, @Buff);

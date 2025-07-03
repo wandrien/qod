@@ -223,6 +223,8 @@ void SetupOptimization(char@ Mode)
 		SwOptionsNormal.EmitLeaveInstruction = true;
 		SwOptionsNormal.EmitShortCode = true;
 		SwOptionsNormal.EmitFastMult = false;
+		SwOptionsNormal.AlignFunctions = 0;
+		SwOptionsNormal.AlignLoops = 0;
 		SwOptionsCold = SwOptionsNormal;
 		SwOptionsHot = SwOptionsNormal;
 	case str_eq(@Mode, "speed"):
@@ -235,12 +237,16 @@ void SetupOptimization(char@ Mode)
 		SwOptionsNormal.EmitLeaveInstruction = true;
 		SwOptionsNormal.EmitShortCode = false;
 		SwOptionsNormal.EmitFastMult = true;
+		SwOptionsNormal.AlignFunctions = 0;
+		SwOptionsNormal.AlignLoops = 0;
 		SwOptionsCold = SwOptionsNormal;
 		SwOptionsHot = SwOptionsNormal;
 		SwOptionsCold.EmitEnterInstruction = true;
 		SwOptionsCold.EmitLeaveInstruction = true;
 		SwOptionsCold.EmitShortCode = true;
 		SwOptionsCold.EmitFastMult = false;
+		SwOptionsHot.AlignFunctions = 32;
+		SwOptionsHot.AlignLoops = 32;
 	default:
 		RODataMergeMode = RODataMergeModeNone;
 		PHOptimization  = false;
@@ -251,6 +257,8 @@ void SetupOptimization(char@ Mode)
 		SwOptionsNormal.EmitLeaveInstruction = true;
 		SwOptionsNormal.EmitShortCode = false;
 		SwOptionsNormal.EmitFastMult = false;
+		SwOptionsNormal.AlignFunctions = 0;
+		SwOptionsNormal.AlignLoops = 0;
 		SwOptionsCold = SwOptionsNormal;
 		SwOptionsHot = SwOptionsNormal;
 	end:select

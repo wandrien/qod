@@ -583,6 +583,13 @@ void Emit_MOVS(word Size)
 	end:select
 end
 
+void Emit_ALIGN(word Align)
+	if Align > 1 then
+		char Buff[nBUFF];
+		EmitPhoSkip(@strcpy2(@Buff, "align   ", @str(Align)));
+	end:if
+end
+
 /*****************************************************************************/
 
 /** Returns nonzero if INC/DEC is preferred over ADD/SUB for the given register and the compilation options.

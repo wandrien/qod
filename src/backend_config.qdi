@@ -53,6 +53,8 @@ struct SWITCHABLE_OPTIONS of
 	bool OmitRedundantFramePointer;
 	bool EmitShortCode;
 	bool EmitFastMult;
+	word AlignFunctions;
+	word AlignLoops;
 end
 
 SWITCHABLE_OPTIONS SwOptions;
