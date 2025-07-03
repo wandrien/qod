@@ -69,6 +69,7 @@ char @GetDefaultTarget()
 	when qod.env.__WIN32__:
 		return "--win32-c";
 	//attribute(ensure_unreachable) pass;
+	StopInternal(__FILE__, __LINE__);
 end
 
 /*****************************************************************************/
