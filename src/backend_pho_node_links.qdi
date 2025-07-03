@@ -25,7 +25,7 @@ bool PHO_CheckAliasing(word pStore; word pLoad)
 	while pLoad != nNODE do
 		when PHO_CheckAliasing_NoRecursion(pStore, pLoad):
 			return true;
-		when PHO_CheckAliasing_NoRecursion(pStore, Node[pLoad].pLeft):
+		when PHO_CheckAliasing(pStore, Node[pLoad].pLeft):
 			return true;
 		pLoad = Node[pLoad].pRight;
 	end
