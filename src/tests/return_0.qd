@@ -1,0 +1,50 @@
+// TEST: should_print '10 10 20 30 40 '
+
+include "../include/test_env.qdi";
+
+define T true
+define F false
+
+int f1() of
+	when T:
+		return 10;
+end
+
+int f1_2() of
+	when T:
+		return 10;
+	attribute(maybe_unreachable)
+	when F:
+		return 10;
+end
+
+int f1_3() of
+	when T:
+		return 10;
+	attribute(ensure_unreachable)
+	pass;
+end
+
+int f2() of
+	when F:
+		return 10;
+	when T:
+		return 20;
+end
+
+int f3(bool b) of
+	if b then
+		return 30;
+	else
+		return 40;
+	end
+end
+
+word main() of
+	put_int(f1()); puts(" ");
+	put_int(f1_2()); puts(" ");
+	put_int(f2()); puts(" ");
+	put_int(f3(T)); puts(" ");
+	put_int(f3(F)); puts(" ");
+	return 0;
+end
