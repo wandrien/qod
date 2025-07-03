@@ -2357,11 +2357,11 @@ end
 /*****************************************************************************/
 
 bool IsFunctionCold(word I) of
-	return (Dict[I].AttributeFlags & ATTRIBUTE_FLAG.Cold) != 0;
+	return (Dict[I].AttributeFlags & ATTRIBUTE_FLAG.cold) != 0;
 end
 
 bool IsFunctionHot(word I) of
-	return (Dict[I].AttributeFlags & ATTRIBUTE_FLAG.Hot) != 0;
+	return (Dict[I].AttributeFlags & ATTRIBUTE_FLAG.hot) != 0;
 end
 
 SWITCHABLE_OPTIONS @ChooseSwOptionsForFunction(word I) of

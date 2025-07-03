@@ -665,6 +665,7 @@ word Ctrl(char @Buff)
 	bool SkipFinalScan = false;
 
 	word P1 = Peek();
+	Node[P1].AttributeFlags = ReadAttributes(@Buff);
 
 	select
 		case CtrlPrefix0[word(Buff[0])] == 0 | CtrlPrefix1[word(Buff[1])] == 0:

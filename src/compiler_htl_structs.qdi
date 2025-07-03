@@ -21,6 +21,7 @@ struct NODE of           // Узел синтаксического деpева
 	word  pType;         // Тип данных
 	word   Value;        // Значение
 	word  pLabel;        // Индекс в таблице ссылок на голову списка ссылок
+	word  AttributeFlags;
 	SOURCELOCATION SourceLocation;
 	bool   Used;
 end

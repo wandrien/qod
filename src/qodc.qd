@@ -63,12 +63,12 @@ char@ OutputIncludeListFile;
 /*****************************************************************************/
 
 char @GetDefaultTarget()
-	when qod.env.__LINUX__:
+	when qod.env.__LINUX__ :
 		return "--linux";
+	//attribute(maybe_unreachable)
 	when qod.env.__WIN32__:
 		return "--win32-c";
-	/* FIXME: ensure dead code */
-	StopInternal(__FILE__, __LINE__);
+	//attribute(ensure_unreachable) pass;
 end
 
 /*****************************************************************************/

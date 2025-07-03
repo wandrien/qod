@@ -3,60 +3,6 @@ namespace TopLevelParser of
 
 /*****************************************************************************/
 
-word ReadAttributes(char @Buff) of
-	word AttributeFlags = 0;
-	while str_eq(@Buff, "attribute") do
-		Scan(@Buff);
-		if str_eq(@Buff, "(") then
-			Scan(@Buff);
-		else
-			ErrorWithSubject(@L10n.eOPENBRACKETEXPAFTER, "attribute");
-		end:if
-		if str_ne(@Buff, ")") then /* attribute list is allowed to be empty */
-			forever do
-				bool Optional = false;
-				if str_eq(@Buff, "optional") then
-					Optional = true;
-					Scan(@Buff);
-				end:if
-				word AttributeFlag = 0;
-				select
-				case str_eq(@Buff, "cold"): AttributeFlag = ATTRIBUTE_FLAG.Cold;
-				case str_eq(@Buff, "hot"): AttributeFlag = ATTRIBUTE_FLAG.Hot;
-				default:
-					if !Optional then
-						ErrorWithSubject(@L10n.eUNRECOGNIZED_ATTR, @Buff);
-					end:if
-				end:select
-				AttributeFlags = AttributeFlags | AttributeFlag;
-				Scan(@Buff);
-				if str_eq(@Buff, ")") then
-					Scan(@Buff);
-					exit;
-				end:if
-				if str_eq(@Buff, ",") then
-					Scan(@Buff);
-				else
-					Error(@L10n.eCOMMAEXP);
-				end:if
-			end:forever
-		end:if
-	end:while
-	return AttributeFlags;
-end
-
-void CheckValidAttributeFlags(word AttributeFlags, AllowedAttributeFlags; char @Statement)
-	when (AttributeFlags & !AllowedAttributeFlags) == 0:
-		return;
-	if @Statement != NULL then
-		ErrorWithSubject(@L10n.eINVALID_ATTR, @Statement);
-	else
-		Error(@L10n.eATTR_AT_WRONG_PLACE);
-	end
-end
-
-/*****************************************************************************/
-
 word FieldNextOffset = 0;
 word FieldMaxAlign = 1;
 

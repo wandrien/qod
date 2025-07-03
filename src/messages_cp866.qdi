@@ -140,6 +140,8 @@ define @eNEVERDEFINED    "Функция используется, но нигде не определена"
 define @eXORNOTIMPL      "Логическое исключающее ИЛИ еще не реализовано" // Logical XOR not implemented yet
 define @eEQVNOTIMPL      "Логическое равенство еще не реализовано"     // Logical equality not implemented yet
 
+define @eENSURE_UNREACHABLE "Управление достигает оператора с атрибутом ensure_unreachable"
+
 define @wDANGLING_SEMICOLON "Висящая точка с запятой"
 define @wDEPRECATED      "Устаревшая возможность"                      // Feature deprecated
 define @wGLOBALVARUNUSED ": глобальная переменная не используется"     // a global variable is never used

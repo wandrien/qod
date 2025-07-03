@@ -62,8 +62,15 @@ end:namespace
 /*****************************************************************************/
 
 namespace ATTRIBUTE_FLAG of
-	define Cold  1
-	define Hot   2
+	define cold                 1
+	define hot                  2
+	//define volatile             4
+	//define deprecated           8
+	//define maybe_unused        16
+	define maybe_unreachable   32
+	//define ensure_unused       64
+	define ensure_unreachable 128
+	//define ensure_used        256
 end:namespace
 
 /*****************************************************************************/

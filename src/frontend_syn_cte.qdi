@@ -515,10 +515,16 @@ void CTE_CodeList(word P)
 	while P != nNODE do
 		if Node[P].pType == st_noreturn then
 			if Node[P].pRight != nNODE then
-				WarnAtNode(Node[P].pRight, @L10n.wUNREACHABLE);
+				word AttributeFlags = Node[Node[P].pRight].AttributeFlags;
+				if (AttributeFlags & (ATTRIBUTE_FLAG.maybe_unreachable | ATTRIBUTE_FLAG.ensure_unreachable)) == 0 then
+					WarnAtNode(Node[P].pRight, @L10n.wUNREACHABLE);
+				end:if
 				NodeFree(@Node[P].pRight);
 			end:if
 			return;
+		end:if
+		if (Node[P].AttributeFlags & ATTRIBUTE_FLAG.ensure_unreachable) != 0 then
+			ErrorAtNode(P, @L10n.eENSURE_UNREACHABLE);
 		end:if
 		P = Node[P].pRight;
 	end:do
