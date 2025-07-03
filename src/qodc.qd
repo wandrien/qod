@@ -65,11 +65,10 @@ char@ OutputIncludeListFile;
 char @GetDefaultTarget()
 	when qod.env.__LINUX__ :
 		return "--linux";
-	//attribute(maybe_unreachable)
+	attribute(maybe_unreachable)
 	when qod.env.__WIN32__:
 		return "--win32-c";
-	//attribute(ensure_unreachable) pass;
-	StopInternal(__FILE__, __LINE__);
+	attribute(ensure_unreachable) pass;
 end
 
 /*****************************************************************************/
