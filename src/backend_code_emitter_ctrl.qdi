@@ -177,12 +177,15 @@ end
 word Code_RETURN(word P; char @Buff)
 
 	if Node[P].pLeft<nNODE then
+		word Saved_Reg_TARGET_Locked = Reg_TARGET_Locked;
+		inc Reg_TARGET_Locked;
 		Reg_ALT_TARGET = RegNone;
 		Reg_TARGET = RegA;
 		word pType = Code_(Node[P].pLeft, @Buff);
 		if Reg_TARGET != RegA then
 			Emit_MOV_or_XCHG(RegA, Reg_TARGET, 4);
 		end:if
+		Reg_TARGET_Locked = Saved_Reg_TARGET_Locked;
 	end:if
 
 	if Dict[FnCtx.pFunc].Sub == SUBCLASS.sSTART_FUNC then

@@ -31,6 +31,8 @@ word Reg_TARGET;
 word Reg_ALT_TARGET;
 word RegAllocation[5];
 
+word Reg_TARGET_Locked = 0;
+
 void RegAllocate(word Reg)
 	when RegAllocation[Reg] != 0:
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -1173,6 +1175,9 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word ResultSize = SizeOfType(pResultType);
 	bool opSwappable = (CheckOperationSwappable(ID) != 0);
 
+	/* Variables related to iMUL, iDIV, iMOD */
+	word Saved_Reg_TARGET_Locked = Reg_TARGET_Locked;
+
 	/* Variables related to comparison OPs */
 	bool opIsComparison = false;
 	bool useSetCC = true;
@@ -1212,6 +1217,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 				Emit_SaveReg(RegA, "saved in CodeBinOp");
 			Reg_TARGET = RegA;
 		end
+		inc Reg_TARGET_Locked;
 	end:switch
 
 	pLeft = DropNoOpCast(pLeft);
@@ -1453,6 +1459,8 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	end:forever
 
 	if allowEasyTargetSwitch & (leftOperand == operandNotReady) then
+		when rightReg != RegNone:
+			RegAllocate(rightReg);
 		word Reg;
 		if NodeCanBeEncodedAsMemoryOperand(pLeft) then
 			Reg = ChooseEmptyRegRated();
@@ -1461,6 +1469,8 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:if
 		when Reg != RegNone:
 			Reg_TARGET = Reg;
+		when rightReg != RegNone:
+			RegFree(rightReg);
 	end:if
 
 
@@ -1576,6 +1586,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		end:forever
 	end:if
 
+	Reg_TARGET_Locked = Saved_Reg_TARGET_Locked;
 
 	/* Check if we can replace add/sub with inc/dec */
 	if rightOperand == operandImm & (ID == iADD | ID == iSUB) then
@@ -1953,8 +1964,9 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 
 	/* These operations don't return the result in any register,
 	instead a conditional jump is the result. So we reset Reg_TARGET here. */
-	Reg_TARGET = RegA;
 	Reg_ALT_TARGET = RegNone;
+	Reg_TARGET = ChooseEmptyRegRated();
+	//Reg_TARGET = RegA;
 
 	switch Node[P].ID of
 	case iLITERAL:
@@ -2162,6 +2174,10 @@ word CodePrimaryWrapped(word P)
 	if Saved_Reg_ALT_TARGET == RegNone & Reg_ALT_TARGET != RegNone then
 		//EmitComment("XXX: incorrect Reg_ALT_TARGET");
 		Reg_ALT_TARGET = RegNone;
+	end:if
+
+	if Reg_ALT_TARGET == RegNone & Reg_TARGET_Locked == 0 then
+		Reg_TARGET = ChooseEmptyRegRated();
 	end:if
 
 	Code_LOAD(P, @Ref);
