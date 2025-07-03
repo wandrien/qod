@@ -1,6 +1,7 @@
 
 /*****************************************************************************/
 
+attribute(hot)
 char @memcpy(char @Dst, @Src; word N)
 	word  P = 0;
 	while P < N do

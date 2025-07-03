@@ -14,6 +14,7 @@ bool str_has_suffix(char @S; char @Suffix);
 
 ***************************************************************** DOCUMENTATION
 
+attribute(hot)
 bool str_eq(char @S1; char @S2)
 if false then
 	return strcmp(@S1, @S2) == 0;
@@ -23,11 +24,11 @@ else
 
 	word i = 0;
 	while S1[i] == S2[i] do
-		if S1[i] == #0 then
+		if S1[i] != #0 then /* optimized for better code layout */
+			inc i;
+		else
 			return true;
 		end
-
-		inc i;
 	end
 
 	return false;
@@ -36,6 +37,7 @@ end
 
 /*****************************************************************************/
 
+attribute(hot)
 bool str_ne(char @S1; char @S2)
 if false then
 	return strcmp(@S1, @S2) != 0;
@@ -45,11 +47,11 @@ else
 
 	word i = 0;
 	while S1[i] == S2[i] do
-		if S1[i] == #0 then
+		if S1[i] != #0 then /* optimized for better code layout */
+			inc i;
+		else
 			return false;
 		end
-
-		inc i;
 	end
 
 	return true;

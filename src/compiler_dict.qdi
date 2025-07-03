@@ -189,22 +189,22 @@ end
 	Поиск объекта в заданном пространстве по имени.
 	(Кроме объектов класса cFILE.)
 */
+attribute(hot)
 word FindInNamespace(char @Name; word pNamespace)
 	when pNamespace >= nDict:
 		StopInternal(__FILE__, __LINE__);
-
 	word hash = str_hash(@Name);
 	word P = Dict[pNamespace].pFirst;
-	while P < nDict do
-		DICT @d = @Dict[P];
-		if d.Name.Hash == hash
-		&  str_eq(@DictGetName(P), @Name)
-		/*&  d.Class != CLASS.cFILE*/ then
-			return DictResolveAlias(P);
+	while P < nDICT do
+		if Dict[P].Name.Hash != hash then /* optimized for better code layout */
+			P = Dict[P].pNext;
+		else
+			if str_eq(@DictGetName(P), @Name) then
+				return DictResolveAlias(P);
+			end
+			P = Dict[P].pNext;
 		end
-		P = d.pNext;
 	end
-
 	return nDICT;
 end
 

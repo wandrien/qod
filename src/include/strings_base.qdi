@@ -28,6 +28,7 @@ char @strn_cat(char @Dst, @Src; word DstSize);
 
 ***************************************************************** DOCUMENTATION
 
+attribute(hot)
 word strlen(char @St)
 	word i = 0;
 	while St[i] != #0 do
@@ -39,6 +40,7 @@ end
 
 /*****************************************************************************/
 
+attribute(hot)
 word strcmp(char @S1, @S2)
 	when @S1 == @S2:
 		return 0;
@@ -57,6 +59,7 @@ end
 
 /*****************************************************************************/
 
+attribute(hot)
 char @strcpy(char @Dst, @Src)
 	word i = 0;
 	while Src[i] != #0 do
@@ -70,6 +73,7 @@ end
 
 /*****************************************************************************/
 
+attribute(hot)
 char @str_push(char @Dst, @Src)
 	word i = 0;
 	while Src[i] != #0 do
@@ -90,6 +94,7 @@ end
 
 /*****************************************************************************/
 
+attribute(hot)
 char @strn_cpy(char @Dst, @Src; word DstSize)
 	word i = 0;
 	while Src[i] != #0 do
@@ -111,6 +116,7 @@ end
 
 /*****************************************************************************/
 
+attribute(hot)
 char @strn_cat(char @Dst, @Src; word DstSize)
 	word DstLen = strlen(@Dst);
 	if DstLen >= DstSize then

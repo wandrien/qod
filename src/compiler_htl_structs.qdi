@@ -27,19 +27,19 @@ struct NODE of           // Узел синтаксического деpева
 end
 
 struct NAME of
-	word   Offset;
 	word   Hash;
+	word   Offset;
 end
 
 struct DICT of           // Элемент таблицы глобальных имен
 	NAME   Name;
 
-	word   FullyQualifiedName; // Имя вида Namespace.Namespace.Name
-
 	word  pNamespace;    // Пространство имён, в котором размещается имя
 	word  pNext;         // Следующее имя в том же пространстве имён, что и данное
 	word  pFirst;        // Первое имя в /этом/ пространстве имён
 	word  pLast;         // Последнее имя в /этом/ пространстве имён
+
+	word   FullyQualifiedName; // Имя вида Namespace.Namespace.Name
 
 	byte   Class;        // Слово, литерал, тип, пеpеменная, функция
 	byte   Sub;          // Подкласс
