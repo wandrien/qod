@@ -4,12 +4,17 @@
 LABEL @CodeExtractExitLabel(word P);
 
 LABEL @CodeExtractJump(word P)
+	/* Skip `pass` statements, if any. */
+	while Node[P].ID == iEMPTY & Node[P].pRight != nNODE loop
+		P = Node[P].pRight;
+	end:while
+
 	switch Node[P].ID of
 	case iVIRTUAL_JUMP:
 		return @LabelResolve(Node[P].Value, Node[P].pType);
 	case iCONTINUE:
 		return @LabelResolve(Node[P].Value, JmpLbl.lCONTINUE);
-	case iEXIT:
+	case iEXIT, iVIRTUAL_EXIT:
 		return @CodeExtractExitLabel(Node[P].Value);
 	default:
 		return NULL;
@@ -30,6 +35,18 @@ void CodeList_InsertVirtualJump(word P; word pTarget; word LabelId)
 	Node[pJump].ID = iVIRTUAL_JUMP;
 	Node[pJump].Value = pTarget;
 	Node[pJump].pType = LabelId;
+	Node[pJump].SourceLocation.Line = -1;
+
+	while Node[P].pRight != nNODE do
+		P = Node[P].pRight;
+	end
+	Node[P].pRight = pJump;
+end
+
+void CodeList_InsertVirtualExit(word P; word pTarget)
+	word pJump = Peek();
+	Node[pJump].ID = iVIRTUAL_EXIT;
+	Node[pJump].Value = pTarget;
 	Node[pJump].SourceLocation.Line = -1;
 
 	while Node[P].pRight != nNODE do
@@ -229,7 +246,6 @@ word Code_SELECT(word P; char @Buff)
 	LABEL @L_Exit = @CodeExtractExitLabel(P);
 
 	word pTypeFinal = st_noreturn;
-	word pTypeBody = st_void;
 	bool DefaultBranchPresent = false;
 	word CASE = Node[P].pLeft;
 	word LAST_CASE = CASE;
@@ -269,7 +285,9 @@ word Code_SELECT(word P; char @Buff)
 			DefaultBranchPresent = true;
 		end
 
+		word pTypeBody;
 		if @L_Jump == NULL then
+			CodeList_InsertVirtualExit(Node[BODY].pLeft, P);
 			pTypeBody = Code_Block(Node[BODY].pLeft, @Buff);
 		else
 			pTypeBody = st_noreturn;
@@ -294,12 +312,13 @@ word Code_SELECT(word P; char @Buff)
 	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
 	if
-		(pTypeBody == st_noreturn) &
-		(@L_Jump == NULL) &
+		(pTypeFinal == st_noreturn) &
 		!LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)) &
 		!LabelIsUsed(@LabelResolve(LAST_CASE, JmpLbl.lCASEBODYEND))
 	then
 		pTypeFinal = st_noreturn;
+	else
+		pTypeFinal = st_void;
 	end:if
 
 	return pTypeFinal;
@@ -443,8 +462,6 @@ word Code_SWITCH(word P; char @Buff)
 
 	EmitJumpToLabel(@L_Default);
 
-	word pTypeBody = st_void;
-
 	CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
 		word NEXT_CASE_I = Node[CASE_I].pRight;
@@ -455,6 +472,7 @@ word Code_SWITCH(word P; char @Buff)
 		word BODY_I = Code_SWITCH_CASE_GetBody(CASE_I);
 		LABEL @L_Jump = @CodeExtractJump(Node[BODY_I].pLeft);
 
+		word pTypeBody;
 		if @L_Jump == NULL then
 			EmitLabel(@LabelResolve(CASE_I, JmpLbl.lCASEBODY));
 			PHO_RestoreState(@State);
@@ -463,6 +481,7 @@ word Code_SWITCH(word P; char @Buff)
 			else
 				PHO_InvalidateReg(Reg);
 			end:if
+			CodeList_InsertVirtualExit(Node[BODY_I].pLeft, P);
 			pTypeBody = Code_Block(Node[BODY_I].pLeft, @Buff);
 		else
 			pTypeBody = st_noreturn;
@@ -482,8 +501,11 @@ word Code_SWITCH(word P; char @Buff)
 
 	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
-	when (pTypeBody == st_noreturn) & !LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)):
+	if (pTypeFinal == st_noreturn) & !LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)) then
 		pTypeFinal = st_noreturn;
+	else
+		pTypeFinal = st_void;
+	end:if
 
 	return pTypeFinal;
 end

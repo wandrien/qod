@@ -2295,7 +2295,7 @@ word Code_(word P; char @Buff)
 		return Code_CONTINUE(P, @Buff);
 	case iEXIT:
 		return Code_EXIT(P, @Buff);
-	case iEMPTY, iVIRTUAL_JUMP:
+	case iEMPTY, iVIRTUAL_JUMP, iVIRTUAL_EXIT:
 		pass;
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);

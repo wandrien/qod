@@ -149,17 +149,18 @@ define  iREG        60 // used in the backend for ValueRef's
 define  iCONST      61 // used in the backend for ValueRef's
 
 define  iVIRTUAL_JUMP 62 // used in the backend for jump optimization
+define  iVIRTUAL_EXIT 63 // used in the backend for jump optimization
 
-define  iBRANCH_SF  63 // used in the backend for branch optimization
-define  iBRANCH_NSF 64 // used in the backend for branch optimization
+define  iBRANCH_SF  64 // used in the backend for branch optimization
+define  iBRANCH_NSF 65 // used in the backend for branch optimization
 
-define  iNOOP_CAST  65 // used in the backend
+define  iNOOP_CAST  66 // used in the backend
 
-define  iINDEX_CALC 66 // used in the backend
+define  iINDEX_CALC 67 // used in the backend
 
-define  iINVALID    67 // when something must not be accepted by backend
+define  iINVALID    68 // when something must not be accepted by backend
 
-define  iID_COUNT   68
+define  iID_COUNT   69
 
 /*****************************************************************************/
 
