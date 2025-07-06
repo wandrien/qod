@@ -442,7 +442,7 @@ void EmitPEImport(char @Buff)
 	I =0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
-			LABEL L; L.Value = Label;
+			LABEL L; LabelSetValue(@L, Label);
 			EmitLabel(@L);
 			EmitPhoSkip(@strcpy3(@Buff,"db     ~"",@DictGetName(I),".DLL~", 0"));
 			inc Label;
@@ -462,7 +462,7 @@ void EmitPEImport(char @Buff)
 			word  J=0;
 			while J<nDict do
 				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used then
-					LABEL L; L.Value = Label;
+					LABEL L; LabelSetValue(@L, Label);
 					EmitLabel(@L);
 					EmitPhoSkip("dw      0");
 					EmitPhoSkip(@strcpy3(@Buff,"db     ~"",@DictGetName(J),"~", 0"));

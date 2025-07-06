@@ -20,7 +20,7 @@ word LabelAllocate(word N; word Name)
 	when nLabel >= nLABEL:
 		StopMemory();
 	Label[nLabel].Name = Name;
-	Label[nLabel].Value = NewLabelValue();
+	Label[nLabel].Value_ = 0;
 	Label[nLabel].pNext = Node[N].pLabel;
 	Node[N].pLabel = nLabel;
 	inc nLabel;
@@ -28,9 +28,13 @@ word LabelAllocate(word N; word Name)
 end
 
 word LabelGetValue(LABEL @L)
-	//when L.Value == 0:
-	//	L.Value = NewLabelValue();
-	return L.Value;
+	when L.Value_ == 0:
+		L.Value_ = NewLabelValue();
+	return L.Value_;
+end
+
+void LabelSetValue(LABEL @L; word Value)
+	L.Value_ = Value;
 end
 
 void LabelMarkUsed(LABEL @L)

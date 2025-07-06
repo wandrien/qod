@@ -2427,7 +2427,7 @@ void EmitFunction(char @Buff; word I)
 		strcat(@Buff, "<entry>");
 	end:if
 	strcat(@Buff," ##");
-	LABEL L; L.Value = Dict[I].Label;
+	LABEL L; LabelSetValue(@L, Dict[I].Label);
 	EmitLabelWithComment(@L, @Buff);
 
 	FnCtx.pFunc = I;

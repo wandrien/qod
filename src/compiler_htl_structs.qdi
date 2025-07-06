@@ -9,9 +9,9 @@ end
 
 struct LABEL of          // Используется для назначения меток в генерируемом коде
 	word   Name;         // Имя ссылки
-	word   Value;        // Значение
-	bool   Used;
+	word   Value_;       // Значение
 	word  pNext;         // Следующая ссылка в списке
+	bool   Used;
 end
 
 struct NODE of           // Узел синтаксического деpева
