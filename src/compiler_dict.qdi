@@ -198,6 +198,20 @@ word FindInNamespace(char @Name; word pNamespace)
 	while P < nDICT do
 		if Dict[P].Name.Hash != hash then /* optimized for better code layout */
 			P = Dict[P].pNext;
+
+if true then /* Manually unrolled loop */
+			when P >= nDICT:
+				exit;
+			if Dict[P].Name.Hash != hash then
+				P = Dict[P].pNext;
+			else
+				if str_eq(@DictGetName(P), @Name) then
+					return DictResolveAlias(P);
+				end
+				P = Dict[P].pNext;
+			end
+end:if
+
 		else
 			if str_eq(@DictGetName(P), @Name) then
 				return DictResolveAlias(P);
