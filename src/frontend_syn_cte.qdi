@@ -287,6 +287,60 @@ end
 
 /*****************************************************************************/
 
+bool CTE_CodeListIsCold_CheckNode(word P; bool @cold) of
+	when P == nNODE:
+		return false;
+
+	when (Node[P].AttributeFlags & ATTRIBUTE_FLAG.hot) != 0:
+		return true;
+
+	when (Node[P].AttributeFlags & ATTRIBUTE_FLAG.cold) != 0:
+		cold = true;
+
+	if Node[P].ID == iCALL then
+		word dFunc = Node[P].Value;
+
+		when (Dict[dFunc].AttributeFlags & ATTRIBUTE_FLAG.hot) != 0:
+			return true;
+
+		when (Dict[dFunc].AttributeFlags & ATTRIBUTE_FLAG.cold) != 0:
+			cold = true;
+	end:if
+
+	return false;
+end
+
+bool CTE_CodeListIsCold(word P) of
+	bool cold = false;
+	while P != nNODE do
+		/*when CTE_CodeListIsCold_CheckNode(P, @cold):
+			return false;*/
+		switch Node[P].ID of
+		case iASSIGN:
+			word pASSIGN_INNER = Node[P].pLeft;
+			when CTE_CodeListIsCold_CheckNode(Node[pASSIGN_INNER].pLeft, @cold):
+				return false;
+			when CTE_CodeListIsCold_CheckNode(Node[pASSIGN_INNER].pRight, @cold):
+				return false;
+		end:switch
+		P = Node[P].pRight;
+	end:do
+	return cold;
+end
+
+/*****************************************************************************/
+
+void CTE_AutodetectLikeliness(word pCond; word pBody) of
+	when NodeIsUnlikely(pCond) | NodeIsLikely(pCond):
+		return;
+	when !AutodetectColdBranches:
+		return;
+	when CTE_CodeListIsCold(pBody):
+		NodeSetUnlikely(pCond);
+end
+
+/*****************************************************************************/
+
 bool CTE_LoopHasExits(word pLoop, P)
 	while P != nNODE do
 		when Node[P].ID == iEXIT & Node[P].Value == pLoop:
@@ -381,6 +435,8 @@ void CTE_SELECT(word P)
 			when Node[BODY].ID != iBODY
 			|    Node[COND].ID != iCOND:
 				StopInternal(__FILE__, __LINE__);
+
+			CTE_AutodetectLikeliness(Node[COND].pLeft, Node[BODY].pLeft);
 
 			select
 			case NodeIsFalse(Node[COND].pLeft):

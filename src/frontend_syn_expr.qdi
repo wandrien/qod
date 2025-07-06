@@ -1173,6 +1173,20 @@ end
 
 /*****************************************************************************/
 
+word ExprLikely(word _P1; word O; char @Buff)
+	word P = ExprInParentheses(@Scan(@Buff), @OperatorGetName(O));
+	NodeSetLikely(P);
+	return P;
+end
+
+word ExprUnlikely(word _P1; word O; char @Buff)
+	word P = ExprInParentheses(@Scan(@Buff), @OperatorGetName(O));
+	NodeSetUnlikely(P);
+	return P;
+end
+
+/*****************************************************************************/
+
 word ExprLitChar(word P_; word O; char @Buff)
 
 	word P1=Peek();
@@ -1327,6 +1341,9 @@ void RegisterOperators()
 	RegisterOperator("sizeof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprSizeOf);
 	RegisterOperator("bitsizeof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprBitsizeOf);
 	RegisterOperator("countof", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprCountOf);
+
+	RegisterOperator("likely", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprLikely);
+	RegisterOperator("unlikely", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprUnlikely);
 
 	RegisterOperator("'"    , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
 	RegisterOperator("#"    , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);

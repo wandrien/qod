@@ -2477,6 +2477,8 @@ void EmitFunction(char @Buff; word I)
 	end
 
 	Code_EndBlock(@CB);
+
+	Emit_DumpColdBuffer();
 end
 
 /*****************************************************************************/

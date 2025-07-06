@@ -258,6 +258,40 @@ end
 
 /*****************************************************************************/
 
+bool NodeIsLikely(word P) of
+	return (Node[P].AttributeFlags & ATTRIBUTE_FLAG.likely_) != 0;
+end
+
+bool NodeIsUnlikely(word P) of
+	return (Node[P].AttributeFlags & ATTRIBUTE_FLAG.unlikely_) != 0;
+end
+
+void NodeSetLikely(word P) of
+	Node[P].AttributeFlags =
+		(Node[P].AttributeFlags | ATTRIBUTE_FLAG.likely_) &
+		!(ATTRIBUTE_FLAG.unlikely_);
+end
+
+void NodeSetUnlikely(word P) of
+	Node[P].AttributeFlags =
+		(Node[P].AttributeFlags | ATTRIBUTE_FLAG.unlikely_) &
+		!(ATTRIBUTE_FLAG.likely_);
+end
+
+/*****************************************************************************/
+
+word NodeGetTreeSize(word P) of
+	word Count = 0;
+	while P != nNODE loop
+		Count = Count + NodeGetTreeSize(Node[P].pLeft);
+		P = Node[P].pRight;
+		inc Count;
+	end:while
+	return Count;
+end
+
+/*****************************************************************************/
+
 void WarnAtNode(word P; char @Msg)
 	WarnAt(@Node[P].SourceLocation, @Msg);
 end

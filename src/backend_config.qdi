@@ -38,12 +38,10 @@ define RODataMergeModeNormal    1 /* литералы объединяются *
 define RODataMergeModeAgressive 2 /* литералы сортируются по убыванию длины и затем объединяются */
 word RODataMergeMode = RODataMergeModeNormal;
 
-/* Проводить ли peephole оптимизацию. */
 bool PHOptimization = true;
-
 bool SlowIncDec = false;
-
 bool SeparateColdSection = false;
+bool AutodetectColdBranches = false;
 
 struct SWITCHABLE_OPTIONS of
 	/* true - уменьшать длину пролога функции при помощи инструкции enter, где это возможно. */
@@ -55,6 +53,7 @@ struct SWITCHABLE_OPTIONS of
 	bool EmitFastMult;
 	word AlignFunctions;
 	word AlignLoops;
+	bool SeparateColdBranches;
 end
 
 SWITCHABLE_OPTIONS SwOptions;

@@ -218,6 +218,7 @@ void SetupOptimization(char@ Mode)
 		PHOptimization  = true;
 		ReorderOperands = true;
 		SeparateColdSection = false;
+		AutodetectColdBranches = false;
 		SwOptionsNormal.OmitRedundantFramePointer = true;
 		SwOptionsNormal.EmitEnterInstruction = true;
 		SwOptionsNormal.EmitLeaveInstruction = true;
@@ -225,6 +226,7 @@ void SetupOptimization(char@ Mode)
 		SwOptionsNormal.EmitFastMult = false;
 		SwOptionsNormal.AlignFunctions = 0;
 		SwOptionsNormal.AlignLoops = 0;
+		SwOptionsNormal.SeparateColdBranches = false;
 		SwOptionsCold = SwOptionsNormal;
 		SwOptionsHot = SwOptionsNormal;
 	case str_eq(@Mode, "speed"):
@@ -232,6 +234,7 @@ void SetupOptimization(char@ Mode)
 		PHOptimization  = true;
 		ReorderOperands = true;
 		SeparateColdSection = true;
+		AutodetectColdBranches = true;
 		SwOptionsNormal.OmitRedundantFramePointer = true;
 		SwOptionsNormal.EmitEnterInstruction = false;
 		SwOptionsNormal.EmitLeaveInstruction = true;
@@ -239,12 +242,14 @@ void SetupOptimization(char@ Mode)
 		SwOptionsNormal.EmitFastMult = true;
 		SwOptionsNormal.AlignFunctions = 0;
 		SwOptionsNormal.AlignLoops = 0;
+		SwOptionsNormal.SeparateColdBranches = true;
 		SwOptionsCold = SwOptionsNormal;
 		SwOptionsHot = SwOptionsNormal;
 		SwOptionsCold.EmitEnterInstruction = true;
 		SwOptionsCold.EmitLeaveInstruction = true;
 		SwOptionsCold.EmitShortCode = true;
 		SwOptionsCold.EmitFastMult = false;
+		SwOptionsCold.SeparateColdBranches = false;
 		SwOptionsHot.AlignFunctions = 32;
 		SwOptionsHot.AlignLoops = 32;
 	default:
@@ -252,6 +257,7 @@ void SetupOptimization(char@ Mode)
 		PHOptimization  = false;
 		ReorderOperands = true;
 		SeparateColdSection = false;
+		AutodetectColdBranches = false;
 		SwOptionsNormal.OmitRedundantFramePointer = false;
 		SwOptionsNormal.EmitEnterInstruction = false;
 		SwOptionsNormal.EmitLeaveInstruction = true;
@@ -259,6 +265,7 @@ void SetupOptimization(char@ Mode)
 		SwOptionsNormal.EmitFastMult = false;
 		SwOptionsNormal.AlignFunctions = 0;
 		SwOptionsNormal.AlignLoops = 0;
+		SwOptionsNormal.SeparateColdBranches = false;
 		SwOptionsCold = SwOptionsNormal;
 		SwOptionsHot = SwOptionsNormal;
 	end:select

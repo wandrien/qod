@@ -7,6 +7,7 @@ struct strbuf of
 	void init(strbuf @Dst; char @Buff; word BuffSize);
 	char @deref_buff(strbuf @Dst; word Index);
 	void truncate(strbuf @Dst; word NewLen);
+	word get_size(strbuf @Dst);
 	word get_virtual_len(strbuf @Dst);
 	word get_actual_len(strbuf @Dst);
 	word append_char(strbuf @Dst; char Char);
@@ -47,6 +48,10 @@ void strbuf.truncate(strbuf @Dst; word NewLen)
 			Dst.Buff[NewLen] = #0;
 		end:if
 	end:if
+end
+
+word strbuf.get_size(strbuf @Dst)
+	return Dst.BuffSize;
 end
 
 word strbuf.get_virtual_len(strbuf @Dst)

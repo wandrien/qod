@@ -229,6 +229,16 @@ end
 
 /*****************************************************************************/
 
+bool ConsiderColdSeperation(word pCond; word pBody)
+	when (!SwOptions.SeparateColdBranches)
+	|    (!NodeIsUnlikely(pCond))
+	|    (Emit_ColdRedirectionActive())
+	|    (!Emit_ColdRedirectionAllowed())
+	|    (NodeGetTreeSize(pBody) > 16):
+		return false;
+	return true;
+end
+
 word Code_SELECT(word P; char @Buff)
 
 	/*
@@ -250,7 +260,7 @@ word Code_SELECT(word P; char @Buff)
 	word pTypeFinal = st_noreturn;
 	word CASE = Node[P].pLeft;
 	word LAST_CASE = CASE;
-	LABEL @L_Jump = NULL;
+	LABEL @L_JumpOnTrue = NULL;
 	while CASE < nNODE do
 		when Node[CASE].ID != iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
@@ -262,44 +272,79 @@ word Code_SELECT(word P; char @Buff)
 		|    Node[COND].ID != iCOND:
 			StopInternalCodegen(__FILE__, __LINE__);
 
+		bool ThisCaseIsLast = (Node[CASE].pRight == nNODE);
+
 		LABEL @L_CASEBODYEND = NULL;
-		if Node[CASE].pRight == nNODE then
+		if ThisCaseIsLast then
 			@L_CASEBODYEND = @L_Exit;
 		else
 			@L_CASEBODYEND = @LabelResolve(CASE, JmpLbl.lCASEBODYEND);
 		end:if
 
-		@L_Jump = NULL;
+		bool ColdSeparation = false;
+		bool BodyEliminated = false;
+		@L_JumpOnTrue = NULL;
 
 		if Node[COND].pLeft < nNODE then
-			@L_Jump = @CodeExtractJump(Node[BODY].pLeft);
+			@L_JumpOnTrue = @CodeExtractJump(Node[BODY].pLeft);
+			if @L_JumpOnTrue != NULL then
+				BodyEliminated = true;
+			else
+				if ThisCaseIsLast & (@L_Exit != @LabelResolve(P, JmpLbl.lEXIT)) then
+					/*
+						Проверка для случая наподобие:
+							while ... loop
+								...
+								when x:
+									panic(...);
+							end:while
+						В этом случае выгоднее оставить холодную ветвь на месте,
+						поскольку уход в следующую итерацию цикла выполняется
+						непосредственно условными ветвлениями при проверке условия.
+					*/
+					pass;
+				else
+					ColdSeparation = ConsiderColdSeperation(Node[COND].pLeft, Node[BODY].pLeft);
+					when ColdSeparation:
+						@L_JumpOnTrue = @LabelResolve(CASE, JmpLbl.lCASEBODY);
+				end:if
+			end
+
 			word pCondType;
-			if @L_Jump == NULL then
-				pCondType = CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, JmpLbl.lCASEBODY));
+			if @L_JumpOnTrue == NULL then
+				pCondType = CodeBooleanExpr(Node[COND].pLeft,
+					@L_CASEBODYEND,NULL,@LabelResolve(CASE, JmpLbl.lCASEBODY));
 				CondFallsThroughOnFalse = false;
 			else
-				pCondType = CodeBooleanExpr(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
+				pCondType = CodeBooleanExpr(Node[COND].pLeft,
+					NULL,@L_JumpOnTrue,@L_CASEBODYEND);
 				CondFallsThroughOnFalse = true;
 			end:if
 			when pCondType != st_cond_branch:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
-			EmitLabelIfUsed(@LabelResolve(CASE, JmpLbl.lCASEBODY));
 		else
 			CondFallsThroughOnFalse = false;
 		end
 
-		if @L_Jump == NULL then
-			CodeList_InsertVirtualExit(Node[BODY].pLeft, P);
-			pTypeBody = Code_Block(Node[BODY].pLeft, @Buff);
-		else
+		if BodyEliminated then
 			pTypeBody = st_noreturn;
-		end:if
+		else
+			CodeList_InsertVirtualExit(Node[BODY].pLeft, P);
 
-		if pTypeBody != st_noreturn then
-			if Node[CASE].pRight < nNODE then
-				EmitJumpToLabel(@L_Exit);
-			end
-		end
+			if ColdSeparation then
+				Emit_StartColdRedirection();
+			end:if
+			EmitLabelIfUsed(@LabelResolve(CASE, JmpLbl.lCASEBODY));
+			pTypeBody = Code_Block(Node[BODY].pLeft, @Buff);
+			if pTypeBody != st_noreturn then
+				if !ThisCaseIsLast | ColdSeparation then
+					EmitJumpToLabel(@L_Exit);
+				end:if
+			end:if
+			if ColdSeparation then
+				Emit_StopColdRedirection();
+			end:if
+		end:if
 
 		EmitLabelIfUsed(@LabelResolve(CASE, JmpLbl.lCASEBODYEND));
 

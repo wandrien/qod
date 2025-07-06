@@ -71,6 +71,8 @@ namespace ATTRIBUTE_FLAG of
 	//define ensure_unused       64
 	define ensure_unreachable 128
 	//define ensure_used        256
+	define likely_            512
+	define unlikely_         1024
 end:namespace
 
 /*****************************************************************************/

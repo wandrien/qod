@@ -142,6 +142,7 @@ void InitFrontEnd()
 	Word("include_when");
 	Word("inline");
 	Word("__LINE__");
+	Word("likely");
 	Word("loop");
 	Word("null");
 	Word("NULL");
@@ -155,6 +156,7 @@ void InitFrontEnd()
 	Word("switch");
 	Word("then");
 	Word("true");
+	Word("unlikely");
 	Word("until");
 	Word("when");
 	Word("while");

@@ -31,6 +31,19 @@ void CloseOutput()
 	close(hText);
 end
 
+void EmitChar_NoRedirection_(char C)
+	if nText > nTEXT then
+		StopInternal(__FILE__, __LINE__);
+	end
+
+	if nText == nTEXT then
+		FlushOutput();
+	end
+
+	Text[nText] = C;
+	inc  nText;
+end
+
 /*****************************************************************************/
 
 word EmitDisabled = 0;
@@ -43,20 +56,76 @@ void EnableEmit()
 	dec EmitDisabled;
 end
 
+bool ColdRedirectionEnabled;
+char ColdBuffer[nTEXT];
+strbuf ColdBuf;
+bool ColdBufInitialized = false;
+
+/*****************************************************************************/
+
+void Emit_StartColdRedirection() of
+	when ColdRedirectionEnabled:
+		StopInternal(__FILE__, __LINE__);
+	ColdRedirectionEnabled = true;
+	if !ColdBufInitialized then
+		strbuf.init(@ColdBuf, @ColdBuffer, countof(ColdBuffer));
+		ColdBufInitialized = true;
+	end:if
+end
+
+void Emit_StopColdRedirection() of
+	when !ColdRedirectionEnabled:
+		StopInternal(__FILE__, __LINE__);
+	when strbuf.get_virtual_len(@ColdBuf) > strbuf.get_size(@ColdBuf):
+		StopInternal(__FILE__, __LINE__); /* Overflow */
+	ColdRedirectionEnabled = false;
+end
+
+bool Emit_ColdRedirectionActive() of
+	return ColdRedirectionEnabled;
+end
+
+bool Emit_ColdRedirectionAllowed() of
+	if !ColdBufInitialized then
+		strbuf.init(@ColdBuf, @ColdBuffer, countof(ColdBuffer));
+		ColdBufInitialized = true;
+	end:if
+	return strbuf.get_virtual_len(@ColdBuf) * 2 < strbuf.get_size(@ColdBuf);
+end
+
+void Emit_DumpColdBuffer() of
+	when !ColdBufInitialized:
+		return;
+
+	when ColdRedirectionEnabled:
+		StopInternal(__FILE__, __LINE__);
+	when strbuf.get_virtual_len(@ColdBuf) > strbuf.get_size(@ColdBuf):
+		StopInternal(__FILE__, __LINE__); /* Overflow */
+
+	word Len = strbuf.get_actual_len(@ColdBuf);
+	word I = 0;
+	while I < Len loop
+		EmitChar_NoRedirection_(ColdBuffer[I]);
+		inc I;
+	end:while
+	strbuf.truncate(@ColdBuf, 0);
+end
+
+/*****************************************************************************/
+
+void EmitChar_ColdRedirection_(char C)
+	strbuf.append_char(@ColdBuf, C);
+end
+
 /*****************************************************************************/
 
 /* Вывести в листинг символ. */
 void EmitChar_(char C)
-	if nText > nTEXT then
-		StopInternal(__FILE__, __LINE__);
-	end
-
-	if nText == nTEXT then
-		FlushOutput();
-	end
-
-	Text[nText] = C;
-	inc  nText;
+	if ColdRedirectionEnabled then
+		EmitChar_ColdRedirection_(C);
+	else
+		EmitChar_NoRedirection_(C);
+	end:if
 end
 
 void EmitChar(char C)
