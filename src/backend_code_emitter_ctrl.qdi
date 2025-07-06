@@ -330,7 +330,8 @@ word Code_SELECT(word P; char @Buff)
 			pTypeBody = st_noreturn;
 		else
 			CodeList_InsertVirtualExit(Node[BODY].pLeft, P);
-
+			PHO_STATE State;
+			PHO_SaveState(@State);
 			if ColdSeparation then
 				Emit_StartColdRedirection();
 			end:if
@@ -343,6 +344,9 @@ word Code_SELECT(word P; char @Buff)
 			end:if
 			if ColdSeparation then
 				Emit_StopColdRedirection();
+			end:if
+			if pTypeBody == st_noreturn then
+				PHO_RestoreState(@State);
 			end:if
 		end:if
 
