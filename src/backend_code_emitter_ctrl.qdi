@@ -245,8 +245,9 @@ word Code_SELECT(word P; char @Buff)
 
 	LABEL @L_Exit = @CodeExtractExitLabel(P);
 
+	word pTypeBody = st_void;
+	bool CondFallsThroughOnFalse = true;
 	word pTypeFinal = st_noreturn;
-	bool DefaultBranchPresent = false;
 	word CASE = Node[P].pLeft;
 	word LAST_CASE = CASE;
 	LABEL @L_Jump = NULL;
@@ -275,17 +276,18 @@ word Code_SELECT(word P; char @Buff)
 			word pCondType;
 			if @L_Jump == NULL then
 				pCondType = CodeBooleanExpr(Node[COND].pLeft,@L_CASEBODYEND,NULL,@LabelResolve(CASE, JmpLbl.lCASEBODY));
+				CondFallsThroughOnFalse = false;
 			else
 				pCondType = CodeBooleanExpr(Node[COND].pLeft,NULL,@L_Jump,@L_CASEBODYEND);
+				CondFallsThroughOnFalse = true;
 			end:if
 			when pCondType != st_cond_branch:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			EmitLabelIfUsed(@LabelResolve(CASE, JmpLbl.lCASEBODY));
 		else
-			DefaultBranchPresent = true;
+			CondFallsThroughOnFalse = false;
 		end
 
-		word pTypeBody;
 		if @L_Jump == NULL then
 			CodeList_InsertVirtualExit(Node[BODY].pLeft, P);
 			pTypeBody = Code_Block(Node[BODY].pLeft, @Buff);
@@ -294,7 +296,6 @@ word Code_SELECT(word P; char @Buff)
 		end:if
 
 		if pTypeBody != st_noreturn then
-			pTypeFinal = pTypeBody;
 			if Node[CASE].pRight < nNODE then
 				EmitJumpToLabel(@L_Exit);
 			end
@@ -306,13 +307,14 @@ word Code_SELECT(word P; char @Buff)
 		CASE = Node[CASE].pRight;
 	end:while
 
-	when !DefaultBranchPresent:
-		pTypeFinal = st_void;
-
 	EmitLabelIfUsed(@LabelResolve(P, JmpLbl.lEXIT));
 
 	if
-		(pTypeFinal == st_noreturn) &
+		/* The last BODY cannot fall through. */
+		(pTypeBody == st_noreturn) &
+		/* The last COND cannot fall through. */
+		(CondFallsThroughOnFalse == false) &
+		/* No jumps go here. */
 		!LabelIsUsed(@LabelResolve(P, JmpLbl.lEXIT)) &
 		!LabelIsUsed(@LabelResolve(LAST_CASE, JmpLbl.lCASEBODYEND))
 	then
