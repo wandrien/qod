@@ -8,7 +8,7 @@ word    nLabel = 1;
 
 word NextLabelValue = 10000;
 
-word NewLabel()
+word NewLabelValue()
 	word l = NextLabelValue;
 	inc NextLabelValue;
 	return l;
@@ -20,7 +20,7 @@ word LabelAllocate(word N; word Name)
 	when nLabel >= nLABEL:
 		StopMemory();
 	Label[nLabel].Name = Name;
-	Label[nLabel].Value = NewLabel();
+	Label[nLabel].Value = NewLabelValue();
 	Label[nLabel].pNext = Node[N].pLabel;
 	Node[N].pLabel = nLabel;
 	inc nLabel;
@@ -28,15 +28,17 @@ word LabelAllocate(word N; word Name)
 end
 
 word LabelGetValue(LABEL @L)
-	return L[0].Value;
+	//when L.Value == 0:
+	//	L.Value = NewLabelValue();
+	return L.Value;
 end
 
 void LabelMarkUsed(LABEL @L)
-	L[0].Used = true;
+	L.Used = true;
 end
 
 bool LabelIsUsed(LABEL @L)
-	return L[0].Used;
+	return L.Used;
 end
 
 LABEL @LabelResolve(word N; word Name)
@@ -259,7 +261,7 @@ void AssignLabels_Func()
 	word I=0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used then
-			Dict[I].Label = NewLabel();
+			Dict[I].Label = NewLabelValue();
 			Dict[I].StackSize = Enum(Dict[I].pNode,1);
 			when Dict[I].Forward != 0:
 				ErrorAtNodeWithSubject(
@@ -282,7 +284,7 @@ void AssignLabels_FuncExternal()
 				&  Dict[J].Sub == SUBCLASS.sSYS
 				&  Dict[J].pNode == I
 				&  Dict[J].Used then
-					word Label = NewLabel();
+					word Label = NewLabelValue();
 					if !Dict[I].Used then
 						Dict[I].Label = Label;
 						Dict[I].Used = true;

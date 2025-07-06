@@ -375,7 +375,7 @@ void EmitPEImport(char @Buff)
 	EmitStringNL("section ~".idata~" import data readable writeable");
 	EmitNL();
 
-	word FirstLabel = NewLabel();
+	word FirstLabel = NewLabelValue();
 	word LabelCount = 0;
 
 	/* Таблица экспортируемых библиотек. */
@@ -383,7 +383,7 @@ void EmitPEImport(char @Buff)
 	word I  = 0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
-			word Label = NewLabel();
+			word Label = NewLabelValue();
 			inc LabelCount;
 			when FirstLabel + LabelCount != Label: StopInternalCodegen(__FILE__, __LINE__);
 
@@ -413,7 +413,7 @@ void EmitPEImport(char @Buff)
 			while J<nDict do
 				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used then
 
-					word Label = NewLabel();
+					word Label = NewLabelValue();
 					inc LabelCount;
 					when FirstLabel + LabelCount != Label: StopInternalCodegen(__FILE__, __LINE__);
 
