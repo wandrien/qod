@@ -1,0 +1,188 @@
+
+namespace CompilerOptions of
+
+struct OPTION of
+	char @Name;
+	bool @BoolPtr;
+	int  @IntPtr;
+	word @WordPtr;
+end:struct
+
+define nOPTION 128
+OPTION Option[nOPTION];
+word nOption = 0;
+
+OPTION @AllocateOption(char @Name) of
+	OPTION @Opt = @Option[nOption];
+	inc nOption;
+	when nOption >= nOPTION:
+		StopInternal(__FILE__, __LINE__);
+	@Opt.Name = @Name;
+	@Opt.BoolPtr = NULL;
+	@Opt.IntPtr = NULL;
+	@Opt.WordPtr = NULL;
+	return @Opt;
+end
+
+void RegisterOptionBool(char @Name; bool @BoolPtr) of
+	OPTION @Opt = @AllocateOption(@Name);
+	@Opt.BoolPtr = @BoolPtr;
+end
+
+void RegisterOptionInt(char @Name; int @IntPtr) of
+	OPTION @Opt = @AllocateOption(@Name);
+	@Opt.IntPtr = @IntPtr;
+end
+
+void RegisterOptionWord(char @Name; word @WordPtr) of
+	OPTION @Opt = @AllocateOption(@Name);
+	@Opt.WordPtr = @WordPtr;
+end
+
+bool ParseBool(char @Value) of
+	select
+	case @Value == NULL | Value[0] == #0:
+		return true;
+	case str_eq(@Value, "true") | str_eq(@Value, "1"):
+		return true;
+	case str_eq(@Value, "false") | str_eq(@Value, "0"):
+		return false;
+	default:
+		// FIXME: добавить вывод диагностики о неверном формате
+		StopInternal(__FILE__, __LINE__);
+	end:select
+end
+
+int ParseInt(char @Value) of
+	if @Value == NULL | Value[0] == #0 then
+		return 1;
+	end:if
+	// FIXME: добавить обработку знака
+	return int(val(@Value));
+end
+
+word ParseWord(char @Value) of
+	if @Value == NULL | Value[0] == #0 then
+		return 1;
+	end:if
+
+	return val(@Value);
+end
+
+void ParseOption_(OPTION @Opt; bool No; char @Value) of
+	select
+	case @Opt.BoolPtr != NULL:
+		if No then
+			Opt.BoolPtr = false;
+		else
+			Opt.BoolPtr = ParseBool(@Value);
+		end:if
+	case @Opt.IntPtr != NULL:
+		if No then
+			Opt.IntPtr = 0;
+		else
+			Opt.IntPtr = ParseInt(@Value);
+		end:if
+	case @Opt.WordPtr != NULL:
+		if No then
+			Opt.WordPtr = 0;
+		else
+			Opt.WordPtr = ParseWord(@Value);
+		end:if
+	default:
+		StopInternal(__FILE__, __LINE__);
+	end:select
+end
+
+bool ParseOption(char @Name) of
+	bool No;
+	word NameOffset = 0;
+	select
+	case str_has_prefix(@Name, "-fno-"):
+		No = true;
+		NameOffset = strlen("-fno-");
+	case str_has_prefix(@Name, "-f"):
+		No = false;
+		NameOffset = strlen("-f");
+	default:
+		return false;
+	end:select
+
+	word I = 0;
+	while I < nOption loop
+		OPTION @Opt = @Option[I];
+		if str_has_prefix(@Name[NameOffset], @Opt.Name) then
+			word EoN_Offset = NameOffset + strlen(@Opt.Name);
+			char Ch = Name[EoN_Offset];
+			if (Ch == #0)
+			| (Ch == '=' & No == false) then
+				char @Value = NULL;
+				when Ch == '=':
+					@Value = @Name[EoN_Offset + 1];
+				ParseOption_(@Opt, No, @Value);
+				return true;
+			end
+		end:if
+		inc I;
+	end:while
+
+	return false;
+end
+
+void function PrintCallback(char @S);
+
+void PrintOptionSummary(PrintCallback @cb) of
+	word I = 0;
+	while I < nOption loop
+		OPTION @Opt = @Option[I];
+		char @OptType = "";
+		select
+		case @Opt.BoolPtr != NULL:
+			@OptType = "bool";
+		case @Opt.IntPtr != NULL:
+			@OptType = "int";
+		case @Opt.WordPtr != NULL:
+			@OptType = "uint";
+		default:
+			StopInternal(__FILE__, __LINE__);
+		end:select
+		cb("  ");
+		cb(@Opt.Name);
+		cb(" [");
+		cb(@OptType);
+		cb("]~r~n");
+		inc I;
+	end:while
+end
+
+void PrintOptionValues(PrintCallback @cb; char @Prefix) of
+	char MsgBuff[nBUFF];
+	strbuf buf;
+
+	word I = 0;
+	while I < nOption loop
+		strbuf.init(@buf, @MsgBuff, countof(MsgBuff));
+		OPTION @Opt = @Option[I];
+		select
+		case @Opt.BoolPtr != NULL:
+			char @Value;
+			if Opt.BoolPtr then
+				@Value = "true";
+			else
+				@Value = "false";
+			end
+			strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @Value, "~r~n");
+		case @Opt.IntPtr != NULL:
+			strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @istr(Opt.IntPtr), "~r~n");
+		case @Opt.WordPtr != NULL:
+			strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @str(Opt.WordPtr), "~r~n");
+		default:
+			StopInternal(__FILE__, __LINE__);
+		end:select
+		cb(@MsgBuff);
+		inc I;
+	end:while
+end
+
+end:namespace
+

@@ -3,6 +3,8 @@ include "include/hosted.qdi";
 include_when "messages_utf8.qdi", qod.env.__LINUX__;
 include_when "messages_cp866.qdi", qod.env.__WIN32__;
 
+word val(char @Buff);
+
 include "compiler_htl_defines.qdi";
 include "compiler_htl_structs.qdi";
 include "compiler_str.qdi";
@@ -12,6 +14,7 @@ include "compiler_chardata.qdi";
 include "compiler_input.qdi";
 include "compiler_dict.qdi";
 include "compiler_node.qdi";
+include "compiler_option.qdi";
 
 include "frontend_config.qdi";
 include "backend_config.qdi";
@@ -43,6 +46,9 @@ end
 void PrintUsage()
 	PrintVersionAndCopyright();
 	puts(@L10n.msgUSAGE);
+	puts(@L10n.msgFFLAGS);
+	CompilerOptions.PrintOptionSummary(@puts);
+	puts(@L10n.msgUSAGE2);
 end
 
 /*****************************************************************************/
@@ -142,6 +148,9 @@ noreturn Translate()
 		OutputTreeFile_Done = 1;
 		EmitContentForTreeFile();
 	end:if
+
+	when EmitCompilerFlags:
+		CompilerOptions.PrintOptionValues(@EmitString, "; ");
 
 	char Buff[nBUFF];
 
@@ -288,6 +297,8 @@ end
 
 word main()
 
+	RegisterBackendOptions();
+
 	SetupTarget(@GetDefaultTarget());
 	SetupOptimization("none");
 
@@ -302,6 +313,9 @@ word main()
 			return 0;
 		case str_eq(@arg, "--version"):
 			PrintVersionAndCopyright();
+			return 0;
+		case str_eq(@arg, "--dump-flags"):
+			CompilerOptions.PrintOptionValues(@puts, "");
 			return 0;
 		case str_eq(@arg, "--linux"  )
 		   | str_eq(@arg, "--win32-c")
@@ -329,6 +343,8 @@ word main()
 			ErrorDeprecatedFeatures = 0;
 		case str_eq(@arg, "--emit-source-line-notes" ):
 			EmitSourceLineNotes = true;
+		case CompilerOptions.ParseOption(@arg):
+			pass;
 		case str_has_prefix(@arg, "-"):
 			ErrorWithSubject(@L10n.eWRONGOPTION, @arg);
 		default:

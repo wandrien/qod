@@ -82,8 +82,62 @@ bool ReorderOperands = true;
 
 bool EmitSourceLineNotes = false;
 
+bool EmitCompilerFlags = false;
+
+bool EmitDebugComments_PHO = false;
+bool EmitDebugComments_Jumps = false;
+bool EmitDebugComments_Expr = false;
+bool EmitDebugComments_LocalDefs = false;
+
 /*****************************************************************************/
 
 /* Вывод информации об анализе программы. */
 
 bool WarnUnusedGlobals = false;
+
+/*****************************************************************************/
+
+void RegisterBackendOptions() of
+	CompilerOptions.RegisterOptionBool("emit-source-line-notes", @EmitSourceLineNotes);
+	CompilerOptions.RegisterOptionBool("emit-compiler-flags", @EmitCompilerFlags);
+	CompilerOptions.RegisterOptionBool("emit-debug-comments:pho", @EmitDebugComments_PHO);
+	CompilerOptions.RegisterOptionBool("emit-debug-comments:jumps", @EmitDebugComments_Jumps);
+	CompilerOptions.RegisterOptionBool("emit-debug-comments:expr", @EmitDebugComments_Expr);
+	CompilerOptions.RegisterOptionBool("emit-debug-comments:local-defs", @EmitDebugComments_LocalDefs);
+
+	CompilerOptions.RegisterOptionWord("rodata-merge", @RODataMergeMode);
+	CompilerOptions.RegisterOptionBool("reorder-operands", @ReorderOperands);
+	CompilerOptions.RegisterOptionBool("pho", @PHOptimization);
+	CompilerOptions.RegisterOptionBool("slow-inc-dec", @SlowIncDec);
+	CompilerOptions.RegisterOptionBool("separate-cold-section", @SeparateColdSection);
+	CompilerOptions.RegisterOptionBool("autodetect-cold-branches", @AutodetectColdBranches);
+
+	CompilerOptions.RegisterOptionBool("emit-enter-opcode", @SwOptionsNormal.EmitEnterInstruction);
+	CompilerOptions.RegisterOptionBool("emit-leave-opcode", @SwOptionsNormal.EmitLeaveInstruction);
+	CompilerOptions.RegisterOptionBool("omit-redundant-frame-pointer", @SwOptionsNormal.OmitRedundantFramePointer);
+	CompilerOptions.RegisterOptionBool("emit-short-code", @SwOptionsNormal.EmitShortCode);
+	CompilerOptions.RegisterOptionBool("emit-fast-mult", @SwOptionsNormal.EmitFastMult);
+	CompilerOptions.RegisterOptionWord("align-functions", @SwOptionsNormal.AlignFunctions);
+	CompilerOptions.RegisterOptionWord("align-loops", @SwOptionsNormal.AlignLoops);
+	CompilerOptions.RegisterOptionBool("separate-cold-branches", @SwOptionsNormal.SeparateColdBranches);
+
+	CompilerOptions.RegisterOptionBool("cold:emit-enter-opcode", @SwOptionsCold.EmitEnterInstruction);
+	CompilerOptions.RegisterOptionBool("cold:emit-leave-opcode", @SwOptionsCold.EmitLeaveInstruction);
+	CompilerOptions.RegisterOptionBool("cold:omit-redundant-frame-pointer", @SwOptionsCold.OmitRedundantFramePointer);
+	CompilerOptions.RegisterOptionBool("cold:emit-short-code", @SwOptionsCold.EmitShortCode);
+	CompilerOptions.RegisterOptionBool("cold:emit-fast-mult", @SwOptionsCold.EmitFastMult);
+	CompilerOptions.RegisterOptionWord("cold:align-functions", @SwOptionsCold.AlignFunctions);
+	CompilerOptions.RegisterOptionWord("cold:align-loops", @SwOptionsCold.AlignLoops);
+	CompilerOptions.RegisterOptionBool("cold:separate-cold-branches", @SwOptionsCold.SeparateColdBranches);
+
+	CompilerOptions.RegisterOptionBool("hot:emit-enter-opcode", @SwOptionsHot.EmitEnterInstruction);
+	CompilerOptions.RegisterOptionBool("hot:emit-leave-opcode", @SwOptionsHot.EmitLeaveInstruction);
+	CompilerOptions.RegisterOptionBool("hot:omit-redundant-frame-pointer", @SwOptionsHot.OmitRedundantFramePointer);
+	CompilerOptions.RegisterOptionBool("hot:emit-short-code", @SwOptionsHot.EmitShortCode);
+	CompilerOptions.RegisterOptionBool("hot:emit-fast-mult", @SwOptionsHot.EmitFastMult);
+	CompilerOptions.RegisterOptionWord("hot:align-functions", @SwOptionsHot.AlignFunctions);
+	CompilerOptions.RegisterOptionWord("hot:align-loops", @SwOptionsHot.AlignLoops);
+	CompilerOptions.RegisterOptionBool("hot:separate-cold-branches", @SwOptionsHot.SeparateColdBranches);
+end
+
+/*****************************************************************************/
