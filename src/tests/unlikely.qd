@@ -1,0 +1,54 @@
+// TEST: should_print 'OK1 OK2 OK3 OK4 OK5 OK6 '
+
+include "../include/test_env.qdi";
+
+int p1 = 1;
+int p2 = 2;
+int p3 = 3;
+int p4 = 4;
+int p5 = 5;
+
+int m5 = -5;
+
+void foo()
+	if likely(p5 - p3 - p2 == 0) then
+		puts("OK1 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if likely(p5 - p3 - p2 != 0) then
+		puts("OOPS ");
+	else
+		puts("OK2 ");
+	end:if
+
+	if likely(m5 + p5 == 0) then
+		puts("OK3 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if unlikely(p3 + m5 < 0) then
+		puts("OK4 ");
+	else
+		puts("OOPS ");
+	end:if
+
+	if unlikely(m5 + p5 < 0) then
+		puts("OOPS ");
+	else
+		puts("OK5 ");
+	end:if
+
+	if unlikely(p1 - 1 >= 0) then
+		puts("OK6 ");
+	else
+		puts("OOPS ");
+	end:if
+end
+
+word main() of
+	foo();
+	return 0;
+end
