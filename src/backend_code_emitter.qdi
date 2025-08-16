@@ -404,6 +404,9 @@ void Code_INDEX(word _P1; ValueRef @Ref)
 	default:
 		when Reg_ALT_TARGET != RegNone & Reg_ALT_TARGET != Ref.IX:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, pIndex);
+		if Reg_ALT_TARGET == RegNone  then
+			Reg_ALT_TARGET = Ref.IX;
+		end:if
 		Reg_TARGET = ChooseEmptyReg();
 		when Reg_TARGET == Reg_ALT_TARGET | Reg_TARGET == RegNone:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, pIndex);

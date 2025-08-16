@@ -1,0 +1,24 @@
+// TEST: should_print '1234 1235 '
+
+include "../include/test_env.qdi";
+
+struct HASHMAP of
+	word Buckets[32];
+end
+
+void hashmap_init(HASHMAP @HashMap; word Value)
+	word I = 0;
+	while I < countof(HashMap.Buckets) loop
+		HashMap.Buckets[I] = Value;
+		inc I;
+	end:while
+end
+
+word main() of
+	HASHMAP HashMap;
+	hashmap_init(@HashMap, 1234);
+	put_uint(HashMap.Buckets[5]); puts(" ");
+	inc HashMap.Buckets[2];
+	put_uint(HashMap.Buckets[2]); puts(" ");
+	return 0;
+end
