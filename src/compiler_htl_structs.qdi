@@ -39,6 +39,10 @@ struct DICT of           // Элемент таблицы глобальных �
 	word  pFirst;        // Первое имя в /этом/ пространстве имён
 	word  pLast;         // Последнее имя в /этом/ пространстве имён
 
+	word  pNextInBucket;
+	word  iHashMap;
+	word   ChildCount;
+
 	word   FullyQualifiedName; // Имя вида Namespace.Namespace.Name
 
 	byte   Class;        // Слово, литерал, тип, пеpеменная, функция
@@ -77,7 +81,11 @@ struct DICT of           // Элемент таблицы глобальных �
 	byte   __padding[1];
 end
 
-static_assert(sizeof(DICT) % 4== 0);
+static_assert(sizeof(DICT) % 4 == 0);
+
+struct DICT_HASHMAP of
+	word Buckets[32];
+end
 
 struct LOCAL of        // Элемент таблицы локальных переменных
   word   Name2;        // Имя

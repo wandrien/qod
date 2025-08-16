@@ -7,6 +7,27 @@ word    tArrayTypes;
 
 /*****************************************************************************/
 
+DICT_HASHMAP DictHashMap[nDICT / 10];
+word nDictHashMap = 1;
+
+word AllocateDictHashMap() of
+	when nDictHashMap >= countof(DictHashMap):
+		return 0;
+	word iHashMap = nDictHashMap;
+	inc nDictHashMap;
+
+	word I = 0;
+	DICT_HASHMAP @HashMap = @DictHashMap[iHashMap];
+	while I < countof(HashMap.Buckets) loop
+		HashMap.Buckets[I] = nDICT;
+		inc I;
+	end:while
+
+	return iHashMap;
+end
+
+/*****************************************************************************/
+
 void Name_SetFromString0(NAME @Name; char@ Str)
 	Name.Offset = SaveString0(@Str);
 	Name.Hash = str_hash(@Str);
@@ -15,7 +36,6 @@ end
 char @Name_GetString(NAME @Name)
 	return @Char[Name.Offset];
 end
-
 
 /*****************************************************************************/
 
@@ -148,6 +168,7 @@ word DictAlloc()
 
 	DICT @d = @Dict[r];
 
+	d.ChildCount = 0;
 	d.Used = false;
 	d.FullyQualifiedName = 0;
 	d.pType = nDICT;
@@ -194,32 +215,64 @@ word FindInNamespace(char @Name; word pNamespace)
 	when pNamespace >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	word hash = str_hash(@Name);
-	word P = Dict[pNamespace].pFirst;
-	while P < nDICT do
-		if Dict[P].Name.Hash != hash then /* optimized for better code layout */
-			P = Dict[P].pNext;
+
+	if Dict[pNamespace].iHashMap != 0 then
+		DICT_HASHMAP @HashMap = @DictHashMap[Dict[pNamespace].iHashMap];
+		word iBucket = hash % countof(HashMap.Buckets);
+		word P = HashMap.Buckets[iBucket];
+		while P < nDICT do
+			if Dict[P].Name.Hash != hash then /* optimized for better code layout */
+				P = Dict[P].pNextInBucket;
 
 if true then /* Manually unrolled loop */
-			when P >= nDICT:
-				exit;
-			if Dict[P].Name.Hash != hash then
+				when P >= nDICT:
+					exit;
+				if Dict[P].Name.Hash != hash then
+					P = Dict[P].pNextInBucket;
+				else
+					if str_eq(@DictGetName(P), @Name) then
+						return DictResolveAlias(P);
+					end
+					P = Dict[P].pNextInBucket;
+				end
+end:if
+
+			else
+				if str_eq(@DictGetName(P), @Name) then
+					return DictResolveAlias(P);
+				end
+				P = Dict[P].pNextInBucket;
+			end
+		end
+		return nDICT;
+	else
+		word P = Dict[pNamespace].pFirst;
+		while P < nDICT do
+			if Dict[P].Name.Hash != hash then /* optimized for better code layout */
 				P = Dict[P].pNext;
+
+if true then /* Manually unrolled loop */
+				when P >= nDICT:
+					exit;
+				if Dict[P].Name.Hash != hash then
+					P = Dict[P].pNext;
+				else
+					if str_eq(@DictGetName(P), @Name) then
+						return DictResolveAlias(P);
+					end
+					P = Dict[P].pNext;
+				end
+end:if
+
 			else
 				if str_eq(@DictGetName(P), @Name) then
 					return DictResolveAlias(P);
 				end
 				P = Dict[P].pNext;
 			end
-end:if
-
-		else
-			if str_eq(@DictGetName(P), @Name) then
-				return DictResolveAlias(P);
-			end
-			P = Dict[P].pNext;
-		end
-	end
-	return nDICT;
+		end:while
+		return nDICT;
+	end:if
 end
 
 /*****************************************************************************/
@@ -276,6 +329,22 @@ word DictMakeNamespace(char @Name)
 	return pNamespace;
 end
 
+void DictInitializeHashMap(word pNamespace) of
+	word iHashMap = AllocateDictHashMap();
+	when iHashMap == 0:
+		return;
+	Dict[pNamespace].iHashMap = iHashMap;
+	DICT_HASHMAP @HashMap = @DictHashMap[iHashMap];
+
+	word P = Dict[pNamespace].pFirst;
+	while P < nDICT do
+		word iBucket = Dict[P].Name.Hash % countof(HashMap.Buckets);
+		Dict[P].pNextInBucket = HashMap.Buckets[iBucket];
+		HashMap.Buckets[iBucket] = P;
+		P = Dict[P].pNext;
+	end:while
+end
+
 void DictAddToNamespace(word P; word pNamespace)
 	when P >= nDict:
 		StopInternal(__FILE__, __LINE__);
@@ -290,13 +359,25 @@ void DictAddToNamespace(word P; word pNamespace)
 	when pNamespace >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
+	if Dict[pNamespace].ChildCount > 8 & Dict[pNamespace].iHashMap == 0 then
+		DictInitializeHashMap(pNamespace);
+	end:if
+
 	Dict[P].pNamespace = pNamespace;
+	inc Dict[pNamespace].ChildCount;
 	if Dict[pNamespace].pLast < nDICT then
 		Dict[Dict[pNamespace].pLast].pNext = P;
 		Dict[pNamespace].pLast = P;
 	else
 		Dict[pNamespace].pFirst = P;
 		Dict[pNamespace].pLast = P;
+	end:if
+
+	if Dict[pNamespace].iHashMap != 0 then
+		DICT_HASHMAP @HashMap = @DictHashMap[Dict[pNamespace].iHashMap];
+		word iBucket = Dict[P].Name.Hash % countof(HashMap.Buckets);
+		Dict[P].pNextInBucket = HashMap.Buckets[iBucket];
+		HashMap.Buckets[iBucket] = P;
 	end:if
 end
 
@@ -870,20 +951,21 @@ end
 /*****************************************************************************/
 
 void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
-
 	char B[1024];
+	strbuf buf;
+	strbuf.init(@buf, @B, countof(B));
+
 	char @dump_prefix = "; ";
 
 	strcpy(@B, "");
 
-	strcat(@B, @dump_prefix);
-	strcat(@B, @str(I));
-	strcat(@B, ": ");
-	strcat(@B, @DictGetName(I));
-	strcat(@B, "~n");
-
-	strcat(@B, @dump_prefix);
-	strcat(@B, "  ");
+	strbuf.append_cstr5(@buf,
+		@dump_prefix,
+		@str(I),
+		": ",
+		@DictGetName(I),
+		"~n"
+	);
 
 	char @s_CLASS;
 	switch Dict[I].Class of
@@ -914,21 +996,27 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	case SUBCLASS.sFUNCTYPE: @s_SUB = "sFUNCTYPE";
 	case SUBCLASS.sPTR: @s_SUB = "sPTR";
 	case SUBCLASS.sARRAY: @s_SUB = "sARRAY";
+	case SUBCLASS.sNAMESPACE: @s_SUB = "sNAMESPACE";
 	case SUBCLASS.sSYS: @s_SUB = "sSYS";
 	case SUBCLASS.sFUNC: @s_SUB = "sFUNC";
 	case SUBCLASS.sSTART_FUNC: @s_SUB = "sSTART_FUNC";
 	default: @s_SUB = "<UNK>";
 	end:switch
 
-	strcat(@B, @s_CLASS);
-	strcat(@B, " ");
-	strcat(@B, @s_SUB);
-/*	strcat(@B, ", Value = ");
-	strcat(@B, @str(Dict[I].Value));*/
-	strcat(@B, ", pType = ");
-	strcat(@B, @str(Dict[I].pType));
+	strbuf.append_cstr5(@buf,
+		@dump_prefix,
+		"  ",
+		@s_CLASS,
+		" ",
+		@s_SUB
+	);
 
-	//strcat(@B, "~n");
+	when Dict[I].ChildCount != 0:
+		strbuf.append_cstr2(@buf, ", ChildCount = ", @str(Dict[I].ChildCount));
+	/*when Dict[I].Value != 0:
+		strbuf.append_cstr2(@buf, ", Value = ", @str(Dict[I].Value));*/
+	when Dict[I].pType != nDICT:
+		strbuf.append_cstr2(@buf, ", pType = ", @str(Dict[I].pType));
 
 	if @cb != NULL then
 		cb(@B);
