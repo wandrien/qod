@@ -299,27 +299,6 @@ end
 
 /*****************************************************************************/
 
-/*
-	Поиск объекта с классом cFILE в корневом пространстве имён по имени.
-*/
-word Find_cFILE(char @Name)
-	word hash = str_hash(@Name);
-	word  P = 0;
-	while P < nDict do
-		if Dict[P].Name.Hash == hash
-		&  str_eq(@DictGetName(P), @Name)
-		&  Dict[P].Class == CLASS.cFILE
-		&  Dict[P].pNamespace == nDICT then
-			return P;
-		end
-		inc P;
-	end
-
-	return nDICT;
-end
-
-/*****************************************************************************/
-
 word DictMakeNamespace(char @Name)
 	word pNamespace = DictAlloc();
 	when @Name != NULL:

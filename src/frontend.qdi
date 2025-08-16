@@ -46,6 +46,7 @@ word pGlobalNamespace;
 word pInternalNamespace;
 word pKeywordsNamespace;
 word pLibraryNamespace;
+word pIncludesNamespace;
 
 word pNamespace_qod;
 word pNamespace_qod_impl;
@@ -90,6 +91,7 @@ void InitFrontEnd()
 	pInternalNamespace = DictMakeNamespace("<INTERNAL>");
 	pKeywordsNamespace = DictMakeNamespace("<KEYWORDS>");
 	pLibraryNamespace = DictMakeNamespace("<LIBRARY>");
+	pIncludesNamespace = DictMakeNamespace("<INCLUDES>");
 
 	pGlobalNamespace = DictMakeNamespace("");
 	DictAddToNamespace(pGlobalNamespace, pGlobalNamespace);
@@ -295,6 +297,7 @@ alias CTE_LoopHasExits = QodFrontend.CTE_LoopHasExits;
 alias CTE_LoopHasContinues = QodFrontend.CTE_LoopHasContinues;
 alias pGlobalNamespace = QodFrontend.pGlobalNamespace;
 alias pLibraryNamespace = QodFrontend.pLibraryNamespace;
+alias pIncludesNamespace = QodFrontend.pIncludesNamespace;
 alias ResolveInNamespace = QodFrontend.ResolveInNamespace;
 alias ProcessSourceFile = QodFrontend.ProcessSourceFile;
 

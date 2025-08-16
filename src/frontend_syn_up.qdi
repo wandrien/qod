@@ -556,7 +556,7 @@ void Include(word pFileName; word pGuard; bool Once)
 	char@ FileName = @NodeGetLiteralString(pFileName);
 	char@ FullFileName = @ResolveFileName(@FileName);
 
-	word dFile = Find_cFILE(@FullFileName);
+	word dFile = ResolveInNamespace(@FullFileName, pIncludesNamespace);
 	if dFile != nDICT & Once then
 		return;
 	end:if
@@ -565,6 +565,7 @@ void Include(word pFileName; word pGuard; bool Once)
 		dFile = DictAlloc();
 		DictSetName(dFile, @FullFileName);
 		Dict[dFile].Class = CLASS.cFILE;
+		DictAddToNamespace(dFile, pIncludesNamespace);
 	end
 
 	IncludeFile(@FullFileName);
