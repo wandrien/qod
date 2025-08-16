@@ -948,6 +948,7 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 
 	char @s_CLASS;
 	switch Dict[I].Class of
+	case CLASS.cNONE: @s_CLASS = "cNONE";
 	case CLASS.cWORD: @s_CLASS = "cWORD";
 	case CLASS.cNAME: @s_CLASS = "cNAME";
 	case CLASS.cLITERAL: @s_CLASS = "cLITERAL";
@@ -965,8 +966,11 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	char @s_SUB;
 	switch Dict[I].Sub of
 	case SUBCLASS.sNONE: @s_SUB = "sNONE";
+	case SUBCLASS.sBASE_TYPE: @s_SUB = "sBASE_TYPE";
 	case SUBCLASS.sBASE_VOID: @s_SUB = "sBASE_VOID";
 	case SUBCLASS.sBASE_BOOL: @s_SUB = "sBASE_BOOL";
+	case SUBCLASS.sBASE_NORET: @s_SUB = "sBASE_NORET";
+	case SUBCLASS.sBASE_NULL: @s_SUB = "sBASE_NULL";
 	case SUBCLASS.sBASE_CHAR: @s_SUB = "sBASE_CHAR";
 	case SUBCLASS.sBASE_SINT: @s_SUB = "sBASE_SINT";
 	case SUBCLASS.sBASE_UINT: @s_SUB = "sBASE_UINT";
@@ -976,6 +980,7 @@ void DumpDictEntry(word I; DumpDictEntryCallback@ cb)
 	case SUBCLASS.sPTR: @s_SUB = "sPTR";
 	case SUBCLASS.sARRAY: @s_SUB = "sARRAY";
 	case SUBCLASS.sNAMESPACE: @s_SUB = "sNAMESPACE";
+	case SUBCLASS.sINTERNAL_COND_BRANCH: @s_SUB = "sINTERNAL_COND_BRANCH";
 	case SUBCLASS.sSYS: @s_SUB = "sSYS";
 	case SUBCLASS.sFUNC: @s_SUB = "sFUNC";
 	case SUBCLASS.sSTART_FUNC: @s_SUB = "sSTART_FUNC";
