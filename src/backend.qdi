@@ -1,4 +1,6 @@
 
+namespace Backend of
+
 /*****************************************************************************/
 
 void CloseOutput();
@@ -51,3 +53,105 @@ void InitAsmDriver()
 end
 
 /*****************************************************************************/
+
+word Compile(
+	word pStartFunc;
+	char@ OutputFile;
+	char@ OutputTreeFile;
+	char@ OutputIncludeListFile
+) of
+
+	/* Промежуточные операции *********************/
+
+	if pStartFunc != nDICT then
+		DictMarkUsed(pStartFunc);
+		Dict[pStartFunc].Sub = SUBCLASS.sSTART_FUNC;
+	else
+		Error(@L10n.eNOSTART);
+	end:if
+
+	/* Отметка используемых объектов. */
+	select
+		case TargetFileFormat == TARGET_FORMAT.tPE:
+			pExitProcess = ResolveInNamespace("ExitProcess", pGlobalNamespace);
+			when pExitProcess != nDICT:
+				Dict[pExitProcess].Used = true;
+	end:select
+
+	/* Назначаем метки и смещения. */
+	word D = AssignLabels_Data();
+	AssignLabels_Func();
+	AssignLabels_FuncExternal();
+	AssignStringOffsets();
+
+	/* Вывод информации по анализу кода ***********/
+
+	when WarnUnusedGlobals:
+		DoWarnUnusedGlobals();
+
+	word OutputTreeFile_Done = 0;
+
+	if OutputTreeFile_Done == 0
+	 & @OutputTreeFile != NULL
+	 & strlen(@OutputTreeFile) != 0
+	 & str_ne(@OutputFile, @OutputTreeFile) then
+		OutputTreeFile_Done = 1;
+		OpenOutput(@OutputTreeFile);
+		EmitContentForTreeFile();
+		CloseOutput();
+	end:if
+
+	if @OutputIncludeListFile != NULL & strlen(@OutputIncludeListFile) != 0 then
+		OpenOutput(@OutputIncludeListFile);
+		EmitIncludeList();
+		CloseOutput();
+	end:if
+
+	/* Остановка при отложенных ошибках *****************************/
+	when HasErrors:
+		return 1;
+
+	/* Генерация кода *****************************/
+
+	PrepareMulTricks();
+
+	OpenOutput(@OutputFile);
+
+	if OutputTreeFile_Done == 0
+	 & @OutputTreeFile != NULL
+	 & strlen(@OutputTreeFile) != 0
+	 & str_eq(@OutputFile, @OutputTreeFile) then
+		OutputTreeFile_Done = 1;
+		EmitContentForTreeFile();
+	end:if
+
+	when EmitCompilerFlags:
+		CompilerOptions.PrintOptionValues(@EmitString, "; ");
+
+	char Buff[nBUFF];
+
+	InitAsmDriver();
+	EmitFileHeader(@Buff);
+	EmitSection_ROData(@Buff);
+	EmitSection_Code(@Buff);
+	EmitSection_Data(@Buff, D);
+	EmitSection_Bss(@Buff, D);
+
+	select
+	case TargetFileFormat == TARGET_FORMAT.tPE:
+		EmitPEImport(@Buff);
+	end:select
+
+	EmitNL();
+	EmitFileFooter(@Buff);
+
+	CloseOutput();
+
+	return 0;
+end
+
+/*****************************************************************************/
+
+end:namespace
+
+alias Compile = Backend.Compile;
