@@ -132,17 +132,19 @@ word EmitRODataFragment(word FirstChar; word Len)
 	word j = 0;
 
 	if rodata_nr > 0 & Len > 0 then
-		word L = word_min(Len, 4);
+		word L = word_min(Len, 32);
 		word l = 0;
 		int i1 = 0;
 		while l < L do
 			word idx = word(Char[FirstChar + l]);
-			int first_occurrence = rodata_first_occurrence[idx] - as_signed(l);
-			if first_occurrence < i1 then
+			int first_occurrence = rodata_first_occurrence[idx];
+			if first_occurrence < 0 then
 				when rodata_size > 0:
-					i = rodata_size - 1;
+					i1 = as_signed(rodata_size - 1);
 				exit;
-			else
+			end:if
+			first_occurrence = first_occurrence - as_signed(l);
+			if first_occurrence > i1 then
 				i1 = first_occurrence;
 			end:if
 			inc l;
