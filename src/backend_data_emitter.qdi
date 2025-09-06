@@ -104,7 +104,7 @@ word rodata_nr;
 
 /*****************************************************************************/
 
-int rodata_first_occurrence[256];
+int rodata_first_occurrence[256 * 256];
 
 void Reset_rodata_first_occurrence()
 	word i = 0;
@@ -116,10 +116,16 @@ end
 
 void Register_rodata_first_occurrence(char @Fragment; word Len; word Offset)
 	word j = 0;
+	word c_prev = 255;
 	while j < Len do
-		word idx = word(Fragment[j]);
+		word c_curr = word(Fragment[j]);
+		word idx = c_prev * 256 + c_curr;
+		c_prev = c_curr;
 		if rodata_first_occurrence[idx] == -1 then
 			rodata_first_occurrence[idx] = as_signed(Offset + j);
+		end:if
+		if rodata_first_occurrence[256 * 255 + c_curr] == -1 then
+			rodata_first_occurrence[256 * 255 + c_curr] = as_signed(Offset + j);
 		end:if
 		inc j;
 	end:while
@@ -137,8 +143,11 @@ word EmitRODataFragment(word FirstChar; word Len)
 		word L = word_min(Len, 32);
 		word l = 0;
 		int i1 = 0;
+		word c_prev = 255;
 		while l < L do
-			word idx = word(Fragment[l]);
+			word c_curr = word(Fragment[l]);
+			word idx = c_prev * 256 + c_curr;
+			c_prev = c_curr;
 			int first_occurrence = rodata_first_occurrence[idx];
 			if first_occurrence < 0 then
 				when rodata_size > 0:
