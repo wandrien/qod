@@ -1,0 +1,59 @@
+
+struct FirstOccurrenceCache of
+	int first_occurrence[256 * 256];
+
+	void reset(FirstOccurrenceCache @self);
+	void register_str(FirstOccurrenceCache @self; char @Str; word Len; word Offset);
+	int  lookup_str(FirstOccurrenceCache @self; char @Str; word Len; word Limit);
+end:struct
+
+void FirstOccurrenceCache.reset(FirstOccurrenceCache @self) of
+	word i = 0;
+	while i < countof(self.first_occurrence) do
+		self.first_occurrence[i] = -1;
+		inc i;
+	end:while
+end
+
+void FirstOccurrenceCache.register_str(FirstOccurrenceCache @self; char @Str; word Len; word Offset) of
+	word j = 0;
+	word c_prev = 255;
+	while j < Len do
+		word c_curr = word(Str[j]);
+		word idx = c_prev * 256 + c_curr;
+		c_prev = c_curr;
+		if self.first_occurrence[idx] == -1 then
+			self.first_occurrence[idx] = as_signed(Offset + j);
+		end:if
+		if self.first_occurrence[256 * 255 + c_curr] == -1 then
+			self.first_occurrence[256 * 255 + c_curr] = as_signed(Offset + j);
+		end:if
+		inc j;
+	end:while
+end
+
+int FirstOccurrenceCache.lookup_str(FirstOccurrenceCache @self; char @Str; word Len; word Limit) of
+	int Offset = 0;
+	word c_prev = 255;
+	word j = 0;
+	while j < Len do
+		word c_curr = word(Str[j]);
+		word idx = c_prev * 256 + c_curr;
+		c_prev = c_curr;
+		int first_occurrence = self.first_occurrence[idx];
+		if first_occurrence < 0 then
+			when Limit > 0:
+				Offset = as_signed(Limit - 1);
+			exit;
+		end:if
+		first_occurrence = first_occurrence - as_signed(j);
+		if first_occurrence > Offset then
+			Offset = first_occurrence;
+		end:if
+		inc j;
+	end:while
+	return Offset;
+end
+
+FirstOccurrenceCache rodata_first_occurrence;
+

@@ -96,40 +96,11 @@ end
 
 /*****************************************************************************/
 
-
 define RODATA_NR 30000;
 char rodata[RODATA_NR];
 word rodata_size;
 word rodata_nr;
-
-/*****************************************************************************/
-
-int rodata_first_occurrence[256 * 256];
-
-void Reset_rodata_first_occurrence()
-	word i = 0;
-	while i < countof(rodata_first_occurrence) do
-		rodata_first_occurrence[i] = -1;
-		inc i;
-	end:while
-end
-
-void Register_rodata_first_occurrence(char @Fragment; word Len; word Offset)
-	word j = 0;
-	word c_prev = 255;
-	while j < Len do
-		word c_curr = word(Fragment[j]);
-		word idx = c_prev * 256 + c_curr;
-		c_prev = c_curr;
-		if rodata_first_occurrence[idx] == -1 then
-			rodata_first_occurrence[idx] = as_signed(Offset + j);
-		end:if
-		if rodata_first_occurrence[256 * 255 + c_curr] == -1 then
-			rodata_first_occurrence[256 * 255 + c_curr] = as_signed(Offset + j);
-		end:if
-		inc j;
-	end:while
-end
+FirstOccurrenceCache rodata_first_occurrence;
 
 /*****************************************************************************/
 
@@ -141,26 +112,9 @@ word EmitRODataFragment(word FirstChar; word Len)
 
 	if rodata_nr > 0 & Len > 0 then
 		word L = word_min(Len, 32);
-		word l = 0;
-		int i1 = 0;
-		word c_prev = 255;
-		while l < L do
-			word c_curr = word(Fragment[l]);
-			word idx = c_prev * 256 + c_curr;
-			c_prev = c_curr;
-			int first_occurrence = rodata_first_occurrence[idx];
-			if first_occurrence < 0 then
-				when rodata_size > 0:
-					i1 = as_signed(rodata_size - 1);
-				exit;
-			end:if
-			first_occurrence = first_occurrence - as_signed(l);
-			if first_occurrence > i1 then
-				i1 = first_occurrence;
-			end:if
-			inc l;
-		end:while
-		i = as_unsigned(i1);
+		int i1 = FirstOccurrenceCache.lookup_str(@rodata_first_occurrence, @Fragment, L, rodata_size);
+		when i1 > 0:
+			i = as_unsigned(i1);
 	end:if
 
 	word offset = i;
@@ -212,7 +166,7 @@ word EmitRODataFragment(word FirstChar; word Len)
 	end
 
 	if rodata_nr > 0 then
-		Register_rodata_first_occurrence(@Fragment, Len, offset);
+		FirstOccurrenceCache.register_str(@rodata_first_occurrence, @Fragment, Len, offset);
 	end:if
 
 	return offset;
@@ -234,7 +188,7 @@ void EmitROData()
 		rodata_nr = 0;
 	else
 		rodata_nr = RODATA_NR;
-		Reset_rodata_first_occurrence();
+		FirstOccurrenceCache.reset(@rodata_first_occurrence);
 	end
 
 

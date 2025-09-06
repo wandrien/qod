@@ -8,6 +8,7 @@ word val(char @Buff);
 include "compiler_htl_defines.qdi";
 include "compiler_htl_structs.qdi";
 include "compiler_str.qdi";
+include "compiler_foc.qdi";
 include "compiler_config.qdi";
 include "compiler_msg.qdi";
 include "compiler_chardata.qdi";
