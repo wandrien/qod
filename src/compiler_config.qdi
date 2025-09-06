@@ -5,8 +5,10 @@
 word show_parse_progress = 0;
 
 /* На сколько символов просматривать назад таблицу CHAR в попытках объединить одинаковые строки. */
-//word chardata_merge_len = _nCHAR;
-word chardata_merge_len = 256;
+word chardata_merge_len1 = 32;
+word chardata_merge_len2 = 256;
+word chardata_merge_len3 = 512;
+//word chardata_merge_len3 = _nCHAR;
 
 /*****************************************************************************/
 

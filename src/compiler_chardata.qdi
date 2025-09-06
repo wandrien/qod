@@ -20,6 +20,20 @@ word SaveString(char @Str; word Size)
 	word i = 0;
 	word j = 0;
 
+	word chardata_merge_len;
+	select
+	case _nChar < _nCHAR / 4:
+		chardata_merge_len = chardata_merge_len1;
+	case _nChar < _nCHAR / 2:
+		chardata_merge_len = chardata_merge_len2;
+	default:
+		chardata_merge_len = chardata_merge_len2;
+	end:select
+
+	if chardata_merge_len < Size + 1 then
+		chardata_merge_len = Size + 1;
+	end:if
+
 	if chardata_merge_len < _nChar then
 		i = _nChar - chardata_merge_len;
 	end:if
