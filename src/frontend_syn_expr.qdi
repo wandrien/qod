@@ -552,8 +552,12 @@ end
 word ReadIndirecFuncCall(char @Buff; word pPtrExpr; word pBracket)
 	word pFuncType = Node[pPtrExpr].pType;
 	word pRetType = T_FuncGetRetType(pFuncType);
-	pPtrExpr = Peek3(iLPTR, pPtrExpr);
-	Node[pPtrExpr].pType = T_nPtrTo(1, pFuncType);
+	if Node[pPtrExpr].ID == iADDR & Node[pPtrExpr].pRight == nNODE then
+		pPtrExpr = Node[pPtrExpr].pLeft;
+	else
+		pPtrExpr = Peek3(iLPTR, pPtrExpr);
+		Node[pPtrExpr].pType = T_nPtrTo(1, pFuncType);
+	end:if
 
 	word P_CALL2 = Peek5(iCALL2, nNODE, pPtrExpr, pRetType);
 

@@ -469,7 +469,39 @@ end
 
 /*****************************************************************************/
 
-void Code_CALL(word pPrimary; ValueRef @Ref)
+void Code_StaticCall(char @Buff; word pFunc) of
+	if Dict[pFunc].Sub == SUBCLASS.sSYS then
+		EmitWithPhoMode(
+			@strcpy3(@Buff,"call   [@",@str(Dict[pFunc].Label),"]"),
+			PHO_Mode_Invalidate
+		);
+	else
+		EmitWithPhoModeAndComment(
+			@strcpy2(@Buff,"call    @",@str(Dict[pFunc].Label)),
+			PHO_Mode_Invalidate,
+			@DictGetName(pFunc)
+		);
+	end:if
+end
+
+void Code_DynamicCall(char @Buff; word pFunc) of
+	char BuffFunctionPointer[nBUFF];
+	select
+	case CodeAsMemoryOperand(@BuffFunctionPointer, pFunc, NULL):
+		strcpy2(@Buff,"call    ",@BuffFunctionPointer);
+		EmitWithPhoMode(@Buff, PHO_Mode_Invalidate);
+	case Node[pFunc].ID == iFUNC:
+		Code_StaticCall(@Buff, NodeGetDict(pFunc));
+	default:
+		Buff[0] = #0;
+		Code_(pFunc, @Buff);
+		Buff[0] = #0;
+		EncodeCmdReg(@Buff, "call", Reg_TARGET, 4);
+		EmitWithPhoMode(@Buff, PHO_Mode_Invalidate);
+	end:select
+end
+
+void Code_CALL(word pPrimary; ValueRef @Ref) of
 	char Buff[nBUFF];
 	Buff[0] = #0;
 
@@ -482,26 +514,11 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 	case iCALL:
 		when Node[pPrimary].pLeft != nNODE:
 			Code_(Node[pPrimary].pLeft, @Buff);
-		word pFunc = NodeGetDict(pPrimary);
-		if Dict[pFunc].Sub == SUBCLASS.sSYS then
-			EmitWithPhoMode(
-				@strcpy3(@Buff,"call   [@",@str(Dict[pFunc].Label),"]"),
-				PHO_Mode_Invalidate
-			);
-		else
-			EmitWithPhoModeAndComment(
-				@strcpy2(@Buff,"call    @",@str(Dict[pFunc].Label)),
-				PHO_Mode_Invalidate,
-				@DictGetName(pFunc)
-			);
-		end:if
+		Code_StaticCall(@Buff, NodeGetDict(pPrimary));
 	case iCALL2:
 		when Node[pPrimary].pLeft != nNODE:
 			Code_(Node[pPrimary].pLeft, @Buff);
-		Code_(Node[pPrimary].pRight, @Buff);
-		Buff[0] = #0;
-		EncodeCmdReg(@Buff, "call", Reg_TARGET, 4);
-		EmitWithPhoMode(@Buff, PHO_Mode_Invalidate);
+		Code_DynamicCall(@Buff, Node[pPrimary].pRight);
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:switch
