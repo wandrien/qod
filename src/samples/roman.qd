@@ -1,0 +1,69 @@
+/* TARGET: linux, win32-c */
+include "../include/hosted.qdi";
+
+void function roman_cb(char c);
+
+void roman_addive(word n; roman_cb @write) of
+	while n >= 1000
+		loop write('M'); n = n - 1000; end
+	if n >= 500
+		then write('D'); n = n - 500; end
+	while n >= 100 
+		loop write('C'); n = n - 100; end
+	if n >= 50
+		then write('L'); n = n - 50; end
+	while n >= 10
+		loop write('X'); n = n - 10; end
+	if n >= 5
+		then write('V'); n = n - 5; end
+	while n >= 1
+		loop write('I'); n = n - 1; end
+end
+
+void roman_digit(word n; char I; char V; char X; roman_cb @write) of
+	switch n of
+	case 1: write(I);
+	case 2: write(I); write(I);
+	case 3: write(I); write(I); write(I);
+	case 4: write(I); write(V);
+	case 5: write(V);
+	case 6: write(V); write(I);
+	case 7: write(V); write(I); write(I);
+	case 8: write(V); write(I); write(I); write(I);
+	case 9: write(I); write(X);
+	default: pass;
+	end:switch
+end
+
+void roman(word n; roman_cb @write) of
+	roman_digit(n / 1000, 'M', '_', '_', @write); n = n % 1000;
+	roman_digit(n / 100, 'C', 'D', 'M', @write); n = n % 100;
+	roman_digit(n / 10, 'X', 'L', 'C', @write); n = n % 10;
+	roman_digit(n, 'I', 'V', 'X', @write);
+end
+
+alias limit = 4000;
+
+word main() of
+	puts("ROMAN ADDIVE NUMERALS"); put_nl();
+	word i = 1;
+	while i < limit loop
+		put_word(i); puts(" = ");
+		roman_addive(i, @putc);
+		put_nl();
+		i = i * 2;
+	end:while
+
+	put_nl();
+
+	puts("ROMAN STANDARD NUMERALS"); put_nl();
+	i = 1;
+	while i < limit loop
+		put_word(i); puts(" = ");
+		roman(i, @putc);
+		put_nl();
+		i = i * 2;
+	end:while
+
+	return 0;
+end
