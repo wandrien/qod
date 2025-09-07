@@ -76,19 +76,21 @@ void NodeMarkUsed(word P)
 	when P >= nNODE:
 		return;
 
-	when Node[P].Used:
+	NODE @n = @Node[P];
+
+	when unlikely(n.Used):
 		return;
 
-	Node[P].Used = true;
-	DictMarkUsed(Node[P].pType);
+	n.Used = true;
+	DictMarkUsed(n.pType);
 
-	switch Node[P].ID of
-	case iCALL, iFUNC, iDATA, iSTRING:
+	switch n.ID of
+	case iCALL, iDATA, iSTRING, iFUNC:
 		DictMarkUsed(NodeGetDict(P));
 	end:switch
 
-	NodeMarkUsed(Node[P].pLeft );
-	NodeMarkUsed(Node[P].pRight);
+	NodeMarkUsed(n.pLeft );
+	NodeMarkUsed(n.pRight);
 end
 
 void DoWarnUnusedGlobals()

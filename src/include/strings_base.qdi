@@ -42,7 +42,7 @@ end
 
 attribute(hot)
 word strcmp(char @S1, @S2)
-	when @S1 == @S2:
+	when unlikely(@S1 == @S2):
 		return 0;
 
 	word i = 0;

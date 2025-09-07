@@ -19,7 +19,7 @@ bool str_eq(char @S1; char @S2)
 if false then
 	return strcmp(@S1, @S2) == 0;
 else
-	when @S1 == @S2:
+	when unlikely(@S1 == @S2):
 		return true;
 
 	word i = 0;
@@ -42,7 +42,7 @@ bool str_ne(char @S1; char @S2)
 if false then
 	return strcmp(@S1, @S2) != 0;
 else
-	when @S1 == @S2:
+	when unlikely(@S1 == @S2):
 		return false;
 
 	word i = 0;

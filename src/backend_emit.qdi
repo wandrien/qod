@@ -32,11 +32,9 @@ void CloseOutput()
 end
 
 void EmitChar_NoRedirection_(char C)
-	if nText > nTEXT then
-		StopInternal(__FILE__, __LINE__);
-	end
-
-	if nText == nTEXT then
+	if unlikely(nText >= nTEXT) then
+		when nText > nTEXT:
+			StopInternal(__FILE__, __LINE__);
 		FlushOutput();
 	end
 

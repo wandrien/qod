@@ -113,7 +113,7 @@ char Read()
 	end:while
 
 	char r = Text[pText];
-	if !BeforeFirstFile & _AlreadyOnNext & r == '~n' then
+	if (r == '~n') & !BeforeFirstFile & _AlreadyOnNext then
 		if  CurrentFileInfo.Line % 50 == 0 then
 			ShowParseProgress(0);
 		end

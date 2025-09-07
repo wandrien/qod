@@ -193,8 +193,8 @@ char@ Scan(char@ Buff)
 		word SuffixLen;
 
 		if
-			(HereCommentPrefixLen != 0) &
 			(HereCommentPrefixLen == LexLen) &
+			(HereCommentPrefixLen != 0) &
 			(str_eq(@Buff, @HereCommentPrefix))
 		then
 			SkipWhitespaces();
@@ -227,10 +227,11 @@ char@ Scan(char@ Buff)
 		/* Пропускаем символы, пока не встретится Suffix. */
 		word k = 0;
 		while k < SuffixLen do
+			char Ch = Read();
 			select
-			case Suffix[k] == Read():
+			case Suffix[k] == Ch:
 				inc k;
-			case Suffix[0] == Read():
+			case Suffix[0] == Ch:
 				k = 1;
 			default:
 				k = 0;
