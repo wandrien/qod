@@ -110,9 +110,10 @@ void DictSetName_None(word D)
 	when D >= nDict:
 		StopInternal(__FILE__, __LINE__);
 
-	if !DictSetName_None_Name_Initialized then
+	if unlikely(!DictSetName_None_Name_Initialized) then
 		DictSetName(D, "<None>");
 		DictSetName_None_Name = Dict[D].Name;
+		DictSetName_None_Name_Initialized = true;
 	else
 		Dict[D].Name = DictSetName_None_Name;
 	end:if
