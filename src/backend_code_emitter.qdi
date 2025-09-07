@@ -499,7 +499,9 @@ void Code_CALL(word pPrimary; ValueRef @Ref)
 		when Node[pPrimary].pLeft != nNODE:
 			Code_(Node[pPrimary].pLeft, @Buff);
 		Code_(Node[pPrimary].pRight, @Buff);
-		EmitWithPhoMode("call    EAX", PHO_Mode_Invalidate);
+		Buff[0] = #0;
+		EncodeCmdReg(@Buff, "call", Reg_TARGET, 4);
+		EmitWithPhoMode(@Buff, PHO_Mode_Invalidate);
 	default:
 		StopInternal(__FILE__, __LINE__);
 	end:switch
