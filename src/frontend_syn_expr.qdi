@@ -749,14 +749,14 @@ end
 /*****************************************************************************/
 
 word Primary(word Prty; char @Buff)
-	if isdigit(Buff[0]) then /* Число. */
+	if unlikely(isdigit(Buff[0])) then /* Число. */
 		word P1 = Peek();
 		NodeAssignWord(P1, val(@Buff));
 		Scan(@Buff);
 		return P1;
 	end
 
-	if Buff[0] == '_' & str_eq(@Buff,"__LINE__") then
+	if unlikely(Buff[0] == '_' & str_eq(@Buff,"__LINE__")) then
 		word P1 = Peek();
 		NodeAssignWord(P1, CurrentFileInfo.Line);
 		Scan(@Buff);

@@ -234,7 +234,7 @@ bool ConsiderColdSeperation(word pCond; word pBody)
 	|    (!NodeIsUnlikely(pCond))
 	|    (Emit_ColdRedirectionActive())
 	|    (!Emit_ColdRedirectionAllowed())
-	|    (NodeGetTreeSize(pBody) > 16):
+	|    (NodeGetTreeSize(pBody) > 32):
 		return false;
 	return true;
 end
