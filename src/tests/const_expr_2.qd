@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	puts(@str(const_expr(byte(10)))); puts(" ");
 	puts(@str(const_expr(word(byte(11))))); puts(" ");
 	puts(@str(const_expr(int(word(byte(12)))))); puts(" ");
@@ -10,4 +10,5 @@ begin
 	puts(@str(const_expr(uint16(0x178FE)))); puts(" ");
 	puts(@str(const_expr(int(uint8(0xFE))))); puts(" ");
 	puts(@str(const_expr(int(int8(0xFE))))); puts(" ");
+	return 0;
 end

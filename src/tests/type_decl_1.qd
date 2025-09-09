@@ -10,6 +10,6 @@ type
 	arr_t = typeof(arr),
 	err = sizeof(arr);
 
-begin
-	pass;
+word main() of
+	return 0;
 end

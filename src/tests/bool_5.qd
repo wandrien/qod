@@ -2,15 +2,15 @@
 
 include "../include/test_env.qdi";
 
-bool t()
+bool t() of
 	return true;
 end
 
-bool f()
+bool f() of
 	return false;
 end
 
-void foo()
+void foo() of
 
 	if !t() then
 		puts("OOPS ");
@@ -106,6 +106,7 @@ void foo()
 */
 end
 
-begin
+word main() of
 	foo();
+	return 0;
 end

@@ -4,10 +4,11 @@ include "../include/test_env.qdi";
 
 int foo(int x);
 
-int bar(int x)
+int bar(int x) of
 	return foo(x) + 1;
 end
 
-begin
+word main() of
 	put_int(bar(0));
+	return 0;
 end

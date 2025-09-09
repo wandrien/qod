@@ -10,7 +10,7 @@ X x;
 typeof(x) x2;
 typeof(x2.x) i;
 
-void foo()
+void foo() of
 	typeof(i) y = 15;
 	typeof(false) b = true;
 
@@ -57,6 +57,7 @@ void foo()
 	end:if
 end
 
-begin
+word main() of
 	foo();
+	return 0;
 end

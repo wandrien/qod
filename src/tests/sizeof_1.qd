@@ -14,7 +14,7 @@ end
 AAA a;
 BBB b;
 
-begin
+word main() of
 	puts(@str(sizeof(AAA))); puts(" ");
 	puts(@str(sizeof(a))); puts(" ");
 	puts(@str(sizeof(BBB))); puts(" ");
@@ -24,4 +24,6 @@ begin
 	puts(@str(bitsizeof(a))); puts(" ");
 	puts(@str(bitsizeof(BBB))); puts(" ");
 	puts(@str(bitsizeof(b))); puts(" ");
+
+	return 0;
 end

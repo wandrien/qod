@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	uint32 x;
 	uint32 arr[10];
 
@@ -27,4 +27,6 @@ begin
 
 	puts(@str(bitsizeof(x))); puts(" ");
 	puts(@str(bitsizeof(arr))); puts(" ");
+
+	return 0;
 end

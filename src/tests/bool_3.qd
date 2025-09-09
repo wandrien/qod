@@ -5,7 +5,7 @@ include "../include/test_env.qdi";
 bool t = true;
 bool f = false;
 
-void foo(bool t; bool f)
+void foo(bool t; bool f) of
 
 	if f then
 		puts("OOPS ");
@@ -76,6 +76,7 @@ void foo(bool t; bool f)
 
 end
 
-begin
+word main() of
 	foo(true, false);
+	return 0;
 end

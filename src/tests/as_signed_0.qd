@@ -44,8 +44,9 @@ void f3() of
 		puts("OOPS ");
 end
 
-begin
+word main() of
 	f1();
 	f2();
 	f3();
+	return 0;
 end

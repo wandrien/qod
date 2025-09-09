@@ -8,7 +8,7 @@ word v27 = 27;
 
 word y[10][20];
 
-begin
+word main() of
 	word x[10][20];
 	x[5][6]       = 100;
 	x[v6][v5]     = 101;
@@ -24,4 +24,6 @@ begin
 	put_word(y[1][v27 % v5 + 4]); puts(" ");
 	put_word(y[v6][5]); puts(" ");
 	put_word(y[6][v6]); puts(" ");
+
+	return 0;
 end

@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	int v130 = 0b1000_0010;
 	int v131 = 0B1000_0011;
 
@@ -39,4 +39,6 @@ begin
 	put_word(v65405); puts(" ");
 	put_word(v193); puts(" ");
 	put_word(v14228); puts(" ");
+
+	return 0;
 end

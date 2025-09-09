@@ -1,6 +1,6 @@
 // TEST: compilation_should_fail 'Слишком длинный целочисленный литерал'
 
-begin
+void _start() of
 	word a = 999999999999999999999999999;
 	word b = 0x9999999999999999999999999;
 end

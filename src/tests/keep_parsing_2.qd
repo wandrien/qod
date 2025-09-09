@@ -1,6 +1,6 @@
 // TEST: compilation_should_fail 'Попытка деления на ноль'
 
-begin
+void _start() of
 	word a;
 	word b;
 	0 = a;           // error

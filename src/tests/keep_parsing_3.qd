@@ -4,6 +4,6 @@ include "keep_parsing_3.include1.qdi";
 include "keep_parsing_3.include2.qdi";
 include "keep_parsing_3.include3.qdi";
 
-begin
+void _start() of
 	word a = f1(0, 1) + f2(2) + f3(2);
 end

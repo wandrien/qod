@@ -6,11 +6,11 @@ struct XX of
 	char @Buff;
 end
 
-void set_char(char @pCh; char Value)
+void set_char(char @pCh; char Value) of
 	pCh = Value;
 end
 
-word foo(XX @xx; word I; char Value)
+word foo(XX @xx; word I; char Value) of
 	set_char(@xx.Buff[I], Value);
 	return I;
 end
@@ -20,7 +20,7 @@ word foo2(XX @xx; word I; char Value) of
 	return I;
 end
 
-begin
+word main() of
 	char Buff[100];
 	XX xx;
 	@xx.Buff = @Buff;
@@ -31,4 +31,6 @@ begin
 	putc(xx.Buff[5]);
 	foo2(@xx, 5, 'c');
 	putc(xx.Buff[5]);
+
+	return 0;
 end

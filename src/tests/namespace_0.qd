@@ -83,11 +83,11 @@ end:BBB
 AAA aaa;
 BBB.AAA.B3 bbb_aaa_b3;
 
-BBB.u32 foo2(BBB.u32 x; BBB.u16 y)
+BBB.u32 foo2(BBB.u32 x; BBB.u16 y) of
 	return x + y;
 end
 
-begin
+word main() of
 	B1 b1;
 	B2 b2;
 	BBB.BBB bbb_bbb;
@@ -116,4 +116,6 @@ begin
 	puts(@istr(BBB.AAA.x2)); puts(" ");
 	puts(@istr(foo_results)); puts(" ");
 	puts(@str(foo2_results)); puts(" ");
+
+	return 0;
 end

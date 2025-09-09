@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 int x1;
 
-int foo()
+int foo() of
 	return 100;
 end
 
@@ -13,12 +13,12 @@ namespace AAA of
 	int x1;
 
 	alias bar = foo;  /* refers to foo in the root namespace */
-	int foo()
+	int foo() of
 		return 200;
 	end
 end:namespace
 
-begin
+word main() of
 	x1 = 10;
 	AAA.x1 = 20;
 	put_int(AAA.y1); puts(" ");
@@ -38,4 +38,6 @@ begin
 	else
 		puts("OOPS ");
 	end
+
+	return 0;
 end

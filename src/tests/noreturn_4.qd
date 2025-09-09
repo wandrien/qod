@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 word s = 0;
 
-noreturn nr1(word a)
+noreturn nr1(word a) of
 	switch s of
 	case 1:
 		if a < 10 then
@@ -19,12 +19,13 @@ noreturn nr1(word a)
 	end:switch
 end
 
-void f1(word a)
+void f1(word a) of
 	nr1(a);
 	nr1(a + 1);
 end
 
-begin
+word main() of
 	s = 1;
 	f1(1000);
+	return 0;
 end

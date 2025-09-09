@@ -1,28 +1,28 @@
 include "../include/test_env.qdi";
 
-int f1(int a; int b; int c; int d)
+int f1(int a; int b; int c; int d) of
 	return 10000 - (a * b) - (c * d);
 end
 
-int f2(int a; int b; int c; int d)
+int f2(int a; int b; int c; int d) of
 	return 10000 / ((a * b) - (c * d));
 end
 
-void f3(int @a1; int @a2; int @a3; int b)
+void f3(int @a1; int @a2; int @a3; int b) of
 	a1 = 5;
 	a2 = b + 5;
 	a3 = b - 5;
 end
 
-int f4(int a; int b; int c; int d)
+int f4(int a; int b; int c; int d) of
 	return (a % b) % (c % d);
 end
 
-int f5(int a; int b)
+int f5(int a; int b) of
 	return a % b;
 end
 
-begin
+word main() of
 	put_word(f1(4, 10, 2, 5)); puts(" ");
 	put_word(f2(11, 10, 2, 5)); puts(" ");
 
@@ -43,4 +43,6 @@ begin
 	put_word(v12); puts(" ");
 	put_word(v12 * 10 - v9950 % v100); puts(" ");
 	put_word(v112); puts(" ");
+
+	return 0;
 end

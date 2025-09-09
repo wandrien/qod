@@ -8,6 +8,6 @@ struct A
 	int a;
 end
 
-begin
-	null;
+void _start() of
+	pass;
 end

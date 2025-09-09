@@ -7,7 +7,7 @@ word B = 0;
 
 char Arr[256];
 
-begin
+word main() of
 	word @p = @A;
 	puts(@str(p)); puts(" ");
 	uintptr a1 = uintptr(@A);
@@ -35,4 +35,6 @@ begin
 
 	puts(@str(arr25 - arr0)); puts(" ");
 	puts(@str(arr25 - arr15)); puts(" ");
+
+	return 0;
 end

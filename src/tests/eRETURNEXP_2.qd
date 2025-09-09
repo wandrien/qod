@@ -2,11 +2,11 @@
 
 include "../include/test_env.qdi";
 
-void foo()
+void foo() of
   pass;
 end
 
-int bar(int x)
+int bar(int x) of
   if x == 0 then
     foo();
   else
@@ -14,6 +14,7 @@ int bar(int x)
   end
 end
 
-begin
+word main() of
 	put_int(bar(10));
+	return 0;
 end

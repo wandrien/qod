@@ -5,7 +5,7 @@ include "../include/test_env.qdi";
 bool t = true;
 bool f = false;
 
-begin
+word main() of
 
 	if f then
 		puts("OOPS ");
@@ -74,4 +74,5 @@ begin
 		puts("OOPS ");
 	end:if
 
+	return 0;
 end

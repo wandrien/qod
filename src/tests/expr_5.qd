@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-void f1()
+void f1() of
 	int a = 5;
 	int b = 20;
 	int c = 4;
@@ -11,7 +11,7 @@ void f1()
 	put_int(d); puts(" ");
 end
 
-void f2()
+void f2() of
 	uint a = 5;
 	uint b = 20;
 	uint c = 4;
@@ -20,7 +20,7 @@ void f2()
 	put_uint(d); puts(" ");
 end
 
-void f3()
+void f3() of
 	int a = 300;
 	int b = 200;
 	int c = 100;
@@ -29,7 +29,7 @@ void f3()
 	put_int(d); puts(" ");
 end
 
-void f4()
+void f4() of
 	uint a = 300;
 	uint b = 200;
 	uint c = 100;
@@ -38,9 +38,10 @@ void f4()
 	put_uint(d); puts(" ");
 end
 
-begin
+word main() of
 	f1();
 	f2();
 	f3();
 	f4();
+	return 0;
 end

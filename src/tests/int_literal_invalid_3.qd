@@ -1,5 +1,5 @@
 // TEST: compilation_should_fail 'Недопустимый символ в целочисленном литерале: y'
 
-begin
+void _start() of
 	word b = 01fyh;
 end

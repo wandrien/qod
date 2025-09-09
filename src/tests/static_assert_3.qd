@@ -4,6 +4,7 @@ include "../include/test_env.qdi";
 
 static_assert(int);
 
-begin
+word main() of
 	puts("OK1 ");
+	return 0;
 end

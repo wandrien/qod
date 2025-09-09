@@ -3,7 +3,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	uint16 v0 = 0;
 	uint16 v1 = 1;
 	uint16 v2 = 2;
@@ -41,4 +41,6 @@ begin
 	put_word((uint16(-v100) + 5 + v5 + v200) + (v200 + v5 - v3 - v2)); puts(" ");
 	put_word((uint16(-v100) + 5 + v5 + v200) + (v200 / v2)); puts(" ");
 	put_word((uint16(-v100) + 5 + v5 + v200) + (v200 * v2)); puts(" ");
+
+	return 0;
 end

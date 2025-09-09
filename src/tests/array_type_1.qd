@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+void _start() of
 	word a = 5;
 	word x[a];
 end

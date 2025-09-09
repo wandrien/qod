@@ -2,16 +2,17 @@
 
 include "../include/test_env.qdi";
 
-noreturn nr1(word a)
+noreturn nr1(word a) of
 	put_word(a); puts(" ");
 	halt(1);
 end
 
-void f1(word a)
+void f1(word a) of
 	nr1(a);
 	nr1(a + 1);
 end
 
-begin
+word main() of
 	f1(1000);
+	return 0;
 end

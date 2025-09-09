@@ -3,7 +3,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	word v0 = 0;
 	word v1 = 1;
 	word v2 = 2;
@@ -45,4 +45,6 @@ begin
 	word vF04E = 0b1111_0000_0100_1110;
 	put_word(vFFFF_FFFF); puts(" ");
 	put_word(vF04E); puts(" ");
+
+	return 0;
 end

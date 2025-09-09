@@ -6,14 +6,15 @@ word f1();
 
 word a = 1000;
 
-word f2()
+word f2() of
 	return f1();
 end
 
-word f1()
+word f1() of
 	return a;
 end
 
-begin
+word main() of
 	put_word(f2()); puts(" ");
+	return 0;
 end

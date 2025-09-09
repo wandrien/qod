@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	pass;
 	word a = 1;
 	if a == 1 then
@@ -12,4 +12,5 @@ begin
 		pass;
 	end
 	pass;
+	return 0;
 end

@@ -2,8 +2,8 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	uint32 x;
-
 	puts(@str(countof(x))); puts(" ");
+	return 0;
 end

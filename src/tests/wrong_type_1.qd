@@ -2,11 +2,12 @@
 
 int i1;
 
-void foo()
+void foo() of
 	i1 = false;
 end
 
-begin
+word main() of
 	foo();
+	return 0;
 end
 

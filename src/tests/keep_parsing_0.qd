@@ -1,6 +1,6 @@
 // TEST: compilation_should_fail 'Попытка деления на ноль'
 
-begin
+void _start() of
 	word a = 1;
 	word A1[a];      // error
 	word A2["s"];    // error

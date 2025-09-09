@@ -1,9 +1,9 @@
 // TEST: compilation_should_fail 'Операнд инкремента должен быть lvalue-выражением'
 
-word foo()
+word foo() of
     return 2;
 end
 
-begin
+void _start() of
     inc foo;
 end

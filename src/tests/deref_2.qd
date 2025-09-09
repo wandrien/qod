@@ -10,21 +10,18 @@ end
 
 AAA a;
 
-AAA@ getA()
+AAA@ getA() of
 	return @a;
 end
 
 AAA b[10];
 
-AAA@ getB()
+AAA@ getB() of
 	return @b;
 end
 
-
-begin
-
+word main() of
 	word w[10];
-
 	word i = 2;
 	AAA array[10];
 
@@ -41,4 +38,6 @@ begin
 	getB()[b_I+1].field2 = 16;
 	put_word(getB()[b_I].field2); puts(" ");
 	put_word(getB()[b_I+1].field2); puts(" ");
+
+	return 0;
 end

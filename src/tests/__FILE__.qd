@@ -2,24 +2,25 @@
 
 include "../include/test_env.qdi";
 
-void f1()
+void f1() of
 	puts(__FILE__); puts(" ");
 end
 
 include "__FILE__.inc1.qdi";
 
-char@ f2()
+char@ f2() of
 	return __FILE__;
 end
 
-void foo()
+void foo() of
 	puts(__FILE__); puts(" ");
 	f1();
 	puts(@f2()); puts(" ");
 end
 
-begin
+word main() of
 	foo();
 	inc1();
 	inc2();
+	return 0;
 end

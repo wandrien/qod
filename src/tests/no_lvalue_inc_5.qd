@@ -1,6 +1,6 @@
 // TEST: compilation_should_fail 'Операнд инкремента должен быть lvalue-выражением'
 
-begin
+void _start() of
     word a = 1;
     inc (a + 1);
 end

@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	word zero = const_expr(word('0'));
 	word A = const_expr(word('A'));
 	putc(char(zero)); puts(" ");
@@ -15,4 +15,6 @@ begin
 	puts(@str(
 		const_expr(int(int(char(char(20)))))
 	)); puts(" ");
+
+	return 0;
 end

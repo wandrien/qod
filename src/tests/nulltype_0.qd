@@ -9,7 +9,7 @@ static_assert(null == null);
 static_assert(x == null);
 static_assert(x == y);
 
-begin
+word main() of
 	if x == null then
 		puts("OK1 ");
 	else
@@ -21,4 +21,6 @@ begin
 	else
 		puts("OOPS ");
 	end
+
+	return 0;
 end

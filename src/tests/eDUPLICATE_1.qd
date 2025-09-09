@@ -4,6 +4,6 @@ word f(word a);
 
 word f;
 
-begin
-	null;
+void _start() of
+	pass;
 end

@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 word s = 0;
 
-noreturn nr1(word a)
+noreturn nr1(word a) of
 	while a > 100 do
 		if s == 1 then
 			put_word(a); puts(" ");
@@ -16,12 +16,13 @@ noreturn nr1(word a)
 	end:do
 end
 
-void f1(word a)
+void f1(word a) of
 	nr1(a);
 	nr1(a + 1);
 end
 
-begin
+word main() of
 	s = 1;
 	f1(1000);
+	return 0;
 end

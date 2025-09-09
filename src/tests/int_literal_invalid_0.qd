@@ -1,5 +1,5 @@
 // TEST: compilation_should_fail 'Недопустимый символ в целочисленном литерале: 3'
 
-begin
+void _start() of
 	word b = 0b113;
 end

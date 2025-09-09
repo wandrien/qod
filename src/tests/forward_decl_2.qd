@@ -6,10 +6,11 @@ word f1(word x);
 
 word a = 1000;
 
-word f1()
+word f1() of
 	return a;
 end
 
-begin
+word main() of
 	put_word(f1()); puts(" ");
+	return 0;
 end

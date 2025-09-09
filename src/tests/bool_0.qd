@@ -2,8 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
-
+word main() of
 	if false then
 		puts("OOPS ");
 	else
@@ -21,4 +20,6 @@ begin
 
 	when true:
 		puts("OK3 ");
+
+	return 0;
 end

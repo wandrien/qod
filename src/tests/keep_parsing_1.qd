@@ -1,6 +1,6 @@
 // TEST: compilation_should_fail 'Выражение невычислимо на этапе компиляции: в качестве размера массива ожидается константное выражение'
 
-begin
+void _start() of
 	word A1[10];
 	word a1 = const_expr(A1[0] + 1);      // error
 	word a2 = const_expr(A1[0] + A1[1]);  // error

@@ -6,15 +6,15 @@ word v0 = 0;
 word v1 = 1;
 word arr1[30];
 
-word @ret_arr1()
+word @ret_arr1() of
 	return @arr1;
 end
 
-word f10()
+word f10() of
 	return v0 + 10;
 end
 
-begin
+word main() of
 	ret_arr1()[0] = 10;
 	ret_arr1()[1] = 11;
 	ret_arr1()[2] = 12;
@@ -35,4 +35,5 @@ begin
 	put_word(arr1[6]); puts(" ");
 	put_word(arr1[7]); puts(" ");
 	put_word(arr1[8]); puts(" ");
+	return 0;
 end

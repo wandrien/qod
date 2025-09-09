@@ -3,20 +3,21 @@
 include "../include/test_env.qdi";
 /****/
 
-void f1()
+void f1() of
 	puts(@str(__LINE__)); puts(" ");
 end
 
-word f2()
+word f2() of
 	return __LINE__;
 end
 
-void foo()
+void foo() of
 	puts(@str(__LINE__)); puts(" ");
 	f1();
 	puts(@str(f2())); puts(" ");
 end
 
-begin
+word main() of
 	foo();
+	return 0;
 end

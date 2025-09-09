@@ -2,7 +2,8 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	word x[-(-10)];
 	puts("OK");
+	return 0;
 end

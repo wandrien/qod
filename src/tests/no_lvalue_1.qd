@@ -1,10 +1,10 @@
 // TEST: compilation_should_fail 'Левая часть присваивания должна быть lvalue-выражением'
 
-word foo()
+word foo() of
     return 2;
 end
 
-begin
+void _start() of
     word a = 1;
     foo() = a;
 end

@@ -5,7 +5,7 @@ include "../include/test_env.qdi";
 word v5 = 5;
 word v6 = 6;
 
-begin
+word main() of
 	word x[10];
 	x[4]      = 100;
 	x[v5]     = 101;
@@ -13,4 +13,5 @@ begin
 	put_word(x[v5 - 1]); puts(" ");
 	put_word(x[5]); puts(" ");
 	put_word(x[v6]); puts(" ");
+	return 0;
 end

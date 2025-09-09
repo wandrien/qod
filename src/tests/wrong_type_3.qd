@@ -2,10 +2,10 @@
 
 bool b1;
 
-void foo()
+void foo() of
 	b1 = true + true;
 end
 
-begin
+void _start() of
 	foo();
 end

@@ -2,8 +2,8 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	uint32 arr[10];
-
 	puts(@str(countof(arr))); puts(" ");
+	return 0;
 end

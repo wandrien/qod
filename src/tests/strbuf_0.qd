@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	char charBuff[10];
 	strbuf Buff;
 
@@ -23,4 +23,6 @@ begin
 	strbuf.append_cstr(@Buff, ".");
 	strbuf.append_cstr(@Buff, "def");
 	puts(@charBuff); puts(" ");
+
+	return 0;
 end

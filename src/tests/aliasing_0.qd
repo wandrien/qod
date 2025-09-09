@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 int arr[10];
 
-begin
+word main() of
 	int @ptr = @arr[1];
 
 	arr[4] = 100;
@@ -19,4 +19,6 @@ begin
 	ptr = 1;
 	arr[2] = arr[1];
 	put_int(arr[2]); puts(" ");
+
+	return 0;
 end

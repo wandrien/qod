@@ -7,19 +7,21 @@ namespace NNN of
 	alias u32 = uint32;
 end
 
-NNN.u32 foo1(NNN.u32 x; NNN.u16 y)
+NNN.u32 foo1(NNN.u32 x; NNN.u16 y) of
 	return x + y;
 end
 
-uint32 foo2(uint32 x; uint16 y)
+uint32 foo2(uint32 x; uint16 y) of
 	return x + y;
 end
 
-begin
+word main() of
 	uint x1 = 20;
 	NNN.u32 v25 = foo1(NNN.u32(x1), NNN.u16(5));
 	NNN.u32 v35 = foo2(NNN.u32(x1), NNN.u16(15));
 
 	puts(@str(v25)); puts(" ");
 	puts(@str(v35)); puts(" ");
+
+	return 0;
 end

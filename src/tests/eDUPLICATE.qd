@@ -1,9 +1,9 @@
 // TEST: compilation_should_fail 'Повтор имени'
 
-word f(word a)
+word f(word a) of
 	word a;
 end
 
-begin
-	null;
+void _start() of
+	pass;
 end

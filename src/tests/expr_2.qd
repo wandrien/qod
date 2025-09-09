@@ -2,16 +2,16 @@
 
 include "../include/test_env.qdi";
 
-int f1(int a, b, c, d, e, f)
+int f1(int a, b, c, d, e, f) of
     return a / b + c / d + e / f;
 end
 
-word f2(word a, b, c, d, e, f)
+word f2(word a, b, c, d, e, f) of
     return a / b + c / d + e / f;
 end
 
-
-begin
+word main() of
 	put_word(f1(20, 2, 9, 3, 40, 4)); puts(" ");
 	put_word(f2(20, 2, 9, 3, 40, 4)); puts(" ");
+	return 0;
 end

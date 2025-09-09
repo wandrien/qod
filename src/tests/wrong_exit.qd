@@ -1,5 +1,5 @@
 // TEST: compilation_should_fail 'exit вне цикла'
 
-begin
-    exit;
+void _start() of
+	exit;
 end

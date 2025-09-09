@@ -1,5 +1,5 @@
 // TEST: compilation_should_fail 'continue вне цикла'
 
-begin
+void _start() of
     continue;
 end

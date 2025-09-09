@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	int a = 100;
 	int b = 10;
 	int c = -100;
@@ -12,4 +12,6 @@ begin
 	puts(@istr(a/d)); puts(" ");
 	puts(@istr(c/b)); puts(" ");
 	puts(@istr(c/d)); puts(" ");
+
+	return 0;
 end

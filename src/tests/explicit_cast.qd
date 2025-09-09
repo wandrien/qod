@@ -2,8 +2,7 @@
 
 include "../include/test_env.qdi";
 
-begin
-
+word main() of
 	word u1 = 10;
 	int  i1 = -9;
 
@@ -16,4 +15,6 @@ begin
 	puts(@str(u2)); puts(" ");
 	puts(@str(u3)); puts(" ");
 	puts(@str(u4)); puts(" ");
+
+	return 0;
 end

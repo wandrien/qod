@@ -9,24 +9,25 @@ struct X of
 	void f3(int a);
 end
 
-int X.f1(int a)
+int X.f1(int a) of
     return a + 10;
 end
 
-int X.f2(X @x; int a)
+int X.f2(X @x; int a) of
 	return x.x + a;
 end
 
-void X.f3(int a)
+void X.f3(int a) of
 	puts(@str(a)); puts(" ");
 end
 
 X x;
 
-begin
+word main() of
 	x.x = 20;
 	puts(@str(x.x)); puts(" ");
 	puts(@str(X.f1(100))); puts(" ");
 	puts(@str(X.f2(@x, 100))); puts(" ");
 	X.f3(200);
+	return 0;
 end

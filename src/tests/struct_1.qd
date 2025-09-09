@@ -18,10 +18,11 @@ end
 
 X x;
 
-begin
+word main() of
 	x.x = 20;
 	puts(@str(x.x)); puts(" ");
 	puts(@str(X.f1(100))); puts(" ");
 	puts(@str(X.f2(@x, 100))); puts(" ");
 	X.f3(200);
+	return 0;
 end

@@ -1,5 +1,5 @@
 // TEST: compilation_should_fail 'Операнд инкремента должен быть lvalue-выражением'
 
-begin
+void _start() of
     inc "abc";
 end

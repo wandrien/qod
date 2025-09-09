@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 int foo(int x, y);
 
-int bar(int x, y)
+int bar(int x, y) of
 	return foo(x, y) + 1;
 end
 
@@ -16,7 +16,8 @@ end:namespace
 
 alias foo = AAA.foo;
 
-begin
+word main() of
 	put_int(foo(1000, 234)); puts(" ");
 	put_int(bar(1000, 234)); puts(" ");
+	return 0;
 end

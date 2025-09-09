@@ -4,11 +4,12 @@ include "../include/test_env.qdi";
 
 int arr[10];
 
-begin
+word main() of
 	arr[4] = 100;
 	arr[5] = 200;
 	inc (arr)[5];
 	(arr)[5] = (arr)[5] + (arr)[4];
 	tangible_expr(arr)[5] = tangible_expr(arr)[5] + tangible_expr((arr)[const_expr(4)]);
 	(put_int)((((arr))[5])); puts(((" ")));
+	return 0;
 end

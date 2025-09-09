@@ -1,9 +1,9 @@
 // TEST: compilation_should_fail 'Объявление функции недопустимо'
 
-word a, b(word c)
-	null;
+word a, b(word c) of
+	pass;
 end
 
-begin
-	null;
+void _start() of
+	pass;
 end

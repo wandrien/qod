@@ -2,8 +2,10 @@
 
 include "../include/test_env.qdi";
 
-begin
+word main() of
 	char c = 'a';
 	int i = as_signed(c);
 	put_int(i); puts(" ");
+
+	return 0;
 end

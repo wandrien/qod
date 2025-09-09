@@ -1,11 +1,11 @@
 // TEST: compilation_should_fail 'Функция должна возвращать значение: f'
 word a;
 
-word f()
+word f() of
 	a = 2;
 end
 
-begin
+void _start() of
 	a = 1;
 	f();
 end

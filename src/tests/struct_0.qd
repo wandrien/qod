@@ -13,19 +13,19 @@ int f2(X @x; int a);
 
 X x;
 
-int f1(int a)
+int f1(int a) of
 	return a + 10;
 end
 
-int f2(X @x; int a)
+int f2(X @x; int a) of
 	return x.x + a;
 end
 
-void f3(int a)
+void f3(int a) of
 	puts(@str(a)); puts(" ");
 end
 
-begin
+word main() of
 	x.x = 20;
 	@x.f1 = f1;
 	@x.f2 = f2;
@@ -34,4 +34,5 @@ begin
 	puts(@str(x.f1(100))); puts(" ");
 	puts(@str(x.f2(@x, 100))); puts(" ");
 	x.f3(200);
+	return 0;
 end

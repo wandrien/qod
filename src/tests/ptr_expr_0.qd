@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 word arr[20];
 
-begin
+word main() of
 	word v0 = 0;
 	word v2 = 0;
 	word v3 = 0;
@@ -54,4 +54,6 @@ begin
 	when @arr[v2 + 1 - (v0 * v2 / (v3 + 1))] == @p_arr[v3]: puts("OK4 ");
 	when @arr[v2] == @p_arr[v2]: puts("OK5 ");
 	when @arr[v2] == @p_arr[v3]: puts("FAIL ");
+
+	return 0;
 end

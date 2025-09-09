@@ -2,15 +2,15 @@
 
 include "../include/test_env.qdi";
 
-int f1()
+int f1() of
 	return 50;
 end
 
-int f2()
+int f2() of
 	return 70;
 end
 
-begin
+word main() of
 	int x = f1();
 	int y = f2();
 	if x >= 10 & y >= 10 & x <= y then
@@ -19,4 +19,5 @@ begin
 	else
 		puts("Wrong value");
 	end:if
+	return 0;
 end

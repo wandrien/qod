@@ -2,6 +2,6 @@
 
 include "../include/test_env.qdi";
 
-begin
+void _start() of
 	word x["a"];
 end

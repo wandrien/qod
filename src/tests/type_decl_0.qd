@@ -13,8 +13,7 @@ type
 	i32 = int32,
 	arr_t = typeof(arr);
 
-
-begin
+word main() of
 	if ch == char then
 		puts("OK1 ");
 	else
@@ -50,4 +49,6 @@ begin
 	else
 		puts("OOPS ");
 	end
+
+	return 0;
 end
