@@ -18,7 +18,7 @@ byte @ret_c() of
 	return @c;
 end
 
-word main() of
+termination_status main() of
 	ret_a() = 1000;
 	ret_b() = 1001;
 	ret_c() = 102;

@@ -40,7 +40,7 @@ int f3(bool b) of
 	end
 end
 
-word main() of
+termination_status main() of
 	put_int(f1()); puts(" ");
 	put_int(f1_2()); puts(" ");
 	put_int(f2()); puts(" ");

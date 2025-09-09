@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	puts(@str(const_expr(1 + 2))); puts(" ");
 	puts(@str(const_expr(5 - 2))); puts(" ");
 	puts(@str(const_expr(6 * 3))); puts(" ");

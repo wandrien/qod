@@ -14,7 +14,7 @@ int f2(int a, b, c) of
 	return a + b + c * x;
 end
 
-word main() of
+termination_status main() of
 	if f1(2, 3, 4) == f2(2, 3, 4) then
 		puts("OK ");
 	else

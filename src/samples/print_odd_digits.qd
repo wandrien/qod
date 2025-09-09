@@ -1,7 +1,7 @@
 /* TARGET: linux, win32-c */
 include "../include/hosted.qdi";
 
-word main() of
+termination_status main() of
 	word i = 0;
 	forever loop
 		if (i & 1) == 1 then

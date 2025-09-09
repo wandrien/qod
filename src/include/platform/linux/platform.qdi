@@ -60,8 +60,9 @@ void     puts(char @St)
 end
 
 
+alias termination_status = word;
 attribute(cold)
-noreturn halt(word Code)
+noreturn terminate(termination_status Code)
   inline 0xB8, 0x01, 0x00, 0x00, 0x00;           // mov     EAX,   1
   inline 0x8B, 0x5D, 0x08;                     // mov     EBX,  [EBP+ 8]
   inline 0xCD, 0x80;                          // int     80H

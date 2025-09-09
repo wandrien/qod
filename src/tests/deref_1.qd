@@ -14,7 +14,7 @@ word f10() of
 	return v0 + 10;
 end
 
-word main() of
+termination_status main() of
 	ret_arr1()[0] = 10;
 	ret_arr1()[1] = 11;
 	ret_arr1()[2] = 12;

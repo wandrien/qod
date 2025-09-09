@@ -25,7 +25,7 @@ void f3(int a) of
 	puts(@str(a)); puts(" ");
 end
 
-word main() of
+termination_status main() of
 	x.x = 20;
 	@x.f1 = f1;
 	@x.f2 = f2;

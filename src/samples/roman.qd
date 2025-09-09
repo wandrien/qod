@@ -44,7 +44,7 @@ end
 
 alias limit = 4000;
 
-word main() of
+termination_status main() of
 	puts("ROMAN ADDIVE NUMERALS"); put_nl();
 	word i = 1;
 	while i < limit loop

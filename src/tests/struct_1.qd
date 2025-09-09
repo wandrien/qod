@@ -18,7 +18,7 @@ end
 
 X x;
 
-word main() of
+termination_status main() of
 	x.x = 20;
 	puts(@str(x.x)); puts(" ");
 	puts(@str(X.f1(100))); puts(" ");

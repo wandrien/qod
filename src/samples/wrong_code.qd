@@ -39,7 +39,7 @@ void f(int x; int y) of
 	end:switch
 end
 
-word main() of
+termination_status main() of
 	puts("Hello, World!");
 	put_nl();
 	return 0;

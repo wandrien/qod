@@ -168,7 +168,7 @@ word val(char @Buff)
 end
 
 
-word main()
+termination_status main() of
 	InitNumberParser();
 
 	ARGS@ args = @GetProgramArgs();

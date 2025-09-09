@@ -8,7 +8,7 @@ int bar(int x) of
 	return foo(x) + 1;
 end
 
-word main() of
+termination_status main() of
 	put_int(bar(0));
 	return 0;
 end

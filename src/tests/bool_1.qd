@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 
 	bool t = true;
 	bool f = false;

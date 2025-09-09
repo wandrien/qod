@@ -20,7 +20,7 @@ AAA@ getB() of
 	return @b;
 end
 
-word main() of
+termination_status main() of
 	word w[10];
 	word i = 2;
 	AAA array[10];

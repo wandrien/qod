@@ -6,7 +6,7 @@ noreturn nr1(word a) of
 	when a == 0:
 		return;
 	put_word(a); puts(" ");
-	halt(1);
+	terminate(1);
 end
 
 void f1(word a) of
@@ -14,7 +14,7 @@ void f1(word a) of
 	nr1(a + 1);
 end
 
-word main() of
+termination_status main() of
 	f1(1000);
 	return 0;
 end

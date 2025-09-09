@@ -3,7 +3,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	word v0 = 0;
 	word v1 = 1;
 	word v2 = 2;

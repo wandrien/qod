@@ -18,7 +18,7 @@ namespace N2 of
 	int x;
 end; // optional semicolon
 
-word main() of
+termination_status main() of
 	pass;
 	word a = 1;
 	if a == 1 then

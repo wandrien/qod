@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	uint32 arr[10];
 	puts(@str(countof(arr))); puts(" ");
 	return 0;

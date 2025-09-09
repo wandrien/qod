@@ -10,7 +10,7 @@ int p5 = 5;
 
 int m5 = -5;
 
-word main() of
+termination_status main() of
 	put_int(int(p1 + p2 == p3)); puts(" ");
 	put_int(int(int(p1 + p2 == p3))); puts(" ");
 	put_uint(uint(p1 + p2 + 1 == p3)); puts(" ");

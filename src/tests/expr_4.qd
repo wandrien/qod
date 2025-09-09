@@ -10,7 +10,7 @@ int f2() of
 	return 70;
 end
 
-word main() of
+termination_status main() of
 	int x = f1();
 	int y = f2();
 	if x >= 10 & y >= 10 & x <= y then

@@ -1,7 +1,7 @@
 /* TARGET: linux, win32-c */
 include "../include/hosted.qdi";
 
-word main() of
+termination_status main() of
 	puts("This program is compiled with ");
 	puts(@qod.impl.impl_name);
 	puts(" ");

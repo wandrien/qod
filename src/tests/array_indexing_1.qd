@@ -8,7 +8,7 @@ word v27 = 27;
 
 word y[10][20];
 
-word main() of
+termination_status main() of
 	word x[10][20];
 	x[5][6]       = 100;
 	x[v6][v5]     = 101;

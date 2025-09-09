@@ -6,7 +6,7 @@ uint32 @ref;
 
 type ref_t = @uint32;
 
-word main() of
+termination_status main() of
 	if typeof(@ref) == ref_t then
 		puts("OK1 ");
 	else

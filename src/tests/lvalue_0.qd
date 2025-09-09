@@ -8,7 +8,7 @@ word @foo() of
     return @x;
 end
 
-word main() of
+termination_status main() of
 	x = 10;
 	word a = 100;
 	foo() = foo() + a;

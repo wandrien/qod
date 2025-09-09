@@ -20,7 +20,7 @@ word foo2(XX @xx; word I; char Value) of
 	return I;
 end
 
-word main() of
+termination_status main() of
 	char Buff[100];
 	XX xx;
 	@xx.Buff = @Buff;

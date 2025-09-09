@@ -76,7 +76,7 @@ void foo(bool t; bool f) of
 
 end
 
-word main() of
+termination_status main() of
 	foo(true, false);
 	return 0;
 end

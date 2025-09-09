@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	int v130 = 0b1000_0010;
 	int v131 = 0B1000_0011;
 

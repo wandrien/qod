@@ -14,7 +14,7 @@ int bar(int x) of
   end
 end
 
-word main() of
+termination_status main() of
 	put_int(bar(10));
 	return 0;
 end

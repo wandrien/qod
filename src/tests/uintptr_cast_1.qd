@@ -27,7 +27,7 @@ end
 
 /*****************************************************************************/
 
-word main() of
+termination_status main() of
 	puts(@str(SaveString(@Char[10], 20))); puts(" ");
 	return 0;
 end

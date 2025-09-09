@@ -10,6 +10,6 @@ type
 	arr_t = typeof(arr),
 	err = sizeof(arr);
 
-word main() of
+termination_status main() of
 	return 0;
 end

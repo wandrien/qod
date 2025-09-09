@@ -5,7 +5,7 @@ include "../include/test_env.qdi";
 bool t = true;
 bool f = false;
 
-word main() of
+termination_status main() of
 
 	if f then
 		puts("OOPS ");

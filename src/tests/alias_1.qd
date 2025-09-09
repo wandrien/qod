@@ -16,7 +16,7 @@ end:namespace
 
 alias foo = AAA.foo;
 
-word main() of
+termination_status main() of
 	put_int(foo(1000, 234)); puts(" ");
 	put_int(bar(1000, 234)); puts(" ");
 	return 0;

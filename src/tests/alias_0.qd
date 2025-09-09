@@ -18,7 +18,7 @@ namespace AAA of
 	end
 end:namespace
 
-word main() of
+termination_status main() of
 	x1 = 10;
 	AAA.x1 = 20;
 	put_int(AAA.y1); puts(" ");

@@ -185,7 +185,7 @@ end
 
 /*****************************************************************************/
 
-word main()
+termination_status main() of
 	char@ InputFile = NULL;
 	char@ OutputFile = NULL;
 	char@ OutputTreeFile = NULL;
@@ -274,7 +274,7 @@ word main()
 		@OutputIncludeListFile
 	);
 	ShowParseProgress(1);
-	return ExitCode;
+	return termination_status(ExitCode);
 end
 
 /*****************************************************************************/

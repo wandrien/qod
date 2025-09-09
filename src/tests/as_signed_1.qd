@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	char c = 'a';
 	int i = as_signed(c);
 	put_int(i); puts(" ");

@@ -6,7 +6,7 @@ void foo() of
 	b1 = 0;
 end
 
-word main() of
+termination_status main() of
 	foo();
 	return 0;
 end

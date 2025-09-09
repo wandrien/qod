@@ -22,7 +22,7 @@ int f5(int a; int b) of
 	return a % b;
 end
 
-word main() of
+termination_status main() of
 	put_word(f1(4, 10, 2, 5)); puts(" ");
 	put_word(f2(11, 10, 2, 5)); puts(" ");
 

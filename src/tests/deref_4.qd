@@ -14,7 +14,7 @@ void hashmap_init(HASHMAP @HashMap; word Value)
 	end:while
 end
 
-word main() of
+termination_status main() of
 	HASHMAP HashMap;
 	hashmap_init(@HashMap, 1234);
 	put_uint(HashMap.Buckets[5]); puts(" ");

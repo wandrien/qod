@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	word x[-(-10)];
 	puts("OK");
 	return 0;

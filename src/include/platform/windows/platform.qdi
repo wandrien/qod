@@ -89,7 +89,8 @@ void puts(char @S)
 end
 
 
+alias termination_status = word;
 attribute(cold)
-noreturn halt(word Code)
+noreturn terminate(termination_status Code)
 	ExitProcess(Code);
 end

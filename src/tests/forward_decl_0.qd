@@ -14,7 +14,7 @@ word f1() of
 	return a;
 end
 
-word main() of
+termination_status main() of
 	put_word(f2()); puts(" ");
 	return 0;
 end

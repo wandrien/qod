@@ -17,7 +17,7 @@ void foo() of
 	puts(@str(f2())); puts(" ");
 end
 
-word main() of
+termination_status main() of
 	foo();
 	return 0;
 end

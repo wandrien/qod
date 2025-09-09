@@ -87,7 +87,7 @@ BBB.u32 foo2(BBB.u32 x; BBB.u16 y) of
 	return x + y;
 end
 
-word main() of
+termination_status main() of
 	B1 b1;
 	B2 b2;
 	BBB.BBB bbb_bbb;

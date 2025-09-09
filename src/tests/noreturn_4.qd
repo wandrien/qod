@@ -9,13 +9,13 @@ noreturn nr1(word a) of
 	case 1:
 		if a < 10 then
 			put_word(a + 1); puts(" ");
-			halt(0);
+			terminate(0);
 		else
 			put_word(a); puts(" ");
-			halt(0);
+			terminate(0);
 		end:if
 	default:
-		halt(0);
+		terminate(0);
 	end:switch
 end
 
@@ -24,7 +24,7 @@ void f1(word a) of
 	nr1(a + 1);
 end
 
-word main() of
+termination_status main() of
 	s = 1;
 	f1(1000);
 	return 0;

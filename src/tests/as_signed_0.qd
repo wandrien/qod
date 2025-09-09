@@ -44,7 +44,7 @@ void f3() of
 		puts("OOPS ");
 end
 
-word main() of
+termination_status main() of
 	f1();
 	f2();
 	f3();

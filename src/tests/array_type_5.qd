@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	word x1[int(10)];
 	word x2[byte(10)];
 	word x3[int(word(byte(10)))];

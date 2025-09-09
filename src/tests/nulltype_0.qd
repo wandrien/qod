@@ -9,7 +9,7 @@ static_assert(null == null);
 static_assert(x == null);
 static_assert(x == y);
 
-word main() of
+termination_status main() of
 	if x == null then
 		puts("OK1 ");
 	else

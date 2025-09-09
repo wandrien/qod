@@ -14,7 +14,7 @@ end
 AAA a;
 BBB b;
 
-word main() of
+termination_status main() of
 	puts(@str(sizeof(AAA))); puts(" ");
 	puts(@str(sizeof(a))); puts(" ");
 	puts(@str(sizeof(BBB))); puts(" ");

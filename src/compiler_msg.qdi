@@ -115,7 +115,7 @@ noreturn StopAt(SOURCELOCATION @SourceLocation; char @Msg)
 	when @SourceLocation == NULL:
 		@SourceLocation = @CurrentFileInfo;
 	PutMessage(@SourceLocation, @L10n.msgERROR, @Msg);
-	halt(1);
+	terminate(1);
 end
 
 attribute(cold)

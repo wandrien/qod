@@ -99,7 +99,7 @@ void foo() of
 	end:if
 end
 
-word main() of
+termination_status main() of
 	foo();
 	return 0;
 end

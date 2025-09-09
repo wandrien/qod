@@ -13,7 +13,7 @@ type
 	i32 = int32,
 	arr_t = typeof(arr);
 
-word main() of
+termination_status main() of
 	if ch == char then
 		puts("OK1 ");
 	else

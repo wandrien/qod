@@ -2,7 +2,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	word u1 = 10;
 	int  i1 = -9;
 

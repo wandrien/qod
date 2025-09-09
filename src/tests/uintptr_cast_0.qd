@@ -7,7 +7,7 @@ word B = 0;
 
 char Arr[256];
 
-word main() of
+termination_status main() of
 	word @p = @A;
 	puts(@str(p)); puts(" ");
 	uintptr a1 = uintptr(@A);

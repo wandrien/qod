@@ -3,7 +3,7 @@
 
 include "../include/test_env.qdi";
 
-word main() of
+termination_status main() of
 	uint8 v0 = 0;
 	uint8 v1 = 1;
 	uint8 v2 = 2;

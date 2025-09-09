@@ -85,7 +85,7 @@ LRESULT WndProc(HWND hWnd; UINT Message; WPARAM wParam; LPARAM lParam)
 end
 
 
-word main() of
+termination_status main() of
   HANDLE   hInst=GetModuleHandle(NULL);
 
   WNDCLASS WndClass;

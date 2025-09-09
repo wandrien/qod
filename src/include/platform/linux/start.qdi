@@ -20,7 +20,7 @@ namespace std of
 		@fpath_p_dir_separator = "/";
 		@fpath_p_dir_separators = "/";
 
-		word result = main();
-		halt(result);
+		termination_status result = main();
+		terminate(result);
 	end
 end:namespace

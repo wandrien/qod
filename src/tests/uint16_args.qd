@@ -15,7 +15,7 @@ uint32 foo2(uint32 x; uint16 y) of
 	return x + y;
 end
 
-word main() of
+termination_status main() of
 	uint x1 = 20;
 	NNN.u32 v25 = foo1(NNN.u32(x1), NNN.u16(5));
 	NNN.u32 v35 = foo2(NNN.u32(x1), NNN.u16(15));

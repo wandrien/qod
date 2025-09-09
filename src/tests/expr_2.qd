@@ -10,7 +10,7 @@ word f2(word a, b, c, d, e, f) of
     return a / b + c / d + e / f;
 end
 
-word main() of
+termination_status main() of
 	put_word(f1(20, 2, 9, 3, 40, 4)); puts(" ");
 	put_word(f2(20, 2, 9, 3, 40, 4)); puts(" ");
 	return 0;

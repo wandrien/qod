@@ -1,6 +1,6 @@
 // TEST: compilation_should_fail 'Тип void недопустим'
 
-word main() of
+void _start() of
 	void a;
 	return 0;
 end

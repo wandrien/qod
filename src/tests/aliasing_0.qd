@@ -4,7 +4,7 @@ include "../include/test_env.qdi";
 
 int arr[10];
 
-word main() of
+termination_status main() of
 	int @ptr = @arr[1];
 
 	arr[4] = 100;

@@ -8,9 +8,9 @@ noreturn nr1(word a) of
 	while a > 100 do
 		if s == 1 then
 			put_word(a); puts(" ");
-			halt(0);
+			terminate(0);
 		else
-			halt(0);
+			terminate(0);
 			exit;
 		end:if
 	end:do
@@ -21,7 +21,7 @@ void f1(word a) of
 	nr1(a + 1);
 end
 
-word main() of
+termination_status main() of
 	s = 1;
 	f1(1000);
 	return 0;

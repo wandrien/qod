@@ -5,7 +5,7 @@ include "../include/test_env.qdi";
 int x;
 static_assert(x + 1);
 
-word main() of
+termination_status main() of
 	puts("OK1 ");
 	return 0;
 end
