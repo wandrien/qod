@@ -20,7 +20,9 @@ lines=`cloc --json --read-lang-def=../extra/qod.cloc-lang-def --exclude-dir=test
 total_lines=$(($lines * $repetitions))
 
 lines_per_second="`echo "$total_lines / $T"| bc`"
+time_per_repetition="`echo "scale = 3; $T / $repetitions"| bc | sed 's/^[.]/0./'`"
 
-echo "total_lines      = $total_lines"
-echo "time             = $T"
-echo "lines per second = $lines_per_second"
+echo "total_lines         = $total_lines"
+echo "total time          = $T"
+echo "time per repetition = $time_per_repetition"
+echo "lines per second    = $lines_per_second"
