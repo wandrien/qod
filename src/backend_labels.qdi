@@ -85,7 +85,7 @@ void NodeMarkUsed(word P)
 	DictMarkUsed(n.pType);
 
 	switch n.ID of
-	case iCALL, iDATA, iSTRING, iFUNC:
+	case NID.iCALL, NID.iDATA, NID.iSTRING, NID.iFUNC:
 		DictMarkUsed(NodeGetDict(P));
 	end:switch
 
@@ -133,11 +133,11 @@ word     Enum(word P; word Flag)
       word  M=0;
       while P<nNODE do
         select
-          case Node[P].ID==iSELECT:
+          case Node[P].ID == NID.iSELECT:
             LabelAllocate(P, JmpLbl.lEXIT);
             word  CASE = Node[P].pLeft;
             while CASE < nNODE do
-                when Node[CASE].ID != iCASE:
+                when Node[CASE].ID != NID.iCASE:
                     StopInternal(__FILE__, __LINE__);
 
                 LabelAllocate(CASE, JmpLbl.lCASEBODY);
@@ -146,8 +146,8 @@ word     Enum(word P; word Flag)
                 word COND = Node[CASE].pLeft;
                 word BODY = Node[COND].pRight;
 
-                when Node[BODY].ID != iBODY
-                |    Node[COND].ID != iCOND:
+                when Node[BODY].ID != NID.iBODY
+                |    Node[COND].ID != NID.iCOND:
                     StopInternal(__FILE__, __LINE__);
 
                 Enum(Node[COND].pLeft,0);
@@ -160,30 +160,30 @@ word     Enum(word P; word Flag)
                 CASE = Node[CASE].pRight;
             end
 
-          case Node[P].ID==iSWITCH :
+          case Node[P].ID == NID.iSWITCH :
 
 			LabelAllocate(P, JmpLbl.lEXIT);
 
 			word COND = Node[P].pLeft;
-			when Node[COND].ID != iCOND:
+			when Node[COND].ID != NID.iCOND:
 				StopInternal(__FILE__, __LINE__);
 
 			Enum(Node[COND].pLeft,0);
 
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do
-				when Node[CASE_I].ID != iCASE:
+				when Node[CASE_I].ID != NID.iCASE:
 					StopInternal(__FILE__, __LINE__);
 
 				LabelAllocate(CASE_I, JmpLbl.lCASEBODY);
 
 				word  VALUE_I = Node[CASE_I].pLeft;
 				while VALUE_I < nNode do
-					when Node[VALUE_I].ID != iVALUE
-					&    Node[VALUE_I].ID != iDEFAULT
-					&    Node[VALUE_I].ID != iBODY:
+					when Node[VALUE_I].ID != NID.iVALUE
+					&    Node[VALUE_I].ID != NID.iDEFAULT
+					&    Node[VALUE_I].ID != NID.iBODY:
 						StopInternal(__FILE__, __LINE__);
-					if Node[VALUE_I].ID == iBODY then
+					if Node[VALUE_I].ID == NID.iBODY then
 						word V=Enum(Node[VALUE_I].pLeft,1);
 						if M<S+V then
 							M=S+V;
@@ -195,11 +195,11 @@ word     Enum(word P; word Flag)
 				CASE_I = Node[CASE_I].pRight;
 			end:while
 
-          case Node[P].ID==iWHILE | Node[P].ID==iREPEAT:
+          case Node[P].ID == NID.iWHILE | Node[P].ID == NID.iREPEAT:
             word BODY = Node[P].pLeft;
             word COND = Node[BODY].pRight;
-            when Node[BODY].ID != iBODY
-            |    Node[COND].ID != iCOND:
+            when Node[BODY].ID != NID.iBODY
+            |    Node[COND].ID != NID.iCOND:
                 StopInternal(__FILE__, __LINE__);
 
             LabelAllocate(P, JmpLbl.lLOOPBODY);
@@ -213,7 +213,7 @@ word     Enum(word P; word Flag)
               M=S+V;
             end
 
-          case Node[P].ID==iDEF_LOCAL:
+          case Node[P].ID == NID.iDEF_LOCAL:
 			word Size = SizeOfType(Node[P].pType);
 			S=S+DefaultInStackAlign(Size);
 
@@ -227,10 +227,10 @@ word     Enum(word P; word Flag)
 
       return M;
 
-    case Node[P].ID!=iASSIGN & Node[P].ID!=iINC & Node[P].ID!=iDEC:
+    case Node[P].ID != NID.iASSIGN & Node[P].ID != NID.iINC & Node[P].ID != NID.iDEC:
       Enum(Node[P].pLeft, 0);
 
-      if Node[P].ID == iOR | Node[P].ID == iAND then
+      if Node[P].ID == NID.iOR | Node[P].ID == NID.iAND then
         LabelAllocate(P, JmpLbl.lBRANCH);
       end
 

@@ -290,7 +290,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 	char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
 
 	switch Ref.ID of
-	case iDATA, iPARM, iLOCAL, iREF:
+	case NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iREF:
 		if pIndex < nNODE then
 			strcpy3(@Buff,"add     ",@TX,",  ");
 		else
@@ -302,7 +302,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 			Reg_TARGET = Saved_Reg_TARGET;
 			Reg_ALT_TARGET = RegNone;
 		end:if
-	case iREG:
+	case NID.iREG:
 		when Ref.IX == RegNone:
 			StopAtNodeInternalCodegen(__FILE__, __LINE__, P1);
 		if Reg_TARGET != Ref.IX then
@@ -331,7 +331,7 @@ void Code_ADDR(word P1; ValueRef @Ref)
 
 
 	Ref.pType = pTypeDeref;
-	Ref.ID = iREF;
+	Ref.ID = NID.iREF;
 	Ref.Offset = 0;
 end
 
@@ -360,9 +360,9 @@ void Code_INDEX(word _P1; ValueRef @Ref)
 
 	word pIndexCalc;
 	word pIndex;
-	if Node[_P1].ID != iINDEX_CALC then
+	if Node[_P1].ID != NID.iINDEX_CALC then
 		pIndex = _P1;
-		pIndexCalc = Peek2(iINDEX_CALC);
+		pIndexCalc = Peek2(NID.iINDEX_CALC);
 		Node[pIndexCalc].pLeft = _P1;
 		Node[pIndexCalc].Value = T_SizeOf(Ref.pType);
 	else
@@ -432,13 +432,13 @@ void Code_LPTR(word P1; ValueRef @Ref)
 	if Ref.IX != RegNone then
 		char @TX = @EncodeReg(NULL, Ref.IX, 4);
 		switch Ref.ID of
-		case iDATA, iSTRING:
+		case NID.iDATA, NID.iSTRING:
 			strcpy3(@Buff,"add     ",@TX,",  ");
 			Emit(@ValueRef_Encode_StaticOffset(@Buff, @Ref));
-		case iPARM, iLOCAL:
+		case NID.iPARM, NID.iLOCAL:
 			strcpy3(@Buff,"lea     ",@TX,",  ");
 			EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
-		case iREF:
+		case NID.iREF:
 			if Ref.Offset != 0 then
 				Emit(@strcpy4(@Buff,"add     ",@TX,",  ",@istr(Ref.Offset)));
 			else
@@ -450,10 +450,10 @@ void Code_LPTR(word P1; ValueRef @Ref)
 	else
 		char @TX = @EncodeReg(NULL, Reg_TARGET, 4);
 		switch Ref.ID of
-		case iDATA, iSTRING:
+		case NID.iDATA, NID.iSTRING:
 			strcpy3(@Buff,"mov     ",@TX,",  ");
 			Emit(@ValueRef_Encode_StaticOffset(@Buff, @Ref));
-		case iPARM, iLOCAL:
+		case NID.iPARM, NID.iLOCAL:
 			strcpy3(@Buff,"lea     ",@TX,",  ");
 			EmitPhoInvalidate(@ValueRef_Encode_ForLEA(@Buff, @Ref));
 		default:
@@ -463,7 +463,7 @@ void Code_LPTR(word P1; ValueRef @Ref)
 	end:if
 
 	Ref.pType = T_PtrTo(Ref.pType);
-	Ref.ID = iREG;
+	Ref.ID = NID.iREG;
 	Ref.Offset = 0;
 end
 
@@ -490,7 +490,7 @@ void Code_DynamicCall(char @Buff; word pFunc) of
 	case CodeAsMemoryOperand(@BuffFunctionPointer, pFunc, NULL):
 		strcpy2(@Buff,"call    ",@BuffFunctionPointer);
 		EmitWithPhoMode(@Buff, PHO_Mode_Invalidate);
-	case Node[pFunc].ID == iFUNC:
+	case Node[pFunc].ID == NID.iFUNC:
 		Code_StaticCall(@Buff, NodeGetDict(pFunc));
 	default:
 		Buff[0] = #0;
@@ -511,11 +511,11 @@ void Code_CALL(word pPrimary; ValueRef @Ref) of
 	Reg_TARGET = RegA;
 
 	switch Node[pPrimary].ID of
-	case iCALL:
+	case NID.iCALL:
 		when Node[pPrimary].pLeft != nNODE:
 			Code_(Node[pPrimary].pLeft, @Buff);
 		Code_StaticCall(@Buff, NodeGetDict(pPrimary));
-	case iCALL2:
+	case NID.iCALL2:
 		when Node[pPrimary].pLeft != nNODE:
 			Code_(Node[pPrimary].pLeft, @Buff);
 		Code_DynamicCall(@Buff, Node[pPrimary].pRight);
@@ -525,7 +525,7 @@ void Code_CALL(word pPrimary; ValueRef @Ref) of
 
 	Reg_TARGET = RegA;
 	Ref.pType = Node[pPrimary].pType;
-	Ref.ID = iREG;
+	Ref.ID = NID.iREG;
 	Ref.IX = RegA;
 	Ref.Offset = 0;
 end
@@ -535,31 +535,31 @@ end
 word CodePrimary(word pPrimary; ValueRef @Ref)
 
 	switch Node[pPrimary].ID of
-	case iDATA, iPARM, iLOCAL, iSTRING:
+	case NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iSTRING:
 		ValueRef_ExtractDataInfo(@Ref, pPrimary);
 
-	case iCALL, iCALL2:
+	case NID.iCALL, NID.iCALL2:
 		Code_CALL(pPrimary, @Ref);
 
-	case iINDEX:
+	case NID.iINDEX:
 		CodePrimary(Node[pPrimary].pLeft, @Ref);
 		Code_INDEX(Node[pPrimary].pRight, @Ref);
 
-	case iLPTR:
+	case NID.iLPTR:
 		CodePrimary(Node[pPrimary].pLeft, @Ref);
 		Code_LPTR(Node[pPrimary].pRight, @Ref);
 
-	case iADDR:
+	case NID.iADDR:
 		CodePrimary(Node[pPrimary].pLeft, @Ref);
 		Code_ADDR(Node[pPrimary].pRight, @Ref);
 
-	case iFIELD:
+	case NID.iFIELD:
 		CodePrimary(Node[pPrimary].pLeft, @Ref);
 		ValueRef_Apply_FIELD(@Ref, pPrimary);
 
 	default:
 		word pType = Code(pPrimary);
-		Ref.ID = iREG;
+		Ref.ID = NID.iREG;
 		Ref.RO = false;
 		Ref.pType = pType;
 		Ref.Offset = 0;
@@ -575,7 +575,7 @@ word Code_LOAD(word pPrimary; ValueRef @Ref)
 	char Buff[nBUFF];
 	Buff[0] = #0;
 
-	if Ref.ID == iREG then
+	if Ref.ID == NID.iREG then
 		if Reg_ALT_TARGET == RegNone then
 			Reg_TARGET = Ref.IX;
 		end:if
@@ -653,7 +653,7 @@ end
 word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word @Complexity)
 	Complexity = 0;
 
-	when Node[P].ID == iNOOP_CAST:
+	when Node[P].ID == NID.iNOOP_CAST:
 		return pTypeTo;
 
 	select
@@ -699,7 +699,7 @@ word Code_CAST(char @Buff; word P; word pTypeTo; word pTypeFrom; word Reg; word 
 	end
 
 	when Complexity == 0:
-		Node[P].ID = iNOOP_CAST;
+		Node[P].ID = NID.iNOOP_CAST;
 
 	return pTypeTo;
 end
@@ -751,17 +751,17 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 	word Query = _Q.Query;
 
 	switch Node[pPrimary].ID of
-	case iDATA, iPARM, iLOCAL, iSTRING:
+	case NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iSTRING:
 		ValueRef_ExtractDataInfo(@Ref, pPrimary);
 
-	case iLPTR:
+	case NID.iLPTR:
 		if Query == Query_SingleRegOperand then
 			return QueryOperandStatus_(Node[pPrimary].pLeft, @_Q);
 		else
 			return false;
 		end:if
 
-	case iINDEX:
+	case NID.iINDEX:
 		bool RecursiveResult = QueryOperandStatus_(Node[pPrimary].pLeft, @_Q);
 		when !RecursiveResult:
 			return RecursiveResult;
@@ -785,7 +785,7 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 			Ref.IX = RegA;
 		end:if
 
-	case iADDR:
+	case NID.iADDR:
 		if Query != Query_SingleRegOperand then
 			return false;
 		end:if
@@ -811,13 +811,13 @@ bool QueryOperandStatus_(word pPrimary; OperandQuery @_Q)
 		Ref.Offset = 0;
 		Ref.IX = RegA;
 
-	case iFIELD:
+	case NID.iFIELD:
 		bool RecursiveResult = QueryOperandStatus_(Node[pPrimary].pLeft, @_Q);
 		when !RecursiveResult:
 			return RecursiveResult;
 		ValueRef_Apply_FIELD(@Ref, pPrimary);
 
-	case iCAST, iREINTERPRET_CAST, iNOOP_CAST:
+	case NID.iCAST, NID.iREINTERPRET_CAST, NID.iNOOP_CAST:
 		return QueryOperandStatus_CAST(pPrimary, @_Q);
 	default:
 		return false;
@@ -887,7 +887,7 @@ bool CodeRequiresSingleRegister_(word P)
 	word ID = Node[P].ID;
 
 	switch ID of
-	case iADD, iBIT_OR, iBIT_XOR, iBIT_AND:
+	case NID.iADD, NID.iBIT_OR, NID.iBIT_XOR, NID.iBIT_AND:
 		word pLeft = Node[P].pLeft;
 		word pRight = Node[P].pRight;
 		if
@@ -909,7 +909,7 @@ bool CodeRequiresSingleRegister_(word P)
 			return true;
 		end:if
 		return false;
-	case iSUB:
+	case NID.iSUB:
 		word pLeft = Node[P].pLeft;
 		word pRight = Node[P].pRight;
 		if
@@ -922,7 +922,7 @@ bool CodeRequiresSingleRegister_(word P)
 			return true;
 		end:if
 		return false;
-	case iMUL:
+	case NID.iMUL:
 		if T_SizeOf(Node[P].pType) != 4 then
 			return false;
 		end:if
@@ -941,11 +941,11 @@ bool CodeRequiresSingleRegister_(word P)
 			return true;
 		end:if
 		return false;
-	case iBIT_NOT, iNEG:
+	case NID.iBIT_NOT, NID.iNEG:
 		return CodeRequiresSingleRegister_(Node[P].pLeft);
-	case iNOOP_CAST:
+	case NID.iNOOP_CAST:
 		return CodeRequiresSingleRegister_(Node[P].pLeft);
-	case iCAST, iREINTERPRET_CAST:
+	case NID.iCAST, NID.iREINTERPRET_CAST:
 		word pTypeFrom = Node[Node[P].pLeft].pType;
 		word pTypeTo = Node[P].pType;
 		when !CodeRequiresSingleRegister_(Node[P].pLeft):
@@ -976,7 +976,7 @@ end
 
 bool CodeLoadsConst(word P)
 	switch Node[P].ID of
-	case iLITERAL, iSTRING, iNULL, iFUNC:
+	case NID.iLITERAL, NID.iSTRING, NID.iNULL, NID.iFUNC:
 		return true;
 	default:
 		return false;
@@ -992,12 +992,12 @@ end
 */
 word CheckOperationSwappable(word ID)
 	switch ID of
-	case iBIT_OR, iBIT_XOR, iBIT_AND, iADD, iMUL, iEQ, iNE:
+	case NID.iBIT_OR, NID.iBIT_XOR, NID.iBIT_AND, NID.iADD, NID.iMUL, NID.iEQ, NID.iNE:
 		return ID;
-	case iLT: return iGT;
-	case iLE: return iGE;
-	case iGE: return iLE;
-	case iGT: return iLT;
+	case NID.iLT: return NID.iGT;
+	case NID.iLE: return NID.iGE;
+	case NID.iGE: return NID.iLE;
+	case NID.iGT: return NID.iLT;
 	end:switch
 	return 0;
 end
@@ -1007,20 +1007,20 @@ end
 bool DoesOperationAllowRightMemRef(word ID)
 	switch ID of
 	case
-		iBIT_OR,
-		iBIT_XOR,
-		iBIT_AND,
-		iADD,
-		iSUB,
-		iMUL,
-		iDIV,
-		iMOD,
-		iLT,
-		iLE,
-		iEQ,
-		iNE,
-		iGE,
-		iGT:
+		NID.iBIT_OR,
+		NID.iBIT_XOR,
+		NID.iBIT_AND,
+		NID.iADD,
+		NID.iSUB,
+		NID.iMUL,
+		NID.iDIV,
+		NID.iMOD,
+		NID.iLT,
+		NID.iLE,
+		NID.iEQ,
+		NID.iNE,
+		NID.iGE,
+		NID.iGT:
 		return true;
 	default:
 		return false;
@@ -1030,17 +1030,17 @@ end
 bool DoesOperationAllowRightImm(word ID)
 	switch ID of
 	case
-		iBIT_OR,
-		iBIT_XOR,
-		iBIT_AND,
-		iADD,
-		iSUB,
-		iLT,
-		iLE,
-		iEQ,
-		iNE,
-		iGE,
-		iGT:
+		NID.iBIT_OR,
+		NID.iBIT_XOR,
+		NID.iBIT_AND,
+		NID.iADD,
+		NID.iSUB,
+		NID.iLT,
+		NID.iLE,
+		NID.iEQ,
+		NID.iNE,
+		NID.iGE,
+		NID.iGT:
 		return true;
 	default:
 		return false;
@@ -1050,8 +1050,8 @@ end
 bool DoesOperationAllowRightRegD(word ID)
 	switch ID of
 	case
-		iDIV,
-		iMOD:
+		NID.iDIV,
+		NID.iMOD:
 		return false;
 	default:
 		return true;
@@ -1061,8 +1061,8 @@ end
 bool DoesOperationAllowRightReg(word ID; word RegRight)
 	switch ID of
 	case
-		iDIV,
-		iMOD:
+		NID.iDIV,
+		NID.iMOD:
 		if RegRight == RegD then
 			return false;
 		else
@@ -1102,15 +1102,15 @@ end
 
 word DropNoOpCast(word P)
 	switch Node[P].ID of
-	case iNOOP_CAST:
+	case NID.iNOOP_CAST:
 		return Node[P].pLeft;
-	case iCAST, iREINTERPRET_CAST:
+	case NID.iCAST, NID.iREINTERPRET_CAST:
 		word pLeft = Node[P].pLeft;
 		word pTypeFrom = Node[pLeft].pType;
 		word pTypeTo = Node[P].pType;
 		word Complexity = 0;
 		Code_CAST(NULL, P, pTypeTo, pTypeFrom, RegNone, @Complexity);
-		if Node[P].ID != iNOOP_CAST then
+		if Node[P].ID != NID.iNOOP_CAST then
 			return P;
 		else
 			return pLeft;
@@ -1123,7 +1123,7 @@ end
 /*****************************************************************************/
 
 word TryCodeFastMult(char @Buff; word P)
-	when Node[P].ID != iMUL:
+	when Node[P].ID != NID.iMUL:
 		return nDICT;
 
 	word pType = Node[P].pType;
@@ -1208,7 +1208,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	word pCmpOperandType = nDICT;
 	word CmpOperandSize = 0;
 
-	if iLT <= ID & ID <= iGT then
+	if NID.iLT <= ID & ID <= NID.iGT then
 		opIsComparison = true;
 
 		/* The operand type may be lost during dropping redundant operand casts
@@ -1233,7 +1233,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	end
 
 	switch ID of
-	case iMUL, iDIV, iMOD: /* For these operations we need EAX unconditionally.  */
+	case NID.iMUL, NID.iDIV, NID.iMOD: /* For these operations we need EAX unconditionally.  */
 		if Reg_TARGET != RegA then
 			when Reg_ALT_TARGET == RegA:
 				Emit_SaveReg(RegA, "saved in CodeBinOp");
@@ -1351,7 +1351,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		word rightRegPreloaded = RegNone;
 
 		switch ID of
-		case iEQ, iNE:
+		case NID.iEQ, NID.iNE:
 			when leftRegPreloaded == RegNone | !(NodeIsLiteralZero(pRight) | NodeIsNull(pRight)):
 				rightRegPreloaded = LookupRegForNode(pRight);
 		default:
@@ -1598,7 +1598,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 			/* We can handle it by swapping operands back. */
 			switch ID of
-			case iSUB, iDIV, iMOD:
+			case NID.iSUB, NID.iDIV, NID.iMOD:
 				Emit_XCHG_Reg_Reg(Reg_TARGET, rightReg, Mach.AllowedRegSize);
 				exit;
 			end:switch
@@ -1611,10 +1611,10 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 	Reg_TARGET_Locked = Saved_Reg_TARGET_Locked;
 
 	/* Check if we can replace add/sub with inc/dec */
-	if rightOperand == operandImm & (ID == iADD | ID == iSUB) then
+	if rightOperand == operandImm & (ID == NID.iADD | ID == NID.iSUB) then
 
 		word Value = Node[pRight].Value;
-		when ID == iSUB:
+		when ID == NID.iSUB:
 			Value = as_unsigned(-Value);
 
 		switch as_signed(Value) of
@@ -1656,12 +1656,12 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			/* Reorder for easier handling. */
 			if @T == NULL then
 				switch ID of
-				case iLT: ID=iGE;
-				case iLE: ID=iGT;
-				case iEQ: ID=iNE;
-				case iNE: ID=iEQ;
-				case iGE: ID=iLT;
-				case iGT: ID=iLE;
+				case NID.iLT: ID=NID.iGE;
+				case NID.iLE: ID=NID.iGT;
+				case NID.iEQ: ID=NID.iNE;
+				case NID.iNE: ID=NID.iEQ;
+				case NID.iGE: ID=NID.iLT;
+				case NID.iGT: ID=NID.iLE;
 				default:
 					StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 				end:switch
@@ -1683,7 +1683,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			switch Value of
 			case 0:
 				select
-				case (ID == iEQ) | (ID == iNE):
+				case (ID == NID.iEQ) | (ID == NID.iNE):
 					if (MeaningfulFlags & Flag_Zero) != 0 then
 						pass; /* ! */
 						SkipCmp = true;
@@ -1696,22 +1696,22 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					end:if
 				case (MeaningfulFlags & (Flag_Zero | Flag_Sign)) == (Flag_Zero | Flag_Sign):
 					select
-					case (ID == iGE) & T_IsSigned(pCmpOperandType):
-						ID = iBRANCH_NSF;
+					case (ID == NID.iGE) & T_IsSigned(pCmpOperandType):
+						ID = NID.iBRANCH_NSF;
 						SkipCmp = true;
-					case (ID == iLT) & T_IsSigned(pCmpOperandType):
-						ID = iBRANCH_SF;
+					case (ID == NID.iLT) & T_IsSigned(pCmpOperandType):
+						ID = NID.iBRANCH_SF;
 						SkipCmp = true;
 					end:select
 				end:select
 			case 1:
-				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, CmpOperandSize) != 0 then
+				if (ID == NID.iEQ | ID == NID.iNE) & PreferIncDec(Reg_TARGET, CmpOperandSize) != 0 then
 					Emit_DEC_Reg(Reg_TARGET, CmpOperandSize);
 					dec PHO_Load_Value;
 					SkipCmp = true;
 				end:if
 			case word(-1):
-				if (ID == iEQ | ID == iNE) & PreferIncDec(Reg_TARGET, CmpOperandSize) != 0 then
+				if (ID == NID.iEQ | ID == NID.iNE) & PreferIncDec(Reg_TARGET, CmpOperandSize) != 0 then
 					Emit_INC_Reg(Reg_TARGET, CmpOperandSize);
 					inc PHO_Load_Value;
 					SkipCmp = true;
@@ -1732,7 +1732,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 					PHO_LinkNode(Reg_TARGET, pLeft);
 				end:if
 			end:if
-			when (CmpOperandSize == 4) & (ID == iNE):
+			when (CmpOperandSize == 4) & (ID == NID.iNE):
 				PHO_RegConnectConst(Reg_TARGET, PHO_Load_Value);
 		case rightOperand == operandMemRef:
 			EmitPhoSkip(
@@ -1757,26 +1757,26 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 		select
 		case T_IsSigned(pCmpOperandType):
 			switch ID of
-			case iLT: @BranchCondition = "l ";
-			case iLE: @BranchCondition = "le";
-			case iEQ: @BranchCondition = "e ";
-			case iNE: @BranchCondition = "ne";
-			case iGE: @BranchCondition = "ge";
-			case iGT: @BranchCondition = "g ";
-			case iBRANCH_SF: @BranchCondition = "s ";
-			case iBRANCH_NSF: @BranchCondition = "ns";
+			case NID.iLT: @BranchCondition = "l ";
+			case NID.iLE: @BranchCondition = "le";
+			case NID.iEQ: @BranchCondition = "e ";
+			case NID.iNE: @BranchCondition = "ne";
+			case NID.iGE: @BranchCondition = "ge";
+			case NID.iGT: @BranchCondition = "g ";
+			case NID.iBRANCH_SF: @BranchCondition = "s ";
+			case NID.iBRANCH_NSF: @BranchCondition = "ns";
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:switch
 
 		default:
 			switch ID of
-			case iLT: @BranchCondition = "b ";
-			case iLE: @BranchCondition = "be";
-			case iEQ: @BranchCondition = "e ";
-			case iNE: @BranchCondition = "ne";
-			case iGE: @BranchCondition = "ae";
-			case iGT: @BranchCondition = "a ";
+			case NID.iLT: @BranchCondition = "b ";
+			case NID.iLE: @BranchCondition = "be";
+			case NID.iEQ: @BranchCondition = "e ";
+			case NID.iNE: @BranchCondition = "ne";
+			case NID.iGE: @BranchCondition = "ae";
+			case NID.iGT: @BranchCondition = "a ";
 			default:
 				StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 			end:switch
@@ -1802,27 +1802,27 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 			return st_cond_branch;
 		end:if
 
-	case ID==iBIT_OR:
+	case ID==NID.iBIT_OR:
 		_MeaningfulFlags = Flag_Zero;
 		strcpy(@Buff,"or      ");
 
-	case ID==iBIT_XOR:
+	case ID==NID.iBIT_XOR:
 		_MeaningfulFlags = Flag_Zero;
 		strcpy(@Buff,"xor     ");
 
-	case ID==iBIT_AND:
+	case ID==NID.iBIT_AND:
 		_MeaningfulFlags = Flag_Zero;
 		strcpy(@Buff,"and     ");
 
-	case ID==iADD:
+	case ID==NID.iADD:
 		_MeaningfulFlags = (Flag_Zero | Flag_Sign);
 		strcpy(@Buff,"add     ");
 
-	case ID==iSUB:
+	case ID==NID.iSUB:
 		_MeaningfulFlags = (Flag_Zero | Flag_Sign);
 		strcpy(@Buff,"sub     ");
 
-	case ID==iMUL:
+	case ID==NID.iMUL:
 		select
 		case T_IsSigned(pResultType):
 			strcpy(@Buff,"imul    ");
@@ -1850,7 +1850,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		return pResultType;
 
-	case ID==iDIV | ID==iMOD:
+	case ID==NID.iDIV | ID==NID.iMOD:
 		select
 		case ResultSize==1:
 			if T_IsSigned(pResultType) then
@@ -1909,7 +1909,7 @@ word CodeBinOp(char @Buff; word P; LABEL @F; LABEL @T; LABEL @M)
 
 		Emit(@Buff);
 
-		if ID==iMOD then
+		if ID==NID.iMOD then
 			select
 			case ResultSize==1:
 				Emit("mov     AL,   AH");
@@ -1991,7 +1991,7 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 	//Reg_TARGET = RegA;
 
 	switch Node[P].ID of
-	case iLITERAL:
+	case NID.iLITERAL:
 		select
 		case Node[P].Value == 0 & @F != NULL:
 			EmitJumpToLabel(@F);
@@ -2000,20 +2000,20 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 		end:select
 		return st_cond_branch;
 
-	case iLT, iLE, iEQ, iNE, iGE, iGT:
+	case NID.iLT, NID.iLE, NID.iEQ, NID.iNE, NID.iGE, NID.iGT:
 		return CodeBinOp(@Buff, P, @F, @T, @M);
 
-	case iNOT:
+	case NID.iNOT:
 		return CodeBooleanExpr(Node[P].pLeft, @T, @F, @M);
-	case iOR:
+	case NID.iOR:
 		return Code_OR(P, @F, @T, @M, @Buff);
-	case iXOR:
+	case NID.iXOR:
 		Code_XOR(P, @F, @T, @M, @Buff);
 		//return st_cond_branch;
-	case iEQV:
+	case NID.iEQV:
 		Code_EQV(P, @F, @T, @M, @Buff);
 		//return st_cond_branch;
-	case iAND:
+	case NID.iAND:
 		return Code_AND(P, @F, @T, @M, @Buff);
 
 	default:
@@ -2079,7 +2079,7 @@ word Code_INCDEC(word pPrimary; char @Buff)
 	ValueRef Ref;
 	CodePrimary(Node[pPrimary].pLeft, @Ref);
 
-	if Node[pPrimary].ID==iINC then
+	if Node[pPrimary].ID==NID.iINC then
 		strcpy(@Buff,"inc     ");
 	else
 		strcpy(@Buff,"dec     ");
@@ -2222,43 +2222,43 @@ word Code_(word P; char @Buff)
 	EmitWithSourceNote(NULL, P);
 
 	switch Node[P].ID of
-	case iDATA, iPARM, iLOCAL, iSTRING,
-	     iCALL, iCALL2, iINDEX, iLPTR, iADDR, iFIELD:
+	case NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iSTRING,
+	     NID.iCALL, NID.iCALL2, NID.iINDEX, NID.iLPTR, NID.iADDR, NID.iFIELD:
 		return CodePrimaryWrapped(P);
 
-	case iNULL:
+	case NID.iNULL:
 		Emit_Load_Constant(Reg_TARGET, 4, 0);
 		return Node[P].pType;
 
-	case iLITERAL:
+	case NID.iLITERAL:
 		Emit_Load_Constant(Reg_TARGET, T_SizeOf(Node[P].pType), Node[P].Value);
 		return Node[P].pType;
 
-	case iFUNC:
+	case NID.iFUNC:
 		Emit(@EncodeLoadLabel(@Buff, Reg_TARGET, Node[P].Value));
 		return Node[P].pType;
 
-	case iINC, iDEC:
+	case NID.iINC, NID.iDEC:
 		return Code_INCDEC(P, @Buff);
 
-	case iNOOP_CAST:
+	case NID.iNOOP_CAST:
 		Code_(Node[P].pLeft, @Buff);
 		return Node[P].pType;
 
-	case iCAST, iREINTERPRET_CAST:
+	case NID.iCAST, NID.iREINTERPRET_CAST:
 		word pTypeFrom = Code_(Node[P].pLeft, @Buff);
 		word pTypeTo = Node[P].pType;
 		word Complexity = 0;
 		return Code_CAST(@Buff, P, pTypeTo, pTypeFrom, Reg_TARGET, @Complexity);
 
-	case iBIT_NOT:
+	case NID.iBIT_NOT:
 		word pType = Code_(Node[P].pLeft, @Buff);
 		word  Size = SizeOfType(pType);
 		Emit(@EncodeCmdReg(@Buff, "not", Reg_TARGET, Size));
 
 		return pType;
 
-	case iNEG:
+	case NID.iNEG:
 		if NodeIsLiteralWord(Node[P].pLeft) then
 			Emit_Load_Constant(Reg_TARGET, 4, as_unsigned(-Node[Node[P].pLeft].Value));
 			return Node[P].pType;
@@ -2270,13 +2270,15 @@ word Code_(word P; char @Buff)
 
 		return Node[P].pType;
 
-	case iBIT_OR, iBIT_XOR, iBIT_AND, iLT, iLE, iEQ, iNE, iGE, iGT, iADD, iSUB, iMUL, iDIV, iMOD:
+	case NID.iBIT_OR, NID.iBIT_XOR, NID.iBIT_AND,
+		NID.iLT, NID.iLE, NID.iEQ, NID.iNE, NID.iGE, NID.iGT,
+		NID.iADD, NID.iSUB, NID.iMUL, NID.iDIV, NID.iMOD:
 		return CodeBinOp(@Buff, P, NULL, NULL, NULL);
 
-	case iOR, iAND, iNOT:
+	case NID.iOR, NID.iAND, NID.iNOT:
 		return CodeBooleanExprNoJumpTargets(P);
 
-	case iDEF_LOCAL:
+	case NID.iDEF_LOCAL:
 		if nLocal>=nLOCAL then
 			StopMemory();
 		end
@@ -2295,29 +2297,29 @@ word Code_(word P; char @Buff)
 
 		Code_(Node[P].pLeft, @Buff);
 
-	case iASSIGN:
+	case NID.iASSIGN:
 		return Code_ASSIGN(P, @Buff);
 
-	case iINLINE:
+	case NID.iINLINE:
 		Emit(@strcpy2(@Buff,"db      0x",@str2(Node[P].Value,16, #0)));
 
-	case iPUSH:
+	case NID.iPUSH:
 		Code_PUSH(P, @Buff);
-	case iRETURN:
+	case NID.iRETURN:
 		return Code_RETURN(P, @Buff);
-	case iSELECT:
+	case NID.iSELECT:
 		return Code_SELECT(P, @Buff);
-	case iSWITCH:
+	case NID.iSWITCH:
 		return Code_SWITCH(P, @Buff);
-	case iWHILE:
+	case NID.iWHILE:
 		return Code_WHILE(P, @Buff);
-	case iREPEAT:
+	case NID.iREPEAT:
 		return Code_REPEAT(P, @Buff);
-	case iCONTINUE:
+	case NID.iCONTINUE:
 		return Code_CONTINUE(P, @Buff);
-	case iEXIT:
+	case NID.iEXIT:
 		return Code_EXIT(P, @Buff);
-	case iEMPTY, iVIRTUAL_JUMP, iVIRTUAL_EXIT:
+	case NID.iEMPTY, NID.iVIRTUAL_JUMP, NID.iVIRTUAL_EXIT:
 		pass;
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
@@ -2465,7 +2467,7 @@ void EmitFunction(char @Buff; word I)
 		word  J = 0;
 		while J < nDict do
 			if Dict[J].Class == CLASS.cDATA & Dict[J].pNode < nNODE & Dict[J].Used then
-				if Node[Dict[J].pNode].ID != iASSIGN then
+				if Node[Dict[J].pNode].ID != NID.iASSIGN then
 					StopInternalCodegen(__FILE__, __LINE__);
 				end:if
 				if !StaticDataIsZeroed
@@ -2493,7 +2495,7 @@ void EmitFunction(char @Buff; word I)
 	if pType != st_noreturn then
 		if pReturnVoid == nNODE then
 			pReturnVoid = Peek();
-			Node[pReturnVoid].ID = iRETURN;
+			Node[pReturnVoid].ID = NID.iRETURN;
 		end
 		Code_(pReturnVoid, @Buff);
 	end

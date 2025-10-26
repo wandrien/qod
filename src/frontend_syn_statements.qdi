@@ -117,7 +117,7 @@ end
 /*****************************************************************************/
 
 void Statement_IF(char @Buff; word @P1; bool @SkipFinalScan)
-	Node[P1].ID = iSELECT;
+	Node[P1].ID = NID.iSELECT;
 
 	char @End1="if";
 	char @Case="";
@@ -142,9 +142,9 @@ void Statement_IF(char @Buff; word @P1; bool @SkipFinalScan)
 		word COND = Peek();
 		word BODY = Peek();
 
-		Node[CASE].ID = iCASE;
-		Node[COND].ID = iCOND;
-		Node[BODY].ID = iBODY;
+		Node[CASE].ID = NID.iCASE;
+		Node[COND].ID = NID.iCOND;
+		Node[BODY].ID = NID.iBODY;
 
 		Node[CASE].pLeft  = COND;
 		Node[COND].pRight = BODY;
@@ -183,15 +183,15 @@ end
 /*****************************************************************************/
 
 void Statement_WHEN(char @Buff; word @P1; bool @SkipFinalScan)
-	Node[P1].ID=iSELECT;
+	Node[P1].ID = NID.iSELECT;
 
 	word CASE = Peek();
 	word COND = Peek();
 	word BODY = Peek();
 
-	Node[CASE].ID = iCASE;
-	Node[COND].ID = iCOND;
-	Node[BODY].ID = iBODY;
+	Node[CASE].ID = NID.iCASE;
+	Node[COND].ID = NID.iCOND;
+	Node[BODY].ID = NID.iBODY;
 
 	Node[CASE].pLeft  = COND;
 	Node[COND].pRight = BODY;
@@ -235,10 +235,10 @@ end
 
 void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 
-	Node[P1].ID = iSWITCH;
+	Node[P1].ID = NID.iSWITCH;
 
 	word COND = Peek();
-	Node[COND].ID = iCOND;
+	Node[COND].ID = NID.iCOND;
 	Node[P1].pLeft = COND;
 
 	word @CaseBackLink = @Node[COND].pRight;
@@ -256,7 +256,7 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 
 	while str_eq(@Buff,"case") do
 		word CASE = Peek();
-		Node[CASE].ID = iCASE;
+		Node[CASE].ID = NID.iCASE;
 		CaseBackLink = CASE;
 		@CaseBackLink = @Node[CASE].pRight;
 		word @ValueBackLink = @Node[CASE].pLeft;
@@ -273,7 +273,7 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 			word  CASE_I = Node[COND].pRight;
 			while CASE_I < nNODE do
 				word  VALUE_I = Node[CASE_I].pLeft;
-				while VALUE_I < nNode & Node[VALUE_I].ID == iVALUE do
+				while VALUE_I < nNode & Node[VALUE_I].ID == NID.iVALUE do
 					if Node[Node[VALUE_I].pLeft].Value == Node[EXPR].Value then
 						Error(@L10n.eDUPCASE);
 					end:if
@@ -285,7 +285,7 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 			end:while
 
 			word VALUE = Peek();
-			Node[VALUE].ID = iVALUE;
+			Node[VALUE].ID = NID.iVALUE;
 			Node[VALUE].pLeft = EXPR;
 			ValueBackLink = VALUE;
 			@ValueBackLink = @Node[VALUE].pRight;
@@ -293,7 +293,7 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 		until str_ne(@Buff,",");
 
 		word BODY = Peek();
-		Node[BODY].ID = iBODY;
+		Node[BODY].ID = NID.iBODY;
 		ValueBackLink = BODY;
 
 		EatSeparatorKeyword(@Buff, ":");
@@ -308,9 +308,9 @@ void Statement_SWITCH(char @Buff; word @P1; bool @SkipFinalScan)
 		word DEFAULT = Peek();
 		word BODY = Peek();
 
-		Node[CASE].ID = iCASE;
-		Node[DEFAULT].ID = iDEFAULT;
-		Node[BODY].ID = iBODY;
+		Node[CASE].ID = NID.iCASE;
+		Node[DEFAULT].ID = NID.iDEFAULT;
+		Node[BODY].ID = NID.iBODY;
 
 		Node[CASE].pLeft = DEFAULT;
 		Node[DEFAULT].pRight = BODY;
@@ -331,13 +331,13 @@ void Statement_WHILE(char @Buff; word @P1; bool @SkipFinalScan)
 
 	word  BODY = Peek();
 	word  COND = Peek();
-	Node [P1].ID = iWHILE;
+	Node [P1].ID = NID.iWHILE;
 	Node [P1].pLeft = BODY;
 
-	Node [BODY].ID = iBODY;
+	Node [BODY].ID = NID.iBODY;
 	Node [BODY].pRight = COND;
 
-	Node [COND].ID = iCOND;
+	Node [COND].ID = NID.iCOND;
 
 	char @End1 = NULL;
 	char @End2 = NULL;
@@ -376,13 +376,13 @@ end
 void Statement_REPEAT(char @Buff; word @P1; bool @SkipFinalScan)
 	word  BODY = Peek();
 	word  COND = Peek();
-	Node[P1].ID = iREPEAT;
+	Node[P1].ID = NID.iREPEAT;
 	Node[P1].pLeft = BODY;
 
-	Node[BODY].ID = iBODY;
+	Node[BODY].ID = NID.iBODY;
 	Node[BODY].pRight = COND;
 
-	Node[COND].ID = iCOND;
+	Node[COND].ID = NID.iCOND;
 
 	word pLoop1=pLoop;
 	pLoop=P1;
@@ -410,11 +410,11 @@ void Statement_CONTINUE(char @Buff; word @P1; bool @SkipFinalScan)
 	when pLoop>=nNODE:
 		Stop(@L10n.eWRONGCONTINUE);
 
-	when Node[pLoop].ID != iWHILE
-	&    Node[pLoop].ID != iREPEAT:
+	when Node[pLoop].ID != NID.iWHILE
+	&    Node[pLoop].ID != NID.iREPEAT:
 		StopInternal(__FILE__, __LINE__);
 
-	Node[P1].ID = iCONTINUE;
+	Node[P1].ID = NID.iCONTINUE;
 	Node[P1].Value = pLoop;
 	Node[P1].pType = st_noreturn;
 
@@ -427,11 +427,11 @@ void Statement_EXIT(char @Buff; word @P1; bool @SkipFinalScan)
 	when pLoop>=nNODE:
 		Stop(@L10n.eWRONGEXIT);
 
-	when Node[pLoop].ID != iWHILE
-	&    Node[pLoop].ID != iREPEAT:
+	when Node[pLoop].ID != NID.iWHILE
+	&    Node[pLoop].ID != NID.iREPEAT:
 		StopInternal(__FILE__, __LINE__);
 
-	Node[P1].ID = iEXIT;
+	Node[P1].ID = NID.iEXIT;
 	Node[P1].Value = pLoop;
 	Node[P1].pType = st_noreturn;
 
@@ -443,9 +443,9 @@ end
 void Statement_INCDEC(char @Buff; word @P1; bool @SkipFinalScan)
 
 	if str_eq(@Buff,"inc") then
-		Node[P1].ID =iINC;
+		Node[P1].ID = NID.iINC;
 	else
-		Node[P1].ID =iDEC;
+		Node[P1].ID = NID.iDEC;
 	end:if
 
 	Node[P1].pLeft= Expr(PRIO.INC, @Scan(@Buff));
@@ -468,7 +468,7 @@ end
 
 void Statement_RETURN(char @Buff; word @P1; bool @SkipFinalScan)
 
-	Node[P1].ID = iRETURN;
+	Node[P1].ID = NID.iRETURN;
 	Scan(@Buff);
 
 	word pTypeReturn = Func_GetRetType(pCurrentFunc);
@@ -478,7 +478,7 @@ void Statement_RETURN(char @Buff; word @P1; bool @SkipFinalScan)
 	end:if
 
 	if pTypeReturn != st_void then
-		Node[P1].pLeft=Expr(PRIO.ZERO, @Buff);
+		Node[P1].pLeft = Expr(PRIO.ZERO, @Buff);
 		ImplicitCast(pTypeReturn, @Node[P1].pLeft);
 	end:if
 
@@ -491,13 +491,13 @@ end
 
 void Statement_INLINE(char @Buff; word @P1; bool @SkipFinalScan)
 
-	word Code=val(@Scan(@Buff));
-	if Code>255 then
+	word Code = val(@Scan(@Buff));
+	if Code > 255 then
 		Stop(@L10n.eOVERFLOW);
 	end
 
-	Node[P1].ID   =iINLINE;
-	Node[P1].Value= Code;
+	Node[P1].ID    = NID.iINLINE;
+	Node[P1].Value = Code;
 
 	if str_eq(@Scan(@Buff),",") then
 		strcpy (@Buff,"inline");
@@ -550,12 +550,12 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; bool @SkipFinalScan; word pPrefi
 
 		word P4=Peek();
 
-		Node[P1].ID   =iDEF_LOCAL;
-		Node[P1].pType=Local[nLocal].pType;
-		Node[P1].Value=Local[nLocal].Name2;
-		Node[P1].pLeft =P4;
+		Node[P1].ID    = NID.iDEF_LOCAL;
+		Node[P1].pType = Local[nLocal].pType;
+		Node[P1].Value = Local[nLocal].Name2;
+		Node[P1].pLeft = P4;
 
-		Node[P4].ID    =iEMPTY;
+		Node[P4].ID    = NID.iEMPTY;
 		Node[P4].Value = N;
 
 		if str_eq(@Buff,"=") then
@@ -564,17 +564,17 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; bool @SkipFinalScan; word pPrefi
 			end:if*/
 
 			word P5=Peek();
-			Node[P4].ID    =iASSIGN;
-			Node[P4].pLeft = P5;
+			Node[P4].ID     = NID.iASSIGN;
+			Node[P4].pLeft  = P5;
 
 			word P6=Peek();
-			Node[P5].ID    =iEMPTY;
-			Node[P5].pLeft = P6;
-			Node[P5].pRight= Expr(PRIO.ZERO, @Scan(@Buff));
+			Node[P5].ID     = NID.iEMPTY;
+			Node[P5].pLeft  = P6;
+			Node[P5].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 
-			Node[P6].ID    =iLOCAL;
-			Node[P6].Value =nLocal;
-			Node[P6].pType =Local[nLocal].pType;
+			Node[P6].ID     = NID.iLOCAL;
+			Node[P6].Value  = nLocal;
+			Node[P6].pType  = Local[nLocal].pType;
 
 			ImplicitCast(pType, @Node[P5].pRight);
 		end:if
@@ -599,14 +599,14 @@ void Statement_ASSIGN(char @Buff; word @P1; bool @SkipFinalScan)
 	when pLValue == nNODE:
 		StopInternal(__FILE__, __LINE__);
 
-	if Node[pLValue].ID == iTYPE then
+	if Node[pLValue].ID == NID.iTYPE then
 		Statement_DEF_LOCAL(@Buff, @P1, @SkipFinalScan, Node[pLValue].Value);
 	else
 		word P3=Peek();
-		Node[P1].ID    = iASSIGN;
+		Node[P1].ID    = NID.iASSIGN;
 		Node[P1].pLeft = P3;
 
-		Node[P3].ID    = iEMPTY;
+		Node[P3].ID    = NID.iEMPTY;
 		Node[P3].pLeft = pLValue;
 
 		if str_eq(@Buff,"=") then
@@ -701,11 +701,11 @@ word Ctrl(char @Buff)
 			Statement_INLINE(@Buff, @P1, @SkipFinalScan);
 
 		case str_eq(@Buff,"pass"):
-			Node[P1].ID   =iEMPTY;
+			Node[P1].ID   = NID.iEMPTY;
 			ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 
 		case str_eq(@Buff,"null"):
-			Node[P1].ID   =iEMPTY;
+			Node[P1].ID   = NID.iEMPTY;
 			ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 			Warn(@L10n.dprNULL);
 

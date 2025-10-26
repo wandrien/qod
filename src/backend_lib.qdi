@@ -35,8 +35,8 @@ end
 /*****************************************************************************/
 
 bool NodeHasConst(word P; word Data)
-	if (Node[P].ID == iNULL & Data == 0)
-	 | (Node[P].ID == iLITERAL & Node[P].Value == Data) then
+	if (Node[P].ID == NID.iNULL & Data == 0)
+	 | (Node[P].ID == NID.iLITERAL & Node[P].Value == Data) then
 		return true;
 	end:if
 	return false;
@@ -44,7 +44,7 @@ end
 
 bool NodeCanBeEncodedAsImm(word P)
 	switch Node[P].ID of
-	case iLITERAL, iNULL:
+	case NID.iLITERAL, NID.iNULL:
 		return true;
 	default:
 		return false;

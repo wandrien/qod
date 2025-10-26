@@ -78,6 +78,7 @@ end:namespace
 
 /*****************************************************************************/
 
+namespace NID of
 define  iEMPTY       0 // Пустой узел
 define  iNULL        1 // NULL
 define  iLITERAL     2 // Литеральное значение
@@ -164,6 +165,8 @@ define  iINDEX_CALC 67 // used in the backend
 define  iINVALID    68 // when something must not be accepted by backend
 
 define  iID_COUNT   69
+
+end:namespace
 
 /*****************************************************************************/
 

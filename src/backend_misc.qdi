@@ -43,7 +43,7 @@ struct ID_DESC of
 	word RightList;
 end
 
-ID_DESC IDDesc[iID_COUNT];
+ID_DESC IDDesc[NID.iID_COUNT];
 word IDDescInitialized = 0;
 
 void InitIDDesc2(word ID; char @Name; word vc; word RightList)
@@ -66,72 +66,72 @@ void InitializeIDDesc()
 
 	IDDescInitialized = 1;
 
-	InitIDDesc1(iEMPTY  , "iEMPTY"  );
-	InitIDDesc1(iNULL   , "iNULL"   );
-	InitIDDesc1(iLITERAL, "iLITERAL");
-	InitIDDesc2(iTYPE   , "iTYPE"   , vcDict, 0);
-	InitIDDesc2(iFUNC   , "iFUNC"   , vcDict, 0);
-	InitIDDesc1(iSTRING , "iSTRING" );
-	InitIDDesc2(iDATA   , "iDATA"   , vcDict, 0);
-	InitIDDesc2(iPARM   , "iPARM"   , vcDict, 0);
-	InitIDDesc1(iLOCAL  , "iLOCAL"  );
-	InitIDDesc1(iREF    , "iREF"    );
+	InitIDDesc1(NID.iEMPTY  , "iEMPTY"  );
+	InitIDDesc1(NID.iNULL   , "iNULL"   );
+	InitIDDesc1(NID.iLITERAL, "iLITERAL");
+	InitIDDesc2(NID.iTYPE   , "iTYPE"   , vcDict, 0);
+	InitIDDesc2(NID.iFUNC   , "iFUNC"   , vcDict, 0);
+	InitIDDesc1(NID.iSTRING , "iSTRING" );
+	InitIDDesc2(NID.iDATA   , "iDATA"   , vcDict, 0);
+	InitIDDesc2(NID.iPARM   , "iPARM"   , vcDict, 0);
+	InitIDDesc1(NID.iLOCAL  , "iLOCAL"  );
+	InitIDDesc1(NID.iREF    , "iREF"    );
 
-	InitIDDesc1(iNOT    , "iNOT"    );
-	InitIDDesc1(iBIT_NOT, "iBIT_NOT");
-	InitIDDesc1(iNEG    , "iNEG"    );
+	InitIDDesc1(NID.iNOT    , "iNOT"    );
+	InitIDDesc1(NID.iBIT_NOT, "iBIT_NOT");
+	InitIDDesc1(NID.iNEG    , "iNEG"    );
 
-	InitIDDesc1(iOR     , "iOR"     );
-	InitIDDesc1(iXOR    , "iXOR"    );
-	InitIDDesc1(iEQV    , "iEQV"    );
-	InitIDDesc1(iAND    , "iAND"    );
+	InitIDDesc1(NID.iOR     , "iOR"     );
+	InitIDDesc1(NID.iXOR    , "iXOR"    );
+	InitIDDesc1(NID.iEQV    , "iEQV"    );
+	InitIDDesc1(NID.iAND    , "iAND"    );
 
-	InitIDDesc1(iBIT_OR , "iBIT_OR" );
-	InitIDDesc1(iBIT_XOR, "iBIT_XOR");
-	InitIDDesc1(iBIT_AND, "iBIT_AND");
-	InitIDDesc1(iLT     , "iLT"     );
-	InitIDDesc1(iLE     , "iLE"     );
-	InitIDDesc1(iEQ     , "iEQ"     );
-	InitIDDesc1(iNE     , "iNE"     );
-	InitIDDesc1(iGE     , "iGE"     );
-	InitIDDesc1(iGT     , "iGT"     );
-	InitIDDesc1(iADD    , "iADD"    );
-	InitIDDesc1(iSUB    , "iSUB"    );
-	InitIDDesc1(iMUL    , "iMUL"    );
-	InitIDDesc1(iDIV    , "iDIV"    );
-	InitIDDesc1(iMOD    , "iMOD"    );
+	InitIDDesc1(NID.iBIT_OR , "iBIT_OR" );
+	InitIDDesc1(NID.iBIT_XOR, "iBIT_XOR");
+	InitIDDesc1(NID.iBIT_AND, "iBIT_AND");
+	InitIDDesc1(NID.iLT     , "iLT"     );
+	InitIDDesc1(NID.iLE     , "iLE"     );
+	InitIDDesc1(NID.iEQ     , "iEQ"     );
+	InitIDDesc1(NID.iNE     , "iNE"     );
+	InitIDDesc1(NID.iGE     , "iGE"     );
+	InitIDDesc1(NID.iGT     , "iGT"     );
+	InitIDDesc1(NID.iADD    , "iADD"    );
+	InitIDDesc1(NID.iSUB    , "iSUB"    );
+	InitIDDesc1(NID.iMUL    , "iMUL"    );
+	InitIDDesc1(NID.iDIV    , "iDIV"    );
+	InitIDDesc1(NID.iMOD    , "iMOD"    );
 
-	InitIDDesc2(iCALL   , "iCALL"   , vcDict, 0);
-	InitIDDesc1(iCALL2  , "iCALL2"  );
-	InitIDDesc1(iINDEX  , "iINDEX"  );
-	InitIDDesc1(iADDR   , "iADDR"   );
-	InitIDDesc2(iFIELD  , "iFIELD"  , vcDict, 0);
-	InitIDDesc1(iLPTR   , "iLPTR"   );
+	InitIDDesc2(NID.iCALL   , "iCALL"   , vcDict, 0);
+	InitIDDesc1(NID.iCALL2  , "iCALL2"  );
+	InitIDDesc1(NID.iINDEX  , "iINDEX"  );
+	InitIDDesc1(NID.iADDR   , "iADDR"   );
+	InitIDDesc2(NID.iFIELD  , "iFIELD"  , vcDict, 0);
+	InitIDDesc1(NID.iLPTR   , "iLPTR"   );
 
-	InitIDDesc2(iDEF_LOCAL, "iDEF_LOCAL", vcChar, 1);
-	InitIDDesc1(iSELECT , "iSELECT" );
-	InitIDDesc2(iSWITCH , "iSWITCH" , vcNone, 1);
-	InitIDDesc2(iWHILE  , "iWHILE"  , vcNone, 1);
-	InitIDDesc2(iREPEAT , "iREPEAT" , vcNone, 1);
-	InitIDDesc1(iCONTINUE, "iCONTINUE");
-	InitIDDesc1(iEXIT   , "iEXIT"   );
-	InitIDDesc1(iCAST   , "iCAST"   );
-	InitIDDesc1(iREINTERPRET_CAST, "iREINTERPRET_CAST");
-	InitIDDesc1(iFAKE_CAST, "iFAKE_CAST");
-	InitIDDesc2(iINC    , "iINC"    , vcNone, 1);
-	InitIDDesc2(iDEC    , "iDEC"    , vcNone, 1);
-	InitIDDesc2(iPUSH   , "iPUSH"   , vcNone, 1);
-	InitIDDesc2(iASSIGN , "iASSIGN" , vcNone, 1);
-	InitIDDesc2(iINLINE , "iINLINE" , vcNone, 1);
-	InitIDDesc2(iRETURN , "iRETURN" , vcNone, 1);
+	InitIDDesc2(NID.iDEF_LOCAL, "iDEF_LOCAL", vcChar, 1);
+	InitIDDesc1(NID.iSELECT , "iSELECT" );
+	InitIDDesc2(NID.iSWITCH , "iSWITCH" , vcNone, 1);
+	InitIDDesc2(NID.iWHILE  , "iWHILE"  , vcNone, 1);
+	InitIDDesc2(NID.iREPEAT , "iREPEAT" , vcNone, 1);
+	InitIDDesc1(NID.iCONTINUE, "iCONTINUE");
+	InitIDDesc1(NID.iEXIT   , "iEXIT"   );
+	InitIDDesc1(NID.iCAST   , "iCAST"   );
+	InitIDDesc1(NID.iREINTERPRET_CAST, "iREINTERPRET_CAST");
+	InitIDDesc1(NID.iFAKE_CAST, "iFAKE_CAST");
+	InitIDDesc2(NID.iINC    , "iINC"    , vcNone, 1);
+	InitIDDesc2(NID.iDEC    , "iDEC"    , vcNone, 1);
+	InitIDDesc2(NID.iPUSH   , "iPUSH"   , vcNone, 1);
+	InitIDDesc2(NID.iASSIGN , "iASSIGN" , vcNone, 1);
+	InitIDDesc2(NID.iINLINE , "iINLINE" , vcNone, 1);
+	InitIDDesc2(NID.iRETURN , "iRETURN" , vcNone, 1);
 
-	InitIDDesc2(iBODY   , "iBODY"  , vcNone, 1);
-	InitIDDesc2(iCOND   , "iCOND"  , vcNone, 1);
-	InitIDDesc2(iCASE   , "iCASE"  , vcNone, 1);
-	InitIDDesc2(iVALUE  , "iVALUE" , vcNone, 1);
-	InitIDDesc2(iDEFAULT, "iDEFAULT", vcNone, 1);
+	InitIDDesc2(NID.iBODY   , "iBODY"  , vcNone, 1);
+	InitIDDesc2(NID.iCOND   , "iCOND"  , vcNone, 1);
+	InitIDDesc2(NID.iCASE   , "iCASE"  , vcNone, 1);
+	InitIDDesc2(NID.iVALUE  , "iVALUE" , vcNone, 1);
+	InitIDDesc2(NID.iDEFAULT, "iDEFAULT", vcNone, 1);
 
-	InitIDDesc1(iINVALID, "iINVALID");
+	InitIDDesc1(NID.iINVALID, "iINVALID");
 end
 
 

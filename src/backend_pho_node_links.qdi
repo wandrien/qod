@@ -1,18 +1,18 @@
 
 bool PHO_CheckAliasing_NoRecursion(word pStore; word pLoad)
-	while Node[pStore].ID == iINDEX do
+	while Node[pStore].ID == NID.iINDEX do
 		pStore = Node[pStore].pLeft;
 	end:while
 
-	when Node[pStore].ID == iADDR:
+	when Node[pStore].ID == NID.iADDR:
 		return true;
 	when Node[pStore].ID != Node[pLoad].ID:
 		return false;
 
 	switch Node[pStore].ID of
-	case iDATA, iPARM, iLOCAL:
+	case NID.iDATA, NID.iPARM, NID.iLOCAL:
 		return Node[pStore].Value == Node[pLoad].Value;
-	case iFIELD:
+	case NID.iFIELD:
 		when Node[pStore].Value != Node[pLoad].Value:
 			return false;
 		return PHO_CheckAliasing_NoRecursion(Node[pStore].pLeft, Node[pLoad].pLeft);
@@ -48,12 +48,12 @@ end
 bool PHO_IsNodeLinkable_NoRecursion(word P)
 	switch Node[P].ID of
 	case
-		iDATA,iPARM,iLOCAL,iSTRING,iLITERAL,iNULL,iFUNC,
-		iLPTR,iADDR,iFIELD,iINDEX,iCAST,
-		iNEG,iBIT_NOT,
-		iADD,iSUB,iMUL,iDIV,iMOD,
-		iBIT_OR,iBIT_XOR,iBIT_AND,
-		iINDEX_CALC:
+		NID.iDATA,NID.iPARM,NID.iLOCAL,NID.iSTRING,NID.iLITERAL,NID.iNULL,NID.iFUNC,
+		NID.iLPTR,NID.iADDR,NID.iFIELD,NID.iINDEX,NID.iCAST,
+		NID.iNEG,NID.iBIT_NOT,
+		NID.iADD,NID.iSUB,NID.iMUL,NID.iDIV,NID.iMOD,
+		NID.iBIT_OR,NID.iBIT_XOR,NID.iBIT_AND,
+		NID.iINDEX_CALC:
 		return true;
 	default:
 		return false;

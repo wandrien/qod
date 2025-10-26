@@ -69,7 +69,7 @@ word NodeGetDict(word P)
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
-	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
+	case NID.iFUNC, NID.iCALL, NID.iCALL2, NID.iSTRING, NID.iDATA:
 		return DictResolveAlias(Node[P].Value);
 	end
 
@@ -82,7 +82,7 @@ void NodeSetDict(word P; word D)
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
-	case iFUNC, iCALL, iCALL2, iSTRING, iDATA:
+	case NID.iFUNC, NID.iCALL, NID.iCALL2, NID.iSTRING, NID.iDATA:
 		Node[P].Value = D;
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -97,7 +97,7 @@ bool NodeHasImmediateValue(word P)
 		StopInternal(__FILE__, __LINE__);
 
 	switch Node[P].ID of
-	case iLITERAL, iNULL:
+	case NID.iLITERAL, NID.iNULL:
 		return true;
 	end
 
@@ -121,54 +121,54 @@ end
 /*****************************************************************************/
 
 bool NodeIsLiteralChar(word P)
-	when Node[P].ID == iLITERAL & Node[P].pType == st_char:
+	when Node[P].ID == NID.iLITERAL & Node[P].pType == st_char:
 		return true;
 	return false;
 end
 
 bool NodeIsLiteralWord(word P)
-	when Node[P].ID == iLITERAL & Node[P].pType == st_word:
+	when Node[P].ID == NID.iLITERAL & Node[P].pType == st_word:
 		return true;
 	return false;
 end
 
 bool NodeIsLiteralInt(word P)
-	when Node[P].ID == iLITERAL & Node[P].pType == st_int:
+	when Node[P].ID == NID.iLITERAL & Node[P].pType == st_int:
 		return true;
 	return false;
 end
 
 bool NodeIsLiteralZero(word P)
-	return Node[P].ID == iLITERAL & Node[P].Value == 0;
+	return Node[P].ID == NID.iLITERAL & Node[P].Value == 0;
 end
 
 bool NodeIsFalse(word P)
-	when Node[P].ID == iLITERAL & Node[P].pType == st_bool & Node[P].Value == 0:
+	when Node[P].ID == NID.iLITERAL & Node[P].pType == st_bool & Node[P].Value == 0:
 		return true;
 	return false;
 end
 
 bool NodeIsTrue(word P)
-	when Node[P].ID == iLITERAL & Node[P].pType == st_bool & Node[P].Value != 0:
+	when Node[P].ID == NID.iLITERAL & Node[P].pType == st_bool & Node[P].Value != 0:
 		return true;
 	return false;
 end
 
 bool NodeIsLiteralString(word P)
-	when Node[P].ID == iSTRING:
+	when Node[P].ID == NID.iSTRING:
 		return true;
 	return false;
 end
 
 bool NodeIsNull(word P)
-	return Node[P].ID == iNULL | T_IsNulltype(Node[P].pType);
+	return Node[P].ID == NID.iNULL | T_IsNulltype(Node[P].pType);
 end
 
 /*****************************************************************************/
 
 void NodeAssignLiteral(word P; word pType; word Value)
 	NODE @p = @Node[P];
-	p.ID     = iLITERAL;
+	p.ID     = NID.iLITERAL;
 	p.pType  = pType;
 	p.Value  = Value;
 	p.pLeft  = nNODE;
@@ -204,9 +204,9 @@ end
 /*****************************************************************************/
 
 bool NodeEqual(word P1; word P2)
-	when Node[P1].ID != iLITERAL:
+	when Node[P1].ID != NID.iLITERAL:
 		StopInternal(__FILE__, __LINE__);
-	when Node[P2].ID != iLITERAL:
+	when Node[P2].ID != NID.iLITERAL:
 		StopInternal(__FILE__, __LINE__);
 
 	if (Node[P1].Value == Node[P2].Value)
@@ -225,12 +225,12 @@ bool NodeIsLValue(word P)
 
 	switch Node[P].ID of
 	case
-		iDATA,
-		iPARM,
-		iLOCAL,
-		iINDEX,
-		iADDR,
-		iFIELD:
+		NID.iDATA,
+		NID.iPARM,
+		NID.iLOCAL,
+		NID.iINDEX,
+		NID.iADDR,
+		NID.iFIELD:
 		return true;
 	end
 	return false;

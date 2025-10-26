@@ -4,7 +4,7 @@
 void AddFakeCast(word pType1; word @P)
 
 	word P1 = Peek();
-	Node[P1].ID    = iFAKE_CAST;
+	Node[P1].ID    = NID.iFAKE_CAST;
 	Node[P1].pType = pType1;
 	Node[P1].pLeft = P;
 
@@ -15,7 +15,7 @@ end
 
 void AddReinterpretCast(word pTypeCastTo; word @P)
 	word P1 = Peek();
-	Node[P1].ID    = iREINTERPRET_CAST;
+	Node[P1].ID    = NID.iREINTERPRET_CAST;
 	Node[P1].pType = pTypeCastTo;
 	Node[P1].pLeft = P;
 
@@ -29,13 +29,13 @@ end
 void AddCast(word pTypeCastTo; word @P)
 
 	/* FIXME: Эта ветка должна быть частью подсистемы CTE. */
-	if pTypeCastTo == st_int & Node[P].ID == iLITERAL & Node[P].pType == st_word then
+	if pTypeCastTo == st_int & Node[P].ID == NID.iLITERAL & Node[P].pType == st_word then
 		Node[P].pType = pTypeCastTo;
 		return;
 	end
 
 	word P1 = Peek();
-	Node[P1].ID    = iCAST;
+	Node[P1].ID    = NID.iCAST;
 	Node[P1].pType = pTypeCastTo;
 	Node[P1].pLeft = P;
 
@@ -54,7 +54,7 @@ end
 /*****************************************************************************/
 
 bool IsLiteralAutoCastPossible(word pTypeTo; word P)
-	when Node[P].ID != iLITERAL:
+	when Node[P].ID != NID.iLITERAL:
 		return false;
 
 	word pTypeFrom = Node[P].pType;
@@ -325,10 +325,10 @@ void Cast2(word P_OP; word O)
 	/**************************************************************************/
 
 	select
-	case ID == iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
+	case ID == NID.iOR: /* операция ИЛИ возможна либо между беззнаковыми целыми, либо между булевыми значениями. */
 		select
 		case T_IsUnsigned(pTypeOp):
-			Node[P_OP].ID=iBIT_OR;
+			Node[P_OP].ID = NID.iBIT_OR;
 		case pTypeOp == st_bool:
 			pass;
 		case T_IsSigned(pTypeOp):
@@ -339,10 +339,10 @@ void Cast2(word P_OP; word O)
 
 		CTE(P_OP);
 
-	case ID == iXOR: /* Аналогично предыдущему. */
+	case ID == NID.iXOR: /* Аналогично предыдущему. */
 		select
 		case T_IsUnsigned(pTypeOp):
-			Node[P_OP].ID=iBIT_XOR;
+			Node[P_OP].ID = NID.iBIT_XOR;
 		case pTypeOp == st_bool:
 			Stop(@L10n.eXORNOTIMPL);
 		case T_IsSigned(pTypeOp):
@@ -353,10 +353,10 @@ void Cast2(word P_OP; word O)
 
 		CTE(P_OP);
 
-	case ID == iAND: /* Аналогично предыдущему. */
+	case ID == NID.iAND: /* Аналогично предыдущему. */
 		select
 		case T_IsUnsigned(pTypeOp):
-			Node[P_OP].ID=iBIT_AND;
+			Node[P_OP].ID = NID.iBIT_AND;
 		case pTypeOp == st_bool:
 			pass;
 		case T_IsSigned(pTypeOp):
@@ -367,8 +367,8 @@ void Cast2(word P_OP; word O)
 
 		CTE(P_OP);
 
-	case iLT<=ID & ID<=iGT:
-		if ID == iEQ | ID == iNE then
+	case NID.iLT<=ID & ID<=NID.iGT:
+		if ID == NID.iEQ | ID == NID.iNE then
 			/* Сравнение равенство/неравенство... */
 			/* ...возможно только между целыми, булевыми, символами, указателями, типами. */
 			if
@@ -395,7 +395,7 @@ void Cast2(word P_OP; word O)
 
 		CTE(P_OP);
 
-	case iADD<=ID & ID<=iMOD:
+	case NID.iADD<=ID & ID<=NID.iMOD:
 		/* Арифметические операции только с целыми. */
 		if !T_IsInteger(pTypeOp) then
 			ErrorAtNode(P_OP, @L10n.eTYPE_ARITH_OP);

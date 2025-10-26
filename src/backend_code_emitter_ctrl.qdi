@@ -5,16 +5,16 @@ LABEL @CodeExtractExitLabel(word P);
 
 LABEL @CodeExtractJump(word P)
 	/* Skip `pass` statements, if any. */
-	while Node[P].ID == iEMPTY & Node[P].pRight != nNODE loop
+	while Node[P].ID == NID.iEMPTY & Node[P].pRight != nNODE loop
 		P = Node[P].pRight;
 	end:while
 
 	switch Node[P].ID of
-	case iVIRTUAL_JUMP:
+	case NID.iVIRTUAL_JUMP:
 		return @LabelResolve(Node[P].Value, Node[P].pType);
-	case iCONTINUE:
+	case NID.iCONTINUE:
 		return @LabelResolve(Node[P].Value, JmpLbl.lCONTINUE);
-	case iEXIT, iVIRTUAL_EXIT:
+	case NID.iEXIT, NID.iVIRTUAL_EXIT:
 		return @CodeExtractExitLabel(Node[P].Value);
 	default:
 		return NULL;
@@ -32,7 +32,7 @@ end
 
 void CodeList_InsertVirtualJump(word P; word pTarget; word LabelId)
 	word pJump = Peek();
-	Node[pJump].ID = iVIRTUAL_JUMP;
+	Node[pJump].ID = NID.iVIRTUAL_JUMP;
 	Node[pJump].Value = pTarget;
 	Node[pJump].pType = LabelId;
 	Node[pJump].SourceLocation.Line = -1;
@@ -45,7 +45,7 @@ end
 
 void CodeList_InsertVirtualExit(word P; word pTarget)
 	word pJump = Peek();
-	Node[pJump].ID = iVIRTUAL_EXIT;
+	Node[pJump].ID = NID.iVIRTUAL_EXIT;
 	Node[pJump].Value = pTarget;
 	Node[pJump].SourceLocation.Line = -1;
 
@@ -130,9 +130,9 @@ word Code_PUSH(word P; char @Buff)
 
 	/* Оптимизация прямой загрузки указателя на строку. */
 	if
-		(Node[P1].ID == iLPTR) &
+		(Node[P1].ID == NID.iLPTR) &
 		(Node[P1].pLeft != nNODE) &
-		(Node[Node[P1].pLeft].ID == iSTRING)
+		(Node[Node[P1].pLeft].ID == NID.iSTRING)
 	then
 		ValueRef Ref;
 		ValueRef_ExtractDataInfo(@Ref, Node[P1].pLeft);
@@ -262,14 +262,14 @@ word Code_SELECT(word P; char @Buff)
 	word LAST_CASE = CASE;
 	LABEL @L_JumpOnTrue = NULL;
 	while CASE < nNODE do
-		when Node[CASE].ID != iCASE:
+		when Node[CASE].ID != NID.iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		word COND = Node[CASE].pLeft;
 		word BODY = Node[COND].pRight;
 
-		when Node[BODY].ID != iBODY
-		|    Node[COND].ID != iCOND:
+		when Node[BODY].ID != NID.iBODY
+		|    Node[COND].ID != NID.iCOND:
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		bool ThisCaseIsLast = (Node[CASE].pRight == nNODE);
@@ -381,9 +381,9 @@ word Code_SWITCH_CASE_GetBody(word CASE_I)
 	word  VALUE_I = Node[CASE_I].pLeft;
 	while VALUE_I < nNode do
 		switch Node[VALUE_I].ID of
-		case iVALUE, iDEFAULT:
+		case NID.iVALUE, NID.iDEFAULT:
 			pass;
-		case iBODY:
+		case NID.iBODY:
 			return VALUE_I;
 		default:
 			StopInternalCodegen(__FILE__, __LINE__);
@@ -428,7 +428,7 @@ word Code_SWITCH(word P; char @Buff)
 	bool DefaultBranchPresent = false;
 
 	word COND = Node[P].pLeft;
-	when Node[COND].ID != iCOND:
+	when Node[COND].ID != NID.iCOND:
 		StopInternalCodegen(__FILE__, __LINE__);
 
 	if CodeRequiresSingleRegister(Node[COND].pLeft) then
@@ -450,7 +450,7 @@ word Code_SWITCH(word P; char @Buff)
 
 	word  CASE_I = Node[COND].pRight;
 	while CASE_I < nNODE do
-		when Node[CASE_I].ID != iCASE:
+		when Node[CASE_I].ID != NID.iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		word BODY_I = Code_SWITCH_CASE_GetBody(CASE_I);
@@ -461,7 +461,7 @@ word Code_SWITCH(word P; char @Buff)
 		word  VALUE_I = Node[CASE_I].pLeft;
 		while VALUE_I < nNode do
 			switch Node[VALUE_I].ID of
-			case iVALUE:
+			case NID.iVALUE:
 				word value = Node[Node[VALUE_I].pLeft].Value - offset;
 
 				switch Size of
@@ -496,11 +496,11 @@ word Code_SWITCH(word P; char @Buff)
 				offset = offset + value;
 
 				EmitBranchToLabel("e", @L_Jump);
-			case iDEFAULT:
+			case NID.iDEFAULT:
 				@L_Default = @LabelResolve(CASE_I, JmpLbl.lCASEBODY);
 				DefaultBranchPresent = true;
 				DEFAULT_CASE_I = CASE_I;
-			case iBODY:
+			case NID.iBODY:
 				pass;
 			default:
 				StopInternalCodegen(__FILE__, __LINE__);
@@ -517,7 +517,7 @@ word Code_SWITCH(word P; char @Buff)
 	while CASE_I < nNODE do
 		word NEXT_CASE_I = Node[CASE_I].pRight;
 
-		when Node[CASE_I].ID != iCASE:
+		when Node[CASE_I].ID != NID.iCASE:
 			StopInternalCodegen(__FILE__, __LINE__);
 
 		word BODY_I = Code_SWITCH_CASE_GetBody(CASE_I);
@@ -583,8 +583,8 @@ word Code_WHILE(word P; char @Buff)
 	word BODY = Node[P].pLeft;
 	word COND = Node[BODY].pRight;
 
-	when Node[BODY].ID != iBODY
-	|    Node[COND].ID != iCOND:
+	when Node[BODY].ID != NID.iBODY
+	|    Node[COND].ID != NID.iCOND:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 	Emit_ALIGN(SwOptions.AlignLoops);
@@ -633,8 +633,8 @@ word Code_REPEAT(word P; char @Buff)
 	word BODY = Node[P].pLeft;
 	word COND = Node[BODY].pRight;
 
-	when Node[BODY].ID != iBODY
-	|    Node[COND].ID != iCOND:
+	when Node[BODY].ID != NID.iBODY
+	|    Node[COND].ID != NID.iCOND:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);
 
 	/* Check the case when loop can be replaced with simple code block */

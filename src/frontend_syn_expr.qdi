@@ -290,7 +290,7 @@ word StringNode()
 	ScanString(D);
 
 	word P = Peek();
-	Node[P].ID = iSTRING;
+	Node[P].ID = NID.iSTRING;
 	NodeSetDict(P, D);
 
 	return P;
@@ -312,7 +312,7 @@ word StringNode__FILE__()
 	end
 
 	word P = Peek();
-	Node[P].ID = iSTRING;
+	Node[P].ID = NID.iSTRING;
 	NodeSetDict(P, pCurrentFileLiteral);
 
 	return P;
@@ -322,7 +322,7 @@ end
 
 word BoolNode(bool value)
 	word P1 = Peek();
-	Node[P1].ID    = iLITERAL;
+	Node[P1].ID    = NID.iLITERAL;
 	Node[P1].pType = st_bool;
 	if value then
 		Node[P1].Value = 1;
@@ -438,16 +438,16 @@ end
 
 word Not(word P)
 	switch Node[P].ID of
-	case iOR:   Node[P].ID = iAND; Not(Node[P].pLeft); Not(Node[P].pRight);
-	case iAND:  Node[P].ID = iOR;  Not(Node[P].pLeft); Not(Node[P].pRight);
-	case iXOR:  Node[P].ID = iEQV;
-	case iEQV:  Node[P].ID = iXOR;
-	case iLT:   Node[P].ID = iGE;
-	case iLE:   Node[P].ID = iGT;
-	case iEQ:   Node[P].ID = iNE;
-	case iNE:   Node[P].ID = iEQ;
-	case iGE:   Node[P].ID = iLT;
-	case iGT:   Node[P].ID = iLE;
+	case NID.iOR:   Node[P].ID = NID.iAND; Not(Node[P].pLeft); Not(Node[P].pRight);
+	case NID.iAND:  Node[P].ID = NID.iOR;  Not(Node[P].pLeft); Not(Node[P].pRight);
+	case NID.iXOR:  Node[P].ID = NID.iEQV;
+	case NID.iEQV:  Node[P].ID = NID.iXOR;
+	case NID.iLT:   Node[P].ID = NID.iGE;
+	case NID.iLE:   Node[P].ID = NID.iGT;
+	case NID.iEQ:   Node[P].ID = NID.iNE;
+	case NID.iNE:   Node[P].ID = NID.iEQ;
+	case NID.iGE:   Node[P].ID = NID.iLT;
+	case NID.iGT:   Node[P].ID = NID.iLE;
 	default:
 		select
 		case NodeIsFalse(P):
@@ -456,7 +456,7 @@ word Not(word P)
 			NodeAssignBool(P, false);
 		default:
 			word P2 = Peek();
-			Node[P2].ID    = iNOT;
+			Node[P2].ID    = NID.iNOT;
 			Node[P2].pLeft = P;
 			return P2;
 		end:select
@@ -475,8 +475,8 @@ void ParseCallArgs(word pFunc; word @P7; char @Buff; word pBracket)
 
 	while pARG < nDICT do
 		word P8=Peek();
-		Node[P8].ID   =iPUSH;
-		Node[P8].pLeft=Expr(PRIO.ZERO, @Buff);
+		Node[P8].ID    = NID.iPUSH;
+		Node[P8].pLeft = Expr(PRIO.ZERO, @Buff);
 
 		ImplicitCast(Dict[pARG].pType, @Node[P8].pLeft);
 
@@ -528,7 +528,7 @@ word AutoDerefPtr(word pExpr)
 	forever do
 		word pType = Node[pExpr].pType;
 		when !T_IsPtr(pType): exit;
-		word P = Peek5(iADDR, pExpr, nNODE, T_DerefPtr(pType));
+		word P = Peek5(NID.iADDR, pExpr, nNODE, T_DerefPtr(pType));
 		Node[P].SourceLocation = Node[pExpr].SourceLocation;
 		pExpr = P;
 	end:forever
@@ -540,7 +540,7 @@ end
 word ReadFuncCall(char @Buff; word pPreallocated; word pFunc; word pBracket)
 	word pFuncType = Func_GetType(pFunc);
 	word pRetType = T_FuncGetRetType(pFuncType);
-	Node[pPreallocated].ID = iCALL;
+	Node[pPreallocated].ID = NID.iCALL;
 	Node[pPreallocated].Value = pFunc;
 	Node[pPreallocated].pType = pRetType;
 
@@ -552,14 +552,14 @@ end
 word ReadIndirecFuncCall(char @Buff; word pPtrExpr; word pBracket)
 	word pFuncType = Node[pPtrExpr].pType;
 	word pRetType = T_FuncGetRetType(pFuncType);
-	if Node[pPtrExpr].ID == iADDR & Node[pPtrExpr].pRight == nNODE then
+	if Node[pPtrExpr].ID == NID.iADDR & Node[pPtrExpr].pRight == nNODE then
 		pPtrExpr = Node[pPtrExpr].pLeft;
 	else
-		pPtrExpr = Peek3(iLPTR, pPtrExpr);
+		pPtrExpr = Peek3(NID.iLPTR, pPtrExpr);
 		Node[pPtrExpr].pType = T_nPtrTo(1, pFuncType);
 	end:if
 
-	word P_CALL2 = Peek5(iCALL2, nNODE, pPtrExpr, pRetType);
+	word P_CALL2 = Peek5(NID.iCALL2, nNODE, pPtrExpr, pRetType);
 
 	Scan(@Buff);
 	ParseCallArgs(pFuncType, @Node[P_CALL2].pLeft, @Buff, pBracket);
@@ -595,7 +595,7 @@ word MakeNodeForDict(word I)
 	switch Dict[I].Class of
 	case CLASS.cDATA:
 		word P = Peek();
-		Node[P].ID = iDATA;
+		Node[P].ID = NID.iDATA;
 		Node[P].Value = I;
 		Node[P].pType = Dict[I].pType;
 		return P;
@@ -613,7 +613,7 @@ word MakeNodeForDict(word I)
 
 		case pTypeI == T_PtrTo(st_char):
 			P = Peek();
-			Node[P].ID = iSTRING;
+			Node[P].ID = NID.iSTRING;
 			Node[P].pType = pTypeI;
 			if ROStrings != 0 then
 				Node[P].Value = I;
@@ -631,14 +631,14 @@ word MakeNodeForDict(word I)
 
 	case CLASS.cFUNC:
 		word P = Peek();
-		Node[P].ID    = iFUNC;
+		Node[P].ID    = NID.iFUNC;
 		Node[P].pType = T_PtrTo(T_FuncTypeForFunction(I));
 		Node[P].Value = I;
 		return P;
 
 	case CLASS.cTYPE:
 		word P = Peek();
-		Node[P].ID    = iTYPE;
+		Node[P].ID    = NID.iTYPE;
 		Node[P].pType = st_type;
 		Node[P].Value = I;
 		return P;
@@ -655,7 +655,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 	forever do
 		while str_eq(@Buff,"[") & T_IsArray(pType) do /* Индексация массива. */
 			word P3 = Peek();
-			Node[P3].ID = iINDEX;
+			Node[P3].ID = NID.iINDEX;
 			Node[P3].Value = T_ArrayGetLen(pType);
 			Node[P3].pLeft = pPrefixExpr;
 			Node[P3].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
@@ -673,7 +673,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 		while str_eq(@Buff,"[") do /* Индексация указателя. */
 			when !T_IsPtr(pType):
 				Stop(@L10n.eNOADDR);
-			word P3 = Peek5(iADDR, pPrefixExpr, nNODE, T_DerefPtr(pType));
+			word P3 = Peek5(NID.iADDR, pPrefixExpr, nNODE, T_DerefPtr(pType));
 
 			Node[P3].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 			ImplicitCast(st_word, @Node[P3].pRight);
@@ -693,7 +693,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			pType = Node[pPrefixExpr].pType;
 
 			select
-			case Node[pPrefixExpr].ID == iFUNC:
+			case Node[pPrefixExpr].ID == NID.iFUNC:
 				pPrefixExpr = ReadFuncCall(@Buff,
 					pPrefixExpr /* overwrite node*/,
 					Node[pPrefixExpr].Value, b);
@@ -701,7 +701,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 			case T_IsFunc(pType):
 				pPrefixExpr = ReadIndirecFuncCall(@Buff, pPrefixExpr, b);
 				pType = Node[pPrefixExpr].pType;
-			case Node[pPrefixExpr].ID == iTYPE:
+			case Node[pPrefixExpr].ID == NID.iTYPE:
 				pPrefixExpr = ReadCast(@Buff, Node[pPrefixExpr].Value, b);
 				pType = Node[pPrefixExpr].pType;
 			default:
@@ -731,7 +731,7 @@ word ReadPostfixOperators(char @Buff; word pPrefixExpr)
 					StopInternal(__FILE__, __LINE__);
 
 				word P3=Peek();
-				Node[P3].ID = iFIELD;
+				Node[P3].ID = NID.iFIELD;
 				Node[P3].pLeft = pPrefixExpr;
 				Node[P3].Value = F;
 				pType = Dict[F].pType;
@@ -807,7 +807,7 @@ word Primary(word Prty; char @Buff)
 		word I = ResolveLocal(@Buff);
 		if I < nLOCAL then
 			P1=Peek();
-			Node[P1].ID    = iLOCAL;
+			Node[P1].ID    = NID.iLOCAL;
 			Node[P1].Value = I;
 			pType          = Local[I].pType;
 			Flag           = 1;
@@ -818,7 +818,7 @@ word Primary(word Prty; char @Buff)
 		word I = ResolveParm(@Buff);
 		if I < nDICT then
 			P1=Peek();
-			Node[P1].ID    = iPARM;
+			Node[P1].ID    = NID.iPARM;
 			Node[P1].Value = I;
 			pType          = Dict[I].pType;
 			Flag           = 1;
@@ -834,7 +834,7 @@ word Primary(word Prty; char @Buff)
 		switch Dict[I].Class of
 		case CLASS.cDATA:
 			P1 = Peek();
-			Node[P1].ID = iDATA;
+			Node[P1].ID = NID.iDATA;
 			Node[P1].Value = I;
 			pType = Dict[I].pType;
 			SkipScan = true;
@@ -852,7 +852,7 @@ word Primary(word Prty; char @Buff)
 				NodeAssignLiteral(P1, pType, Dict[I].LiteralValue);
 
 			case pTypeI == T_PtrTo(st_char):
-				Node[P1].ID    =iSTRING;
+				Node[P1].ID = NID.iSTRING;
 				if ROStrings != 0 then
 					Node[P1].Value = I;
 				else
@@ -876,7 +876,7 @@ word Primary(word Prty; char @Buff)
 				SkipScan = true;
 			else
 				P1 = Peek();
-				Node[P1].ID = iFUNC;
+				Node[P1].ID = NID.iFUNC;
 				Node[P1].Value = I;
 				Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
 
@@ -901,7 +901,7 @@ word Primary(word Prty; char @Buff)
 				I = T_nPtrTo(nPtr, I);
 
 				P1 = Peek();
-				Node[P1].ID    = iTYPE;
+				Node[P1].ID    = NID.iTYPE;
 				Node[P1].pType = st_type;
 				Node[P1].Value = I;
 
@@ -951,14 +951,14 @@ word Primary(word Prty; char @Buff)
 
 		if nPtr>nPtr1 then
 			P4=Peek();
-			Node[P4].ID = iLPTR;
+			Node[P4].ID = NID.iLPTR;
 			Node[P4].pType = T_nPtrTo(1, pType);
 		end:if
 	end:if
 
 	while nPtr1>nPtr do
 		pType = T_DerefPtr(pType);
-		P1 = Peek5(iADDR, P1, nNODE, pType);
+		P1 = Peek5(NID.iADDR, P1, nNODE, pType);
 		dec nPtr1;
 	end:while
 
@@ -1132,7 +1132,7 @@ word ExprTypeOf(word _P1; word O; char @Buff)
 	word P = ExprInParentheses(@Scan(@Buff), @OperatorGetName(O));
 
 	word P1 = Peek();
-	Node[P1].ID    = iTYPE;
+	Node[P1].ID    = NID.iTYPE;
 	Node[P1].pType = st_type;
 	Node[P1].Value = Node[P].pType;
 	return P1;
@@ -1220,7 +1220,7 @@ end
 
 word ExprLitNULL(word P_; word O; char @Buff)
 	word P1=Peek();
-	Node[P1].ID = iNULL;
+	Node[P1].ID = NID.iNULL;
 	Node[P1].pType = st_nulltype;
 	Node[P1].Value = 0;
 	Scan(@Buff);
@@ -1251,7 +1251,7 @@ word ExprNOT(word P_; word O; char @Buff)
 	select
 	case pType == st_byte | pType == st_word:
 		P1=Peek();
-		Node[P1].ID    =iBIT_NOT;
+		Node[P1].ID = NID.iBIT_NOT;
 		Node[P1].pLeft = P2;
 
 	case pType == st_bool:
@@ -1283,12 +1283,13 @@ word ExprNEG(word P_; word O; char @Buff)
 	end:select
 
 	word P1 = Peek();
-	Node[P1].ID    = iNEG;
+	Node[P1].ID    = NID.iNEG;
 	Node[P1].pLeft = pLeft;
 	Node[P1].pType = pTargetType;
 
 	select
-	case (Node[pLeft].ID == iLITERAL) & (Node[pLeft].pType == st_word | Node[pLeft].pType == st_int):
+	case (Node[pLeft].ID == NID.iLITERAL)
+	& (Node[pLeft].pType == st_word | Node[pLeft].pType == st_int):
 		if Node[pLeft].pType == st_word & Node[pLeft].Value > 0x80000000 then
 			Stop(@L10n.eCALCERR);
 		end
@@ -1303,26 +1304,26 @@ end
 
 void RegisterOperators()
 
-	RegisterOperator("|"    , PRIO.BOOL , OPERATOR_BLEFT, iOR , @ExprBinOp);
-	RegisterOperator("^"    , PRIO.BOOL , OPERATOR_BLEFT, iXOR, @ExprBinOp);
-	RegisterOperator("&"    , PRIO.BOOL , OPERATOR_BLEFT, iAND, @ExprBinOp);
+	RegisterOperator("|"    , PRIO.BOOL , OPERATOR_BLEFT, NID.iOR , @ExprBinOp);
+	RegisterOperator("^"    , PRIO.BOOL , OPERATOR_BLEFT, NID.iXOR, @ExprBinOp);
+	RegisterOperator("&"    , PRIO.BOOL , OPERATOR_BLEFT, NID.iAND, @ExprBinOp);
 
-	RegisterOperator("<"    , PRIO.COMP , OPERATOR_BLEFT, iLT , @ExprBinOp);
-	RegisterOperator("<="   , PRIO.COMP , OPERATOR_BLEFT, iLE , @ExprBinOp);
-	RegisterOperator("=="   , PRIO.COMP , OPERATOR_BLEFT, iEQ , @ExprBinOp);
-	RegisterOperator("!="   , PRIO.COMP , OPERATOR_BLEFT, iNE , @ExprBinOp);
-	RegisterOperator(">"    , PRIO.COMP , OPERATOR_BLEFT, iGT , @ExprBinOp);
-	RegisterOperator(">="   , PRIO.COMP , OPERATOR_BLEFT, iGE , @ExprBinOp);
+	RegisterOperator("<"    , PRIO.COMP , OPERATOR_BLEFT, NID.iLT , @ExprBinOp);
+	RegisterOperator("<="   , PRIO.COMP , OPERATOR_BLEFT, NID.iLE , @ExprBinOp);
+	RegisterOperator("=="   , PRIO.COMP , OPERATOR_BLEFT, NID.iEQ , @ExprBinOp);
+	RegisterOperator("!="   , PRIO.COMP , OPERATOR_BLEFT, NID.iNE , @ExprBinOp);
+	RegisterOperator(">"    , PRIO.COMP , OPERATOR_BLEFT, NID.iGT , @ExprBinOp);
+	RegisterOperator(">="   , PRIO.COMP , OPERATOR_BLEFT, NID.iGE , @ExprBinOp);
 
-	RegisterOperator("+"    , PRIO.ADD  , OPERATOR_BLEFT, iADD, @ExprBinOp);
-	RegisterOperator("-"    , PRIO.ADD  , OPERATOR_BLEFT, iSUB, @ExprBinOp);
+	RegisterOperator("+"    , PRIO.ADD  , OPERATOR_BLEFT, NID.iADD, @ExprBinOp);
+	RegisterOperator("-"    , PRIO.ADD  , OPERATOR_BLEFT, NID.iSUB, @ExprBinOp);
 
-	RegisterOperator("*"    , PRIO.MUL  , OPERATOR_BLEFT, iMUL, @ExprBinOp);
-	RegisterOperator("/"    , PRIO.MUL  , OPERATOR_BLEFT, iDIV, @ExprBinOp);
-	RegisterOperator("%"    , PRIO.MUL  , OPERATOR_BLEFT, iMOD, @ExprBinOp);
+	RegisterOperator("*"    , PRIO.MUL  , OPERATOR_BLEFT, NID.iMUL, @ExprBinOp);
+	RegisterOperator("/"    , PRIO.MUL  , OPERATOR_BLEFT, NID.iDIV, @ExprBinOp);
+	RegisterOperator("%"    , PRIO.MUL  , OPERATOR_BLEFT, NID.iMOD, @ExprBinOp);
 
-	RegisterOperator("-"    , PRIO.NEG  , OPERATOR_UPRE , iNEG, @ExprNEG);
-	RegisterOperator("!"    , PRIO.NEG  , OPERATOR_UPRE , iNOT, @ExprNOT);
+	RegisterOperator("-"    , PRIO.NEG  , OPERATOR_UPRE , NID.iNEG, @ExprNEG);
+	RegisterOperator("!"    , PRIO.NEG  , OPERATOR_UPRE , NID.iNOT, @ExprNOT);
 
 	RegisterOperator("("    , PRIO.EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
 	RegisterOperator("(*"   , PRIO.EXPR , OPERATOR_UPRE , 0   , @ExprParentheses);
@@ -1349,12 +1350,12 @@ void RegisterOperators()
 	RegisterOperator("likely", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprLikely);
 	RegisterOperator("unlikely", PRIO.FUNCCALL , OPERATOR_UPRE , 0, @ExprUnlikely);
 
-	RegisterOperator("'"    , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
-	RegisterOperator("#"    , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitChar);
-	RegisterOperator("NULL" , PRIO.LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
-	RegisterOperator("null" , PRIO.LITER, OPERATOR_UPRE , iNULL,    @ExprLitNULL);
-	RegisterOperator("false", PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitFALSE);
-	RegisterOperator("true" , PRIO.LITER, OPERATOR_UPRE , iLITERAL, @ExprLitTRUE);
+	RegisterOperator("'"    , PRIO.LITER, OPERATOR_UPRE , NID.iLITERAL, @ExprLitChar);
+	RegisterOperator("#"    , PRIO.LITER, OPERATOR_UPRE , NID.iLITERAL, @ExprLitChar);
+	RegisterOperator("NULL" , PRIO.LITER, OPERATOR_UPRE , NID.iNULL,    @ExprLitNULL);
+	RegisterOperator("null" , PRIO.LITER, OPERATOR_UPRE , NID.iNULL,    @ExprLitNULL);
+	RegisterOperator("false", PRIO.LITER, OPERATOR_UPRE , NID.iLITERAL, @ExprLitFALSE);
+	RegisterOperator("true" , PRIO.LITER, OPERATOR_UPRE , NID.iLITERAL, @ExprLitTRUE);
 end
 
 /*****************************************************************************/

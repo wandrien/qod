@@ -85,7 +85,7 @@ end
 /*****************************************************************************/
 
 void DeclAlias_Forward(word D; word pForward; word pExpr)
-	if Node[pExpr].ID != iFUNC then
+	if Node[pExpr].ID != NID.iFUNC then
 		ErrorWithSubject(@L10n.eDUPLICATE, @DictGetName(D));
 	end:if
 
@@ -137,10 +137,10 @@ bool DeclAlias(char @Buff)
 			Dict[D].RO = true;
 			Dict[D].pType = Node[pExpr].pType;
 			Dict[D].LiteralValue = Node[pExpr].Value;
-		case Node[pExpr].ID == iFUNC:
+		case Node[pExpr].ID == NID.iFUNC:
 			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = Node[pExpr].Value;
-		case Node[pExpr].ID == iDATA:
+		case Node[pExpr].ID == NID.iDATA:
 			Dict[D].Class = CLASS.cNAME;
 			Dict[D].pType = Node[pExpr].Value;
 		default:
@@ -199,7 +199,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 
 	select
 		case str_eq(@Buff,";"): /* Прототип. */
-			Dict[pCurrentFunc].pNode = Peek2(iINVALID);
+			Dict[pCurrentFunc].pNode = Peek2(NID.iINVALID);
 			Dict[pCurrentFunc].Forward = 1;
 
 		case str_eq(@Buff,"external"): /* Внешняя функция. */
@@ -349,7 +349,7 @@ end
 
 void DeclVarFunc(char @Buff; word AttributeFlags)
 	word pPrefixExpr = Expr(PRIO.LVALUE, @Buff);
-	if Node[pPrefixExpr].ID != iTYPE then
+	if Node[pPrefixExpr].ID != NID.iTYPE then
 		Stop(@L10n.eTYPEEXP);
 	end
 
@@ -442,22 +442,22 @@ void DeclVarFunc(char @Buff; word AttributeFlags)
 					Stop(@L10n.eNOTAVAIL);
 				end*/
 
-				word P1=Peek();
-				word P2=Peek();
-				Node[P1].ID    =iASSIGN;
-				Node[P1].pLeft = P2;
+				word P1 = Peek();
+				word P2 = Peek();
+				word P3 = Peek();
+				Node[P1].ID     = NID.iASSIGN;
+				Node[P1].pLeft  = P2;
 
-				word P3=Peek();
-				Node[P2].ID    =iEMPTY;
-				Node[P2].pLeft = P3;
-				Node[P2].pRight= Expr(PRIO.ZERO, @Scan(@Buff));
+				Node[P2].ID     = NID.iEMPTY;
+				Node[P2].pLeft  = P3;
+				Node[P2].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 
-				Node[P3].ID    =iDATA;
-				Node[P3].Value =D;
+				Node[P3].ID     = NID.iDATA;
+				Node[P3].Value  = D;
 
 				ImplicitCast(Dict[D].pType, @Node[P2].pRight);
 
-				Dict[D].pNode=P1;
+				Dict[D].pNode = P1;
 			end
 		end:select
 
@@ -493,7 +493,7 @@ bool DeclEnumValue(char @Buff)
 		word P = Expr(PRIO.ZERO, @Buff);
 
 		select
-		case Node[P].ID==iLITERAL:
+		case Node[P].ID == NID.iLITERAL:
 			Dict[D].pType = Node[P].pType;
 			Dict[D].LiteralValue = Node[P].Value;
 		default:
@@ -541,7 +541,7 @@ bool DeclDefine(char @Buff)
 			word P = Expr(PRIO.ZERO, @Buff);
 
 			select
-				case Node[P].ID==iLITERAL:
+				case Node[P].ID == NID.iLITERAL:
 					Dict[D].pType = Node[P].pType;
 					Dict[D].LiteralValue = Node[P].Value;
 
@@ -586,7 +586,7 @@ void Include(word pFileName; word pGuard; bool Once)
 		end:if
 	end:if
 
-	when Node[pFileName].ID == iLPTR:
+	when Node[pFileName].ID == NID.iLPTR:
 		pFileName = Node[pFileName].pLeft;
 
 	if !NodeIsLiteralString(pFileName) then

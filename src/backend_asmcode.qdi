@@ -290,13 +290,13 @@ end
 
 bool ValueRef_IsLValue(ValueRef@ vref)
 	switch vref.ID of
-	case iSTRING:
+	case NID.iSTRING:
 		when !vref.RO:
 			return true;
 		return false;
-	case iDATA, iPARM, iLOCAL, iREF:
+	case NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iREF:
 		return true;
-	case iREG, iCONST:
+	case NID.iREG, NID.iCONST:
 		return false;
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -305,9 +305,9 @@ end
 
 bool ValueRef_IsIndirect(ValueRef@ vref)
 	switch vref.ID of
-	case iSTRING, iDATA, iPARM, iLOCAL, iREF:
+	case NID.iSTRING, NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iREF:
 		return true;
-	case iREG, iCONST:
+	case NID.iREG, NID.iCONST:
 		return false;
 	default:
 		StopInternal(__FILE__, __LINE__);
@@ -328,26 +328,26 @@ void ValueRef_ExtractDataInfo(ValueRef @Ref; word P)
 	Ref.ID = Node[P].ID;
 
 	switch Ref.ID of
-	case iDATA:
+	case NID.iDATA:
 		Ref.pType  = Dict[Value].pType;
 		Ref.Offset = as_signed(Dict[Value].Label);
 		when Ref.Offset < 0:
 			StopInternal(__FILE__, __LINE__);
 		Ref.RO     = false;
 
-	case iPARM:
+	case NID.iPARM:
 		when Dict[Value].Class != CLASS.cARG:
 			StopInternal(__FILE__, __LINE__);
 		Ref.pType  = Dict[Value].pType;
 		Ref.Offset = as_signed(Dict[Value].Label);
 		Ref.RO     = false;
 
-	case iLOCAL:
+	case NID.iLOCAL:
 		Ref.pType  = Local[Value].pType;
 		Ref.Offset = -Local[Value].Value;
 		Ref.RO     = false;
 
-	case iSTRING:
+	case NID.iSTRING:
 		Ref.pType  = Dict[Value].pType;
 		Ref.Offset = as_signed(Dict[Value].Label);
 		Ref.RO     = Dict[Value].RO;
@@ -399,11 +399,11 @@ char @ValueRef_Encode_(char @Buff; word Size; word ID; word IX; int Offset)
 	end
 
 	switch ID of
-	case iDATA:
+	case NID.iDATA:
 		@Prefix = "[@@DATA";
-	case iPARM, iLOCAL:
+	case NID.iPARM, NID.iLOCAL:
 		@Prefix = "[EBP";
-	case iREF:
+	case NID.iREF:
 		when IX == RegNone:
 			StopInternalCodegen(__FILE__, __LINE__);
 		@Prefix = "[";
@@ -434,9 +434,9 @@ iDATA:         @@DATA       + Offset
 char @ValueRef_Encode_StaticOffset(char @Buff; ValueRef @Ref)
 	char @Prefix = "";
 	switch Ref.ID of
-	case iDATA:
+	case NID.iDATA:
 		@Prefix = "@@DATA";
-	case iSTRING:
+	case NID.iSTRING:
 		if !Ref.RO then
 			@Prefix = "@@RWLITERALS";
 		else
