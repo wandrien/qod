@@ -1,0 +1,34 @@
+// TEST: should_print '0 1 2 20 21 0 1 1000 '
+
+include "../include/test_env.qdi";
+
+enum E of
+	x0,
+	x1,
+	x2,
+	x20 = 20,
+	x21,
+end
+
+int foo(int x) of
+	switch x of
+	case E.x0:
+		return 0;
+	case E.x1:
+		return 1;
+	default:
+		return 1000;
+	end:switch
+end
+
+termination_status main() of
+	put_int(E.x0); puts(" ");
+	put_int(E.x1); puts(" ");
+	put_int(E.x2); puts(" ");
+	put_int(E.x20); puts(" ");
+	put_int(E.x21); puts(" ");
+	put_int(foo(E.x0)); puts(" ");
+	put_int(foo(E.x1)); puts(" ");
+	put_int(foo(E.x20)); puts(" ");
+	return 0;
+end

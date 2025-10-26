@@ -213,7 +213,6 @@ void Statement_WHEN(char @Buff; word @P1; bool @SkipFinalScan)
 	CTE_SELECT(P1);
 end
 
-
 /*****************************************************************************/
 
 bool Statement_SWITCH_CheckCast(word pTargetType; word pLiteralType)

@@ -133,6 +133,7 @@ void InitFrontEnd()
 	Word("do");
 	Word("else");
 	Word("end");
+	Word("enum");
 	Word("exit");
 	Word("external");
 	Word("false");

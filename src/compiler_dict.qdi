@@ -636,6 +636,26 @@ end
 
 /*****************************************************************************/
 
+bool T_IsEnum(word T)
+	when T >= nDict:
+		StopInternal(__FILE__, __LINE__);
+	return Dict[T].Class == CLASS.cTYPE & Dict[T].Sub == SUBCLASS.sENUM;
+end
+
+word T_EnumGetLastValue(word T) of
+	when !T_IsEnum(T):
+		StopInternal(__FILE__, __LINE__);
+	return Dict[T].pArgs;
+end
+
+void T_EnumSetLastValue(word T, pValue) of
+	when !T_IsEnum(T):
+		StopInternal(__FILE__, __LINE__);
+	Dict[T].pArgs = pValue;
+end
+
+/*****************************************************************************/
+
 bool T_IsArray(word T)
 	when T >= nDict:
 		StopInternal(__FILE__, __LINE__);

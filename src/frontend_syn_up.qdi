@@ -477,6 +477,50 @@ end
 
 /*****************************************************************************/
 
+bool DeclEnumValue(char @Buff)
+	CheckDuplicate(@Buff);
+
+	word D = DictAlloc();
+
+	DictSetName(D, @Buff);
+	Dict[D].Class = CLASS.cLITERAL;
+	Dict[D].RO = true;
+	DictAddToNamespace(D, pEnteredNamespace);
+
+	Scan(@Buff);
+	if str_eq(@Buff, "=") then
+		Scan(@Buff);
+		word P = Expr(PRIO.ZERO, @Buff);
+
+		select
+		case Node[P].ID==iLITERAL:
+			Dict[D].pType = Node[P].pType;
+			Dict[D].LiteralValue = Node[P].Value;
+		default:
+			Stop(@L10n.eTYPE);
+		end:select
+	else
+		word dValue = T_EnumGetLastValue(pEnteredNamespace);
+		if dValue == nDICT then
+			Dict[D].LiteralValue = 0;
+			Dict[D].pType = st_word;
+		else
+			Dict[D].pType = Dict[dValue].pType;
+			Dict[D].LiteralValue = Dict[dValue].LiteralValue + 1;
+		end:if
+	end:if
+
+	T_EnumSetLastValue(pEnteredNamespace, D);
+
+	if str_eq(@Buff, ",") | str_eq(@Buff, ";") then
+		return true;
+	else
+		return false;
+	end:if
+end
+
+/*****************************************************************************/
+
 bool DeclDefine(char @Buff)
 
 	word nPtr = ReadPtrs(@Scan(@Buff));
@@ -602,6 +646,7 @@ end
 
 bool DeclNamespace(char @Buff);
 bool DeclStruct(char @Buff);
+bool DeclEnum(char @Buff);
 
 struct EndOfBlockDescriptor of
 	bool CurlyBraces;
@@ -612,6 +657,7 @@ end:struct
 
 bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 	bool TopLevel = !Eob.CurlyBraces & !Eob.EndKeyword;
+	bool IsEnum = T_IsEnum(pEnteredNamespace);
 
 	forever do
 		bool DoScan = true;
@@ -626,18 +672,6 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 		case str_eq(@Buff,"include_once"):
 			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = DeclIncludeOnce(@Buff);
-		case str_eq(@Buff,"define"):
-			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
-			DoScan = DeclDefine(@Buff);
-		case str_eq(@Buff,"struct"):
-			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
-			DoScan = DeclStruct(@Buff);
-		case str_eq(@Buff,"namespace"):
-			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
-			DoScan = DeclNamespace(@Buff);
-		case str_eq(@Buff,"alias"):
-			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
-			DoScan = DeclAlias(@Buff);
 		case str_eq(@Buff,"static_assert"):
 			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
 			DoScan = StaticAssert(@Buff);
@@ -653,15 +687,32 @@ bool ParseDeclBlock(char @Buff; EndOfBlockDescriptor @Eob)
 			Stop(@L10n.eWRONGBRACE_NAMESPACE);
 		case str_eq(@Buff, ";"):
 			Warn(@L10n.wDANGLING_SEMICOLON);
-		case TopLevel & str_eq(@Buff,"begin"):
-			DeclMainFunc(@Buff);
-			exit;
 		case str_eq(@Buff, ""):
 			if TopLevel then
 				exit;
 			else
 				Stop(@L10n.eEOF);
 			end:if
+		case IsEnum:
+			DoScan = DeclEnumValue(@Buff);
+		case str_eq(@Buff,"define"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
+			DoScan = DeclDefine(@Buff);
+		case str_eq(@Buff,"struct"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
+			DoScan = DeclStruct(@Buff);
+		case str_eq(@Buff,"enum"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
+			DoScan = DeclEnum(@Buff);
+		case str_eq(@Buff,"namespace"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
+			DoScan = DeclNamespace(@Buff);
+		case str_eq(@Buff,"alias"):
+			CheckValidAttributeFlags(AttributeFlags, 0, @Buff);
+			DoScan = DeclAlias(@Buff);
+		case TopLevel & str_eq(@Buff,"begin"):
+			DeclMainFunc(@Buff);
+			exit;
 		default: // Пеpеменная, функция, ...
 			DeclVarFunc(@Buff, AttributeFlags);
 		end:select
@@ -731,6 +782,54 @@ bool DeclStruct(char @Buff)
 	Dict[pStruct].TypeSize = FieldNextOffset;
 	FieldNextOffset = Old_FieldNextOffset;
 	FieldMaxAlign = Old_FieldMaxAlign;
+
+	pEnteredNamespace = pPrevNamespace;
+
+	return DoScan;
+end
+
+/*****************************************************************************/
+
+bool DeclEnum(char @Buff) of
+	CheckDuplicate(@Scan(@Buff));
+
+	word pEnum = DictAlloc();
+	DictSetName(pEnum, @Buff);
+	Dict[pEnum].Class = CLASS.cTYPE;
+	Dict[pEnum].Sub = SUBCLASS.sENUM;
+	DictAddToNamespace(pEnum, pEnteredNamespace);
+
+	char @TypeName = @DictGetName(pEnum);
+
+	if str_eq(@Scan(@Buff),";") then
+		Stop(@L10n.eNOTAVAIL);
+	end
+
+	word pPrevNamespace = pEnteredNamespace;
+	pEnteredNamespace = pEnum;
+
+	EndOfBlockDescriptor Eob;
+	@Eob.Name1 = "enum";
+	@Eob.Name2 = @TypeName;
+
+	select
+	case str_eq(@Buff, "of"):
+		Eob.CurlyBraces = false;
+		Eob.EndKeyword = true;
+		Scan(@Buff);
+	case str_eq(@Buff, "{"):
+		Eob.CurlyBraces = true;
+		Eob.EndKeyword = false;
+		Scan(@Buff);
+	default:
+		Eob.CurlyBraces = false;
+		Eob.EndKeyword = true;
+		Deprecated(@L10n.dptMISSINGOF_NAMESPACE);
+	end
+
+	bool DoScan = ParseDeclBlock(@Buff, @Eob);
+
+	Dict[pEnum].TypeSize = 4; // FIXME
 
 	pEnteredNamespace = pPrevNamespace;
 

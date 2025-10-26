@@ -57,6 +57,7 @@ namespace SUBCLASS of
 	define  sSYS        17 // Функция ОС
 	define  sFUNC       18 // Функция пpогpаммы
 	define  sSTART_FUNC 19 // Точка входа в программу из ОС
+	define  sENUM       20
 end:namespace
 
 /*****************************************************************************/
