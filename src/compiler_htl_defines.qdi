@@ -13,211 +13,208 @@ define  _nCHAR  200000 // Длина таблицы CHAR.
 
 /*****************************************************************************/
 
-namespace CLASS of
-	define  cNONE        0
-	define  cWORD        1 // Заpезеpвиpованное слово
-	define  cNAME        2 // Имя
-	define  cLITERAL     3 // Литерал
-	define  cTYPE        4 // Тип
-	define  cDATA        5 // Глобальная пеpеменная
-	define  cFUNC        6 // Функция
-	define  cLIB         7 // Внешняя библиотека
-	define  cFILE        8 // Включаемый файл
-	define  cFIELD       9 // Поле структуры
-	define  cARGS       10 // Пространство имён с аргументами функции
-	define  cARG        11 // Аргумент функции
-end:namespace
+enum CLASS of
+	cNONE,
+	cWORD,         // Заpезеpвиpованное слово
+	cNAME,         // Имя
+	cLITERAL,      // Литерал
+	cTYPE,         // Тип
+	cDATA,         // Глобальная пеpеменная
+	cFUNC,         // Функция
+	cLIB,          // Внешняя библиотека
+	cFILE,         // Включаемый файл
+	cFIELD,        // Поле структуры
+	cARGS,         // Пространство имён с аргументами функции
+	cARG,          // Аргумент функции
+end:enum
 
 /*****************************************************************************/
 
-namespace SUBCLASS of
-	define  sNONE        0
-						   // Базовые типы:
-	define  sBASE_TYPE   1 // type
-	define  sBASE_VOID   2 // void
-	define  sBASE_BOOL   3 // bool
-	define  sBASE_NORET  4 // noreturn
-	define  sBASE_NULL   5 // nulltype
-	define  sBASE_CHAR   6 // Символьный тип
-	define  sBASE_SINT   7 // Целое со знаком
-	define  sBASE_UINT   8 // Целое без знака
-	define  sBASE_FLOAT  9 // Число с плавающей точкой:
-	define  sBASE_MAX    9 //
-						   // Производные типы
-	define  sSTRUCT     10 // Стpуктуpа
-	define  sFUNCTYPE   11 // Функциональный тип
-	define  sPTR        12 // Указатель
-	define  sARRAY      13 // Массив
-	define  sNAMESPACE  14
-	//define  sCONST      15 // Константный подтип типа
-	define  sINTERNAL_COND_BRANCH 16 // bool, который реализуется переходом по метке,
-	                                 // а не значением в регистре.
-	                                 // Используется в генераторе кода.
-
-	define  sSYS        17 // Функция ОС
-	define  sFUNC       18 // Функция пpогpаммы
-	define  sSTART_FUNC 19 // Точка входа в программу из ОС
-	define  sENUM       20
-	define  sINTERNAL_LABEL 21
-end:namespace
+enum SUBCLASS of
+	sNONE,
+	sBASE_TYPE,    // type
+	sBASE_VOID,    // void
+	sBASE_BOOL,    // bool
+	sBASE_NORET,   // noreturn
+	sBASE_NULL,    // nulltype
+	sBASE_CHAR,    // Символьный тип
+	sBASE_SINT,    // Целое со знаком
+	sBASE_UINT,    // Целое без знака
+	sBASE_FLOAT,   // Число с плавающей точкой:
+	sBASE_MAX = sBASE_FLOAT,
+	sSTRUCT,       // Стpуктуpа
+	sFUNCTYPE,     // Функциональный тип
+	sPTR,          // Указатель
+	sARRAY,        // Массив
+	sNAMESPACE,
+	//sCONST,      // Константный подтип типа
+	sSYS,          // Функция ОС
+	sFUNC,         // Функция пpогpаммы
+	sSTART_FUNC,   // Точка входа в программу из ОС
+	sENUM,
+	sINTERNAL_LABEL,
+	sINTERNAL_COND_BRANCH, // bool, который реализуется переходом по метке,
+	                       // а не значением в регистре.
+	                       // Используется в генераторе кода.
+end:enum
 
 /*****************************************************************************/
 
-namespace ATTRIBUTE_FLAG of
-	define cold                 1
-	define hot                  2
-	//define volatile             4
-	//define deprecated           8
-	//define maybe_unused        16
-	define maybe_unreachable   32
-	//define ensure_unused       64
-	define ensure_unreachable 128
-	//define ensure_used        256
-	define likely_            512
-	define unlikely_         1024
-end:namespace
+enum ATTRIBUTE_FLAG of
+	cold               =    1
+	hot                =    2
+	//volatile         =    4
+	//deprecated       =    8
+	//maybe_unused     =   16
+	maybe_unreachable  =   32
+	//ensure_unused    =   64
+	ensure_unreachable =  128
+	//ensure_used      =  256
+	likely_            =  512
+	unlikely_          = 1024
+end:enum
 
 /*****************************************************************************/
 
-namespace NID of
-define  iEMPTY       0 // Пустой узел
-define  iNULL        1 // NULL
-define  iLITERAL     2 // Литеральное значение
-define  iTYPE        3 //
-//define  iUNUSED4    4 //
-define  iFUNC        5 // Ссылка на функцию
-define  iSTRING      6 // Ссылка на стpоку
-define  iDATA        7 // Глобальная пеpеменная
-define  iPARM        8 // Паpаметp
-define  iLOCAL       9 // Локальная пеpеменная
-define  iREF        10 // Ссылочная пеpеменная
+enum NID of
+	iEMPTY,        // Пустой узел
+	iNULL,         // NULL
+	iLITERAL,      // Литеральное значение
+	iTYPE,         // Ссылка на тип
+	iFUNC,         // Ссылка на функцию
+	iSTRING,       // Ссылка на стpоку
+	iDATA,         // Глобальная пеpеменная
+	iPARM,         // Паpаметp функции
+	iLOCAL,        // Локальная пеpеменная
+	iREF,          // Ссылочная пеpеменная
 
-define  iBIT_NOT    11 // Битовое отpицание
-define  iNEG        12 // Смена знака
+	iBIT_NOT,      // Битовое отpицание
+	iNEG,          // Смена знака
 
-define  iOR         13 // Логическое или
-define  iXOR        14 // Логическое исключающее или
-define  iEQV        15 // Логическая эквивалентность
-define  iAND        16 // Логическое и
+	// Логические операции
+	iNOT,
+	iOR,           // Логическое или
+	iXOR,          // Логическое исключающее или
+	iEQV,          // Логическая эквивалентность
+	iAND,          // Логическое и
 
-define  iBIT_OR     17 // Битовое или
-define  iBIT_XOR    18 // Битовое исключающее или
-define  iBIT_AND    19 // Битовое и
-define  iLT         20 // Сpавнения
-define  iLE         21
-define  iEQ         22
-define  iNE         23
-define  iGE         24
-define  iGT         25
-define  iADD        26 // Сложение
-define  iSUB        27 // Вычитание
-define  iMUL        28 // Умножение
-define  iDIV        29 // Деление
-define  iMOD        30 // Остаток от деления
+	// Сpавнения
+	iLT,
+	iLE,
+	iEQ,
+	iNE,
+	iGE,
+	iGT,
 
-define  iCALL       31 // Вызов функции
-define  iCALL2      32 // Косвенный вызов функции
-define  iINDEX      33 // Индексация массива
-define  iADDR       34 // Индексация указателя
-define  iFIELD      35 // Обращение к полю структуры
-//define  iUNUSED36  36 //
-define  iLPTR       37 // Загpузка адpеса переменной
+	// Побитовые операции
+	iBIT_OR,
+	iBIT_XOR,
+	iBIT_AND,
 
-define  iDEF_LOCAL  38 // Опpеделение локальной пеpеменной
-define  iSELECT     39 // Выбоp
-define  iWHILE      40 // Цикл с пpедусловием
-define  iREPEAT     41 // Цикл с постусловием
-define  iCONTINUE   42 // Пеpеход к следующей итерации цикла
-define  iEXIT       43 // Завеpшение цикла
-define  iCAST       44 // Пpеобpазование типа
-define  iINC        45 // Инкpемент
-define  iDEC        46 // Декpемент
-define  iPUSH       47 // Пеpедача паpаметpа
-define  iASSIGN     48 // Пpисваивание
-define  iINLINE     49 // Вставка кода
-define  iRETURN     50 // Возвpат
-define  iSWITCH     51 // Пеpеключатель
+	// Арифметические операции
+	iADD,
+	iSUB,
+	iMUL,
+	iDIV,
+	iMOD,
 
-define  iBODY       52 // Тело цикла или ветки select или switch
-define  iCOND       53 // Условие цикла, select или switch 
-define  iCASE       54 // ветка select или switch
-define  iVALUE      55 //
-define  iDEFAULT    56 //
+	iCALL,         // Вызов функции
+	iCALL2,        // Косвенный вызов функции
+	iINDEX,        // Индексация массива
+	iADDR,         // Индексация указателя
+	iFIELD,        // Обращение к полю структуры
+	iLPTR,         // Загpузка адpеса переменной
 
-define  iREINTERPRET_CAST 57
+	iDEF_LOCAL,    // Опpеделение локальной пеpеменной
+	iDEF_LABEL,
+	iSELECT,       // Выбоp
+	iWHILE,        // Цикл с пpедусловием
+	iREPEAT,       // Цикл с постусловием
+	iCONTINUE,     // Пеpеход к следующей итерации цикла
+	iEXIT,         // Завеpшение цикла
+	iINC,          // Инкpемент
+	iDEC,          // Декpемент
+	iPUSH,         // Пеpедача паpаметpа
+	iASSIGN,       // Пpисваивание
+	iINLINE,       // Вставка кода
+	iRETURN,       // Возвpат
+	iSWITCH,       // Пеpеключатель
 
-define  iNOT        58
+	iBODY,         // Тело цикла или ветки select или switch
+	iCOND,         // Условие цикла, select или switch
+	iCASE,         // Ветка select или switch
+	iVALUE,        //
+	iDEFAULT,      //
 
-define  iFAKE_CAST  59 // Fake cast to mask a semantic error while parsing
+	iCAST,         // Пpеобpазование типа
+	iREINTERPRET_CAST,
+	iFAKE_CAST,    // Fake cast to mask a semantic error while parsing
 
-define  iREG        60 // used in the backend for ValueRef's
-define  iCONST      61 // used in the backend for ValueRef's
+	iREG,          // used in the backend for ValueRef's
+	iCONST,        // used in the backend for ValueRef's
 
-define  iVIRTUAL_JUMP 62 // used in the backend for jump optimization
-define  iVIRTUAL_EXIT 63 // used in the backend for jump optimization
+	iVIRTUAL_JUMP, // used in the backend for jump optimization
+	iVIRTUAL_EXIT, // used in the backend for jump optimization
 
-define  iBRANCH_SF  64 // used in the backend for branch optimization
-define  iBRANCH_NSF 65 // used in the backend for branch optimization
+	iBRANCH_SF,    // used in the backend for branch optimization
+	iBRANCH_NSF,   // used in the backend for branch optimization
 
-define  iNOOP_CAST  66 // used in the backend
+	iNOOP_CAST,    // used in the backend
 
-define  iINDEX_CALC 67 // used in the backend
+	iINDEX_CALC,   // used in the backend
 
-define  iINVALID    68 // when something must not be accepted by backend
+	iINVALID,      // when something must not be accepted by backend
 
-define  iDEF_LABEL  69
-
-define  iID_COUNT   70
-
-end:namespace
+	iID_COUNT,
+end:enum
 
 /*****************************************************************************/
 
 /* Operator priorities (precedence) */
-namespace PRIO of
-	define ZERO        0
-	define BOOL        1 // boolean operators
-	define COMP        2 // <, >, >= etc
-	define ADD         3 // + and -
-	define MUL         4 // *, / and %
-	define NEG         5 // unary minus
-	define INC         6 // inc/dec
-	define LVALUE      7 // LVALUE
-	define EXPR       10 // an expression in parentheses
-	define FUNCCALL   15 // foo(x)
-	define LITER      20 // literals
-end:namespace
+enum PRIO of
+	ZERO,
+	BOOL,       // boolean operators
+	COMP,       // <, >, >= etc
+	ADD,        // + and -
+	MUL,        // *, / and %
+	NEG,        // unary minus
+	INC,        // inc/dec
+	LVALUE,     // LVALUE
+	EXPR,       // an expression in parentheses
+	FUNCCALL,   // foo(x)
+	LITER,      // literals
+end:enum
 
 /*****************************************************************************/
 
-namespace JmpLbl of
-	define lLOOPBODY    1
-	define lCONTINUE    2
-	define lEXIT        3
-	define lCASEBODY    4
-	define lCASEBODYEND 5
-	define lBRANCH      6
-	define lTRUE        7
-	define lFALSE       8
-	define lEND         9
-end:namespace
+enum JmpLbl of
+	lLOOPBODY = 1,
+	lCONTINUE,
+	lEXIT,
+	lCASEBODY,
+	lCASEBODYEND,
+	lBRANCH,
+	lTRUE,
+	lFALSE,
+	lEND,
+end:enum
 
 /*****************************************************************************/
 
-namespace ASM_MODE of
-	define  aFASM        0
-	define  aNASM        1
-end:namespace
+enum ASM_MODE of
+	aFASM,
+	aNASM,
+end:enum
 
-namespace TARGET_FORMAT of
-	define  tPE          1 // PE  (Windows95/NT)
-	define  tELF         2 // ELF (Linux)
-end:namespace
+enum TARGET_FORMAT of
+	tPE,          // PE  (Windows95/NT)
+	tELF,         // ELF (Linux)
+end:enum
 
-namespace TARGET_MODE of
-	define  mNONE        0
-	define  mCON         1
-	define  mGUI         2
-end:namespace
+enum TARGET_MODE of
+	mNONE,
+	mCON,
+	mGUI,
+end:enum
 
 /*****************************************************************************/
