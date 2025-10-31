@@ -214,7 +214,7 @@ end
 	(Кроме объектов класса cFILE.)
 */
 attribute(hot)
-word FindInNamespace(char @Name; word pNamespace)
+word FindInNamespace(char @Name; word pNamespace) of
 	when pNamespace >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	word hash = str_hash(@Name);
@@ -223,57 +223,43 @@ word FindInNamespace(char @Name; word pNamespace)
 		DICT_HASHMAP @HashMap = @DictHashMap[Dict[pNamespace].iHashMap];
 		word iBucket = hash % countof(HashMap.Buckets);
 		word P = HashMap.Buckets[iBucket];
-		while P < nDICT do
-			if Dict[P].Name.Hash != hash then /* optimized for better code layout */
+		label outer: forever loop
+			label inner: forever loop
+				/* optimized for better code layout */
+				when P >= nDICT: exit outer;
+				when Dict[P].Name.Hash == hash: exit inner;
 				P = Dict[P].pNextInBucket;
-
 if true then /* Manually unrolled loop */
-				when P >= nDICT:
-					exit;
-				if Dict[P].Name.Hash != hash then
-					P = Dict[P].pNextInBucket;
-				else
-					if str_eq(@DictGetName(P), @Name) then
-						return DictResolveAlias(P);
-					end
-					P = Dict[P].pNextInBucket;
-				end
-end:if
-
-			else
-				if str_eq(@DictGetName(P), @Name) then
-					return DictResolveAlias(P);
-				end
+				when P >= nDICT: exit outer;
+				when Dict[P].Name.Hash == hash: exit inner;
 				P = Dict[P].pNextInBucket;
+end:if
+			end:loop
+			if str_eq(@DictGetName(P), @Name) then
+				return DictResolveAlias(P);
 			end
-		end
+			P = Dict[P].pNextInBucket;
+		end:loop
 		return nDICT;
 	else
 		word P = Dict[pNamespace].pFirst;
-		while P < nDICT do
-			if Dict[P].Name.Hash != hash then /* optimized for better code layout */
+		label outer: forever loop
+			label inner: forever loop
+				/* optimized for better code layout */
+				when P >= nDICT: exit outer;
+				when Dict[P].Name.Hash == hash: exit inner;
 				P = Dict[P].pNext;
-
 if true then /* Manually unrolled loop */
-				when P >= nDICT:
-					exit;
-				if Dict[P].Name.Hash != hash then
-					P = Dict[P].pNext;
-				else
-					if str_eq(@DictGetName(P), @Name) then
-						return DictResolveAlias(P);
-					end
-					P = Dict[P].pNext;
-				end
-end:if
-
-			else
-				if str_eq(@DictGetName(P), @Name) then
-					return DictResolveAlias(P);
-				end
+				when P >= nDICT: exit outer;
+				when Dict[P].Name.Hash == hash: exit inner;
 				P = Dict[P].pNext;
+end:if
+			end:loop
+			if str_eq(@DictGetName(P), @Name) then
+				return DictResolveAlias(P);
 			end
-		end:while
+			P = Dict[P].pNext;
+		end:loop
 		return nDICT;
 	end:if
 end
