@@ -3,7 +3,7 @@ word ResolveInNamespace(char @Buff; word pNamespace);
 
 /*****************************************************************************/
 
-void Word(char @Name)
+void RegisterKeyword(char @Name) of
 	word p = DictMakeWord(@Name);
 	DictAddToNamespace(p, pKeywordsNamespace);
 end
