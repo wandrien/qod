@@ -163,22 +163,22 @@ void PrintOptionValues(PrintCallback @cb; char @Prefix) of
 	while I < nOption loop
 		strbuf.init(@buf, @MsgBuff, countof(MsgBuff));
 		OPTION @Opt = @Option[I];
+		char @Value;
 		select
 		case @Opt.BoolPtr != NULL:
-			char @Value;
 			if Opt.BoolPtr then
 				@Value = "true";
 			else
 				@Value = "false";
 			end
-			strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @Value, "~r~n");
 		case @Opt.IntPtr != NULL:
-			strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @istr(Opt.IntPtr), "~r~n");
+			@Value = @istr(Opt.IntPtr);
 		case @Opt.WordPtr != NULL:
-			strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @str(Opt.WordPtr), "~r~n");
+			@Value = @str(Opt.WordPtr);
 		default:
 			StopInternal(__FILE__, __LINE__);
 		end:select
+		strbuf.append_cstr5(@buf, @Prefix, @Opt.Name, " = ", @Value, "~r~n");
 		cb(@MsgBuff);
 		inc I;
 	end:while
