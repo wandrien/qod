@@ -3,6 +3,13 @@ namespace StatementParser of
 
 /*****************************************************************************/
 
+void MakePassStatement(word pCtrl) of
+	Node[pCtrl].ID = NID.iEMPTY;
+	Node[pCtrl].pType = st_void;
+end
+
+/*****************************************************************************/
+
 void MatchSemicolon(char @Buff; bool @SkipFinalScan)
 	if str_ne(@Buff,";") then
 		Error(@L10n.eSEMICOLONEXP);
@@ -406,36 +413,96 @@ end
 
 /*****************************************************************************/
 
-void Statement_CONTINUE(char @Buff; word @P1; bool @SkipFinalScan)
-	when pLoop>=nNODE:
-		Stop(@L10n.eWRONGCONTINUE);
+define nWRONGLABEL (nNODE + 1)
 
-	when Node[pLoop].ID != NID.iWHILE
-	&    Node[pLoop].ID != NID.iREPEAT:
-		StopInternal(__FILE__, __LINE__);
+word ParseOptionalLabel(char @Buff; bool @SkipFinalScan) of
+	word pLabelTarget = nNODE;
 
-	Node[P1].ID = NID.iCONTINUE;
-	Node[P1].Value = pLoop;
-	Node[P1].pType = st_noreturn;
+	select
+	case str_eq(@Buff, ";"):
+		return pLabelTarget;
+	case IsKeyword(@Buff):
+		Error(@L10n.eSEMICOLONEXP);
+		SkipFinalScan = true;
+		return pLabelTarget;
+	end:select
+
+	word iLabel = ResolveLocal(@Buff);
+	select
+	case iLabel == nLOCAL:
+		ErrorWithSubject(@L10n.eNOLABEL, @Buff);
+		pLabelTarget = nWRONGLABEL;
+	case Local[iLabel].pType == st_outofscope_label:
+		ErrorWithSubject(@L10n.eLABELOUTOFSCOPE, @Buff);
+		pLabelTarget = nWRONGLABEL;
+	case Local[iLabel].pType != st_label:
+		ErrorWithSubject(@L10n.eNOTALABEL, @Buff);
+		pLabelTarget = nWRONGLABEL;
+	default:
+		word pLabel = Local[iLabel].Value;
+		when Node[pLabel].ID != NID.iDEF_LABEL:
+			StopInternal(__FILE__, __LINE__);
+		word pLabelLink = Node[pLabel].pLeft;
+		when pLabelLink == nNODE:
+			StopInternal(__FILE__, __LINE__);
+		pLabelTarget = Node[pLabelLink].Value;
+	end:select
 
 	ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
+	return pLabelTarget;
+end
+
+void Statement_CONTINUE_EXIT(char @Buff; word @P1; bool @SkipFinalScan; word nID) of
+	word pLabelTarget = ParseOptionalLabel(@Scan(@Buff), @SkipFinalScan);
+
+	char @eWRONG_STATEMENT;
+	switch nID of
+	case NID.iCONTINUE: @eWRONG_STATEMENT = @L10n.eWRONGCONTINUE;
+	case NID.iEXIT:     @eWRONG_STATEMENT = @L10n.eWRONGEXIT;
+	default:            StopInternal(__FILE__, __LINE__);
+	end:switch
+
+	select
+	case pLabelTarget == nWRONGLABEL:
+		/* Diagnostic message already printed by ParseOptionalLabel(),
+		just return. */
+		MakePassStatement(P1);
+		return;
+	case pLabelTarget == nNODE:
+		if pLoop == nNODE then
+			Error(@eWRONG_STATEMENT);
+			MakePassStatement(P1);
+			return;
+		end:if
+
+		when Node[pLoop].ID != NID.iWHILE
+		&    Node[pLoop].ID != NID.iREPEAT:
+			StopInternal(__FILE__, __LINE__);
+		pLabelTarget = pLoop;
+	default:
+		if Node[pLabelTarget].ID != NID.iWHILE
+		&  Node[pLabelTarget].ID != NID.iREPEAT then
+			Error(@eWRONG_STATEMENT);
+			MakePassStatement(P1);
+			return;
+		end:if
+	end:select
+
+	Node[P1].ID = nID;
+	Node[P1].Value = pLabelTarget;
+	Node[P1].pType = st_noreturn;
+end
+
+/*****************************************************************************/
+
+void Statement_CONTINUE(char @Buff; word @P1; bool @SkipFinalScan)
+	Statement_CONTINUE_EXIT(@Buff, @P1, @SkipFinalScan, NID.iCONTINUE);
 end
 
 /*****************************************************************************/
 
 void Statement_EXIT(char @Buff; word @P1; bool @SkipFinalScan)
-	when pLoop>=nNODE:
-		Stop(@L10n.eWRONGEXIT);
-
-	when Node[pLoop].ID != NID.iWHILE
-	&    Node[pLoop].ID != NID.iREPEAT:
-		StopInternal(__FILE__, __LINE__);
-
-	Node[P1].ID = NID.iEXIT;
-	Node[P1].Value = pLoop;
-	Node[P1].pType = st_noreturn;
-
-	ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
+	Statement_CONTINUE_EXIT(@Buff, @P1, @SkipFinalScan, NID.iEXIT);
 end
 
 /*****************************************************************************/
@@ -538,28 +605,27 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; bool @SkipFinalScan; word pPrefi
 			Stop(@L10n.eNOVAL);
 		end:if
 
-		when nLocal>=nLOCAL:
-			StopMemory();
-		Local[nLocal].Name2 = Name2;
-		Local[nLocal].pType = pType;
+		word iLocal = AllocLocal();
+		Local[iLocal].Name2 = Name2;
+		Local[iLocal].pType = pType;
 
 		word N = 1;
-		if T_IsArray(Local[nLocal].pType) then
-			N = T_ArrayGetLen(Local[nLocal].pType);
+		if T_IsArray(Local[iLocal].pType) then
+			N = T_ArrayGetLen(Local[iLocal].pType);
 		end
 
 		word P4=Peek();
 
 		Node[P1].ID    = NID.iDEF_LOCAL;
-		Node[P1].pType = Local[nLocal].pType;
-		Node[P1].Value = Local[nLocal].Name2;
+		Node[P1].pType = Local[iLocal].pType;
+		Node[P1].Value = Local[iLocal].Name2;
 		Node[P1].pLeft = P4;
 
 		Node[P4].ID    = NID.iEMPTY;
 		Node[P4].Value = N;
 
 		if str_eq(@Buff,"=") then
-			/*if Local[nLocal].nIndx > 0 then
+			/*if Local[iLocal].nIndx > 0 then
 				Stop(@L10n.eNOTAVAIL);
 			end:if*/
 
@@ -573,13 +639,11 @@ void Statement_DEF_LOCAL(char @Buff; word @_P1; bool @SkipFinalScan; word pPrefi
 			Node[P5].pRight = Expr(PRIO.ZERO, @Scan(@Buff));
 
 			Node[P6].ID     = NID.iLOCAL;
-			Node[P6].Value  = nLocal;
-			Node[P6].pType  = Local[nLocal].pType;
+			Node[P6].Value  = iLocal;
+			Node[P6].pType  = Local[iLocal].pType;
 
 			ImplicitCast(pType, @Node[P5].pRight);
 		end:if
-
-		inc nLocal;
 
 		if str_ne(@Buff,",") then
 			return;
@@ -629,6 +693,43 @@ end
 
 /*****************************************************************************/
 
+word ParseLabel(char @Buff) of
+	when likely (Buff[0] != 'l' | !str_eq(@Buff, "label")):
+		return nNODE;
+
+	Scan(@Buff);
+
+	word I = ResolveLocal(@Buff);
+	when I < nLOCAL:
+		ErrorWithSubject(@L10n.eDUPLICATE, @Buff);
+
+	I = ResolveParm(@Buff);
+	when I < nDICT:
+		ErrorWithSubject(@L10n.eDUPLICATE, @Buff);
+
+	EnsureValidIdentifier(@Buff);
+
+	word Name2 = SaveString0(@Buff);
+	word pType = st_label;
+
+	word pLabel = Peek2(NID.iDEF_LABEL);
+	word iLabel = AllocLocal();
+
+	Local[iLabel].Name2 = Name2;
+	Local[iLabel].pType = pType;
+	Local[iLabel].Value = pLabel;
+
+	Node[pLabel].Value = Name2;
+	Node[pLabel].pType = pType;
+	Node[pLabel].pLeft = Peek2(NID.iEMPTY);
+
+	EatSeparatorKeyword(@Scan(@Buff), ":");
+
+	return pLabel;
+end
+
+/*****************************************************************************/
+
 byte CtrlPrefix0[256];
 byte CtrlPrefix1[256];
 
@@ -663,49 +764,59 @@ word Ctrl(char @Buff)
 
 	bool SkipFinalScan = false;
 
-	word P1 = Peek();
-	Node[P1].AttributeFlags = ReadAttributes(@Buff);
+	word pLabel = ParseLabel(@Buff);
+
+	word pCtrl = Peek();
+	Node[pCtrl].AttributeFlags = ReadAttributes(@Buff);
+
+	if unlikely(pLabel != nNODE) then
+		word pLabelLink = Node[pLabel].pLeft;
+		when pLabelLink == nNODE:
+			StopInternal(__FILE__, __LINE__);
+		Node[pLabelLink].Value = pCtrl;
+		Node[pLabel].pRight = pCtrl;
+	end:if
 
 	select
 		case CtrlPrefix0[word(Buff[0])] == 0 | CtrlPrefix1[word(Buff[1])] == 0:
-			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
+			Statement_ASSIGN(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"if") | str_eq(@Buff,"select"):
-			Statement_IF(@Buff, @P1, @SkipFinalScan);
+			Statement_IF(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"while") | str_eq(@Buff,"forever"):
-			Statement_WHILE(@Buff, @P1, @SkipFinalScan);
+			Statement_WHILE(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"when"):
-			Statement_WHEN(@Buff, @P1, @SkipFinalScan);
+			Statement_WHEN(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"switch"):
-			Statement_SWITCH(@Buff, @P1, @SkipFinalScan);
+			Statement_SWITCH(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"repeat"):
-			Statement_REPEAT(@Buff, @P1, @SkipFinalScan);
+			Statement_REPEAT(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"return"):
-			Statement_RETURN(@Buff, @P1, @SkipFinalScan);
+			Statement_RETURN(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"continue"):
-			Statement_CONTINUE(@Buff, @P1, @SkipFinalScan);
+			Statement_CONTINUE(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"exit"):
-			Statement_EXIT(@Buff, @P1, @SkipFinalScan);
+			Statement_EXIT(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"inc") | str_eq(@Buff,"dec"):
-			Statement_INCDEC(@Buff, @P1, @SkipFinalScan);
+			Statement_INCDEC(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"inline"):
-			Statement_INLINE(@Buff, @P1, @SkipFinalScan);
+			Statement_INLINE(@Buff, @pCtrl, @SkipFinalScan);
 
 		case str_eq(@Buff,"pass"):
-			Node[P1].ID   = NID.iEMPTY;
+			MakePassStatement(pCtrl);
 			ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 
 		case str_eq(@Buff,"null"):
-			Node[P1].ID   = NID.iEMPTY;
+			MakePassStatement(pCtrl);
 			ScanAndMatchSemicolon(@Buff, @SkipFinalScan);
 			Warn(@L10n.dprNULL);
 
@@ -714,14 +825,30 @@ word Ctrl(char @Buff)
 			Error(@L10n.eSEMICOLONEXC);
 
 		default:
-			Statement_ASSIGN(@Buff, @P1, @SkipFinalScan);
+			Statement_ASSIGN(@Buff, @pCtrl, @SkipFinalScan);
 	end:select
 
 	if !SkipFinalScan then
 		Scan(@Buff);
 	end
 
-	return P1;
+	if pLabel == nNODE then
+		return pCtrl;
+	else
+		when Node[pLabel].pRight != pCtrl:
+			StopInternal(__FILE__, __LINE__);
+
+		/* Mark the label out of scope */
+		char @LabelName = @Char[Node[pLabel].Value];
+		word iLabel = ResolveLocal(@LabelName);
+		when iLabel == nLOCAL:
+			StopInternal(__FILE__, __LINE__);
+		when Local[iLabel].pType != st_label:
+			StopInternal(__FILE__, __LINE__);
+		Local[iLabel].pType = st_outofscope_label;
+
+		return pLabel;
+	end:if
 end
 
 /*****************************************************************************/

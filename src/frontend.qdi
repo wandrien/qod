@@ -147,6 +147,7 @@ void InitFrontEnd()
 	Word("include_when");
 	Word("inline");
 	Word("__LINE__");
+	Word("label");
 	Word("likely");
 	Word("loop");
 	Word("null");
@@ -169,6 +170,8 @@ void InitFrontEnd()
 	pEnteredNamespace = pInternalNamespace;
 
 	st_cond_branch = BaseType("cond_branch", SUBCLASS.sINTERNAL_COND_BRANCH, 0);
+	st_label = BaseType("label", SUBCLASS.sINTERNAL_LABEL, 0);
+	st_outofscope_label = BaseType("label", SUBCLASS.sINTERNAL_LABEL, 0);
 
 	pEnteredNamespace = pGlobalNamespace;
 

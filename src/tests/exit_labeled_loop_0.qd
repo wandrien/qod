@@ -1,0 +1,21 @@
+// TEST: should_print '4 7 '
+
+include "../include/test_env.qdi";
+
+termination_status main() of
+	int x; int y;
+	x = 0;
+	label outer:
+	while x < 10 loop
+		y = 0;
+		while y < 10 loop
+			when x * y == 28:
+				exit outer;
+			inc y;
+		end:while
+		inc x;
+	end:while
+	put_int(x); puts(" ");
+	put_int(y); puts(" ");
+	return 0;
+end

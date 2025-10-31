@@ -2319,7 +2319,7 @@ word Code_(word P; char @Buff)
 		return Code_CONTINUE(P, @Buff);
 	case NID.iEXIT:
 		return Code_EXIT(P, @Buff);
-	case NID.iEMPTY, NID.iVIRTUAL_JUMP, NID.iVIRTUAL_EXIT:
+	case NID.iDEF_LABEL, NID.iEMPTY, NID.iVIRTUAL_JUMP, NID.iVIRTUAL_EXIT:
 		pass;
 	default:
 		StopAtNodeInternalCodegen(__FILE__, __LINE__, P);

@@ -1,9 +1,19 @@
 
+word ResolveInNamespace(char @Buff; word pNamespace);
+
 /*****************************************************************************/
 
 void Word(char @Name)
 	word p = DictMakeWord(@Name);
 	DictAddToNamespace(p, pKeywordsNamespace);
+end
+
+bool IsKeyword(char @Name) of
+	if ResolveInNamespace(@Name, pKeywordsNamespace) != nDICT then
+		return true;
+	else
+		return false;
+	end:if
 end
 
 word BaseType(char @Name; byte TypeDomain; word Size)

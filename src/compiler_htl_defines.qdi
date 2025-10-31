@@ -58,6 +58,7 @@ namespace SUBCLASS of
 	define  sFUNC       18 // Функция пpогpаммы
 	define  sSTART_FUNC 19 // Точка входа в программу из ОС
 	define  sENUM       20
+	define  sINTERNAL_LABEL 21
 end:namespace
 
 /*****************************************************************************/
@@ -164,7 +165,9 @@ define  iINDEX_CALC 67 // used in the backend
 
 define  iINVALID    68 // when something must not be accepted by backend
 
-define  iID_COUNT   69
+define  iDEF_LABEL  69
+
+define  iID_COUNT   70
 
 end:namespace
 

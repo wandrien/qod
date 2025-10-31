@@ -27,3 +27,10 @@ word ResolveParm(char @Name)
 	return FindInNamespace(@Name, pARGS);
 end
 
+word AllocLocal() of
+	when nLocal >= nLOCAL:
+		StopMemory();
+	word n = nLocal;
+	inc nLocal;
+	return n;
+end

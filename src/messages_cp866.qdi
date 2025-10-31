@@ -126,6 +126,9 @@ define @eWRONGBRACE_STRUCT "Получен '}' в объявлении структуры, но ожидалось 'en
 define @eWRONGEND_NAMESPACE "Получен 'end' в объявлении пространства имён, но ожидалось '}'"
 define @eWRONGBRACE_NAMESPACE "Получен '}' в объявлении пространства имён, но ожидалось 'end'"
 
+define @eNOLABEL         "Метка не определена" // Label not defined
+define @eNOTALABEL       "Требуется метка, имя не является меткой" // Label required, name is not a label
+define @eLABELOUTOFSCOPE "Метка за пределами лексической видимости"
 
 define @eRETINNORET      "Оператор return в теле noreturn функции"     // Return statement inside noreturn function
 define @eRETINNORET2     "Управление достигает конца noreturn функции" // Control flow reaches the end of noreturn function

@@ -109,6 +109,7 @@ void InitializeIDDesc()
 	InitIDDesc1(NID.iLPTR   , "iLPTR"   );
 
 	InitIDDesc2(NID.iDEF_LOCAL, "iDEF_LOCAL", vcChar, 1);
+	InitIDDesc2(NID.iDEF_LABEL, "iDEF_LABEL", vcChar, 1);
 	InitIDDesc1(NID.iSELECT , "iSELECT" );
 	InitIDDesc2(NID.iSWITCH , "iSWITCH" , vcNone, 1);
 	InitIDDesc2(NID.iWHILE  , "iWHILE"  , vcNone, 1);
