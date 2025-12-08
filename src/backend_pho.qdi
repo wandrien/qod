@@ -431,7 +431,7 @@ char@ PHO_Optimize_(char @Inst)
 		return @Inst;
 
 	/* Для пустой строки ничего не делаем. */
-	if Inst[str_skip_chars(@Inst, " ~t")] == #0 then
+	if unlikely(Inst[str_skip_chars(@Inst, " ~t")] == #0) then
 		return @Inst;
 	end:if
 

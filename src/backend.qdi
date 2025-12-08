@@ -60,6 +60,7 @@ word Compile(
 	char@ OutputTreeFile;
 	char@ OutputIncludeListFile
 ) of
+	UpdateEmitChar();
 
 	/* Промежуточные операции *********************/
 

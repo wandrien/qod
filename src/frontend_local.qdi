@@ -6,7 +6,7 @@ char @LocalGetName(word I)
 end
 
 word ResolveLocal(char @Name)
-	when pCurrentFunc == nDICT:
+	when unlikely(pCurrentFunc == nDICT):
 		return nLOCAL;
 	word  I=0;
 	while I<nLocal do
@@ -19,7 +19,7 @@ end
 
 
 word ResolveParm(char @Name)
-	when pCurrentFunc == nDICT:
+	when unlikely (pCurrentFunc == nDICT):
 		return nDICT;
 	word pARGS = Func_GetArgs(pCurrentFunc);
 	when pARGS >= nDICT:

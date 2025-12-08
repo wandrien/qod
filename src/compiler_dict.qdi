@@ -83,6 +83,7 @@ word st_outofscope_label;
 
 void function DumpDictEntryCallback(char @S);
 void DumpDictEntry(word I; DumpDictEntryCallback@ cb);
+word Func_GetType(word pFunc);
 
 /*****************************************************************************/
 
@@ -787,10 +788,10 @@ end
 */
 bool T_IsFuctTypesIdentical(word T1; word T2)
 	when Dict_IsFunction(T1):
-		T1 = Dict[T1].pType;
+		T1 = Func_GetType(T1);
 
 	when Dict_IsFunction(T2):
-		T2 = Dict[T2].pType;
+		T2 = Func_GetType(T2);
 
 	when T1 >= nDict:
 		StopInternal(__FILE__, __LINE__);
@@ -834,7 +835,6 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 end
 
 word T_FuncTypeForFunction(word F)
-
 	when F >= nDict:
 		StopInternal(__FILE__, __LINE__);
 	when Dict[F].Class != CLASS.cFUNC:
@@ -851,6 +851,7 @@ word T_FuncTypeForFunction(word F)
 		 & str_eq(@DictGetName(P), "")
 		 & T_IsFuctTypesIdentical(F, P) == true
 		 then
+			Dict[F].tCachedFuncTypeOfMe = P;
 			return P;
 		end:if
 		inc P;

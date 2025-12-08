@@ -78,9 +78,7 @@ end
 /*****************************************************************************/
 
 char Read()
-
 	bool _AlreadyOnNext = AlreadyOnNext;
-
 	AlreadyOnNext = false;
 
 	/*
@@ -89,38 +87,40 @@ char Read()
 			2) достать из стека предыдущий файл.
 		И так пока не найдём какие-нибудь данные, либо пока не выкинем из стека все файлы.
 	*/
-	word Flag = 0;
 
-	while pText >= nText do
+	if unlikely(pText >= nText) then
+		word Flag = 0;
+		while pText >= nText do
+			when pText > nText:
+				StopInternal(__FILE__, __LINE__);
 
-		when pText > nText:
-			StopInternal(__FILE__, __LINE__);
-
-		if Flag == 0 then
-			nText = pFile + read(hText, @Text[pFile], nTEXT);
-			pText = pFile;
-			BeforeFirstFile = false;
-			Flag  = 1;
-		else
-			if nFile < 1 then
-				//Stop(@L10n.eEOF);
-				EndOfSource = true;
-				return #0;
-			end
-			PopCurrentFile();
-			Flag = 0;
-		end:if
-	end:while
+			if Flag == 0 then
+				nText = pFile + read(hText, @Text[pFile], nTEXT);
+				pText = pFile;
+				BeforeFirstFile = false;
+				Flag  = 1;
+			else
+				if nFile < 1 then
+					//Stop(@L10n.eEOF);
+					EndOfSource = true;
+					return #0;
+				end
+				PopCurrentFile();
+				Flag = 0;
+			end:if
+		end:while
+	end:if
 
 	char r = Text[pText];
-	if (r == '~n') & !BeforeFirstFile & _AlreadyOnNext then
-		if  CurrentFileInfo.Line % 50 == 0 then
-			ShowParseProgress(0);
-		end
-
-		CurrentFileInfo.Column = 1;
-		inc CurrentFileInfo.Line;
-	end
+	if unlikely(r == '~n') then
+		if !BeforeFirstFile & _AlreadyOnNext then
+			if  CurrentFileInfo.Line % 50 == 0 then
+				ShowParseProgress(0);
+			end
+			CurrentFileInfo.Column = 1;
+			inc CurrentFileInfo.Line;
+		end:if
+	end:if
 
 	return r;
 end

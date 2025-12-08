@@ -42,20 +42,47 @@ void EmitChar_NoRedirection_(char C)
 	inc  nText;
 end
 
+void EmitChar_Noop_(char C) of
+	pass;
+end
+
 /*****************************************************************************/
 
 word EmitDisabled = 0;
+bool ColdRedirectionEnabled = false;
+
+void EmitChar_ColdRedirection_(char C);
+void function __EmitChar(char C);
+__EmitChar @EmitChar_;
+
+void UpdateEmitChar() of
+	if unlikely(EmitDisabled > 0) then
+		@EmitChar_ = EmitChar_Noop_;
+		return;
+	end:if
+
+	if !ColdRedirectionEnabled then
+		@EmitChar_ = EmitChar_NoRedirection_;
+		return;
+	end:if
+	@EmitChar_ = EmitChar_ColdRedirection_;
+end
 
 void DisableEmit()
 	inc EmitDisabled;
+	UpdateEmitChar();
 end
 
 void EnableEmit()
 	dec EmitDisabled;
+	UpdateEmitChar();
 end
 
-bool ColdRedirectionEnabled;
-char ColdBuffer[nTEXT];
+/*****************************************************************************/
+
+define nCOLDBUFFER (1024 * 8)
+
+char ColdBuffer[nCOLDBUFFER];
 strbuf ColdBuf;
 bool ColdBufInitialized = false;
 
@@ -69,6 +96,7 @@ void Emit_StartColdRedirection() of
 		strbuf.init(@ColdBuf, @ColdBuffer, countof(ColdBuffer));
 		ColdBufInitialized = true;
 	end:if
+	UpdateEmitChar();
 end
 
 void Emit_StopColdRedirection() of
@@ -77,6 +105,7 @@ void Emit_StopColdRedirection() of
 	when strbuf.get_virtual_len(@ColdBuf) > strbuf.get_size(@ColdBuf):
 		StopInternal(__FILE__, __LINE__); /* Overflow */
 	ColdRedirectionEnabled = false;
+	UpdateEmitChar();
 end
 
 bool Emit_ColdRedirectionActive() of
@@ -117,25 +146,10 @@ end
 
 /*****************************************************************************/
 
-/* Вывести в листинг символ. */
-void EmitChar_(char C)
-	if ColdRedirectionEnabled then
-		EmitChar_ColdRedirection_(C);
-	else
-		EmitChar_NoRedirection_(C);
-	end:if
-end
-
 void EmitChar(char C)
-	when EmitDisabled > 0:
-		return;
-
 	EmitChar_(C);
 end
 
-/*****************************************************************************/
-
-/* Вывести в листинг строку. */
 void EmitString(char @S)
 	when EmitDisabled > 0:
 		return;
@@ -146,8 +160,6 @@ void EmitString(char @S)
 		inc I;
 	end
 end
-
-/*****************************************************************************/
 
 void EmitStringIgnoreNewLines(char @S)
 	when EmitDisabled > 0:
@@ -166,16 +178,10 @@ void EmitStringIgnoreNewLines(char @S)
 	end
 end
 
-/*****************************************************************************/
-
-/* Вывести в листинг переход на новую линию. */
 void EmitNL()
 	EmitString("~r~n");
 end
 
-/*****************************************************************************/
-
-/* Вывести в листинг строку и следом переход на новую линию. */
 void EmitStringNL(char @Inst)
 	EmitString(@Inst);
 	EmitNL();
@@ -191,12 +197,12 @@ define PHO_Mode_Invalidate 2
 
 /* Если Label не равно 0, выводит метку Label. Следом выводит строку Inst и опциональный комментарий Comment. */
 void EmitLine_(LABEL @Label; char @Inst; char @Comment; word PhoMode)
-	when EmitDisabled > 0:
+	when unlikely(EmitDisabled > 0):
 		return;
 
 	when @Inst == NULL:
 		@Inst = "";
-	when @Comment == NULL:
+	when unlikely(@Comment == NULL):
 		@Comment = "";
 
 	select
@@ -266,23 +272,23 @@ end
 /*****************************************************************************/
 
 void Emit(char @Inst)
-	EmitLine_(NULL, @Inst, NULL, PHO_Mode_Auto);
+	EmitLine_(NULL, @Inst, "", PHO_Mode_Auto);
 end
 
 void EmitComment(char @Comment)
-	EmitLine_(NULL, NULL, @Comment, PHO_Mode_Skip);
+	EmitLine_(NULL, "", @Comment, PHO_Mode_Skip);
 end
 
 void EmitWithPhoMode(char @Inst; word PhoMode)
-	EmitLine_(NULL, @Inst, NULL, PhoMode);
+	EmitLine_(NULL, @Inst, "", PhoMode);
 end
 
 void EmitPhoInvalidate(char @Inst)
-	EmitLine_(NULL, @Inst, NULL, PHO_Mode_Invalidate);
+	EmitLine_(NULL, @Inst, "", PHO_Mode_Invalidate);
 end
 
 void EmitPhoSkip(char @Inst)
-	EmitLine_(NULL, @Inst, NULL, PHO_Mode_Skip);
+	EmitLine_(NULL, @Inst, "", PHO_Mode_Skip);
 end
 
 void EmitWithPhoModeAndComment(char @Inst; word PhoMode; char @Comment)
@@ -299,7 +305,7 @@ end
 
 void EmitLabel(LABEL @Label)
 	when @Label == NULL: StopInternal(__FILE__, __LINE__);
-	EmitLine_(@Label, "", NULL, PHO_Mode_Auto);
+	EmitLine_(@Label, "", "", PHO_Mode_Auto);
 end
 
 void EmitLabelWithComment(LABEL @Label; char @Comment)
@@ -316,7 +322,7 @@ end
 
 SOURCELOCATION PrevSourceLocation;
 
-void EmitWithSourceNote(char @Inst; word P)
+void EmitSourceNote(word P)
 	if P < nNODE & P > 0 & EmitSourceLineNotes then
 		char Buff[nBUFF];
 		SOURCELOCATION @SourceLocation = @Node[P].SourceLocation;
@@ -330,7 +336,6 @@ void EmitWithSourceNote(char @Inst; word P)
 			PrevSourceLocation = SourceLocation;
 		end:if
 	end:if
-	Emit(@Inst);
 end
 
 /*****************************************************************************/
@@ -339,21 +344,25 @@ char EmitTmpBuff[1024];
 
 void EmitJumpToLabelWithComment(LABEL @Label; char @Comment)
 	when !EmitDebugComments_Jumps:
-		@Comment = NULL;
+		@Comment = "";
 	LabelMarkUsed(@Label);
-	EmitLine_(NULL, @strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))), @Comment, PHO_Mode_Skip);
+	EmitLine_(NULL,
+		@strcpy2(@EmitTmpBuff, "jmp     @", @str(LabelGetValue(@Label))),
+		@Comment, PHO_Mode_Skip
+	);
 end
 
 void EmitJumpToLabel(LABEL @Label)
-	EmitJumpToLabelWithComment(@Label, NULL);
+	EmitJumpToLabelWithComment(@Label, "");
 end
 
 void EmitBranchToLabel(char @Condition; LABEL @Label)
 	char @s = "";
 	when Condition[1] == #0: @s = " ";
 	LabelMarkUsed(@Label);
-	EmitPhoSkip(
-		@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(LabelGetValue(@Label)))
+	EmitLine_(NULL,
+		@strcpy5(@EmitTmpBuff, "j", @Condition, @s, "     @", @str(LabelGetValue(@Label))),
+		"", PHO_Mode_Skip
 	);
 end
 

@@ -1976,7 +1976,7 @@ word CodeBooleanExpr(word P; LABEL @F; LABEL @T; LABEL @M)
 	char Buff[nBUFF];
 	Buff[0] = #0;
 
-	EmitWithSourceNote(NULL, P);
+	EmitSourceNote(P);
 
 	when @T != NULL & @F != NULL: /* T и F не могут быть установлены в не 0 одновременно. */
 		StopInternalCodegen(__FILE__, __LINE__);
@@ -2219,7 +2219,7 @@ word Code_(word P; char @Buff)
 	when P > nNode:
 		StopInternalCodegen(__FILE__, __LINE__);
 
-	EmitWithSourceNote(NULL, P);
+	EmitSourceNote(P);
 
 	switch Node[P].ID of
 	case NID.iDATA, NID.iPARM, NID.iLOCAL, NID.iSTRING,
@@ -2439,15 +2439,15 @@ void EmitFunction(char @Buff; word I)
 
 	Emit_ALIGN(SwOptions.AlignFunctions);
 
-	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
+	if unlikely(Dict[I].Sub == SUBCLASS.sSTART_FUNC) then
 		EntryLabel = Dict[I].Label;
 		EmitEntrySymbol(@Buff);
 	end:if
 
-	EmitStringNL("");
+	EmitNL();
 	strcpy(@Buff,"## ");
 	strcat(@Buff, @DictGetName(I));
-	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
+	if unlikely(Dict[I].Sub == SUBCLASS.sSTART_FUNC) then
 		strcat(@Buff, "<entry>");
 	end:if
 	strcat(@Buff," ##");
@@ -2463,7 +2463,7 @@ void EmitFunction(char @Buff; word I)
 
 	EmitFunctionPrologue(@Buff, @FnCtx);
 
-	if Dict[I].Sub == SUBCLASS.sSTART_FUNC then
+	if unlikely(Dict[I].Sub == SUBCLASS.sSTART_FUNC) then
 		word  J = 0;
 		while J < nDict do
 			if Dict[J].Class == CLASS.cDATA & Dict[J].pNode < nNODE & Dict[J].Used then
@@ -2493,7 +2493,7 @@ void EmitFunction(char @Buff; word I)
 	end
 
 	if pType != st_noreturn then
-		if pReturnVoid == nNODE then
+		if unlikely(pReturnVoid == nNODE) then
 			pReturnVoid = Peek();
 			Node[pReturnVoid].ID = NID.iRETURN;
 		end
@@ -2520,7 +2520,7 @@ void EmitFunctions(char @Buff)
 			end:if
 			inc I;
 		end:while
-		EmitStringNL("");
+		EmitNL();
 		EmitComment("## COLD SECTION ##");
 		I = 0;
 		while I < nDict do
