@@ -264,8 +264,8 @@ end
 
 
 void AssignLabels_Func()
-	word I=0;
-	while I<nDict do
+	word I = list_Functions.First;
+	while I < nDict do
 		if Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used then
 			Dict[I].Label = NewLabelValue();
 			Dict[I].StackSize = Enum(Dict[I].pNode,1);
@@ -275,7 +275,7 @@ void AssignLabels_Func()
 					@L10n.eNEVERDEFINED, @DictGetFullyQualifiedName(I)
 				);
 		end
-		inc I;
+		I = Dict[I].tLink;
 	end
 end
 
@@ -284,8 +284,8 @@ void AssignLabels_FuncExternal()
 	word I=0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB then
-			word  J=0;
-			while J<nDict do
+			word J = list_Functions.First;
+			while J < nDict do
 				if Dict[J].Class == CLASS.cFUNC
 				&  Dict[J].Sub == SUBCLASS.sSYS
 				&  Dict[J].pNode == I
@@ -297,7 +297,7 @@ void AssignLabels_FuncExternal()
 					end:if
 					Dict[J].Label = Label;
 				end:if
-				inc J;
+				J = Dict[J].tLink;
 			end:while
 		end:if
 		inc I;

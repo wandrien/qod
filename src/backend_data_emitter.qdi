@@ -347,7 +347,7 @@ void EmitPEImport(char @Buff)
 
 	/* Таблица экспортируемых библиотек. */
 
-	word I  = 0;
+	word I = 0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			word Label = NewLabelValue();
@@ -371,13 +371,13 @@ void EmitPEImport(char @Buff)
 
 	/* Таблицы точек импорта. */
 
-	I =0;
+	I = 0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			EmitNL();
 
-			word  J=0;
-			while J<nDict do
+			word J = list_Functions.First;
+			while J < nDict do
 				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used then
 
 					word Label = NewLabelValue();
@@ -391,7 +391,7 @@ void EmitPEImport(char @Buff)
 					EmitStringNL(@Buff);
 				end:if
 
-				inc J;
+				J = Dict[J].tLink;
 			end:while
 
 			Emit("dd      0");
@@ -406,7 +406,7 @@ void EmitPEImport(char @Buff)
 	EmitNL();
 
 	word Label = FirstLabel + 1;
-	I =0;
+	I = 0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			LABEL L; LabelSetValue(@L, Label);
@@ -421,13 +421,13 @@ void EmitPEImport(char @Buff)
 
 	/* Имена функций. */
 
-	I =0;
+	I = 0;
 	while I<nDict do
 		if Dict[I].Class == CLASS.cLIB & Dict[I].Used then
 			EmitNL();
 
-			word  J=0;
-			while J<nDict do
+			word J = list_Functions.First;
+			while J < nDict do
 				if Dict[J].Class == CLASS.cFUNC & Dict[J].Sub == SUBCLASS.sSYS & Dict[J].pNode == I & Dict[J].Used then
 					LABEL L; LabelSetValue(@L, Label);
 					EmitLabel(@L);
@@ -436,7 +436,7 @@ void EmitPEImport(char @Buff)
 					inc Label;
 				end:if
 
-				inc J;
+				J = Dict[J].tLink;
 			end:while
 		end:if
 

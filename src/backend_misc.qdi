@@ -326,25 +326,24 @@ void EmitFunctionTrees()
 
 	char @LinePrefix = "; ";
 
-	word I = 0;
+	word I = list_Functions.First;
 	while I < nDict do
-		select
-			case Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used:
-				EmitNL();
-				EmitString(@LinePrefix);
-				EmitString("== ");
-				EmitString(@DictGetName(I));
-				EmitString(" ");
-				word j = strlen(@DictGetName(I));
-				while j < 74 do
-					EmitString("=");
-					inc j;
-				end
-				EmitNL();
-				EmitString(@LinePrefix);
-				EmitTree(Dict[I].pNode, 0, @LinePrefix);
-		end
-		inc I;
+		if Dict[I].Class == CLASS.cFUNC & Dict[I].Sub != SUBCLASS.sSYS & Dict[I].Used then
+			EmitNL();
+			EmitString(@LinePrefix);
+			EmitString("== ");
+			EmitString(@DictGetName(I));
+			EmitString(" ");
+			word j = strlen(@DictGetName(I));
+			while j < 74 do
+				EmitString("=");
+				inc j;
+			end
+			EmitNL();
+			EmitString(@LinePrefix);
+			EmitTree(Dict[I].pNode, 0, @LinePrefix);
+		end:if
+		I = Dict[I].tLink;
 	end
 
 end

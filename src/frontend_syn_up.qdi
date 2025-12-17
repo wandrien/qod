@@ -65,6 +65,8 @@ void DeclMainFunc(char@ Buff)
 	Dict[pFunction].Sub   = SUBCLASS.sSTART_FUNC;
 	Dict[pFunction].pType = pFuncType;
 
+	DICT_LIST.append(@list_Functions, pFunction);
+
 	Dict[pFuncType].Class = CLASS.cTYPE;
 	Dict[pFuncType].Sub   = SUBCLASS.sFUNCTYPE;
 	Dict[pFuncType].pType = st_void;
@@ -182,6 +184,7 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 		pFunc = _pFunc;
 		Dict[pFunc].Class = CLASS.cFUNC;
 		Dict[pFunc].Sub   = SUBCLASS.sFUNC;
+		DICT_LIST.append(@list_Functions, pFunc);
 		when !prototypeMismatch:
 			DictAddToNamespace(pFunc, pEnteredNamespace);
 	else

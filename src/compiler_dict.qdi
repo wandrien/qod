@@ -3,7 +3,47 @@
 
 DICT     Dict [nDICT]; // Таблица имен
 word    nDict;
-word    tArrayTypes;
+
+struct DICT_LIST of
+	word First;
+	word Last;
+
+	void init(DICT_LIST @list) of
+		list.First = nDICT;
+		list.Last = nDICT;
+	end
+
+	void append(DICT_LIST @list; word D) of
+		when Dict[D].tLink != nDICT:
+			StopInternal(__FILE__, __LINE__);
+		if likely(list.Last != nDICT) then
+			Dict[list.Last].tLink = D;
+			list.Last = D;
+			return; // force no redundant jump
+		else
+			list.First = D;
+			list.Last = D;
+			return;
+		end
+	end
+
+	void prepend(DICT_LIST @list; word D) of
+		when Dict[D].tLink != nDICT:
+			StopInternal(__FILE__, __LINE__);
+		if likely(list.First != nDICT) then
+			Dict[D].tLink = list.First;
+			list.First = D;
+			return; // force no redundant jump
+		else
+			list.First = D;
+			list.Last = D;
+			return;
+		end
+	end
+end:struct
+
+DICT_LIST list_ArrayTypes;
+DICT_LIST list_Functions;
 
 /*****************************************************************************/
 
@@ -184,6 +224,7 @@ word DictAlloc()
 	d.pNext = nDICT;
 	d.pFirst = nDICT;
 	d.pLast = nDICT;
+	d.tLink = nDICT;
 	DictSetName_None(r);
 
 	return r;
@@ -672,7 +713,7 @@ word T_ArrayGetLenOr0(word T)
 end
 
 word T_Array(word T; word S)
-	word P = tArrayTypes;
+	word P = list_ArrayTypes.First;
 	while P < nDict do
 		DICT @d = @Dict[P];
 		when d.Class != CLASS.cTYPE | d.Sub != SUBCLASS.sARRAY:
@@ -690,8 +731,7 @@ word T_Array(word T; word S)
 	d.Sub      = SUBCLASS.sARRAY;
 	d.pType    = T;
 	d.TypeSize = S;
-	d.tLink    = tArrayTypes;
-	tArrayTypes = P;
+	DICT_LIST.prepend(@list_ArrayTypes, P);
 	return P;
 end
 

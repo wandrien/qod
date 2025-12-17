@@ -2509,7 +2509,7 @@ end
 
 void EmitFunctions(char @Buff)
 	if SeparateColdSection then
-		word I = 0;
+		word I = list_Functions.First;
 		while I < nDict do
 			if Dict[I].Class == CLASS.cFUNC
 			 & Dict[I].Sub != SUBCLASS.sSYS
@@ -2518,11 +2518,11 @@ void EmitFunctions(char @Buff)
 			then
 				EmitFunction(@Buff, I);
 			end:if
-			inc I;
+			I = Dict[I].tLink;
 		end:while
 		EmitNL();
 		EmitComment("## COLD SECTION ##");
-		I = 0;
+		I = list_Functions.First;
 		while I < nDict do
 			if Dict[I].Class == CLASS.cFUNC
 			 & Dict[I].Sub != SUBCLASS.sSYS
@@ -2531,10 +2531,10 @@ void EmitFunctions(char @Buff)
 			then
 				EmitFunction(@Buff, I);
 			end:if
-			inc I;
+			I = Dict[I].tLink;
 		end:while
 	else
-		word I = 0;
+		word I = list_Functions.First;
 		while I < nDict do
 			if Dict[I].Class == CLASS.cFUNC
 			 & Dict[I].Sub != SUBCLASS.sSYS
@@ -2542,7 +2542,7 @@ void EmitFunctions(char @Buff)
 			then
 				EmitFunction(@Buff, I);
 			end:if
-			inc I;
+			I = Dict[I].tLink;
 		end:while
 	end:if
 
