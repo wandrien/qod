@@ -874,56 +874,6 @@ bool T_IsFuctTypesIdentical(word T1; word T2)
 	end:forever
 end
 
-word T_FuncTypeForFunction(word F)
-	when F >= nDict:
-		StopInternal(__FILE__, __LINE__);
-	when Dict[F].Class != CLASS.cFUNC:
-		StopInternal(__FILE__, __LINE__);
-
-	when Dict[F].tCachedFuncTypeOfMe < nDict:
-		return Dict[F].tCachedFuncTypeOfMe;
-
-	word P = 0;
-	while P < nDict do
-		if Dict[P].pNamespace == nDICT
-		 & Dict[P].Class == CLASS.cTYPE
-		 & Dict[P].Sub == SUBCLASS.sFUNCTYPE
-		 & str_eq(@DictGetName(P), "")
-		 & T_IsFuctTypesIdentical(F, P) == true
-		 then
-			Dict[F].tCachedFuncTypeOfMe = P;
-			return P;
-		end:if
-		inc P;
-	end:while
-
-	P = DictAlloc();
-	Dict[P].Class = CLASS.cTYPE;
-	Dict[P].Sub   = SUBCLASS.sFUNCTYPE;
-	Dict[P].pType = Dict[F].pType;
-
-	word F_ARGS = T_FuncGetArgs(F);
-	word P_ARGS = T_FuncMakeArgs(P);
-
-	word F_ARG = Dict[F_ARGS].pFirst;
-	forever do
-		when F_ARG == nDICT:
-			exit;
-
-		word P_ARG = DictAlloc();
-		DictSetName(P_ARG, "");
-		Dict[P_ARG].Class = CLASS.cARG;
-		Dict[P_ARG].pType = Dict[F_ARG].pType;
-		DictAddToNamespace(P_ARG, P_ARGS);
-
-		F_ARG = Dict[F_ARG].pNext;
-	end:forever
-
-	Dict[F].tCachedFuncTypeOfMe = P;
-
-	return P;
-end
-
 /*****************************************************************************/
 
 void T_GetName_(word T; strbuf @Buff)
@@ -935,8 +885,14 @@ void T_GetName_(word T; strbuf @Buff)
 		/* TODO: not implemented */
 		strbuf.append_cstr(@Buff, @DictGetFullyQualifiedName(T));
 	case Dict[T].Sub == SUBCLASS.sFUNCTYPE:
-		/* TODO: not implemented */
-		strbuf.append_cstr(@Buff, @DictGetFullyQualifiedName(T));
+		char @Name = @DictGetFullyQualifiedName(T);
+		if str_eq(@Name, "") then
+			/* TODO: handle args */
+			strbuf.append_cstr(@Buff, "function(...) ");
+			T_GetName_(T_FuncGetRetType(T), @Buff);
+		else
+			strbuf.append_cstr(@Buff, @Name);
+		end:if
 	case Dict[T].Sub == SUBCLASS.sPTR:
 		strbuf.append_cstr(@Buff, "@");
 		T_GetName_(Dict[T].pType, @Buff);
@@ -951,9 +907,6 @@ void T_GetName_(word T; strbuf @Buff)
 end
 
 char @T_GetName(word T)
-	when Dict_IsFunction(T):
-		T = T_FuncTypeForFunction(T);
-
 	char Buff[nBUFF];
 	strbuf buf;
 	strbuf.init(@buf, @Buff, nBUFF);

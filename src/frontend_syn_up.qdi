@@ -189,7 +189,6 @@ void DeclFunc1(char @Buff; word _pFunc; word pForward)
 			DictAddToNamespace(pFunc, pEnteredNamespace);
 	else
 		DictFree(@_pFunc);
-		DictFree(@Dict[pForward].pType);
 		Dict[pForward].pType = pFuncType;
 		Dict[pForward].Forward = 0;
 		pFunc = pForward;

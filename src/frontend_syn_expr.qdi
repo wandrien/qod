@@ -632,7 +632,7 @@ word MakeNodeForDict(word I)
 	case CLASS.cFUNC:
 		word P = Peek();
 		Node[P].ID    = NID.iFUNC;
-		Node[P].pType = T_PtrTo(T_FuncTypeForFunction(I));
+		Node[P].pType = T_PtrTo(Func_GetType(I));
 		Node[P].Value = I;
 		return P;
 
@@ -878,7 +878,7 @@ word Primary(word Prty; char @Buff)
 				P1 = Peek();
 				Node[P1].ID = NID.iFUNC;
 				Node[P1].Value = I;
-				Node[P1].pType = T_PtrTo(T_FuncTypeForFunction(I));
+				Node[P1].pType = T_PtrTo(Func_GetType(I));
 
 				return P1;
 			end:if
