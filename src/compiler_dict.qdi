@@ -907,12 +907,17 @@ void T_GetName_(word T; strbuf @Buff)
 end
 
 char @T_GetName(word T)
+	word Index = Dict[T].TypeName;
+	when Index != 0:
+		return @Char[Index];
+
 	char Buff[nBUFF];
 	strbuf buf;
 	strbuf.init(@buf, @Buff, nBUFF);
 	T_GetName_(T, @buf);
 
-	word Index = SaveString0(@Buff);
+	Index = SaveString0(@Buff);
+	Dict[T].TypeName = Index;
 	return @Char[Index];
 end
 

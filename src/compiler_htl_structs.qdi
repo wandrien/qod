@@ -44,6 +44,7 @@ struct DICT of           // Элемент таблицы глобальных �
 	word   ChildCount;
 
 	word   FullyQualifiedName; // Имя вида Namespace.Namespace.Name
+	word   TypeName;           // Имя типа, например [10]int
 
 	byte   Class;        // Слово, литерал, тип, пеpеменная, функция
 	byte   Sub;          // Подкласс
